@@ -1,0 +1,27 @@
+name: dedecube_presentation
+description: "Dedecube Presentation is a package designed to support the UI
+  layer of Flutter applications"
+publish_to: "none"
+version: 0.0.15
+
+environment:
+  sdk: ^3.5.3
+  flutter: ">=1.17.0"
+
+dependencies:
+  dedecube_core:
+    path: ../dedecube_core
+  flutter:
+    sdk: flutter
+  flutter_svg: ^2.0.17
+  material_color_utilities: ^0.11.1
+  material_design_icons_flutter: ^7.0.7296
+  riverpod_annotation: ^2.6.1
+
+dev_dependencies:
+  build_runner: ^2.4.15
+  custom_lint: ^0.7.5
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+  riverpod_generator: ^2.6.5

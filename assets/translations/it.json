@@ -1,0 +1,384 @@
+{
+    "components": {
+        "alert": {
+            "paste_otp_dialog": {
+                "title": "Codice rilevato",
+                "content": "Vuoi incollare <bold>{code}</bold>?",
+                "paste": "Incolla",
+                "cancel": "Annulla"
+            },
+            "delete_account": {
+                "title": "Vuoi eliminare definitivamente il tuo account?",
+                "content": "Perderai tutti i tuoi ricordi, e le tue cerchie, sei sicuro di voler procedere?",
+                "delete": "Si, elimina l’account",
+                "cancel": "Ho cambiato idea",
+                "error_title": "Errore",
+                "error_content": "Si è verificato un errore durante l'eliminazione del tuo account. Riprova più tardi.",
+                "ok": "OK"
+            },
+            "logout_error": {
+                "title": "Impossibile effettuare il logout",
+                "content": "Riprova più tardi."
+            },
+            "remove_error": {
+                "title": "Impossibile rimuovere l'amico",
+                "content": "Riprova più tardi."
+            },
+            "post_error": {
+                "title": "Si è verificato un errore",
+                "error_message": "Errore durante la pubblicazione. \nRiprova.",
+                "update_error_message": "Errore durante l'aggiornamento. \nRiprova."
+            },
+            "calendar_error": {
+                "error_title": "Errore",
+                "error_content": "Si è verificato un errore. Riprova più tardi.",
+                "add_error_content": "Impossibile aggiungere il post al calendario. Riprova.",
+                "remove_error_content": "Impossibile rimuovere il post dal calendario. Riprova."
+            },
+            "username_not_available": {
+                "title": "Username non disponibile",
+                "content": "Il nome utente scelto è già in uso. Scegli un altro username."
+            },
+            "connection_error": {
+                "title": "Errore di connessione",
+                "content": "Verifica la tua connessione internet e riprova."
+            },
+            "too_many_requests": {
+                "title": "Troppe richieste",
+                "content": "Hai fatto troppe richieste. Attendi un momento prima di riprovare."
+            },
+            "unknown_error": {
+                "title": "Errore sconosciuto",
+                "content": "Si è verificato un errore imprevisto. Riprova."
+            },
+            "generic_error": {
+                "title": "Errore",
+                "content": "Si è verificato un errore. \nRiprova più tardi."
+            },
+            "session_expired": {
+                "title": "Sessione scaduta",
+                "content": "La tua sessione è scaduta. Per favore accedi nuovamente."
+            },
+            "remove_confirmation": {
+                "title": "Vuoi rimuovere questo amico?",
+                "content": "I veri legami meritano attenzione.\nSe lo rimuovi, non vedrete più i vostri momenti qui... ma potrete sempre crearne di nuovi.",
+                "confirm": "Rimuovi amico",
+                "cancel": "Ho cambiato idea"
+            },
+            "join_circle": {
+                "title": "Vuoi unirti alla cerchia di @{username}?",
+                "content": "Entra e, se vuoi, puoi lasciarla in ogni momento.",
+                "confirm": "Voglio unirmi",
+                "cancel": "Ho cambiato idea"
+            },
+            "image_selection_error": "Errore nella selezione dell'immagine. Riprova.",
+            "confirm_button": "OK",
+            "cancel": "No"
+        },
+        "image_picker_sheet": {
+            "title": "Scegli l'immagine",
+            "camera": "Scatta nuova foto",
+            "gallery": "Carica nuova foto",
+            "cancel": "Annulla"
+        },
+        "media_source_picker_sheet": {
+            "title": "Seleziona sorgente",
+            "title_image": "Scegli l'immagine",
+            "title_video": "Scegli il video",
+            "capture": "Scatta",
+            "library": "Libreria",
+            "cancel": "Annulla"
+        },
+        "media_type_picker_sheet": {
+            "title": "Seleziona contenuto",
+            "photo": "Foto",
+            "video": "Video",
+            "cancel": "Annulla"
+        },
+        "image_cropper": {
+            "title": "Ritaglia l'immagine",
+            "done": "Fatto",
+            "cancel": "Annulla"
+        },
+        "unsupported_image_format": {
+            "title": "Formato non supportato",
+            "content": "Sono supportati solo i formati JPG, JPEG e PNG. Seleziona un'immagine diversa."
+        },
+        "searchbar": {
+            "search_placeholder": "Cerca...",
+            "no_results": "Nessun risultato trovato"
+        },
+        "post_actions_menu": {
+            "edit": "Modifica",
+            "delete": "Elimina",
+            "hide": "Nascondi",
+            "report": "Segnala"
+        },
+        "full_screen_image": {
+            "flipping_image": "Applicazione del riflesso..."
+        },
+        "full_screen_image_flip_menu": {
+            "flip_horizontal": "Rifletti orizzontale",
+            "flip_vertical": "Rifletti verticale"
+        },
+        "delete_post": {
+            "title": "Vuoi eliminare definitivamente questo post?",
+            "content": "Il post verrà eliminato e non sarà possibile ripristinarlo",
+            "confirm": "Si, elimina il post",
+            "cancel": "Ho cambiato idea",
+            "error_title": "Errore",
+            "error_content": "Si è verificato un errore durante l'eliminazione del post. Riprova più tardi."
+        },
+        "hide_post": {
+            "title": "Vuoi nascondere definitivamente questo post?",
+            "content": "Il post verrà nascosto e non sarà possibile ripristinarlo",
+            "confirm": "Si, nascondi il post",
+            "cancel": "Ho cambiato idea",
+            "error_title": "Errore",
+            "error_content": "Si è verificato un errore durante il nascondimento del post. Riprova più tardi."
+        },
+        "post_report_modal": {
+            "title": "Invia una segnalazione",
+            "subtitle": "Seleziona il motivo per cui stai segnalando \nquesto post",
+            "reasons": {
+                "nudity": "Nudità o contenuti sessuali",
+                "shocking_content": "Contenuti scioccanti",
+                "hate_speech": "Incitamento all'odio",
+                "bullying": "Molestie o bullismo",
+                "spam": "Spam o contenuti ingannevoli",
+                "changed_mind": "Ho cambiato idea"
+            }
+        },
+        "report_post": {
+            "success_content": "Grazie per la tua segnalazione. Esamineremo il contenuto al più presto.",
+            "already_reported_title": "Post già segnalato",
+            "already_reported_content": "Hai già segnalato questo post in precedenza.",
+            "error_title": "Errore",
+            "error_content": "Si è verificato un errore durante l'invio della segnalazione. Riprova più tardi."
+        },
+        "frame_picker": {
+            "confirm_frame": "Seleziona frame"
+        },
+        "profile_actions_menu": {
+            "report": "Segnala",
+            "remove": "Rimuovi",
+            "block": "Blocca"
+        },
+        "block_user": {
+            "confirmation_title": "Vuoi bloccare questo utente?",
+            "confirmation_content": "L'utente verrà segnalato e rimosso dalla tua cerchia. Non potrai più vedere i suoi contenuti e lui non potrà vedere i tuoi.",
+            "confirm": "Sì, blocca",
+            "cancel": "Ho cambiato idea",
+            "success_content": "Utente bloccato con successo.",
+            "error_title": "Errore",
+            "error_content": "Si è verificato un errore durante il blocco dell'utente. Riprova più tardi."
+        },
+        "user_report_modal": {
+            "title": "Segnala utente",
+            "subtitle": "Seleziona il motivo per cui stai segnalando \nquesto utente",
+            "reasons": {
+                "harassment": "Molestie o bullismo",
+                "hate_speech": "Incitamento all'odio",
+                "inappropriate_content": "Contenuti inappropriati",
+                "spam": "Spam o truffa",
+                "impersonation": "Furto d'identità",
+                "changed_mind": "Ho cambiato idea"
+            }
+        },
+        "report_user": {
+            "success_content": "Grazie per la tua segnalazione. Esamineremo l'utente al più presto.",
+            "already_reported_title": "Utente già segnalato",
+            "already_reported_content": "Hai già segnalato questo utente in precedenza.",
+            "error_title": "Errore",
+            "error_content": "Si è verificato un errore durante l'invio della segnalazione. Riprova più tardi."
+        }
+    },
+    "pages": {
+        "error_view": {
+            "title": "Oh no!",
+            "description": "Sembra che ci sia stato un problema di connessione alla rete e non è possibile caricare i dati.",
+            "retry": "Riprova"
+        },
+        "verify_phone": {
+            "snackbars": {
+                "success": "Codice di verifica inviato con successo",
+                "error": "Errore dell’invio del codice"
+            }
+        },
+        "objective": {
+            "title": "The Project",
+            "description": "Torna a vivere davvero!\n\n•    Hai {shortMinutes} or {longMinutes} minuti sull'app\n•    Salva nel calendario un tuo ricordo al giorno\n•     Puoi invitare solo i tuoi contatti\n\nDopo {longMinutes} minuti non hai più scuse, torna a vivere. Inoltre ad ogni mezzanotte il feed si azzera, torna a condividere senza pressioni perchè goback. è solamente per i tuoi amici stretti.\n\n<bold>goback. to life</bold>",
+            "button": "Continua"
+        },
+        "sign_in": {
+            "title": "Accedi",
+            "privacy_text": "Accetto <privacy>Privacy policy</privacy> e <terms>Termini di utilizzo</terms>",
+            "privacy_policy_url": "https://www.iubenda.com/privacy-policy/44339319",
+            "terms_of_service_url": "https://www.iubenda.com/termini-e-condizioni/44339319",
+            "label": "Numero di telefono",
+            "button": "Continua",
+            "initial_phone_value": "+39",
+            "error": {
+                "phone_required": "Inserisci il tuo numero di telefono",
+                "phone_invalid": "Il formato del numero non è valido"
+            }
+        },
+        "otp": {
+            "title": "Ti abbiamo appena mandato un SMS",
+            "description": "Inserisci il codice di sicurezza inviato al numero ",
+            "resend_code": "Non hai ricevuto il codice?",
+            "button": "Invia",
+            "alert": {
+                "invalid_code": {
+                    "title": "Codice non valido",
+                    "content": "Il codice inserito non è corretto. Riprova."
+                },
+                "banned": {
+                    "title": "Utente bannato",
+                    "content": "Il tuo account è stato bannato. Contatta il supporto per ulteriori informazioni."
+                }
+            },
+            "resend_texts": {
+                "sending": "Invio in corso..."
+            }
+        },
+        "create_profile": {
+            "title": "Crea il tuo profilo",
+            "edit_image": "Modifica",
+            "username": "Username",
+            "description": "Bio",
+            "button": "Salva",
+            "error": {
+                "username_invalid": "Puoi usare solo lettere, numeri . e _",
+                "username_required": "Inserisci il nome utente",
+                "username_too_short": "Minimo 3 caratteri"
+            }
+        },
+        "home": {
+            "title": "Home",
+            "feed_empty_box": {
+                "title": "Inizia a vivere @{username}",
+                "description": "Condividere è ancora più bello con chi conta davvero: inizia ora e crea il tuo primo ricordo indimenticabile di oggi.",
+                "create_content_button": "Condividi ora"
+            },
+            "no_circle_box": {
+                "title": "Ciao @{username}",
+                "description": "Invita i tuoi close friends and goback. to life"
+            },
+            "time_limit": {
+                "minutes_format": "{minutes}",
+                "alert": {
+                    "cannot_decrease": {
+                        "title": "Impossibile modificare il limite",
+                        "content": "Non puoi diminuire il limite quando hai già superato i minuti richiesti. Riprova domani."
+                    }
+                }
+            }
+        },
+        "profile": {
+            "title": "Profilo",
+            "image": {
+                "placeholder": "U"
+            },
+            "username": {
+                "loading": "Caricamento...",
+                "error": "Impossibile visualizzare lo username"
+            },
+            "description": {
+                "placeholder": "Bio",
+                "error": "Impossibile visualizzare la descrizione"
+            },
+            "button": "Modifica profilo",
+            "calendar": {
+                "month_format": "{month} {year}"
+            }
+        },
+        "settings": {
+            "title": "Impostazioni",
+            "account": "Account",
+            "phone_number": "Numero: +",
+            "phone_number_error": "Impossibile visualizzare il numero di telefono",
+            "delete_data": "Elimina i dati",
+            "preferences": "Preferenze",
+            "objective": "Obiettivo",
+            "notifications": "Notifiche",
+            "assistance_legal": "Assistenza e Legale",
+            "assistance": "Assistenza",
+            "assistance_url": "https://goback.life",
+            "privacy_policy": "Privacy e policy",
+            "terms_conditions": "Termini e condizioni",
+            "logout": "Esci"
+        },
+        "edit_profile": {
+            "title": "Modifica profilo",
+            "edit_image": "Modifica",
+            "username": "Username",
+            "description": "Bio",
+            "button": "Salva"
+        },
+        "circle_profile": {
+            "title": "Amico",
+            "button": "Chiama"
+        },
+        "external_profile": {
+            "title": "Utente"
+        },
+        "your_circle": {
+            "title": "La tua cerchia",
+            "box": {
+                "title": "Un posto speciale",
+                "description": "Invita i tuoi close friends only",
+                "invite_button": "Invita nella tua cerchia",
+                "join_button": "Unisciti ad una cerchia"
+            },
+            "empty": "Non hai ancora nessuno nella cerchia, invita un’amico ora!",
+            "loading_members": "Caricamento membri..."
+        },
+        "invite_to_circle": {
+            "title": "Invita nella tua cerchia",
+            "no_contacts_available": "Nessun contatto disponibile per l'invito",
+            "permission_description": "Per invitare i tuoi amici, concedi l'accesso ai contatti del tuo dispositivo.",
+            "generating_code": "Generazione del codice di invito...",
+            "code_generation_failed": "Generazione del codice di invito non riuscita. Riprova più tardi.",
+            "sms_message": "Entra nella cerchia di @{username} su goback . Il codice per entrare è: {code}"
+        },
+        "join_circle": {
+            "title": "Unisciti ad una cerchia",
+            "subtitle": "Inserisci il codice che hai \nricevuto via SMS",
+            "description": "Entra nella tua nuova cerchia, ti stanno aspettando!",
+            "button": "Invia",
+            "error": {
+                "title": "Si è verificato un errore",
+                "invalid_code": "Il codice di invito è scaduto o non è valido",
+                "already_in_circle": "Sei già in questa cerchia",
+                "connect_yourself": "Non puoi collegarti con te stesso!"
+            }
+        },
+        "content_editor": {
+            "edit_content": "Modifica",
+            "hint_text": "Racconta questo momento...",
+            "character_count": "{current}/{max}",
+            "tag_users": "Tag",
+            "user": "@{username}",
+            "button": "Continua"
+        },
+        "publish_content": {
+            "button": "Pubblica",
+            "snackbar": {
+                "success_message": "Contenuto pubblicato con successo!",
+                "update_success_message": "Contenuto aggiornato con successo!"
+            }
+        },
+        "time_limit_reached": {
+            "title": "tempo scaduto...\ngoback. to life",
+            "button": "GoBack"
+        }
+    },
+    "permission": {
+        "permanently_denied": {
+            "title": "Permesso bloccato",
+            "message": "Per continuare, consenti il permesso dalle impostazioni dell'app.",
+            "open_settings": "Apri impostazioni"
+        }
+    }
+}

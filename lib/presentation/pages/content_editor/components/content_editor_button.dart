@@ -1,0 +1,29 @@
+import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
+import 'package:cloudless/presentation/pages/content_editor/content_editor_layout.dart';
+import 'package:cloudless/presentation/pages/publish_content/publish_content_routable.dart';
+import 'package:cloudless/presentation/utilities/main_layout.dart';
+import 'package:dedecube_startup/dedecube_startup.dart';
+import 'package:flutter/material.dart';
+
+class ContentEditorButton extends StatelessWidget
+    with MainLayout, ContentEditorLayout {
+  const ContentEditorButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    return CallToAction.primary.filled(
+      horizontalMargin: 0,
+      action: () {
+        router.push(const PublishContentRoutable());
+      },
+      label: Text(
+        translator.translate('pages.content_editor.button'),
+        style: textTheme.titleLarge?.copyWith(color: colorScheme.primary),
+      ),
+    );
+  }
+}

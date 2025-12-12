@@ -1,0 +1,37 @@
+name: dedecube_startup
+description: "Dedecube Startup is a robust initialization package designed to
+  ensure a seamless application startup process."
+publish_to: "none"
+
+version: 0.0.32
+
+environment:
+  sdk: ^3.5.3
+  flutter: ">=1.17.0"
+
+dependencies:
+  dedecube_core:
+    path: ../dedecube_core
+  dedecube_environment:
+    path: ../dedecube_environment
+  dedecube_logger:
+    path: ../dedecube_logger
+  dedecube_router:
+    path: ../dedecube_router
+  dedecube_storage:
+    path: ../dedecube_storage
+  dedecube_themify:
+    path: ../dedecube_themify
+  dedecube_translator:
+    path: ../dedecube_translator
+  flutter:
+    sdk: flutter
+  riverpod_annotation: ^2.6.1
+
+dev_dependencies:
+  build_runner: ^2.4.15
+  custom_lint: ^0.7.5
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+  riverpod_generator: ^2.6.5

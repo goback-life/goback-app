@@ -1,0 +1,42 @@
+app:
+  ide: vscode
+
+flavors:
+  prestage:
+    flavorName: "prestage"
+    app:
+      name: "goback ."
+    android:
+      applicationId: "com.dedecube.prestage.cloudless"
+      firebase:
+        config: "config/prestage/google-services.json"
+    ios:
+      bundleId: "com.dedecube.prestage.cloudless"
+      firebase:
+        config: "config/prestage/GoogleService-Info.plist"
+
+  stage:
+    flavorName: "stage"
+    app:
+      name: "goback ."
+    android:
+      applicationId: "com.dedecube.stage.cloudless"
+      firebase:
+        config: "config/stage/google-services.json"
+    ios:
+      bundleId: "com.dedecube.stage.cloudless"
+      firebase:
+        config: "config/stage/GoogleService-Info.plist"
+
+  production:
+    flavorName: "production"
+    app:
+      name: "goback ."
+    android:
+      applicationId: "com.goback.app"
+      firebase:
+        config: "config/production/google-services.json"
+    ios:
+      bundleId: "com.goback.app"
+      firebase:
+        config: "config/production/GoogleService-Info.plist"

@@ -1,0 +1,10 @@
+//
+//  InfoPlist.strings
+//
+//  Copyright © 2020 Dedecube. All rights reserved.
+//
+
+"NSCameraUsageDescription" = "goback . usa la fotocamera per catturare i tuoi momenti speciali da condividere con la tua cerchia. Potrai scattare foto e registrare video direttamente dall'app.";
+"NSMicrophoneUsageDescription" = "goback . usa il microfono per registrare l'audio dei tuoi video, rendendo i tuoi ricordi ancora più vividi e autentici.";
+"NSPhotoLibraryUsageDescription" = "goback . accede alla tua libreria foto per permetterti di scegliere e condividere i tuoi ricordi preferiti con i tuoi amici più stretti.";
+"NSContactsUsageDescription" = "goback . usa i tuoi contatti per aiutarti a trovare e invitare facilmente i tuoi amici più stretti nella tua cerchia. Non condivideremo mai i tuoi contatti senza il tuo consenso.";

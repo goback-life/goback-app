@@ -1,0 +1,36 @@
+import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
+import 'package:cloudless/presentation/pages/content_editor/content_editor_routable.dart';
+import 'package:cloudless/presentation/pages/create_profile/create_profile_routable.dart';
+import 'package:cloudless/presentation/pages/edit_profile/edit_profile_routable.dart';
+import 'package:cloudless/presentation/pages/external_profile/external_profile_routable.dart';
+import 'package:cloudless/presentation/pages/home/home_routable.dart';
+import 'package:cloudless/presentation/pages/invite_to_circle/invite_to_circle_routable.dart';
+import 'package:cloudless/presentation/pages/join_circle/join_circle_routable.dart';
+import 'package:cloudless/presentation/pages/objective/objective_routable.dart';
+import 'package:cloudless/presentation/pages/otp/otp_routable.dart';
+import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
+import 'package:cloudless/presentation/pages/publish_content/publish_content_routable.dart';
+import 'package:cloudless/presentation/pages/settings/settings_routable.dart';
+import 'package:cloudless/presentation/pages/sign_in/sign_in_routable.dart';
+import 'package:cloudless/presentation/pages/time_limit_reached/time_limit_reached_routable.dart';
+import 'package:cloudless/presentation/pages/your_circle/your_circle_routable.dart';
+import 'package:dedecube_startup/dedecube_startup.dart';
+
+final List<BaseRoutable> routes = [
+  const ObjectiveRoutable(),
+  const SignInRoutable(),
+  const OtpRoutable(),
+  const CreateProfileRoutable(),
+  const HomeRoutable(),
+  const ProfileRoutable(),
+  const EditProfileRoutable(),
+  const SettingsRoutable(),
+  const CircleProfileRoutable(),
+  const ExternalProfileRoutable(),
+  const YourCircleRoutable(),
+  const InviteToCircleRoutable(),
+  const JoinCircleRoutable(),
+  const ContentEditorRoutable(),
+  const PublishContentRoutable(),
+  const TimeLimitReachedRoutable(),
+];

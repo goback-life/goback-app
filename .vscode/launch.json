@@ -1,0 +1,78 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Prestage",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "-t",
+                "lib/main.dart",
+                "--flavor",
+                "prestage"
+            ],
+            "preLaunchTask": "build_runner: clean and watch",
+            "postDebugTask": "Terminate All Tasks"
+        },
+        {
+            "name": "Prestage - Manual",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "-t",
+                "lib/main.dart",
+                "--flavor",
+                "prestage"
+            ]
+        },
+        {
+            "name": "Stage",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "args": [
+                "-t",
+                "lib/main.dart",
+                "--flavor",
+                "stage"
+            ],
+            "preLaunchTask": "build_runner: clean and watch",
+            "postDebugTask": "Terminate All Tasks"
+        },
+        {
+            "name": "Stage - Manual",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "-t",
+                "lib/main.dart",
+                "--flavor",
+                "stage"
+            ]
+        },
+        {
+            "name": "Production",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "-t",
+                "lib/main.dart",
+                "--flavor",
+                "production"
+            ],
+            "preLaunchTask": "build_runner: clean and watch",
+            "postDebugTask": "Terminate All Tasks"
+        },
+        {
+            "name": "Production - Manual",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "-t",
+                "lib/main.dart",
+                "--flavor",
+                "production"
+            ]
+        }
+    ]
+}

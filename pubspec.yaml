@@ -1,0 +1,125 @@
+name: cloudless
+description: "A Flutter app for sharing temporary content in private circles."
+publish_to: "none"
+
+version: 1.0.1+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  awesome_emoji_picker: ^1.0.5
+  cached_network_image: ^3.4.1
+  dedecube_core:
+    path: ./packages/dedecube_core
+  dedecube_form:
+    path: ./packages/dedecube_form
+  dedecube_presentation:
+    path: ./packages/dedecube_presentation
+  dedecube_startup:
+    path: ./packages/dedecube_startup
+  firebase_core: ^3.15.1
+  firebase_crashlytics: ^4.3.9
+  flutter:
+    sdk: flutter
+  flutter_contacts: ^1.1.9+2
+  flutter_image_compress: ^2.4.0
+  flutter_native_splash: ^2.4.6
+  flutter_timezone: ^5.0.1
+  http: ^1.5.0
+  image: ^4.5.4
+  image_cropper: ^11.0.0
+  image_picker: ^1.2.0
+  intl: ^0.20.2
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  permission_handler: ^12.0.1
+  phone_form_field: ^10.0.11+13
+  riverpod_annotation: ^2.6.1
+  styled_text: ^8.1.0
+  supabase_flutter: ^2.10.1
+  timezone: ^0.10.1
+  top_snackbar_flutter: ^3.3.0
+  url_launcher: ^6.3.2
+  vector_math: ^2.1.4
+  video_player: ^2.10.0
+  video_thumbnail: ^0.5.6
+
+dev_dependencies:
+  build_runner: ^2.5.4
+  custom_lint: ^0.7.2
+  dedecube_custom_lints:
+    path: ./packages/dedecube_custom_lints
+  flutter_flavorizr: ^2.3.0
+  flutter_gen_runner: ^5.10.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+  freezed: ^3.0.6
+  icon_font_generator:
+    git:
+      url: https://github.com/dedecube/icon_font_generator.git
+      ref: 0c03353
+  json_serializable: ^6.9.5
+  pyramid_lint: ^2.2.0
+  riverpod_generator: ^2.6.1
+  riverpod_lint: ^2.6.3
+
+dependency_overrides:
+  intl: 0.19.0
+
+flutter:
+  uses-material-design: true
+  generate: false
+
+  assets:
+    - assets/translations/
+    - assets/images/pngs/
+    - assets/images/fonts/
+    - assets/fonts/
+    - assets/images/svgs/
+    - assets/images/svgs_src/
+    - path: .env
+
+  fonts:
+    - family: "Icons"
+      fonts:
+        - asset: assets/images/fonts/icons.otf
+    - family: Geist
+      fonts:
+        # 100: Thin, the least thick
+        - asset: assets/fonts/geist/Geist-Thin.ttf
+          weight: 100
+        # 200: Extra-light
+        - asset: assets/fonts/geist/Geist-ExtraLight.ttf
+          weight: 200
+        # 300: Light
+        - asset: assets/fonts/geist/Geist-Light.ttf
+          weight: 300
+        # 400: Normal / regular / plain
+        - asset: assets/fonts/geist/Geist-Regular.ttf
+          weight: 400
+        # 500: Medium
+        - asset: assets/fonts/geist/Geist-Medium.ttf
+          weight: 500
+        # 600: Semi-bold
+        - asset: assets/fonts/geist/Geist-SemiBold.ttf
+          weight: 700
+        # 700: Bold
+        - asset: assets/fonts/geist/Geist-Bold.ttf
+          weight: 700
+        # 800: Extra-bold
+        - asset: assets/fonts/geist/Geist-ExtraBold.ttf
+          weight: 800
+        # 900: Black, the most thick
+        - asset: assets/fonts/geist/Geist-Black.ttf
+          weight: 900
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/pngs/app_icon_full.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/images/pngs/app_icon_foreground.png"

@@ -1,0 +1,384 @@
+{
+    "components": {
+        "alert": {
+            "paste_otp_dialog": {
+                "title": "Code Detected",
+                "content": "Do you want to paste <bold>{code}</bold>?",
+                "paste": "Paste",
+                "cancel": "Cancel"
+            },
+            "delete_account": {
+                "title": "Are you sure you want to delete your account?",
+                "content": "You will lose all your memories and circles, are you sure you want to proceed?",
+                "delete": "Yes, delete the account",
+                "cancel": "I changed my mind",
+                "error_title": "Error",
+                "error_content": "An error occurred while deleting your account. Please try again later.",
+                "ok": "OK"
+            },
+            "logout_error": {
+                "title": "Logout Error",
+                "content": "Please try again later."
+            },
+            "remove_error": {
+                "title": "Remove Friend Error",
+                "content": "Please try again later."
+            },
+            "post_error": {
+                "title": "An error occurred",
+                "error_message": "Error publishing post. \nPlease try again.",
+                "update_error_message": "Error updating post. \nPlease try again."
+            },
+            "calendar_error": {
+                "error_title": "Error",
+                "error_content": "An error occurred. Please try again later.",
+                "add_error_content": "Unable to add post to calendar. Please try again.",
+                "remove_error_content": "Unable to remove post from calendar. Please try again."
+            },
+            "username_not_available": {
+                "title": "Username not available",
+                "content": "The chosen username is already in use. Please choose another username."
+            },
+            "connection_error": {
+                "title": "Connection Error",
+                "content": "Please check your internet connection and try again."
+            },
+            "too_many_requests": {
+                "title": "Too Many Requests",
+                "content": "You have made too many requests. Please wait a moment before trying again."
+            },
+            "unknown_error": {
+                "title": "Unknown Error",
+                "content": "An unexpected error occurred. Please try again."
+            },
+            "generic_error": {
+                "title": "Error",
+                "content": "An error occurred. Please try again later."
+            },
+            "session_expired": {
+                "title": "Session Expired",
+                "content": "Your session has expired. Please sign in again."
+            },
+            "remove_confirmation": {
+                "title": "Do you want to remove this friend?",
+                "content": "True bonds deserve attention.\nIf you remove them, you will no longer see your moments here... but you can always create new ones.",
+                "confirm": "Remove Friend",
+                "cancel": "I changed my mind"
+            },
+            "join_circle": {
+                "title": "Do you want to join @{username}?",
+                "content": "Enter and, if you want, you can leave at any time.",
+                "confirm": "I want to join",
+                "cancel": "I changed my mind"
+            },
+            "image_selection_error": "Error selecting image. Please try again.",
+            "confirm_button": "OK",
+            "cancel": "No"
+        },
+        "image_picker_sheet": {
+            "title": "Select image",
+            "camera": "Take new photo",
+            "gallery": "Upload new photo",
+            "cancel": "Cancel"
+        },
+        "media_source_picker_sheet": {
+            "title": "Select source",
+            "title_image": "Choose image",
+            "title_video": "Choose video",
+            "capture": "Capture",
+            "library": "Library",
+            "cancel": "Cancel"
+        },
+        "media_type_picker_sheet": {
+            "title": "Select type",
+            "photo": "Photo",
+            "video": "Video",
+            "cancel": "Cancel"
+        },
+        "image_cropper": {
+            "title": "Crop image",
+            "done": "Done",
+            "cancel": "Cancel"
+        },
+        "unsupported_image_format": {
+            "title": "Unsupported format",
+            "content": "Only JPG, JPEG, and PNG formats are supported. Please select a different image."
+        },
+        "searchbar": {
+            "search_placeholder": "Search...",
+            "no_results": "No results found"
+        },
+        "post_actions_menu": {
+            "edit": "Edit",
+            "delete": "Delete",
+            "hide": "Hide",
+            "report": "Report"
+        },
+        "full_screen_image": {
+            "flipping_image": "Flipping image..."
+        },
+        "full_screen_image_flip_menu": {
+            "flip_horizontal": "Flip Horizontal",
+            "flip_vertical": "Flip Vertical"
+        },
+        "delete_post": {
+            "title": "Do you want to permanently delete this post?",
+            "content": "The post will be deleted and cannot be restored",
+            "confirm": "Yes, delete the post",
+            "cancel": "I changed my mind",
+            "error_title": "Error",
+            "error_content": "An error occurred while deleting the post. Please try again later."
+        },
+        "hide_post": {
+            "title": "Do you want to permanently hide this post?",
+            "content": "The post will be hidden and cannot be restored",
+            "confirm": "Yes, hide the post",
+            "cancel": "I changed my mind",
+            "error_title": "Error",
+            "error_content": "An error occurred while hiding the post. Please try again later."
+        },
+        "post_report_modal": {
+            "title": "Send a report",
+            "subtitle": "Select the reason you are reporting \nthis post",
+            "reasons": {
+                "nudity": "Nudity or sexual content",
+                "shocking_content": "Shocking or disturbing content",
+                "hate_speech": "Hate speech or incitement",
+                "bullying": "Bullying or harassment",
+                "spam": "Spam or misleading content",
+                "changed_mind": "I changed my mind"
+            }
+        },
+        "report_post": {
+            "success_content": "Thank you for your report. We will review the content as soon as possible.",
+            "already_reported_title": "Post already reported",
+            "already_reported_content": "You have already reported this post before.",
+            "error_title": "Error",
+            "error_content": "An error occurred while submitting the report. Please try again later."
+        },
+        "frame_picker": {
+            "confirm_frame": "Pick frame"
+        },
+        "profile_actions_menu": {
+            "report": "Report",
+            "remove": "Remove",
+            "block": "Block"
+        },
+        "block_user": {
+            "confirmation_title": "Do you want to block this user?",
+            "confirmation_content": "The user will be reported and removed from your circle. You won't be able to see their content and they won't be able to see yours.",
+            "confirm": "Yes, block",
+            "cancel": "I changed my mind",
+            "success_content": "User blocked successfully.",
+            "error_title": "Error",
+            "error_content": "An error occurred while blocking the user. Please try again later."
+        },
+        "user_report_modal": {
+            "title": "Report user",
+            "subtitle": "Select the reason you are reporting \nthis user",
+            "reasons": {
+                "harassment": "Harassment or bullying",
+                "hate_speech": "Hate speech or incitement",
+                "inappropriate_content": "Inappropriate content",
+                "spam": "Spam or scam",
+                "impersonation": "Impersonation",
+                "changed_mind": "I changed my mind"
+            }
+        },
+        "report_user": {
+            "success_content": "Thank you for your report. We will review the user as soon as possible.",
+            "already_reported_title": "User already reported",
+            "already_reported_content": "You have already reported this user before.",
+            "error_title": "Error",
+            "error_content": "An error occurred while submitting the report. Please try again later."
+        }
+    },
+    "pages": {
+        "error_view": {
+            "title": "Oh no!",
+            "description": "It seems there was a network connection issue and we can't load the data.",
+            "retry": "Try Again"
+        },
+        "verify_phone": {
+            "snackbars": {
+                "success": "Verification code sent successfully",
+                "error": "Error sending the code"
+            }
+        },
+        "objective": {
+            "title": "The Project",
+            "description": "Let's \"go back\" to living!\n\n•   You have {shortMinutes} or {longMinutes} minutes per day on the app\n•   Save one of your memories per day\n•    You can invite your phone contacts only\n\nAfter {longMinutes} minutes you have no more excuses, goback. to life. Every midnight the feed is reset, goback. to sharing with no pressure, you only have your close friends here!\n\n<bold>goback. to life</bold>",
+            "button": "Continue"
+        },
+        "sign_in": {
+            "title": "Log in",
+            "privacy_text": "I accept <privacy>Privacy policy</privacy> and <terms>Terms of use</terms>",
+            "privacy_policy_url": "https://www.iubenda.com/privacy-policy/66024372",
+            "terms_of_service_url": "https://www.iubenda.com/terms-and-conditions/66024372",
+            "label": "Phone number",
+            "button": "Continue",
+            "initial_phone_value": "+1",
+            "error": {
+                "phone_required": "Please enter your phone number",
+                "phone_invalid": "Phone number format is not valid"
+            }
+        },
+        "otp": {
+            "title": "We just sent you an SMS",
+            "description": "Please enter the security code sent to the number ",
+            "resend_code": "Didn’t receive the code?",
+            "button": "Submit",
+            "alert": {
+                "invalid_code": {
+                    "title": "Invalid Code",
+                    "content": "The code you entered is incorrect. Please try again."
+                },
+                "banned": {
+                    "title": "User Banned",
+                    "content": "Your account has been banned. Please contact support for more information."
+                }
+            },
+            "resend_texts": {
+                "sending": "Sending..."
+            }
+        },
+        "create_profile": {
+            "title": "Create your profile",
+            "edit_image": "Edit",
+            "username": "Username",
+            "description": "Bio",
+            "button": "Save",
+            "error": {
+                "username_invalid": "You can only use letters, numbers, . and _",
+                "username_required": "Enter the username",
+                "username_too_short": "Minimum 3 characters"
+            }
+        },
+        "home": {
+            "title": "Home",
+            "feed_empty_box": {
+                "title": "Start living @{username}",
+                "description": "Sharing is even more beautiful with those who really matter: start now and create your first unforgettable memory of today.",
+                "create_content_button": "Share now"
+            },
+            "no_circle_box": {
+                "title": "Hi @{username}",
+                "description": "Invite your close friends and goback. to life"
+            },
+            "time_limit": {
+                "minutes_format": "{minutes}",
+                "alert": {
+                    "cannot_decrease": {
+                        "title": "Cannot Change Limit",
+                        "content": "You cannot decrease the limit when you have already exceeded the required minutes. Try again tomorrow."
+                    }
+                }
+            }
+        },
+        "profile": {
+            "title": "Profile",
+            "image": {
+                "placeholder": "U"
+            },
+            "username": {
+                "loading": "Loading...",
+                "error": "Unable to display the username"
+            },
+            "description": {
+                "placeholder": "Bio",
+                "error": "Unable to display the description"
+            },
+            "button": "Edit Profile",
+            "calendar": {
+                "month_format": "{month} {year}"
+            }
+        },
+        "settings": {
+            "title": "Settings",
+            "account": "Account",
+            "phone_number": "Number: ",
+            "phone_number_error": "Unable to display the phone number",
+            "delete_data": "Delete data",
+            "preferences": "Preferences",
+            "objective": "Objective",
+            "notifications": "Notifications",
+            "assistance_legal": "Assistance and Legal",
+            "assistance": "Assistance",
+            "assistance_url": "https://goback.life",
+            "privacy_policy": "Privacy and policy",
+            "terms_conditions": "Terms and Conditions",
+            "logout": "Logout"
+        },
+        "edit_profile": {
+            "title": "Edit Profile",
+            "edit_image": "Edit",
+            "username": "Username",
+            "description": "Bio",
+            "button": "Save"
+        },
+        "circle_profile": {
+            "title": "Friend",
+            "button": "Call"
+        },
+        "external_profile": {
+            "title": "User"
+        },
+        "your_circle": {
+            "title": "Your circle",
+            "box": {
+                "title": "A special place",
+                "description": "Invite your close friends only",
+                "invite_button": "Invite to your circle",
+                "join_button": "Join a circle"
+            },
+            "empty": "You don't have anyone in your circle yet, invite a friend now!",
+            "loading_members": "Loading members..."
+        },
+        "invite_to_circle": {
+            "title": "Invite to your circle",
+            "no_contacts_available": "No contacts available with phone number",
+            "permission_description": "We need access to your contacts to invite your friends to the circle",
+            "generating_code": "Generating invite code...",
+            "code_generation_failed": "Invite code generation failed. Please try again later.",
+            "sms_message": "Join @{username}'s circle on goback . The code to join is: {code}"
+        },
+        "join_circle": {
+            "title": "Join a circle",
+            "subtitle": "Enter the code you received via SMS",
+            "description": "Join your new circle, they are waiting for you!",
+            "button": "Send",
+            "error": {
+                "title": "An error occurred",
+                "invalid_code": "The invite code has expired or is invalid",
+                "already_in_circle": "You are already in this circle",
+                "connect_yourself": "You cannot connect with yourself!"
+            }
+        },
+        "content_editor": {
+            "edit_content": "Edit",
+            "hint_text": "Tell about this moment...",
+            "character_count": "{current}/{max}",
+            "tag_users": "Tag",
+            "user": "@{username}",
+            "button": "Continue"
+        },
+        "publish_content": {
+            "button": "Publish",
+            "snackbar": {
+                "success_message": "Content published successfully!",
+                "update_success_message": "Content updated successfully!"
+            }
+        },
+        "time_limit_reached": {
+            "title": "time's up...\ngoback. to life",
+            "button": "GoBack"
+        }
+    },
+    "permission": {
+        "permanently_denied": {
+            "title": "Permission Blocked",
+            "message": "To continue, allow permission from the app settings.",
+            "open_settings": "Open Settings"
+        }
+    }
+}

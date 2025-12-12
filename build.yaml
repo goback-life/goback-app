@@ -1,0 +1,37 @@
+builders:
+  icon_assets:
+    import: "package:cloudless/presentation/assets/utilities/icon_assets_builder.dart"
+    builder_factories: ["iconAssetsBuilder"]
+    build_extensions: { "lib/presentation/assets/utilities/icon_assets_builder.dart": ["lib/presentation/assets/icons_assets.gen.dart"] }
+    auto_apply: root_package
+    build_to: source
+
+targets:
+  $default:
+    builders:  
+      my_app|icon_assets:
+        generate_for:
+          - lib/presentation/assets/utilities/icon_assets_builder.dart
+      flutter_gen:
+        options:
+          output: lib/presentation/assets/
+          line_length: 80 
+
+          integrations:
+            image: true
+            flutter_svg: true
+
+          assets:
+            enabled: true
+            exclude:
+              - assets/images/branding_src/**
+              - assets/images/svgs_src/**
+              - assets/images/fonts/**
+              - assets/fonts/**
+              - assets/translations/**
+
+          fonts:
+            enabled: false
+
+          colors:
+            enabled: false    

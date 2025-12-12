@@ -1,0 +1,32 @@
+name: dedecube_form
+description: "A new Flutter package project."
+publish_to: "none"
+
+version: 0.0.25
+
+environment:
+  sdk: ^3.5.3
+  flutter: ">=1.17.0"
+
+dependencies:
+  dedecube_core:
+    path: ../dedecube_core
+  flutter:
+    sdk: flutter
+  intl: ^0.20.2
+  reactive_date_time_picker: ^5.0.1
+  reactive_forms: ^18.1.1
+  reactive_pin_code_fields:
+    git:
+      url: https://github.com/f-dedecube/reactive_forms_widgets.git
+      path: packages/reactive_pin_code_fields
+      ref: master
+  riverpod_annotation: ^2.6.1
+
+dev_dependencies:
+  build_runner: ^2.4.15
+  custom_lint: ^0.7.5
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+  riverpod_generator: ^2.6.5
