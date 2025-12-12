@@ -236,65 +236,51 @@ packages:
   dedecube_core:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "v0.0.20"
-      resolved-ref: "8214e2a528ab404baf553235ba237669a65eb9bf"
-      url: "git@github.com:dedecube/dedecube-core.git"
-    source: git
+      path: "../dedecube_core"
+      relative: true
+    source: path
     version: "0.0.20"
   dedecube_environment:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "v0.0.23"
-      resolved-ref: "09ca2cc14ae2500245d14eda688f21b327f52969"
-      url: "git@github.com:dedecube/dedecube-environment.git"
-    source: git
+      path: "../dedecube_environment"
+      relative: true
+    source: path
     version: "0.0.23"
   dedecube_logger:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "v0.0.25"
-      resolved-ref: cf66e6c9582d8fcc2b9632f8641cf4e72d344ff5
-      url: "git@github.com:dedecube/dedecube-logger.git"
-    source: git
+      path: "../dedecube_logger"
+      relative: true
+    source: path
     version: "0.0.25"
   dedecube_router:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "v0.0.28"
-      resolved-ref: "92dee3869072d3d06498407a67b366f3bf03bef8"
-      url: "git@github.com:dedecube/dedecube-router.git"
-    source: git
+      path: "../dedecube_router"
+      relative: true
+    source: path
     version: "0.0.28"
   dedecube_storage:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "v0.0.17"
-      resolved-ref: "080758aa80ee648a66c8889c1f882aba5635530a"
-      url: "git@github.com:dedecube/dedecube-storage.git"
-    source: git
+      path: "../dedecube_storage"
+      relative: true
+    source: path
     version: "0.0.17"
   dedecube_themify:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "v0.0.17"
-      resolved-ref: e402718cade97628bb48b941bde68ff4b049b724
-      url: "git@github.com:dedecube/dedecube-themify.git"
-    source: git
+      path: "../dedecube_themify"
+      relative: true
+    source: path
     version: "0.0.17"
   dedecube_translator:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "v0.0.15"
-      resolved-ref: ffb5f576897fc0f4a34c4bcda3a11293e88cc5c3
-      url: "git@github.com:dedecube/dedecube-translator.git"
-    source: git
+      path: "../dedecube_translator"
+      relative: true
+    source: path
     version: "0.0.15"
   dio:
     dependency: transitive
