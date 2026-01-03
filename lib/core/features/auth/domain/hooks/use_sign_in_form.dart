@@ -51,7 +51,10 @@ SignInFormResult useSignInForm(WidgetRef ref) {
           .handleSupabaseException(context: ref.context, exception: error);
 
       if (!handled) {
-        logger.error('Sign in failed: unknown error');
+        logger.error(
+          'Sign in failed: unknown error',
+          exception: error,
+        );
         MainAlert.showGenericError(context: ref.context);
       }
     },
