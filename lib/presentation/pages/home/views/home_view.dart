@@ -64,7 +64,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
     // Polling: Refresh circle members
     useEffect(() {
-      final timer = Timer.periodic(const Duration(seconds: 30), (_) {
+      final timer = Timer.periodic(const Duration(seconds: 15), (_) {
         ref.invalidate(getCircleMembersProvider);
       });
 

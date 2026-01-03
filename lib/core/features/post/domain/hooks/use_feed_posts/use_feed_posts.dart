@@ -64,7 +64,7 @@ FeedPostsResult useFeedPosts(
       newestPostTimestamp: newestPostTimestamp,
       newPostsCount: newPostsCount,
     ),
-    interval: const Duration(seconds: 30),
+    interval: const Duration(seconds: 15),
   );
 
   final updatePollingController = usePollingController(
@@ -73,7 +73,7 @@ FeedPostsResult useFeedPosts(
       userId: userId,
       posts: posts,
     ),
-    interval: const Duration(seconds: 30),
+    interval: const Duration(seconds: 15),
   );
 
   useEffect(() {
