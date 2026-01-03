@@ -30,6 +30,8 @@ class HomeFeedPostCard extends StatelessWidget
 
     final displayImageUrl = post.imageUrl ?? '';
 
+    final textTheme = theme.textTheme;
+
     return Padding(
       padding: EdgeInsets.only(top: feedPostTopPadding),
       child: Row(
@@ -37,54 +39,70 @@ class HomeFeedPostCard extends StatelessWidget
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
         children: [
-          GestureDetector(
-            onTap: onTap,
-            child: Container(
-              margin: EdgeInsets.only(
-                left: isCurrentUser ? 0 : feedPostOtherUserMarginLeft,
-                right: isCurrentUser ? feedPostCurrentUserMarginRight : 0,
-              ),
-              width: feedPostWidth,
-              child: AspectRatio(
-                aspectRatio: aspectRatio,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(feedPostImageRadius),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      CachedNetworkImage(
-                        imageUrl: displayImageUrl,
-                        fit: BoxFit.cover,
-                        fadeInDuration: const Duration(milliseconds: 200),
-                        fadeOutDuration: const Duration(milliseconds: 100),
-                        memCacheWidth: (feedPostWidth * 2).toInt(),
-                        memCacheHeight: ((feedPostWidth * 2) / aspectRatio)
-                            .toInt(),
-                        placeholder: (context, url) => Stack(
-                          children: [
-                            Container(color: colorScheme.surface),
-                            Positioned(
-                              top: placeholderPadding,
-                              left: placeholderPadding,
-                              child: isVideo
-                                  ? Assets.svg.placeholderVideo.render()
-                                  : Assets.svg.placeholderImage.render(),
+          Container(
+            margin: EdgeInsets.only(
+              left: isCurrentUser ? 0 : feedPostOtherUserMarginLeft,
+              right: isCurrentUser ? feedPostCurrentUserMarginRight : 0,
+            ),
+            width: feedPostWidth,
+            child: Column(
+              crossAxisAlignment: isCurrentUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: onTap,
+                  child: AspectRatio(
+                    aspectRatio: aspectRatio,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(feedPostImageRadius),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          CachedNetworkImage(
+                            imageUrl: displayImageUrl,
+                            fit: BoxFit.cover,
+                            fadeInDuration: const Duration(milliseconds: 200),
+                            fadeOutDuration: const Duration(milliseconds: 100),
+                            memCacheWidth: (feedPostWidth * 2).toInt(),
+                            memCacheHeight: ((feedPostWidth * 2) / aspectRatio)
+                                .toInt(),
+                            placeholder: (context, url) => Stack(
+                              children: [
+                                Container(color: colorScheme.surface),
+                                Positioned(
+                                  top: placeholderPadding,
+                                  left: placeholderPadding,
+                                  child: isVideo
+                                      ? Assets.svg.placeholderVideo.render()
+                                      : Assets.svg.placeholderImage.render(),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        errorWidget: (context, url, error) =>
-                            Container(color: colorScheme.surface),
-                      ),
-                      if (isVideo)
-                        Center(
-                          child: Assets.svg.play.render(
-                            colorFilter: colorScheme.primary.asSrcIn,
+                            errorWidget: (context, url, error) =>
+                                Container(color: colorScheme.surface),
                           ),
-                        ),
-                    ],
+                          if (isVideo)
+                            Center(
+                              child: Assets.svg.play.render(
+                                colorFilter: colorScheme.primary.asSrcIn,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 8.0),
+                Text(
+                  '@${post.authorUsername ?? 'Unknown'}',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14
+                  ),
+                ),
+              ],
             ),
           ),
         ],
