@@ -294,9 +294,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
                           onLoadMore: () {
                             feedPosts.loadMore();
                           },
-                          onRefresh: () {
-                            return feedPosts.refresh();
-                          },
+                          onRefresh: feedPosts.refresh,
                           onCreatePost: () {
                             postCreationInit.selectMainImage();
                           },

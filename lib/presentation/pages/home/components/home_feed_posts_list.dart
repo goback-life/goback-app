@@ -27,7 +27,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
   final bool isLoadingMore;
   final bool hasNextPage;
   final VoidCallback onLoadMore;
-  final VoidCallback onRefresh;
+  final Future<void> Function() onRefresh;
   final VoidCallback onCreatePost;
   final ScrollController? scrollController;
   final void Function(FeedPostModel post)? onPostTap;
@@ -68,21 +68,30 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     }
 
     if (posts.isEmpty) {
-      return SingleChildScrollView(
-        controller: effectiveScrollController,
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height -
-                MediaQuery.of(context).padding.top -
-                MediaQuery.of(context).padding.bottom,
+      final theme = Theme.of(context);
+      final colorScheme = theme.colorScheme;
+
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        color: colorScheme.primary,
+        backgroundColor: colorScheme.surface,
+        strokeWidth: 2.0,
+        child: SingleChildScrollView(
+          controller: effectiveScrollController,
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
           ),
-          child: Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-              child: const HomeFeedEmptyState(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height -
+                  MediaQuery.of(context).padding.top -
+                  MediaQuery.of(context).padding.bottom,
+            ),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: const HomeFeedEmptyState(),
+              ),
             ),
           ),
         ),
@@ -92,31 +101,40 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     final sortedPosts = List<FeedPostModel>.from(posts)
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-    return ListView.builder(
-      controller: effectiveScrollController,
-      reverse: true,
-      physics: const AlwaysScrollableScrollPhysics(
-        parent: BouncingScrollPhysics(),
-      ),
-      padding: EdgeInsets.only(
-        bottom:
-            MediaQuery.of(context).padding.bottom + feedPostsListBottomPadding,
-      ),
-      itemCount: sortedPosts.length + (isLoadingMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == sortedPosts.length) {
-          return const SizedBox.shrink();
-        }
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-        final post = sortedPosts[index];
-        final isCurrentUser = post.authorId == currentUserId;
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      color: colorScheme.primary,
+      backgroundColor: colorScheme.surface,
+      strokeWidth: 2.0,
+      child: ListView.builder(
+        controller: effectiveScrollController,
+        reverse: true,
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        padding: EdgeInsets.only(
+          bottom:
+              MediaQuery.of(context).padding.bottom + feedPostsListBottomPadding,
+        ),
+        itemCount: sortedPosts.length + (isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == sortedPosts.length) {
+            return const SizedBox.shrink();
+          }
 
-        return HomeFeedPostCard(
-          post: post,
-          isCurrentUser: isCurrentUser,
-          onTap: onPostTap != null ? () => onPostTap!(post) : null,
-        );
-      },
+          final post = sortedPosts[index];
+          final isCurrentUser = post.authorId == currentUserId;
+
+          return HomeFeedPostCard(
+            post: post,
+            isCurrentUser: isCurrentUser,
+            onTap: onPostTap != null ? () => onPostTap!(post) : null,
+          );
+        },
+      ),
     );
   }
 }

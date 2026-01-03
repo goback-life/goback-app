@@ -18,7 +18,7 @@ typedef FeedPostsResult = ({
   int newPostsCount,
   String? errorMessage,
   VoidCallback loadMore,
-  VoidCallback refresh,
+  Future<void> Function() refresh,
   VoidCallback loadNewPosts,
 });
 
@@ -330,9 +330,9 @@ FeedPostsResult useFeedPosts(
     }
   }
 
-  void refresh() {
+  Future<void> refresh() async {
     if (userId.isNotEmpty && userId.trim().isNotEmpty) {
-      FeedPostsActions.loadInitialPosts(
+      await FeedPostsActions.loadInitialPosts(
         ref: ref,
         userId: userId,
         isLoading: isLoading,
