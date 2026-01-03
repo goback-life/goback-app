@@ -68,10 +68,23 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     }
 
     if (posts.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: const HomeFeedEmptyState(),
+      return SingleChildScrollView(
+        controller: effectiveScrollController,
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height -
+                MediaQuery.of(context).padding.top -
+                MediaQuery.of(context).padding.bottom,
+          ),
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: const HomeFeedEmptyState(),
+            ),
+          ),
         ),
       );
     }
@@ -82,6 +95,9 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     return ListView.builder(
       controller: effectiveScrollController,
       reverse: true,
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
       padding: EdgeInsets.only(
         bottom:
             MediaQuery.of(context).padding.bottom + feedPostsListBottomPadding,
