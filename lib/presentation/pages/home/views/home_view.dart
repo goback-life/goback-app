@@ -62,14 +62,18 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
     final circleMembersData = useCircleMembers(ref);
 
-    // Polling: Refresh circle members
+    // Polling: Refresh circle members (start after initial load completes)
     useEffect(() {
-      final timer = Timer.periodic(const Duration(seconds: 15), (_) {
-        ref.invalidate(getCircleMembersProvider);
-      });
+      // Wait for initial load to complete before starting polling
+      if (!circleMembersData.isLoading && circleMembersData.allUsers.isNotEmpty) {
+        final timer = Timer.periodic(const Duration(seconds: 15), (_) {
+          ref.invalidate(getCircleMembersProvider);
+        });
 
-      return timer.cancel;
-    }, []);
+        return timer.cancel;
+      }
+      return null;
+    }, [circleMembersData.isLoading, circleMembersData.allUsers.isNotEmpty]);
 
     // Listen to scroll position
     useEffect(
@@ -244,14 +248,21 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
         }
 
         // Build home content with current data
+        // Show feed if it has posts OR if it has finished loading (even if empty)
+        // Only show circle actions if we know for sure there are no members (not just if loading)
+        final hasFeedReady = feedPosts.posts.isNotEmpty || (!feedPosts.isLoading && feedPosts.posts.isEmpty);
+        final hasCircleMembers = circleMembersData.allUsers.isNotEmpty;
+        final knowsNoCircleMembers = !circleMembersData.isLoading && circleMembersData.allUsers.isEmpty;
+        
         return _buildHomeContent(
           context,
           ref,
           postCreationInitialization,
           feedPosts,
           userId!,
-          circleMembersData.allUsers.isNotEmpty,
+          hasFeedReady || hasCircleMembers, // Show feed if ready OR if we have members
           circleMembersData.isLoading,
+          knowsNoCircleMembers, // Only show circle actions if we know there are no members
           scrollController,
           onBannerTap,
           onScrollToBottom,
@@ -268,8 +279,9 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     PostCreationInitializationResult postCreationInit,
     FeedPostsResult feedPosts,
     String currentUserId,
-    bool hasCircleMembers,
-    bool isLoading,
+    bool showFeed,
+    bool circleMembersLoading,
+    bool knowsNoCircleMembers,
     ScrollController scrollController,
     VoidCallback onNewPostsBannerTap,
     VoidCallback onScrollToBottom,
@@ -282,35 +294,18 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
-            hasCircleMembers
-                ? (feedPosts.isLoading && feedPosts.posts.isEmpty
-                      ? const Center(child: CircularProgressIndicator())
-                      : HomeFeedPostsList(
-                          posts: feedPosts.posts,
-                          currentUserId: currentUserId,
-                          isLoading: feedPosts.isLoading,
-                          isLoadingMore: feedPosts.isLoadingMore,
-                          hasNextPage: feedPosts.hasNextPage,
-                          onLoadMore: () {
-                            feedPosts.loadMore();
-                          },
-                          onRefresh: feedPosts.refresh,
-                          onCreatePost: () {
-                            postCreationInit.selectMainImage();
-                          },
-                          scrollController: scrollController,
-                          onPostTap: (post) {
-                            _navigateToPostDetail(context, post);
-                          },
-                        ))
-                : (isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: horizontalPadding,
-                          ),
-                          child: HomeCircleActionsWidget(userId: currentUserId),
-                        )),
+            showFeed
+                ? _buildFeedContent(
+                    feedPosts: feedPosts,
+                    currentUserId: currentUserId,
+                    postCreationInit: postCreationInit,
+                    scrollController: scrollController,
+                    onPostTap: (post) => _navigateToPostDetail(context, post),
+                  )
+                : _buildCircleActionsContent(
+                    isLoading: circleMembersLoading && !knowsNoCircleMembers,
+                    currentUserId: currentUserId,
+                  ),
 
             if (!isAtTop)
               Positioned(
@@ -346,7 +341,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
             ),
           ],
         ),
-        floatingActionButton: hasCircleMembers && feedPosts.posts.isNotEmpty
+        floatingActionButton: showFeed && feedPosts.posts.isNotEmpty
             ? HomeCreateContentButton(
                 onPressed: () {
                   postCreationInit.selectMainImage();
@@ -355,6 +350,53 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
             : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
+    );
+  }
+
+  Widget _buildFeedContent({
+    required FeedPostsResult feedPosts,
+    required String currentUserId,
+    required PostCreationInitializationResult postCreationInit,
+    required ScrollController scrollController,
+    required void Function(FeedPostModel) onPostTap,
+  }) {
+    final showLoading = feedPosts.isLoading && feedPosts.posts.isEmpty;
+    
+    if (showLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    return HomeFeedPostsList(
+      posts: feedPosts.posts,
+      currentUserId: currentUserId,
+      isLoading: feedPosts.isLoading,
+      isLoadingMore: feedPosts.isLoadingMore,
+      hasNextPage: feedPosts.hasNextPage,
+      onLoadMore: () {
+        feedPosts.loadMore();
+      },
+      onRefresh: feedPosts.refresh,
+      onCreatePost: () {
+        postCreationInit.selectMainImage();
+      },
+      scrollController: scrollController,
+      onPostTap: onPostTap,
+    );
+  }
+
+  Widget _buildCircleActionsContent({
+    required bool isLoading,
+    required String currentUserId,
+  }) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+      ),
+      child: HomeCircleActionsWidget(userId: currentUserId),
     );
   }
 
