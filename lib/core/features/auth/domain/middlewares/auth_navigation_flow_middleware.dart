@@ -12,6 +12,7 @@ import 'package:cloudless/core/features/profile/data/storables/profile_completed
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
 import 'package:cloudless/core/features/profile/domain/providers/has_completed_profile_provider.dart';
 import 'package:cloudless/presentation/pages/create_profile/create_profile_routable.dart';
+import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/pages/objective/objective_routable.dart';
 import 'package:cloudless/presentation/pages/otp/otp_routable.dart';
 import 'package:cloudless/presentation/pages/sign_in/sign_in_routable.dart';
@@ -72,6 +73,7 @@ class AuthNavigationFlowMiddleware extends Middleware {
     const OtpRoutable(),
     const CreateProfileRoutable(),
     const TimeLimitReachedRoutable(),
+    const ManualLockoutRoutable(),
   ];
 
   @override

@@ -273,7 +273,8 @@
                         "content": "You cannot decrease the limit when you have already exceeded the required minutes. Try again tomorrow."
                     }
                 }
-            }
+            },
+            "go_back_button": "Go Back"
         },
         "profile": {
             "title": "Profile",
@@ -396,6 +397,17 @@
         "time_limit_reached": {
             "title": "time's up...\ngoback. to life",
             "button": "GoBack"
+        },
+        "manual_lockout": {
+            "title": "goback. to life",
+            "button": "GoBack",
+            "dialog": {
+                "title": "Lock yourself out",
+                "description": "Select how long you want to lock yourself out of the app (minimum 1 hour)",
+                "cancel": "Cancel",
+                "confirm": "Confirm",
+                "error": "Duration must be greater than 1 hour"
+            }
         }
     },
     "permission": {

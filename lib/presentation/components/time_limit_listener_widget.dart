@@ -1,4 +1,6 @@
+import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/time_limit/domain/providers/time_limit_tracker_notifier_provider.dart';
+import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/pages/time_limit_reached/time_limit_reached_routable.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -12,6 +14,17 @@ class TimeLimitListenerWidget extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Listen for manual lockout changes
+    ref.listen(manualLockoutNotifierProvider, (previous, next) {
+      next.whenData((lockoutState) {
+        if (lockoutState.isLockedOut &&
+            !(previous?.value?.isLockedOut ?? false)) {
+          logger.info('Manual lockout just activated - navigating to lockout screen');
+          router.go(const ManualLockoutRoutable());
+        }
+      });
+    });
+
     // Listen for limit reached events
     ref.listen(timeLimitTrackerNotifierProvider, (previous, next) {
       next.whenData((timeLimit) {

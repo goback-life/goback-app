@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloudless/core/config/time_limit_values.dart';
+import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/time_limit/data/providers/time_limit_storable_provider.dart';
 import 'package:cloudless/core/features/time_limit/data/providers/time_limit_usage_storable_provider.dart';
 import 'package:cloudless/core/features/time_limit/domain/models/time_limit_model.dart';
@@ -40,8 +41,14 @@ class TimeLimitTrackerNotifier extends _$TimeLimitTrackerNotifier {
 
     final model = await useCase.execute();
 
-    // Start tracking if limit not reached
-    if (!model.isLimitReached) {
+    // Check for manual lockout before starting tracking
+    final manualLockoutState = await ref.read(
+      manualLockoutNotifierProvider.future,
+    ).catchError((_) => null);
+
+    // Start tracking if limit not reached and not manually locked out
+    if (!model.isLimitReached &&
+        (manualLockoutState == null || !manualLockoutState.isLockedOut)) {
       startTracking();
     }
 
@@ -63,9 +70,23 @@ class TimeLimitTrackerNotifier extends _$TimeLimitTrackerNotifier {
     }
   }
 
-  void startTracking() {
+  Future<void> startTracking() async {
     if (_isTracking) {
       return;
+    }
+
+    // Check for manual lockout before starting
+    try {
+      final manualLockoutState = await ref.read(
+        manualLockoutNotifierProvider.future,
+      );
+      if (manualLockoutState.isLockedOut) {
+        logger.info('Manual lockout active - not starting time tracking');
+        return;
+      }
+    } catch (e) {
+      // If error reading lockout state, continue (don't block tracking)
+      logger.warning('Error checking manual lockout state: $e');
     }
 
     logger.info('Starting time limit tracking');
@@ -182,7 +203,7 @@ class TimeLimitTrackerNotifier extends _$TimeLimitTrackerNotifier {
 
     // Restart tracking if limit not reached
     if (!updatedModel.isLimitReached && !_isTracking) {
-      startTracking();
+      await startTracking();
     }
   }
 }
