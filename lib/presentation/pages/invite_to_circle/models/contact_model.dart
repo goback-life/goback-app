@@ -18,4 +18,14 @@ class ContactModel {
 
   String get firstLetter =>
       displayName.isNotEmpty ? displayName[0].toUpperCase() : '#';
+
+  /// Creates a ContactModel from a phone number string.
+  /// Used for manually entered phone numbers when inviting users.
+  static ContactModel fromPhoneNumber(String phoneNumber) {
+    return ContactModel(
+      id: phoneNumber,
+      displayName: phoneNumber,
+      phoneNumbers: [phoneNumber],
+    );
+  }
 }

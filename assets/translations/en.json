@@ -355,7 +355,14 @@
             "permission_description": "We need access to your contacts to invite your friends to the circle",
             "generating_code": "Generating invite code...",
             "code_generation_failed": "Invite code generation failed. Please try again later.",
-            "sms_message": "Join @{username}'s circle on goback . The code to join is: {code}"
+            "sms_message": "Join @{username}'s circle on goback . The code to join is: {code}",
+            "phone_number_label": "Phone number",
+            "send_invite_button": "Send invite",
+            "success_message": "Invite sent successfully!",
+            "error": {
+                "phone_required": "Please enter a phone number",
+                "phone_invalid": "Phone number format is not valid"
+            }
         },
         "join_circle": {
             "title": "Join a circle",

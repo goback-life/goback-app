@@ -1,15 +1,20 @@
 import 'package:cloudless/core/features/connection/domain/hooks/use_contact_with_permission.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_phone_contact.dart';
+import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
+import 'package:cloudless/presentation/components/form_field/custom_text_selection_controls.dart';
+import 'package:cloudless/presentation/components/form_field/input_decoration.dart';
 import 'package:cloudless/presentation/components/main_search_bar.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/components/invite_to_circle_contact_list.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/hooks/use_sms_launch.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/invite_to_circle_layout.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/models/contact_model.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/hooks/use_loading_overlay.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
+import 'package:phone_form_field/phone_form_field.dart';
 
 class InviteToCircleView extends HookConsumerWidget
     with MainLayout, InviteToCircleLayout {
@@ -26,6 +31,11 @@ class InviteToCircleView extends HookConsumerWidget
     final inviteSendingState = useSmsSender(ref);
 
     final isLoading = useState(false);
+
+    // Phone number input state
+    final phoneFormKey = useMemoized(() => GlobalKey<FormState>());
+    final phoneController = useMemoized(() => PhoneController());
+    final phoneValidationError = useState<String?>(null);
 
     useEffect(() {
       Future<void> loadContacts() async {
@@ -121,6 +131,36 @@ class InviteToCircleView extends HookConsumerWidget
       }
     }
 
+    Future<void> handleSendInviteToPhoneNumber() async {
+      phoneValidationError.value = null;
+
+      if (!phoneFormKey.currentState!.validate()) {
+        return;
+      }
+
+      final phoneNumber = phoneController.value;
+
+      // Validate phone number
+      final validator = PhoneValidator.validMobile(
+        context,
+        errorText: translator.translate(
+          'pages.invite_to_circle.error.phone_invalid',
+        ),
+      );
+      final validationError = validator(phoneNumber);
+      if (validationError != null) {
+        phoneValidationError.value = validationError;
+        return;
+      }
+
+      final phoneNumberString = phoneNumber.international;
+      final contact = ContactModel.fromPhoneNumber(phoneNumberString);
+      
+      if (!inviteSendingState.isLoading) {
+        await inviteSendingState.sendInvite(contact);
+      }
+    }
+
     if (filteredContactsData == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -146,6 +186,93 @@ class InviteToCircleView extends HookConsumerWidget
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: Column(
         children: [
+          // Phone number input section
+          Form(
+            key: phoneFormKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  translator.translate(
+                    'pages.invite_to_circle.phone_number_label',
+                  ),
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colorScheme.outline,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Theme(
+                  data: theme.copyWith(
+                    textTheme: theme.textTheme,
+                    appBarTheme: const AppBarTheme(
+                      backgroundColor: MainColors.white,
+                    ),
+                  ),
+                  child: PhoneFormField(
+                    selectionControls: CustomTextSelectionControls(),
+                    countrySelectorNavigator:
+                        const CountrySelectorNavigator.dialog(),
+                    onTapOutside: (event) =>
+                        FocusManager.instance.primaryFocus?.unfocus(),
+                    controller: phoneController,
+                    cursorColor: colorScheme.tertiary,
+                    decoration: inputDecoration(context, ''),
+                    validator: PhoneValidator.compose([
+                      PhoneValidator.required(
+                        context,
+                        errorText: translator.translate(
+                          'pages.invite_to_circle.error.phone_required',
+                        ),
+                      ),
+                      PhoneValidator.validMobile(
+                        context,
+                        errorText: translator.translate(
+                          'pages.invite_to_circle.error.phone_invalid',
+                        ),
+                      ),
+                    ]),
+                    isCountrySelectionEnabled: true,
+                    isCountryButtonPersistent: true,
+                    countryButtonStyle: CountryButtonStyle(
+                      showDialCode: true,
+                      showIsoCode: false,
+                      showFlag: true,
+                      textStyle: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    onChanged: (_) {
+                      phoneValidationError.value = null;
+                    },
+                  ),
+                ),
+                if (phoneValidationError.value != null) ...[
+                  SizedBox(height: 4),
+                  Text(
+                    phoneValidationError.value!,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.error,
+                    ),
+                  ),
+                ],
+                SizedBox(height: verticalSpacing / 2),
+                CallToAction.primary.filled(
+                  action: inviteSendingState.isLoading
+                      ? null
+                      : handleSendInviteToPhoneNumber,
+                  label: Text(
+                    translator.translate(
+                      'pages.invite_to_circle.send_invite_button',
+                    ),
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: verticalSpacing),
           MainSearchBar(
             searchQuery: searchQuery.value,
             onSearchChanged: (query) => searchQuery.value = query,

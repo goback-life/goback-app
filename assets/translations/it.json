@@ -340,7 +340,14 @@
             "permission_description": "Per invitare i tuoi amici, concedi l'accesso ai contatti del tuo dispositivo.",
             "generating_code": "Generazione del codice di invito...",
             "code_generation_failed": "Generazione del codice di invito non riuscita. Riprova più tardi.",
-            "sms_message": "Entra nella cerchia di @{username} su goback . Il codice per entrare è: {code}"
+            "sms_message": "Entra nella cerchia di @{username} su goback . Il codice per entrare è: {code}",
+            "phone_number_label": "Numero di telefono",
+            "send_invite_button": "Invia invito",
+            "success_message": "Invito inviato con successo!",
+            "error": {
+                "phone_required": "Inserisci un numero di telefono",
+                "phone_invalid": "Il formato del numero non è valido"
+            }
         },
         "join_circle": {
             "title": "Unisciti ad una cerchia",

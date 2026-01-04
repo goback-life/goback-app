@@ -1,6 +1,7 @@
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_create_invite_code.dart';
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
+import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/models/contact_model.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -91,7 +92,12 @@ InviteSendingState useSmsSender(WidgetRef ref) {
           logger.error('Cannot launch SMS app');
         } else {
           if (context.mounted) {
-            router.pop();
+            MainSnackbar.showSuccess(
+              context,
+              translator.translate('pages.invite_to_circle.success_message'),
+            );
+            // Don't pop immediately - let the user see the success message
+            // when they return from the SMS app
           }
         }
       },
