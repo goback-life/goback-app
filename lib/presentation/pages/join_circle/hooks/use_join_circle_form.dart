@@ -1,7 +1,10 @@
+import 'package:cloudless/core/features/connection/domain/exceptions/target_user_circle_size_limit_exception.dart';
+import 'package:cloudless/core/features/connection/domain/exceptions/user_circle_size_limit_exception.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_join_circle.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_validate_invite_code.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/presentation/components/alerts/main_alert.dart';
+import 'package:cloudless/presentation/pages/your_circle/your_circle_routable.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_form/dedecube_form.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -100,6 +103,41 @@ JoinCircleFormResult useJoinCircleForm(WidgetRef ref) {
       form.control(JoinCircleFormKey.inviteCode.value).setErrors({
         'invalid': true,
       });
+
+      // Handle circle size limit exceptions
+      if (error is UserCircleSizeLimitException) {
+        MainAlert.showFull(
+          context: ref.context,
+          title: translator.translate('pages.join_circle.error.title'),
+          content: Text(
+            translator.translate('pages.join_circle.error.circle_size_limit'),
+          ),
+          primaryButtonText: translator.translate(
+            'pages.your_circle.title',
+          ),
+          secondaryButtonText: translator.translate(
+            'components.alert.join_circle.cancel',
+          ),
+          primaryButtonType: CallToActionType.primary,
+          onPrimaryPressed: () {
+            router.pop();
+            router.push(const YourCircleRoutable());
+          },
+          onSecondaryPressed: () => router.pop(),
+        );
+        return;
+      }
+
+      if (error is TargetUserCircleSizeLimitException) {
+        MainAlert.showError(
+          context: ref.context,
+          title: translator.translate('pages.join_circle.error.title'),
+          content: translator.translate(
+            'pages.join_circle.error.target_circle_size_limit',
+          ),
+        );
+        return;
+      }
 
       String displayMessage;
       final errorMessage = error.toString();

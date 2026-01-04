@@ -351,7 +351,9 @@
                 "title": "An error occurred",
                 "invalid_code": "The invite code has expired or is invalid",
                 "already_in_circle": "You are already in this circle",
-                "connect_yourself": "You cannot connect with yourself!"
+                "connect_yourself": "You cannot connect with yourself!",
+                "circle_size_limit": "You have reached the maximum circle size (150). Remove a friend to add a new one.",
+                "target_circle_size_limit": "The user you are trying to reach has reached the maximum circle size (150)."
             }
         },
         "content_editor": {

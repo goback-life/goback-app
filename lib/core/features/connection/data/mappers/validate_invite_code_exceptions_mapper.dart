@@ -4,6 +4,8 @@ import 'package:cloudless/core/features/connection/data/exceptions/connection_un
 import 'package:cloudless/core/features/connection/data/exceptions/invite_code_invalid_exception.dart';
 import 'package:cloudless/core/features/connection/data/exceptions/invite_code_validation_failed_exception.dart';
 import 'package:cloudless/core/features/connection/domain/exceptions/invite_code_expired_exception.dart';
+import 'package:cloudless/core/features/connection/domain/exceptions/target_user_circle_size_limit_exception.dart';
+import 'package:cloudless/core/features/connection/domain/exceptions/user_circle_size_limit_exception.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ValidateInviteCodeExceptionsMapper {
@@ -69,6 +71,15 @@ class ValidateInviteCodeExceptionsMapper {
         'Invalid invite code provided for validation',
         cause: e,
       );
+    }
+
+    // Circle size limit exceptions
+    if (e is UserCircleSizeLimitException) {
+      return e;
+    }
+
+    if (e is TargetUserCircleSizeLimitException) {
+      return e;
     }
 
     // Fallback for any other exception type

@@ -6,11 +6,21 @@ import 'package:cloudless/core/features/connection/data/exceptions/invite_code_i
 import 'package:cloudless/core/features/connection/domain/exceptions/cannot_use_own_invite_code_exception.dart';
 import 'package:cloudless/core/features/connection/domain/exceptions/invite_code_expired_exception.dart';
 import 'package:cloudless/core/features/connection/domain/exceptions/join_circle_failed_exception.dart';
+import 'package:cloudless/core/features/connection/domain/exceptions/target_user_circle_size_limit_exception.dart';
+import 'package:cloudless/core/features/connection/domain/exceptions/user_circle_size_limit_exception.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class JoinCircleExceptionsMapper {
   static MainException fromSupabaseException(Exception e) {
     if (e is PostgrestException) {
+      // Check for circle size limit exceptions in message first (from database function)
+      if (e.message.contains('User has reached maximum circle size')) {
+        return const UserCircleSizeLimitException();
+      }
+      if (e.message.contains('Creator has reached maximum circle size')) {
+        return const TargetUserCircleSizeLimitException();
+      }
+
       switch (e.code) {
         // RLS policy violation
         case '42501':
@@ -68,6 +78,15 @@ class JoinCircleExceptionsMapper {
         'Invalid invite code provided for circle join',
         cause: e,
       );
+    }
+
+    // Circle size limit exceptions (from application layer)
+    if (e is UserCircleSizeLimitException) {
+      return e;
+    }
+
+    if (e is TargetUserCircleSizeLimitException) {
+      return e;
     }
 
     // Fallback for any other exception type

@@ -9,6 +9,8 @@ import 'package:cloudless/core/features/connection/domain/exceptions/connection_
 import 'package:cloudless/core/features/connection/domain/exceptions/invite_code_already_used_exception.dart';
 import 'package:cloudless/core/features/connection/domain/exceptions/invite_code_expired_exception.dart';
 import 'package:cloudless/core/features/connection/domain/exceptions/invite_code_not_found_exception.dart';
+import 'package:cloudless/core/features/connection/domain/exceptions/target_user_circle_size_limit_exception.dart';
+import 'package:cloudless/core/features/connection/domain/exceptions/user_circle_size_limit_exception.dart';
 import 'package:cloudless/core/features/connection/domain/exceptions/users_already_connected_exception.dart';
 import 'package:cloudless/core/features/connection/domain/models/invite_validation_result.dart';
 import 'package:cloudless/core/features/storage/data/providers/signed_url_provider.dart';
@@ -25,6 +27,7 @@ class ConnectionService implements ConnectionServiceContract {
 
   static const int _maxActiveInvites = 100;
   static const int _defaultExpiryHours = 72;
+  static const int _maxCircleSize = 150;
 
   @override
   FutureResult<String> createInviteCode({
@@ -101,13 +104,22 @@ class ConnectionService implements ConnectionServiceContract {
         throw const CannotUseOwnInviteCodeException();
       }
 
+      // Check if current user has reached circle size limit
+      final currentUserCircleSize = await _getCircleSize(currentUserId);
+      final creatorCircleSize = await _getCircleSize(creatorId);
+      if (currentUserCircleSize >= _maxCircleSize) {
+        throw const UserCircleSizeLimitException();
+      } else if (creatorCircleSize >= _maxCircleSize) {
+        throw const TargetUserCircleSizeLimitException();
+      }
+
       final existingConnection = await supabase
-          .from('connections')
-          .select('id')
-          .eq('user_id', currentUserId)
-          .eq('connection_id', creatorId)
-          .limit(1)
-          .maybeSingle();
+        .from('connections')
+        .select('id')
+        .eq('user_id', currentUserId)
+        .eq('connection_id', creatorId)
+        .limit(1)
+        .maybeSingle();
 
       if (existingConnection != null) {
         throw const UsersAlreadyConnectedException();
@@ -240,6 +252,16 @@ class ConnectionService implements ConnectionServiceContract {
         .eq('creator_id', userId)
         .isFilter('used_by_id', null)
         .gt('expires_at', DateTime.now().toIso8601String())
+        .count();
+
+    return result.count;
+  }
+
+  Future<int> _getCircleSize(String userId) async {
+    final result = await supabase
+        .from('connections')
+        .select('id')
+        .or('user_id.eq.$userId,connection_id.eq.$userId')
         .count();
 
     return result.count;
