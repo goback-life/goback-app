@@ -1086,8 +1086,8 @@ BEGIN
     -- Check if joiner has reached circle size limit (150)
     IF (
         SELECT COUNT(*) FROM connections 
-        WHERE user_id = join_circle_transaction.user_id 
-           OR connection_id = join_circle_transaction.user_id
+        WHERE connections.user_id = join_circle_transaction.user_id 
+           OR connections.connection_id = join_circle_transaction.user_id
     ) >= 150 THEN
         RAISE EXCEPTION 'User has reached maximum circle size of 150';
     END IF;
@@ -1095,8 +1095,8 @@ BEGIN
     -- Check if creator has reached circle size limit (150)
     IF (
         SELECT COUNT(*) FROM connections 
-        WHERE user_id = join_circle_transaction.creator_id 
-           OR connection_id = join_circle_transaction.creator_id
+        WHERE connections.user_id = join_circle_transaction.creator_id 
+           OR connections.connection_id = join_circle_transaction.creator_id
     ) >= 150 THEN
         RAISE EXCEPTION 'Creator has reached maximum circle size of 150';
     END IF;

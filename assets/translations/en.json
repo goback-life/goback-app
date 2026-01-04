@@ -336,6 +336,7 @@
         },
         "invite_to_circle": {
             "title": "Invite to your circle",
+            "friend_count": "{count} / 150 friends",
             "no_contacts_available": "No contacts available with phone number",
             "permission_description": "We need access to your contacts to invite your friends to the circle",
             "generating_code": "Generating invite code...",
