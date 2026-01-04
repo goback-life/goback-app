@@ -162,8 +162,9 @@ class ConnectionService implements ConnectionServiceContract {
     }
   }
 
-  @override
-  FutureResult<List<GetCircleMembersResponseDto>> getCircleMembers() async {
+  /// Helper method to get circle members data from database without avatar URLs.
+  /// This allows for fast initial data loading while avatar URLs are fetched separately.
+  FutureResult<List<GetCircleMembersResponseDto>> getCircleMembersBasic() async {
     try {
       final userId = supabase.auth.currentUser!.id;
 
@@ -173,26 +174,8 @@ class ConnectionService implements ConnectionServiceContract {
 
       final members = <GetCircleMembersResponseDto>[];
 
-      for (int i = 0; i < result.length; i++) {
-        final memberData = result[i];
+      for (final memberData in result) {
         final data = memberData as Map<String, dynamic>;
-
-        try {
-          final avatarUrl = await ref.read(
-            signedUrlProvider(
-              SupabaseBuckets.avatars,
-              data['id'] as String,
-            ).future,
-          );
-
-          data['avatar_url'] = avatarUrl;
-        } catch (e) {
-          logger.error(
-            'Error getting avatar for member ${data['id']}',
-            exception: e,
-          );
-          data['avatar_url'] = null;
-        }
 
         try {
           final dto = GetCircleMembersResponseDto.fromJson({
@@ -200,7 +183,7 @@ class ConnectionService implements ConnectionServiceContract {
             'id': data['id']?.toString() ?? '',
             'username': data['username']?.toString() ?? '',
             'biography': data['biography']?.toString(),
-            'avatar_url': data['avatar_url'] as String?,
+            'avatar_url': null, // Set to null initially
             'phone_number': data['phone_number']?.toString(),
           });
 
@@ -219,6 +202,49 @@ class ConnectionService implements ConnectionServiceContract {
           : Exception('Failed to get circle members: $e');
       return Result.failure(exception);
     }
+  }
+
+  /// Fetches avatar URLs for a list of members synchronously (preserving original mechanism).
+  /// This method fetches URLs one by one in sequence, exactly as before.
+  FutureResult<List<GetCircleMembersResponseDto>> enrichMembersWithAvatars(
+    List<GetCircleMembersResponseDto> members,
+  ) async {
+    final enrichedMembers = <GetCircleMembersResponseDto>[];
+
+    for (final member in members) {
+      try {
+        final avatarUrl = await ref.read(
+          signedUrlProvider(
+            SupabaseBuckets.avatars,
+            member.id,
+          ).future,
+        );
+
+        enrichedMembers.add(member.copyWith(avatarUrl: avatarUrl));
+      } catch (e) {
+        logger.error(
+          'Error getting avatar for member ${member.id}',
+          exception: e,
+        );
+        // Keep avatarUrl as null if fetch fails
+        enrichedMembers.add(member);
+      }
+    }
+
+    return Result.success(enrichedMembers);
+  }
+
+  @override
+  FutureResult<List<GetCircleMembersResponseDto>> getCircleMembers() async {
+    // Get basic member data first
+    final basicResult = await getCircleMembersBasic();
+    return await basicResult.asyncFold(
+      (basicMembers) async {
+        // Then enrich with avatar URLs (synchronous, one by one, preserving original mechanism)
+        return await enrichMembersWithAvatars(basicMembers);
+      },
+      (error) async => Result.failure(error),
+    );
   }
 
   @override

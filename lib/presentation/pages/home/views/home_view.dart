@@ -64,13 +64,22 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
     // Polling: Refresh circle members (start after initial load completes)
     useEffect(() {
+      print('[HomeView] Polling useEffect evaluated');
+      print('[HomeView] circleMembersData.isLoading: ${circleMembersData.isLoading}');
+      print('[HomeView] circleMembersData.allUsers.length: ${circleMembersData.allUsers.length}');
+      print('[HomeView] Polling condition: !isLoading=${!circleMembersData.isLoading} && isNotEmpty=${circleMembersData.allUsers.isNotEmpty}');
+      
       // Wait for initial load to complete before starting polling
       if (!circleMembersData.isLoading && circleMembersData.allUsers.isNotEmpty) {
+        print('[HomeView] ✅ Starting polling timer (15s interval)');
         final timer = Timer.periodic(const Duration(seconds: 15), (_) {
+          print('[HomeView] Polling timer triggered - invalidating provider');
           ref.invalidate(getCircleMembersProvider);
         });
 
         return timer.cancel;
+      } else {
+        print('[HomeView] ❌ Polling NOT started - condition not met');
       }
       return null;
     }, [circleMembersData.isLoading, circleMembersData.allUsers.isNotEmpty]);

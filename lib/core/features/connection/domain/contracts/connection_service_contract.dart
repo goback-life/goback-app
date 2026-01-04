@@ -58,6 +58,23 @@ abstract class ConnectionServiceContract {
   /// during the transaction.
   FutureResult<bool> joinCircle(String inviteCode);
 
+  /// Retrieves circle members data from database without avatar URLs.
+  /// This allows for fast initial data loading while avatar URLs are fetched separately.
+  ///
+  /// Returns a list of member DTOs with null avatar URLs.
+  FutureResult<List<GetCircleMembersResponseDto>> getCircleMembersBasic();
+
+  /// Fetches avatar URLs for a list of members synchronously (preserving original mechanism).
+  /// This method fetches URLs one by one in sequence, exactly as before.
+  ///
+  /// Params:
+  /// - `members`: List of member DTOs to enrich with avatar URLs
+  ///
+  /// Returns a list of member DTOs with avatar URLs populated.
+  FutureResult<List<GetCircleMembersResponseDto>> enrichMembersWithAvatars(
+    List<GetCircleMembersResponseDto> members,
+  );
+
   /// Retrieves all members connected to the current user's circle.
   ///
   /// Returns raw database records containing connection IDs and profile
