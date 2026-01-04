@@ -329,10 +329,24 @@
                 "title": "A special place",
                 "description": "Invite your close friends only",
                 "invite_button": "Invite to your circle",
-                "join_button": "Join a circle"
+                "join_button": "Join a circle",
+                "remove_friend_message": "You've reached the limit of 150 friends. Remove a friend to add new ones.",
+                "review_button": "Review your circle"
             },
             "empty": "You don't have anyone in your circle yet, invite a friend now!",
             "loading_members": "Loading members..."
+        },
+        "review_circle": {
+            "title": "Review your circle",
+            "remove_button": "Remove selected",
+            "remove_button_disabled": "Select friends to remove",
+            "confirmation_title": "Remove friends?",
+            "confirmation_content": "Remove {count} friend(s) from your circle?",
+            "confirmation_confirm": "Remove",
+            "confirmation_cancel": "Cancel",
+            "success_message": "{count} friend(s) removed successfully",
+            "partial_success_title": "Partial Success",
+            "partial_success_content": "{success} friend(s) removed successfully, {failure} failed to remove"
         },
         "invite_to_circle": {
             "title": "Invite to your circle",

@@ -10,6 +10,7 @@ import 'package:cloudless/presentation/pages/objective/objective_routable.dart';
 import 'package:cloudless/presentation/pages/otp/otp_routable.dart';
 import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
 import 'package:cloudless/presentation/pages/publish_content/publish_content_routable.dart';
+import 'package:cloudless/presentation/pages/review_circle/review_circle_routable.dart';
 import 'package:cloudless/presentation/pages/settings/settings_routable.dart';
 import 'package:cloudless/presentation/pages/sign_in/sign_in_routable.dart';
 import 'package:cloudless/presentation/pages/time_limit_reached/time_limit_reached_routable.dart';
@@ -30,6 +31,7 @@ final List<BaseRoutable> routes = [
   const YourCircleRoutable(),
   const InviteToCircleRoutable(),
   const JoinCircleRoutable(),
+  const ReviewCircleRoutable(),
   const ContentEditorRoutable(),
   const PublishContentRoutable(),
   const TimeLimitReachedRoutable(),
