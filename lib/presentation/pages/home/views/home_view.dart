@@ -17,6 +17,7 @@ import 'package:cloudless/presentation/pages/home/components/home_circle_actions
 import 'package:cloudless/presentation/pages/home/components/home_create_content_button.dart';
 import 'package:cloudless/presentation/pages/home/components/home_date_badge.dart';
 import 'package:cloudless/presentation/pages/home/components/home_feed_posts_list.dart';
+import 'package:cloudless/presentation/pages/home/components/home_lockout_button.dart';
 import 'package:cloudless/presentation/pages/home/components/home_new_posts_banner.dart';
 import 'package:cloudless/presentation/pages/home/components/home_scroll_indicator.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
@@ -348,16 +349,27 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
               right: 0,
               child: const Center(child: HomeDateBadge()),
             ),
+
+            // Lockout button - bottom left
+            Positioned(
+              bottom: bottomMargin + navBarHeight,
+              left: horizontalPadding,
+              child: const HomeLockoutButton(),
+            ),
+
+            // Create content button - bottom right
+            if (showFeed && feedPosts.posts.isNotEmpty)
+              Positioned(
+                bottom: bottomMargin + navBarHeight,
+                right: horizontalPadding,
+                child: HomeCreateContentButton(
+                  onPressed: () {
+                    postCreationInit.selectMainImage();
+                  },
+                ),
+              ),
           ],
         ),
-        floatingActionButton: showFeed && feedPosts.posts.isNotEmpty
-            ? HomeCreateContentButton(
-                onPressed: () {
-                  postCreationInit.selectMainImage();
-                },
-              )
-            : null,
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
   }

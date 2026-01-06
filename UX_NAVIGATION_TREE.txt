@@ -1,0 +1,151 @@
+UX NAVIGATION TREE - Click Distance Reference
+==============================================
+
+ENTRY POINT 1: OBJECTIVE (0 clicks)
+│
+├─→ SignIn (1 click)
+│   │
+│   ├─→ OTP (2 clicks)
+│   │   │
+│   │   ├─→ Home (3 clicks) [if profile exists]
+│   │   │   │
+│   │   │   ├─→ Profile (4 clicks) [via nav bar]
+│   │   │   │   │
+│   │   │   │   ├─→ Settings (5 clicks)
+│   │   │   │   │   └─→ SignIn (6 clicks) [logout]
+│   │   │   │   │
+│   │   │   │   ├─→ Edit Profile (5 clicks)
+│   │   │   │   │
+│   │   │   │   ├─→ Circle Profile (5 clicks) [tap member]
+│   │   │   │   │
+│   │   │   │   └─→ External Profile (5 clicks) [tap external user]
+│   │   │   │
+│   │   │   ├─→ Your Circle (4 clicks) [via nav bar]
+│   │   │   │   │
+│   │   │   │   ├─→ Invite to Circle (5 clicks)
+│   │   │   │   │
+│   │   │   │   ├─→ Join Circle (5 clicks)
+│   │   │   │   │   └─→ Your Circle (returns after completion)
+│   │   │   │   │
+│   │   │   │   ├─→ Review Circle (5 clicks)
+│   │   │   │   │
+│   │   │   │   └─→ Circle Profile (5 clicks) [tap member]
+│   │   │   │
+│   │   │   ├─→ Content Editor (4 clicks)
+│   │   │   │   │
+│   │   │   │   └─→ Publish Content (5 clicks)
+│   │   │   │       └─→ Home (returns after publish)
+│   │   │   │
+│   │   │   └─→ Manual Lockout (4 clicks) [via go back button]
+│   │   │       └─→ Home (returns after unlock)
+│   │   │
+│   │   └─→ Create Profile (3 clicks) [if no profile]
+│   │       └─→ Home (4 clicks) [after completion]
+│
+└─────────────────────────────────────────────────────────────
+
+ENTRY POINT 2: SIGNIN (0 clicks)
+│
+├─→ OTP (1 click)
+│   │
+│   ├─→ Home (2 clicks) [if profile exists]
+│   │   │
+│   │   ├─→ Profile (3 clicks) [via nav bar]
+│   │   │   │
+│   │   │   ├─→ Settings (4 clicks)
+│   │   │   │   └─→ SignIn (5 clicks) [logout]
+│   │   │   │
+│   │   │   ├─→ Edit Profile (4 clicks)
+│   │   │   │
+│   │   │   ├─→ Circle Profile (4 clicks) [tap member]
+│   │   │   │
+│   │   │   └─→ External Profile (4 clicks) [tap external user]
+│   │   │
+│   │   ├─→ Your Circle (3 clicks) [via nav bar]
+│   │   │   │
+│   │   │   ├─→ Invite to Circle (4 clicks)
+│   │   │   │
+│   │   │   ├─→ Join Circle (4 clicks)
+│   │   │   │   └─→ Your Circle (returns after completion)
+│   │   │   │
+│   │   │   ├─→ Review Circle (4 clicks)
+│   │   │   │
+│   │   │   └─→ Circle Profile (4 clicks) [tap member]
+│   │   │
+│   │   ├─→ Content Editor (3 clicks)
+│   │   │   │
+│   │   │   └─→ Publish Content (4 clicks)
+│   │   │       └─→ Home (returns after publish)
+│   │   │
+│   │   └─→ Manual Lockout (3 clicks) [via go back button]
+│   │       └─→ Home (returns after unlock)
+│   │
+│   └─→ Create Profile (2 clicks) [if no profile]
+│       └─→ Home (3 clicks) [after completion]
+│
+└─────────────────────────────────────────────────────────────
+
+FROM HOME (Main Hub - 0 clicks from Home)
+│
+├─→ Profile (1 click) [via nav bar]
+│   ├─→ Settings (2 clicks)
+│   ├─→ Edit Profile (2 clicks)
+│   ├─→ Circle Profile (2 clicks)
+│   └─→ External Profile (2 clicks)
+│
+├─→ Your Circle (1 click) [via nav bar]
+│   ├─→ Invite to Circle (2 clicks)
+│   ├─→ Join Circle (2 clicks)
+│   ├─→ Review Circle (2 clicks)
+│   └─→ Circle Profile (2 clicks)
+│
+├─→ Content Editor (1 click)
+│   └─→ Publish Content (2 clicks)
+│
+└─→ Manual Lockout (1 click) [via go back button]
+    └─→ Home (returns after unlock)
+
+└─────────────────────────────────────────────────────────────
+
+QUICK REFERENCE: CLICK DISTANCES FROM ENTRY POINTS
+===================================================
+
+From Objective Entry:
+  Home:           3-4 clicks
+  Profile:        4-5 clicks
+  Your Circle:    4-5 clicks
+  Settings:       5-6 clicks
+  Edit Profile:   5-6 clicks
+  Content Editor: 4-5 clicks
+  Publish:        5-6 clicks
+
+From SignIn Entry:
+  Home:           2-3 clicks
+  Profile:        3-4 clicks
+  Your Circle:    3-4 clicks
+  Settings:       4-5 clicks
+  Edit Profile:   4-5 clicks
+  Content Editor: 3-4 clicks
+  Publish:        4-5 clicks
+
+From Home:
+  Profile:        1 click
+  Your Circle:    1 click
+  Content Editor: 1 click
+  Settings:       2 clicks
+  Edit Profile:   2 clicks
+  All Circle Actions: 2 clicks
+  Publish:        2 clicks
+
+└─────────────────────────────────────────────────────────────
+
+SPECIAL ROUTES
+==============
+
+Time Limit Reached: Auto-redirect (system-triggered)
+Manual Lockout: Accessible from Home via special button
+Circle Profile: Requires userId parameter
+External Profile: Requires userId parameter
+
+└─────────────────────────────────────────────────────────────
+

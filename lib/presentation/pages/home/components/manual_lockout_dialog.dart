@@ -2,8 +2,8 @@ import 'package:cloudless/presentation/components/buttons/call_to_action/call_to
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
   const ManualLockoutDialog({super.key});
@@ -22,8 +22,8 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final selectedHours = useState<int>(1);
-    final selectedMinutes = useState<int>(0);
+    final selectedHours = useState<int>(0);
+    final selectedMinutes = useState<int>(2);
 
     // Calculate total duration
     final totalDuration = Duration(
@@ -32,8 +32,8 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
     );
 
     // Validate: must be > 1 hour
-    final isValid = totalDuration.inHours >= 1 &&
-        (totalDuration.inHours > 1 || selectedMinutes.value > 0);
+    // Validate: must be >= 2 minutes
+    final isValid = totalDuration.inMinutes >= 2;
 
     return Dialog(
       backgroundColor: colorScheme.surface,
@@ -53,7 +53,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             Text(
               translator.translate('pages.manual_lockout.dialog.description'),
               style: textTheme.bodyMedium?.copyWith(
@@ -61,7 +61,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 32),
+            const SizedBox(height: 32),
             // Time pickers
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -72,17 +72,19 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                   height: 150,
                   child: CupertinoPicker(
                     scrollController: FixedExtentScrollController(
-                      initialItem: selectedHours.value - 1,
+                      initialItem: selectedHours.value,
                     ),
                     itemExtent: 40,
                     onSelectedItemChanged: (index) {
-                      selectedHours.value = index + 1;
+                      selectedHours.value = index;
                     },
-                    children: List.generate(24, (index) {
-                      final hours = index + 1;
+                    children: List.generate(25, (index) {
+                      final hours = index;
                       return Center(
                         child: Text(
-                          '$hours ${hours == 1 ? 'hr' : 'hrs'}',
+                          hours == 0
+                              ? '0 hrs'
+                              : '$hours ${hours == 1 ? 'hr' : 'hrs'}',
                           style: textTheme.bodyLarge?.copyWith(
                             color: colorScheme.onSurface,
                           ),
@@ -91,20 +93,20 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                     }),
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 // Minutes picker
                 SizedBox(
                   width: 80,
                   height: 150,
                   child: CupertinoPicker(
                     scrollController: FixedExtentScrollController(
-                      initialItem: selectedMinutes.value,
+                      initialItem: [2, 0, 15, 30, 45].indexOf(selectedMinutes.value),
                     ),
                     itemExtent: 40,
                     onSelectedItemChanged: (index) {
-                      selectedMinutes.value = index * 15; // 0, 15, 30, 45
+                      selectedMinutes.value = [2, 0, 15, 30, 45][index];
                     },
-                    children: [0, 15, 30, 45].map((minutes) {
+                    children: [2, 0, 15, 30, 45].map((minutes) {
                       return Center(
                         child: Text(
                           '$minutes min',
@@ -118,7 +120,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                 ),
               ],
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             if (!isValid)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -144,7 +146,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                     ),
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   child: CallToAction.primary.filled(
                     action: isValid

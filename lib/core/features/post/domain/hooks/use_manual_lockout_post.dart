@@ -50,10 +50,20 @@ Future<Result<PostModel>?> useManualLockoutPost(
       logger.warning('Username not found, using empty string');
     }
 
-    // Format description: "@username is going back for x hours"
+    // Format description: "@username is going back for x hours" or "x minutes"
+    final totalMinutes = lockoutDuration.inMinutes;
     final hours = lockoutDuration.inHours;
-    final hoursText = hours == 1 ? 'hour' : 'hours';
-    final description = '@$username is going back for $hours $hoursText';
+    
+    String description;
+    if (totalMinutes < 60) {
+      // Less than 1 hour, use minutes
+      final minutesText = totalMinutes == 1 ? 'minute' : 'minutes';
+      description = '@$username is going back for $totalMinutes $minutesText';
+    } else {
+      // 1 hour or more, use hours
+      final hoursText = hours == 1 ? 'hour' : 'hours';
+      description = '@$username is going back for $hours $hoursText';
+    }
 
     // Get app icon as File
     final logoFile = await AssetToFileHelper.copyAppIconToFile();

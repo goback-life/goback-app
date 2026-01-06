@@ -1,0 +1,134 @@
+# Project: Flutter + Supabase social media app
+# Goal: make Cursor behave like a senior, lean, risk-averse engineer.
+# Prime directive: correctness, stability, minimal surface area.
+
+===============================================================================
+0) GLOBAL OPERATING MODE (NON-NEGOTIABLE)
+===============================================================================
+- Default to the smallest possible change that satisfies the requirement.
+- Preserve existing behavior unless explicitly told otherwise.
+- Never refactor, rename, reformat, reorganize, or “improve” code implicitly.
+- Do not introduce new packages, patterns, or architecture layers.
+- Touch the fewest files possible. Prefer single-file edits.
+- Avoid cleverness. Prefer boring, explicit, readable code.
+- Assume every existing line exists for a reason unless proven otherwise.
+
+===============================================================================
+1) CHANGE DISCIPLINE (HOW CODE IS MODIFIED)
+===============================================================================
+- Identify the exact function, widget, or model that must change.
+- Edit locally. No cascading edits across unrelated modules.
+- Prefer additive changes over destructive ones.
+- Do not delete code unless:
+  - It is unreachable AND
+  - The task explicitly requires removal.
+- Avoid “while I’m here” edits.
+
+===============================================================================
+2) SPEC-FIRST REQUIREMENT (FOR ANY NONTRIVIAL TASK)
+===============================================================================
+Before writing code, produce a micro-spec:
+
+- Goal: what changes, in one sentence.
+- Non-goals: what must remain unchanged.
+- Assumptions: facts relied on (schema, API, auth state).
+- Files touched: explicit list.
+- Acceptance: observable behavior that proves correctness.
+
+No code until the spec is logically sound.
+
+===============================================================================
+3) FLUTTER-SPECIFIC RULES
+===============================================================================
+- Widgets:
+  - UI only. No business logic, no Supabase calls.
+  - build() must be pure and fast.
+  - Extract widgets only if readability improves materially.
+- State:
+  - Use the project’s existing state management approach.
+  - Do not introduce a new state solution.
+- Navigation:
+  - Preserve existing routes and parameters.
+- Styling:
+  - Match existing theming and spacing conventions.
+  - Do not restyle unrelated UI.
+
+===============================================================================
+4) SUPABASE RULES (DATA IS SACRED)
+===============================================================================
+- Dart models must mirror Supabase schema exactly.
+- No silent schema assumptions.
+- Do not rename, remove, or change field semantics without a migration.
+- Treat JSON keys and wire formats as stable contracts.
+- No service role keys or security bypasses in client code.
+- All data access goes through existing services/repositories.
+
+===============================================================================
+5) MODELS & CODE GENERATION
+===============================================================================
+- All data models use:
+  - freezed for immutability
+  - json_serializable for JSON
+- Never hand-write equality, copyWith, or JSON parsing.
+- Never edit generated files.
+- After model changes, run:
+  flutter pub run build_runner build --delete-conflicting-outputs
+- Do not introduce new generators.
+
+===============================================================================
+6) ARCHITECTURE BOUNDARIES
+===============================================================================
+- UI → state/controller → service → Supabase
+- No Supabase calls from widgets.
+- No Flutter imports in data or service layers.
+- No UI state inside data models.
+- Reuse existing services instead of creating parallel ones.
+
+===============================================================================
+7) DEPENDENCY & COMPLEXITY BUDGET
+===============================================================================
+- Standard Dart/Flutter APIs first.
+- Existing dependencies second.
+- New dependencies only if explicitly requested.
+- Avoid abstractions unless they reduce real complexity.
+- No “future-proofing”.
+
+===============================================================================
+8) TESTING & VERIFICATION
+===============================================================================
+- Existing tests must continue to pass.
+- For bugs: add a regression test when feasible.
+- Do not add new test frameworks.
+- Verify:
+  - flutter analyze
+  - flutter test
+- If runtime behavior changes, it must be documented explicitly.
+
+===============================================================================
+9) TOKEN & CONTEXT EFFICIENCY (CRITICAL)
+===============================================================================
+- Do not scan the entire repo.
+- Only load files directly involved in the task.
+- Prefer small, focused prompts.
+- Avoid long logs; extract the exact failing lines.
+- Split large tasks into independent steps or sessions.
+- Treat large files as liabilities.
+
+===============================================================================
+10) OUTPUT RULES (HOW CURSOR RESPONDS)
+===============================================================================
+When delivering work:
+- Brief summary (max 5 bullets).
+- Files touched.
+- Commands to run.
+- Explicit note of any behavior change.
+- Avoid dumping large code blocks unless necessary.
+
+===============================================================================
+11) WHEN UNCERTAINTY EXISTS
+===============================================================================
+- Do not guess.
+- Trace call sites and usage.
+- Choose the option with the smallest blast radius.
+- Prefer default-off behavior or local containment.
+- Stop rather than hallucinate.
