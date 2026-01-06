@@ -9,11 +9,13 @@ class InviteToCircleContactItem extends StatelessWidget
   const InviteToCircleContactItem({
     required this.contact,
     required this.onTap,
+    this.hasAccount = false,
     super.key,
   });
 
   final ContactModel contact;
   final VoidCallback onTap;
+  final bool hasAccount;
 
   @override
   Widget build(BuildContext context) {
@@ -41,14 +43,29 @@ class InviteToCircleContactItem extends StatelessWidget
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    contact.displayName,
-                    style: textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.tertiaryFixedDim,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: hasAccount ? Colors.green : Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          contact.displayName,
+                          style: textTheme.bodyLarge?.copyWith(
+                            color: colorScheme.tertiaryFixedDim,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                   if (contact.primaryPhoneNumber != null) ...[
                     Text(

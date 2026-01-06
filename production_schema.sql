@@ -719,6 +719,24 @@ END;$$;
 
 
 --
+-- Name: check_phone_numbers_exist(text[]); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.check_phone_numbers_exist(phone_numbers text[]) RETURNS text[]
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+BEGIN
+    RETURN ARRAY(
+        SELECT DISTINCT au.phone
+        FROM auth.users au
+        WHERE au.phone = ANY(phone_numbers)
+        AND au.phone IS NOT NULL
+    );
+END;$$;
+
+
+--
 -- Name: get_post_by_id(uuid, uuid); Type: FUNCTION; Schema: public; Owner: -
 --
 

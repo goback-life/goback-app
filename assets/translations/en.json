@@ -358,6 +358,8 @@
             "code_generation_failed": "Invite code generation failed. Please try again later.",
             "sms_message": "Join @{username}'s circle on goback . The code to join is: {code}",
             "phone_number_label": "Phone number",
+            "phone_has_account": "This number already has a goback account",
+            "phone_no_account": "This number does not have a goback account",
             "send_invite_button": "Send invite",
             "success_message": "Invite sent successfully!",
             "error": {

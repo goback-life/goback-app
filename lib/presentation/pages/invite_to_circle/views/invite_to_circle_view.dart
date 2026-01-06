@@ -1,3 +1,8 @@
+import 'dart:async';
+
+import 'package:cloudless/core/features/auth/domain/hooks/use_check_phone_numbers.dart';
+import 'package:cloudless/core/features/auth/domain/providers/check_phone_numbers_provider.dart';
+import 'package:cloudless/core/features/auth/utilities/phone_number_normalizer.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_contact_with_permission.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_phone_contact.dart';
 import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
@@ -36,6 +41,8 @@ class InviteToCircleView extends HookConsumerWidget
     final phoneFormKey = useMemoized(() => GlobalKey<FormState>());
     final phoneController = useMemoized(() => PhoneController());
     final phoneValidationError = useState<String?>(null);
+    final phoneNumberToCheck = useState<String?>(null);
+    final debounceTimer = useRef<Timer?>(null);
 
     useEffect(() {
       Future<void> loadContacts() async {
@@ -124,6 +131,74 @@ class InviteToCircleView extends HookConsumerWidget
     }, [inviteSendingState.isLoading]);
 
     useLoadingOverlay(isLoading);
+
+    // Check if typed phone number has account
+    // Memoize the list to prevent provider recreation
+    final phoneNumbersToCheck = useMemoized(() {
+      return phoneNumberToCheck.value != null
+          ? [phoneNumberToCheck.value!]
+          : <String>[];
+    }, [phoneNumberToCheck.value]);
+    
+    // Watch the provider directly to track loading state
+    final phoneCheckAsync = phoneNumbersToCheck.isNotEmpty
+        ? ref.watch(checkPhoneNumbersProvider(phoneNumbersToCheck))
+        : null;
+    
+    final typedPhoneCheckResult = useCheckPhoneNumbers(
+      ref,
+      phoneNumbersToCheck,
+    );
+    
+    // phoneNumberToCheck.value is already normalized, so compare directly
+    // Track if we have a result (not loading) and account status
+    final (typedPhoneHasAccount, hasChecked) = useMemoized(() {
+      if (phoneNumberToCheck.value == null || phoneCheckAsync == null) {
+        return (false, false);
+      }
+      
+      // Only show result if we have data (not loading)
+      final hasResult = phoneCheckAsync.hasValue;
+      if (!hasResult) {
+        return (false, false);
+      }
+      
+      final hasAccount = typedPhoneCheckResult.contains(phoneNumberToCheck.value!);
+      
+      return (hasAccount, true);
+    }, [phoneNumberToCheck.value, typedPhoneCheckResult, phoneCheckAsync]);
+
+    // Debounce phone number checking
+    void handlePhoneNumberChange(PhoneNumber? phoneNumber) {
+      phoneValidationError.value = null;
+
+      // Cancel previous timer
+      debounceTimer.value?.cancel();
+
+      if (phoneNumber == null || phoneNumber.international.isEmpty) {
+        phoneNumberToCheck.value = null;
+        return;
+      }
+
+      // Set up debounce timer (500ms delay)
+      debounceTimer.value = Timer(const Duration(milliseconds: 500), () {
+        final normalized = PhoneNumberNormalizer.normalize(
+          phoneNumber.international,
+        );
+        if (normalized.isNotEmpty) {
+          phoneNumberToCheck.value = normalized;
+        } else {
+          phoneNumberToCheck.value = null;
+        }
+      });
+    }
+
+    // Cleanup timer on dispose
+    useEffect(() {
+      return () {
+        debounceTimer.value?.cancel();
+      };
+    }, []);
 
     void handleContactTap(ContactModel contact) {
       if (!inviteSendingState.isLoading) {
@@ -241,9 +316,7 @@ class InviteToCircleView extends HookConsumerWidget
                         color: colorScheme.onSurface,
                       ),
                     ),
-                    onChanged: (_) {
-                      phoneValidationError.value = null;
-                    },
+                    onChanged: handlePhoneNumberChange,
                   ),
                 ),
                 if (phoneValidationError.value != null) ...[
@@ -253,6 +326,34 @@ class InviteToCircleView extends HookConsumerWidget
                     style: textTheme.bodySmall?.copyWith(
                       color: colorScheme.error,
                     ),
+                  ),
+                ],
+                if (phoneNumberToCheck.value != null &&
+                    phoneValidationError.value == null &&
+                    hasChecked) ...[
+                  SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: typedPhoneHasAccount ? Colors.green : Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        translator.translate(
+                          typedPhoneHasAccount
+                              ? 'pages.invite_to_circle.phone_has_account'
+                              : 'pages.invite_to_circle.phone_no_account',
+                        ),
+                        style: textTheme.bodySmall?.copyWith(
+                          color: typedPhoneHasAccount ? Colors.green : Colors.red,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
                 SizedBox(height: verticalSpacing / 2),
