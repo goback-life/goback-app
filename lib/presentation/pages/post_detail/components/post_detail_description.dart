@@ -36,6 +36,20 @@ class PostDetailDescription extends HookWidget
       return null;
     }, [description, mediaQuery.size.width]);
 
+    // For text posts, always show full text without expand/collapse
+    if (contentType == ContentType.text) {
+      return LinkableText(
+        text: description,
+        style: textTheme.bodyMedium?.copyWith(
+          color: colorScheme.outlineVariant,
+          height: 20.5 / 14.0,
+        ),
+        maxLines: null,
+        overflow: null,
+      );
+    }
+
+    // For other post types, show expand/collapse functionality
     return AnimatedSize(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -56,29 +70,15 @@ class PostDetailDescription extends HookWidget
                     height: 20.5 / 14.0,
                   ) ??
                   const TextStyle(),
-              child: contentType == ContentType.text
-                  ? LinkableText(
-                      text: description,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.outlineVariant,
-                        height: 20.5 / 14.0,
-                      ),
-                      maxLines: showFullText.value
-                          ? null
-                          : (isLongText.value
-                              ? descriptionMaxLines.toInt()
-                              : null),
-                      overflow: showFullText.value ? null : TextOverflow.clip,
-                    )
-                  : Text(
-                      description,
-                      maxLines: showFullText.value
-                          ? null
-                          : (isLongText.value
-                              ? descriptionMaxLines.toInt()
-                              : null),
-                      overflow: showFullText.value ? null : TextOverflow.clip,
-                    ),
+              child: Text(
+                description,
+                maxLines: showFullText.value
+                    ? null
+                    : (isLongText.value
+                        ? descriptionMaxLines.toInt()
+                        : null),
+                overflow: showFullText.value ? null : TextOverflow.clip,
+              ),
             ),
             if (isLongText.value) ...[
               SizedBox(height: descriptionTruncatorSpacing),

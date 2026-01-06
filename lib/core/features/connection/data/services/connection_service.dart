@@ -206,32 +206,76 @@ class ConnectionService implements ConnectionServiceContract {
 
   /// Fetches avatar URLs for a list of members synchronously (preserving original mechanism).
   /// This method fetches URLs one by one in sequence, exactly as before.
+  /// Includes retry logic for network errors that commonly occur when app resumes from background.
+  /// Skips members that already have avatar URLs to avoid unnecessary network requests.
   FutureResult<List<GetCircleMembersResponseDto>> enrichMembersWithAvatars(
     List<GetCircleMembersResponseDto> members,
   ) async {
     final enrichedMembers = <GetCircleMembersResponseDto>[];
 
     for (final member in members) {
-      try {
-        final avatarUrl = await ref.read(
-          signedUrlProvider(
-            SupabaseBuckets.avatars,
-            member.id,
-          ).future,
-        );
-
-        enrichedMembers.add(member.copyWith(avatarUrl: avatarUrl));
-      } catch (e) {
-        logger.error(
-          'Error getting avatar for member ${member.id}',
-          exception: e,
-        );
-        // Keep avatarUrl as null if fetch fails
+      // Skip if avatar URL already exists (from previous successful fetch)
+      // This avoids unnecessary network requests when refreshing on app resume
+      if (member.avatarUrl != null && member.avatarUrl!.isNotEmpty) {
         enrichedMembers.add(member);
+        continue;
       }
+
+      String? avatarUrl;
+      
+      // Retry logic for network errors (common when app resumes from background)
+      const maxRetries = 2;
+      const initialDelay = Duration(milliseconds: 500);
+      
+      for (int attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          avatarUrl = await ref.read(
+            signedUrlProvider(
+              SupabaseBuckets.avatars,
+              member.id,
+            ).future,
+          );
+          break; // Success, exit retry loop
+        } catch (e) {
+          final isNetworkError = _isNetworkError(e);
+          final isLastAttempt = attempt == maxRetries;
+          
+          if (isNetworkError && !isLastAttempt) {
+            // Wait before retrying with exponential backoff
+            final delay = Duration(
+              milliseconds: initialDelay.inMilliseconds * (1 << attempt),
+            );
+            await Future.delayed(delay);
+            continue;
+          }
+          
+          // Log error only on last attempt or if it's not a network error
+          if (isLastAttempt || !isNetworkError) {
+            logger.error(
+              'Error getting avatar for member ${member.id}',
+              exception: e,
+            );
+          }
+          // Keep avatarUrl as null if fetch fails
+          avatarUrl = null;
+          break;
+        }
+      }
+
+      enrichedMembers.add(member.copyWith(avatarUrl: avatarUrl));
     }
 
     return Result.success(enrichedMembers);
+  }
+
+  /// Checks if an exception is a network-related error that should be retried.
+  bool _isNetworkError(Object error) {
+    final errorString = error.toString().toLowerCase();
+    return errorString.contains('clientexception') ||
+        errorString.contains('socketexception') ||
+        errorString.contains('failed host lookup') ||
+        errorString.contains('connection abort') ||
+        errorString.contains('no address associated with hostname');
   }
 
   @override

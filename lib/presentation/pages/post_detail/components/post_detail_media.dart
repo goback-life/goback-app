@@ -16,6 +16,11 @@ class PostDetailMedia extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
+    // Text posts don't have media - return empty widget
+    if (post.contentType == ContentType.text) {
+      return const SizedBox.shrink();
+    }
+
     final screenHeight = MediaQuery.of(context).size.height;
     final calculatedHeight = (screenHeight * imageHeightRatio).clamp(
       imageMinHeight,

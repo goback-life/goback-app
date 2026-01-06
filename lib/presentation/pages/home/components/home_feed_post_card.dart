@@ -54,6 +54,7 @@ class HomeFeedPostCard extends StatelessWidget
               children: [
                 GestureDetector(
                   onTap: onTap,
+                  behavior: HitTestBehavior.translucent,
                   child: isText
                       ? _buildTextPost(context, theme, colorScheme, textTheme)
                       : AspectRatio(
@@ -125,28 +126,46 @@ class HomeFeedPostCard extends StatelessWidget
     ColorScheme colorScheme,
     TextTheme textTheme,
   ) {
-    // Use thumbnail dimensions for container, with minimum height
-    final minHeight = 400.0;
-    final containerHeight = (post.thumbnailHeight < minHeight)
-        ? minHeight
-        : post.thumbnailHeight.toDouble();
+    final text = post.description ?? '';
+    
+    // For preview, use up to 200 characters
+    final previewText = text.length > 200 ? '${text.substring(0, 200)}...' : text;
+    
+    // Calculate height based on actual text layout
+    // Use TextPainter to get accurate height measurement
+    final textStyle = textTheme.bodyMedium?.copyWith(color: Colors.black) ??
+        const TextStyle(color: Colors.black);
+    final textPainter = TextPainter(
+      text: TextSpan(text: previewText, style: textStyle),
+      textDirection: TextDirection.ltr,
+      maxLines: null,
+    );
+    
+    // Layout with available width (feedPostWidth - padding)
+    final availableWidth = feedPostWidth - 32.0; // 16px padding on each side
+    textPainter.layout(maxWidth: availableWidth);
+    
+    // Calculate height: text height + padding (16px top + 16px bottom)
+    final minHeight = 100.0;
+    final maxHeight = 400.0;
+    final calculatedHeight = (textPainter.size.height + 32.0).clamp(minHeight, maxHeight);
 
     return Container(
+      width: feedPostWidth,
       constraints: BoxConstraints(
         minHeight: minHeight,
-        maxHeight: double.infinity,
+        maxHeight: maxHeight,
       ),
-      width: feedPostWidth,
+      height: calculatedHeight,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(feedPostImageRadius),
       ),
       padding: const EdgeInsets.all(16.0),
       child: LinkableText(
-        text: post.description ?? '',
-        style: textTheme.bodyMedium?.copyWith(
-          color: Colors.black,
-        ),
+        text: previewText,
+        style: textStyle,
+        maxLines: null,
       ),
     );
   }

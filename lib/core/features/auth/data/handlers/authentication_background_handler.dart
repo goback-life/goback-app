@@ -1,6 +1,7 @@
 import 'package:cloudless/core/features/auth/domain/providers/is_authenticated_provider.dart';
 import 'package:cloudless/core/features/auth/domain/providers/validate_session_provider.dart';
 import 'package:cloudless/core/features/calendar/domain/providers/calendar_posts_cache_provider.dart';
+import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/profile/data/storables/profile_completed_storable.dart';
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
 import 'package:cloudless/presentation/pages/objective/objective_routable.dart';
@@ -46,6 +47,9 @@ class AuthenticationBackgroundHandler with WidgetsBindingObserver {
       (isValid) {
         if (isValid) {
           logger.info('App resume: Session validated successfully');
+          // Refresh circle members to re-fetch any failed avatars
+          // This is especially important after network errors when app was in background
+          ref.invalidate(getCircleMembersProvider);
         } else {
           _handleInvalidSession();
         }
