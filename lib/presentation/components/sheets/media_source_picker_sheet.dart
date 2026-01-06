@@ -94,15 +94,6 @@ class MediaSourcePickerSheet extends HookConsumerWidget
               ),
               onTap: () => Navigator.of(context).pop(ImageSource.gallery),
             ),
-            SizedBox(height: sheetCancelButtonTopSpacing),
-            CallToAction.primary.outlined(
-              action: () => Navigator.of(context).pop(),
-              label: Text(
-                translator.translate(
-                  'components.media_source_picker_sheet.cancel',
-                ),
-              ),
-            ),
           ],
         ),
       ),

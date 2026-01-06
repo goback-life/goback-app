@@ -96,13 +96,6 @@ class ImagePickerSheet extends HookConsumerWidget
                 ),
                 onTap: () => _selectImageSource(context, ImageSource.gallery),
               ),
-            SizedBox(height: sheetCancelButtonTopSpacing),
-            CallToAction.primary.outlined(
-              action: () => Navigator.of(context).pop(),
-              label: Text(
-                translator.translate('components.image_picker_sheet.cancel'),
-              ),
-            ),
           ],
         ),
       ),

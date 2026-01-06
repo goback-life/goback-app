@@ -84,15 +84,6 @@ class MediaTypePickerSheet extends HookConsumerWidget
               ),
               onTap: () => Navigator.of(context).pop(MediaType.video),
             ),
-            SizedBox(height: sheetCancelButtonTopSpacing),
-            CallToAction.primary.outlined(
-              action: () => Navigator.of(context).pop(),
-              label: Text(
-                translator.translate(
-                  'components.media_type_picker_sheet.cancel',
-                ),
-              ),
-            ),
           ],
         ),
       ),

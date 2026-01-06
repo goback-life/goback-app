@@ -132,42 +132,24 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                 ),
               ),
             // Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: CallToAction.secondary.outlined(
-                    action: () => Navigator.of(context).pop(),
-                    label: Text(
-                      translator.translate('pages.manual_lockout.dialog.cancel'),
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
+            CallToAction.primary.filled(
+              action: isValid
+                  ? () {
+                      final duration = Duration(
+                        hours: selectedHours.value,
+                        minutes: selectedMinutes.value,
+                      );
+                      Navigator.of(context).pop(duration);
+                    }
+                  : null,
+              label: Text(
+                translator.translate('pages.manual_lockout.dialog.confirm'),
+                style: textTheme.titleMedium?.copyWith(
+                  color: isValid
+                      ? colorScheme.primary
+                      : colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: CallToAction.primary.filled(
-                    action: isValid
-                        ? () {
-                            final duration = Duration(
-                              hours: selectedHours.value,
-                              minutes: selectedMinutes.value,
-                            );
-                            Navigator.of(context).pop(duration);
-                          }
-                        : null,
-                    label: Text(
-                      translator.translate('pages.manual_lockout.dialog.confirm'),
-                      style: textTheme.titleMedium?.copyWith(
-                        color: isValid
-                            ? colorScheme.primary
-                            : colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
