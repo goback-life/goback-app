@@ -84,7 +84,12 @@ class FeedPostsActions {
 
     try {
       isLoading.value = true;
-      posts.value = [];
+      // Keep existing posts visible during refresh for smooth UX
+      // Only clear if this is initial load (posts already empty)
+      final wasEmpty = posts.value.isEmpty;
+      if (wasEmpty) {
+        posts.value = [];
+      }
       hasNextPage.value = true;
       errorMessage.value = null;
       newPostsCount.value = 0;

@@ -18,6 +18,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     required this.onCreatePost,
     this.scrollController,
     this.onPostTap,
+    this.onRefreshStateChanged,
     super.key,
   });
 
@@ -31,6 +32,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
   final VoidCallback onCreatePost;
   final ScrollController? scrollController;
   final void Function(FeedPostModel post)? onPostTap;
+  final void Function(bool isRefreshing)? onRefreshStateChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -182,15 +184,35 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     final sortedPosts = List<FeedPostModel>.from(posts)
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isRefreshing = useState(false);
+    // Track refresh state for parent callback (use ref to avoid ValueNotifier disposal issues)
+    final isRefreshingStateRef = useRef(false);
+    
+    // Helper to safely update refresh state and notify parent
+    void setRefreshing(bool value) {
+      if (!mountedRef.value) {
+        debugPrint('⚠️ Widget not mounted, skipping refresh state update');
+        return;
+      }
+      // Only update if value changed to avoid unnecessary callbacks
+      if (isRefreshingStateRef.value == value) {
+        return;
+      }
+      isRefreshingStateRef.value = value;
+      debugPrint('📢 Calling onRefreshStateChanged with value: $value');
+      onRefreshStateChanged?.call(value);
+    }
+    
+    // Helper to safely check refresh state
+    bool getIsRefreshing() {
+      if (!mountedRef.value) return false;
+      return isRefreshingStateRef.value;
+    }
 
     return NotificationListener<ScrollUpdateNotification>(
       onNotification: (notification) {
         // Fallback: detect when at bottom and trying to scroll further
         if (effectiveScrollController.hasClients && 
-            !isRefreshing.value && 
+            !getIsRefreshing() && 
             !isRefreshingRef.value &&
             !isLoading) {
           final position = effectiveScrollController.position;
@@ -200,23 +222,28 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
           
           if (isAtBottom && isTryingToPullUp) {
             debugPrint('🔄 Pull-up refresh triggered at bottom');
-            isRefreshing.value = true;
             isRefreshingRef.value = true;
+            setRefreshing(true);
             onRefresh().then((_) {
               debugPrint('📦 Refresh Future completed, mounted: ${mountedRef.value}');
-              if (mountedRef.value) {
-                debugPrint('✅ Pull-up refresh completed');
-                isRefreshing.value = false;
-                isRefreshingRef.value = false;
-              } else {
-                debugPrint('⚠️ Widget disposed, skipping state update');
-              }
+              // Add small delay to ensure state propagates
+              Future.delayed(const Duration(milliseconds: 50), () {
+                if (mountedRef.value) {
+                  debugPrint('✅ Pull-up refresh completed, resetting state');
+                  isRefreshingRef.value = false;
+                  setRefreshing(false);
+                } else {
+                  debugPrint('⚠️ Widget disposed, skipping state update');
+                }
+              });
             }).catchError((error) {
               debugPrint('❌ Pull-up refresh error: $error');
-              if (mountedRef.value) {
-                isRefreshing.value = false;
-                isRefreshingRef.value = false;
-              }
+              Future.delayed(const Duration(milliseconds: 50), () {
+                if (mountedRef.value) {
+                  isRefreshingRef.value = false;
+                  setRefreshing(false);
+                }
+              });
             });
           }
         }
@@ -226,7 +253,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
         onNotification: (notification) {
           // In reverse ListView, minScrollExtent is at bottom (most recent posts)
           if (effectiveScrollController.hasClients && 
-              !isRefreshing.value && 
+              !getIsRefreshing() && 
               !isRefreshingRef.value &&
               !isLoading) {
             final position = effectiveScrollController.position;
@@ -238,85 +265,77 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
             // Lower threshold to make it more sensitive
             if (isAtBottom && notification.overscroll.abs() > 5) {
               debugPrint('🔄 Overscroll refresh triggered at bottom (overscroll: ${notification.overscroll})');
-              isRefreshing.value = true;
               isRefreshingRef.value = true;
+              setRefreshing(true);
               onRefresh().then((_) {
                 debugPrint('📦 Overscroll refresh Future completed, mounted: ${mountedRef.value}');
-                if (mountedRef.value) {
-                  debugPrint('✅ Overscroll refresh completed');
-                  isRefreshing.value = false;
-                  isRefreshingRef.value = false;
-                } else {
-                  debugPrint('⚠️ Widget disposed, skipping state update');
-                }
+                // Add small delay to ensure state propagates
+                Future.delayed(const Duration(milliseconds: 50), () {
+                  if (mountedRef.value) {
+                    debugPrint('✅ Overscroll refresh completed, resetting state');
+                    isRefreshingRef.value = false;
+                    setRefreshing(false);
+                  } else {
+                    debugPrint('⚠️ Widget disposed, skipping state update');
+                  }
+                });
               }).catchError((error) {
                 debugPrint('❌ Overscroll refresh error: $error');
-                if (mountedRef.value) {
-                  isRefreshing.value = false;
-                  isRefreshingRef.value = false;
-                }
+                Future.delayed(const Duration(milliseconds: 50), () {
+                  if (mountedRef.value) {
+                    isRefreshingRef.value = false;
+                    setRefreshing(false);
+                  }
+                });
               });
             }
           }
           return false;
         },
-      child: Stack(
-        children: [
-          ListView.builder(
-            controller: effectiveScrollController,
-            reverse: true,
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            padding: EdgeInsets.only(
-              bottom:
-                  MediaQuery.of(context).padding.bottom + feedPostsListBottomPadding,
-            ),
-            itemCount: sortedPosts.length + (isLoadingMore ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == sortedPosts.length) {
-                return const SizedBox.shrink();
-              }
-
-              final post = sortedPosts[index];
-              final isCurrentUser = post.authorId == currentUserId;
-
-              return HomeFeedPostCard(
-                post: post,
-                isCurrentUser: isCurrentUser,
-                onTap: onPostTap != null ? () => onPostTap!(post) : null,
-              );
-            },
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        child: Stack(
+          key: ValueKey(
+            sortedPosts.isEmpty 
+                ? 'empty' 
+                : '${sortedPosts.length}_${sortedPosts.first.id}',
           ),
-          // Show refresh indicator at the bottom when refreshing
-          if (isRefreshing.value)
-            Positioned(
-              bottom: MediaQuery.of(context).padding.bottom + feedPostsListBottomPadding + 20,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.0,
-                    valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-                  ),
-                ),
+          children: [
+            ListView.builder(
+              controller: effectiveScrollController,
+              reverse: true,
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
               ),
+              padding: EdgeInsets.only(
+                bottom:
+                    MediaQuery.of(context).padding.bottom + feedPostsListBottomPadding,
+              ),
+              itemCount: sortedPosts.length + (isLoadingMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == sortedPosts.length) {
+                  return const SizedBox.shrink();
+                }
+
+                final post = sortedPosts[index];
+                final isCurrentUser = post.authorId == currentUserId;
+
+                return HomeFeedPostCard(
+                  post: post,
+                  isCurrentUser: isCurrentUser,
+                  onTap: onPostTap != null ? () => onPostTap!(post) : null,
+                );
+              },
             ),
-        ],
+          ],
         ),
+      ),
       ),
     );
   }

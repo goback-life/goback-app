@@ -60,6 +60,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     }, [currentUserAsync]);
 
     final feedPosts = useFeedPosts(ref, userId: userId ?? '');
+    final isRefreshingFeed = useState(false);
 
     final circleMembersData = useCircleMembers(ref);
 
@@ -278,6 +279,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
           onScrollToBottom,
           isAtTop.value,
           isAtBottom.value,
+          isRefreshingFeed,
         );
       },
     );
@@ -297,6 +299,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     VoidCallback onScrollToBottom,
     bool isAtTop,
     bool isAtBottom,
+    ValueNotifier<bool> isRefreshingFeed,
   ) {
     return BackgroundImage(
       backgroundImage: Assets.png.background.provider(),
@@ -311,6 +314,15 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
                     postCreationInit: postCreationInit,
                     scrollController: scrollController,
                     onPostTap: (post) => _navigateToPostDetail(context, post),
+                    onRefreshStateChanged: (isRefreshing) {
+                      debugPrint('📥 HomeView: Received refresh state change: $isRefreshing (current: ${isRefreshingFeed.value})');
+                      if (isRefreshingFeed.value != isRefreshing) {
+                        isRefreshingFeed.value = isRefreshing;
+                        debugPrint('📥 HomeView: Updated isRefreshingFeed.value to: ${isRefreshingFeed.value}');
+                      } else {
+                        debugPrint('📥 HomeView: State already matches, skipping update');
+                      }
+                    },
                   )
                 : _buildCircleActionsContent(
                     isLoading: circleMembersLoading && !knowsNoCircleMembers,
@@ -358,14 +370,17 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
             ),
 
             // Create content button - bottom right
-            if (showFeed && feedPosts.posts.isNotEmpty)
+            // Keep button visible during refresh or when feed has posts
+            if (showFeed && (feedPosts.posts.isNotEmpty || isRefreshingFeed.value))
               Positioned(
                 bottom: bottomMargin + navBarHeight,
                 right: horizontalPadding,
                 child: HomeCreateContentButton(
+                  key: const ValueKey('create_content_button'),
                   onPressed: () {
                     postCreationInit.selectMainImage();
                   },
+                  isRefreshing: isRefreshingFeed.value,
                 ),
               ),
           ],
@@ -380,6 +395,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     required PostCreationInitializationResult postCreationInit,
     required ScrollController scrollController,
     required void Function(FeedPostModel) onPostTap,
+    required void Function(bool) onRefreshStateChanged,
   }) {
     final showLoading = feedPosts.isLoading && feedPosts.posts.isEmpty;
     
@@ -402,6 +418,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
       },
       scrollController: scrollController,
       onPostTap: onPostTap,
+      onRefreshStateChanged: onRefreshStateChanged,
     );
   }
 
