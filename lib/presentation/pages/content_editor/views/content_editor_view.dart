@@ -1,13 +1,12 @@
 import 'package:cloudless/core/features/post/domain/hooks/use_post_creation.dart';
 import 'package:cloudless/core/features/post/domain/models/parent_post_reference_model.dart';
+import 'package:cloudless/core/features/post/domain/utilities/text_post_parser.dart';
 import 'package:cloudless/core/models/profile_model.dart';
-import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
 import 'package:cloudless/presentation/components/main_app_bar/main_app_bar.dart';
 import 'package:cloudless/presentation/components/parent_post_preview/parent_post_preview.dart';
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/content_editor_button.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/content_editor_post_description.dart';
-import 'package:cloudless/presentation/pages/content_editor/components/content_editor_post_tag_user_section.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/content_editor_selected_media.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/content_editor_text_post.dart';
 import 'package:cloudless/presentation/pages/content_editor/content_editor_layout.dart';
@@ -49,6 +48,27 @@ class ContentEditorView extends HookConsumerWidget
 
     final scrollController = useScrollController();
 
+    // Sync tagged users from @mentions in text (delayed to avoid build-time provider modification)
+    useEffect(() {
+      Future.microtask(() {
+        final description = contentCreation.data.description;
+        final mentionedUserIds = description.isNotEmpty
+            ? TextPostParser.parseMentions(description, allUsers)
+            : <String>[];
+        
+        // Only update if different to avoid infinite loops
+        final currentTagged = contentCreation.data.taggedUserIds;
+        final isDifferent = mentionedUserIds.length != currentTagged.length ||
+            !mentionedUserIds.every((id) => currentTagged.contains(id)) ||
+            !currentTagged.every((id) => mentionedUserIds.contains(id));
+        
+        if (isDifferent) {
+          contentCreation.updateTaggedUsers(mentionedUserIds);
+        }
+      });
+      return null;
+    }, [contentCreation.data.description, allUsers]);
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: Column(
@@ -58,19 +78,7 @@ class ContentEditorView extends HookConsumerWidget
           MainAppBar(title: formattedDate),
           CustomSpace.vertical(titleToImage),
           Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                // compute how much height is needed to dedicate to the tag section when focused
-                // in order for the search bar to be on the top of the screen while we type so that
-                // the results are visible underneath it despite the keyboard and the submit button
-                final tagsHeight =
-                    constraints.maxHeight -
-                    CallToActionStyle.defaultStyle.height -
-                    context.safe().bottom -
-                    bottomMargin;
-
-                return CustomScrollView(
-                  // the tags section will use the scroll controller to scroll away the top part of this view while focused
+            child: CustomScrollView(
                   controller: scrollController,
                   slivers: [
                     SliverList(
@@ -114,23 +122,13 @@ class ContentEditorView extends HookConsumerWidget
                               ? ContentEditorTextPost(
                                   initialText: contentCreation.data.description,
                                   onChanged: contentCreation.updateDescription,
+                                  allUsers: allUsers,
                                 )
                               : ContentEditorPostDescription(
                                   initialText: contentCreation.data.description,
                                   onChanged: contentCreation.updateDescription,
+                                  allUsers: allUsers,
                                 ),
-                        ),
-
-                        CustomPadding(
-                          horizontal: horizontalPadding,
-                          child: ContentEditorPostTagUserSection(
-                            taggedUserIds: contentCreation.data.taggedUserIds,
-                            onTaggedUsersChanged:
-                                contentCreation.updateTaggedUsers,
-                            allUsers: allUsers,
-                            scrollController: scrollController,
-                            expandedHeight: tagsHeight,
-                          ),
                         ),
                       ]),
                     ),
@@ -150,9 +148,7 @@ class ContentEditorView extends HookConsumerWidget
                       ),
                     ),
                   ],
-                );
-              },
-            ),
+                ),
           ),
         ],
       ),
