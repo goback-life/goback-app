@@ -41,11 +41,10 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: EdgeInsets.all(horizontalPadding),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: topPadding),
             Text(
               translator.translate('pages.manual_lockout.dialog.title'),
               style: textTheme.titleLarge?.copyWith(
@@ -53,7 +52,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             Text(
               translator.translate('pages.manual_lockout.dialog.description'),
               style: textTheme.bodyMedium?.copyWith(
@@ -61,7 +60,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 40),
             // Time pickers
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -120,7 +119,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             if (!isValid)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -170,7 +169,6 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                 ),
               ],
             ),
-            SizedBox(height: topPadding),
           ],
         ),
       ),

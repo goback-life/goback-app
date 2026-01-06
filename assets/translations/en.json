@@ -402,8 +402,8 @@
             "title": "goback. to life",
             "button": "GoBack",
             "dialog": {
-                "title": "Lock yourself out",
-                "description": "Select how long you want to lock yourself out of the app (minimum 1 hour)",
+                "title": "goback",
+                "description": "Select how long you want to goback for (minimum 1 hour)",
                 "cancel": "Cancel",
                 "confirm": "Confirm",
                 "error": "Duration must be greater than 1 hour"
