@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_creation_dto.dart';
+import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:cloudless/core/features/post/domain/models/post_data_model.dart';
 import 'package:cloudless/core/features/post/domain/models/post_model.dart';
 import 'package:cloudless/core/features/post/domain/providers/create_post_provider.dart';
@@ -74,7 +75,11 @@ PostCreationResult usePostCreation(WidgetRef ref) {
       return null;
     }
 
-    if (!postCreationData.isEditing && postCreationData.mainImage == null) {
+    // For text posts, mainImage is not required
+    // For other posts, mainImage is required (unless editing)
+    if (!postCreationData.isEditing &&
+        postCreationData.contentType != ContentType.text &&
+        postCreationData.mainImage == null) {
       return null;
     }
 

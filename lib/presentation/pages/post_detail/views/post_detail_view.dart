@@ -353,7 +353,10 @@ class PostDetailView extends HookConsumerWidget
                       SizedBox(height: sectionSpacing),
                     ],
                     if (post.description?.isNotEmpty == true) ...[
-                      PostDetailDescription(description: post.description!),
+                      PostDetailDescription(
+                        description: post.description!,
+                        contentType: post.contentType,
+                      ),
                       SizedBox(height: sectionSpacing),
                     ],
                   ],

@@ -102,6 +102,10 @@ class PostCreationNotifier extends _$PostCreationNotifier {
     state = state.copyWith(contentType: postType);
   }
 
+  void updateContentType(ContentType contentType) {
+    state = state.copyWith(contentType: contentType);
+  }
+
   void updateDescription(String description) {
     state = state.copyWith(description: description);
   }

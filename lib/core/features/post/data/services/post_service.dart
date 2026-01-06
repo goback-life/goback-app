@@ -65,6 +65,27 @@ class PostService implements PostServiceContract {
     int thumbnailWidth = 1080;
     int thumbnailHeight = 1080;
 
+    // Handle text posts - skip media upload and use default dimensions
+    if (contentType == ContentType.text) {
+      thumbnailWidth = 1080;
+      thumbnailHeight = 400; // Minimum height for text posts
+
+      final post = await createDraftPost(
+        authorId: authorId,
+        contentType: contentType,
+        thumbnailUrl: '', // Empty for text posts - render text directly
+        thumbnailWidth: thumbnailWidth,
+        thumbnailHeight: thumbnailHeight,
+        contentDate: contentDate,
+        parentId: parentId,
+        description: description,
+        publishedTimezone: publishedTimezone,
+      );
+
+      // Text posts don't need thumbnail update - return the draft post as is
+      return post;
+    }
+
     File? videoThumbnailFile;
     if (contentType == ContentType.video) {
       final thumbnailToUse =

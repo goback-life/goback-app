@@ -67,7 +67,8 @@ CREATE TYPE public.content_type AS ENUM (
     'image',
     'audio',
     'video',
-    'double_image'
+    'double_image',
+    'text'
 );
 
 

@@ -4,10 +4,12 @@ import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
 import 'package:cloudless/presentation/components/main_app_bar/main_app_bar.dart';
 import 'package:cloudless/presentation/components/parent_post_preview/parent_post_preview.dart';
+import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/content_editor_button.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/content_editor_post_description.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/content_editor_post_tag_user_section.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/content_editor_selected_media.dart';
+import 'package:cloudless/presentation/pages/content_editor/components/content_editor_text_post.dart';
 import 'package:cloudless/presentation/pages/content_editor/content_editor_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -78,9 +80,11 @@ class ContentEditorView extends HookConsumerWidget
                           ParentPostPreview(parentPost: parentPost!),
                         SizedBox(height: verticalSpacing),
 
-                        if (contentCreation.mainImage != null ||
-                            contentCreation.data.existingImageUrl != null ||
-                            contentCreation.data.existingVideoUrl != null)
+                        // Show media selection only for non-text posts
+                        if (contentCreation.data.contentType != ContentType.text &&
+                            (contentCreation.mainImage != null ||
+                                contentCreation.data.existingImageUrl != null ||
+                                contentCreation.data.existingVideoUrl != null))
                           CustomPadding(
                             horizontal: horizontalPadding,
                             bottom: mediaToDescription,
@@ -102,13 +106,19 @@ class ContentEditorView extends HookConsumerWidget
                             ),
                           ),
 
+                        // Show text editor for text posts, description for media posts
                         CustomPadding(
                           horizontal: horizontalPadding,
                           bottom: verticalSpacing,
-                          child: ContentEditorPostDescription(
-                            initialText: contentCreation.data.description,
-                            onChanged: contentCreation.updateDescription,
-                          ),
+                          child: contentCreation.data.contentType == ContentType.text
+                              ? ContentEditorTextPost(
+                                  initialText: contentCreation.data.description,
+                                  onChanged: contentCreation.updateDescription,
+                                )
+                              : ContentEditorPostDescription(
+                                  initialText: contentCreation.data.description,
+                                  onChanged: contentCreation.updateDescription,
+                                ),
                         ),
 
                         CustomPadding(

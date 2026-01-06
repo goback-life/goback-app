@@ -24,7 +24,9 @@ class CreatePostUseCase implements UseCaseContract<Result<PostModel>> {
       logger.info('Post data is required');
     }
 
-    if (postData!.mediaFiles.isEmpty) {
+    // For text posts, media files are not required
+    if (postData!.contentType != ContentType.text &&
+        postData.mediaFiles.isEmpty) {
       logger.info('Media files are required');
     }
 
@@ -50,6 +52,13 @@ class CreatePostUseCase implements UseCaseContract<Result<PostModel>> {
       case ContentType.doubleImage:
         if (postData.mediaFiles.length != 2) {
           logger.info('Two image files required for double image post');
+        }
+        break;
+      case ContentType.text:
+        // Text posts don't require media files
+        // Validation for text content (description length) is handled in PostCreationDto
+        if (postData.mediaFiles.isNotEmpty) {
+          logger.info('Text posts should not have media files');
         }
         break;
     }

@@ -74,6 +74,9 @@ class PostMediaUploadService {
           return 'png';
         }
         return 'jpg';
+      case ContentType.text:
+        // Text posts don't have media files
+        return 'txt';
     }
   }
 

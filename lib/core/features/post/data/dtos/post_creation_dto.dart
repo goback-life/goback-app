@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:cloudless/core/features/post/domain/constants/text_post_constants.dart';
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 
@@ -45,12 +46,24 @@ sealed class PostCreationDto with _$PostCreationDto {
   bool get hasFirstFrame => firstFramePath != null;
   bool get isVideo => contentType == ContentType.video;
 
+  bool get isText => contentType == ContentType.text;
+
   File? get thumbnailForUpload => thumbnail ?? firstFrame;
 
   bool get isValid {
     if (isEditing) {
+      if (isText) {
+        return description.isNotEmpty &&
+            description.length <= TextPostConstants.maxTextPostLength &&
+            !hasMainImage;
+      }
       return hasMainImage;
     } else {
+      if (isText) {
+        return description.isNotEmpty &&
+            description.length <= TextPostConstants.maxTextPostLength &&
+            !hasMainImage;
+      }
       return hasMainImage;
     }
   }

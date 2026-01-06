@@ -95,6 +95,12 @@
             "video": "Video",
             "cancel": "Cancel"
         },
+        "content_type_picker_sheet": {
+            "title": "Create post",
+            "media": "Photo/Video",
+            "text": "Text",
+            "cancel": "Cancel"
+        },
         "image_cropper": {
             "title": "Crop image",
             "done": "Done",
@@ -382,6 +388,12 @@
             }
         },
         "content_editor": {
+            "text_post": {
+                "placeholder": "What's on your mind?",
+                "character_limit": "700 character limit",
+                "characters_remaining": "{count} characters remaining",
+                "characters_over_limit": "{count} characters over limit"
+            },
             "edit_content": "Edit",
             "hint_text": "Tell about this moment...",
             "character_count": "{current}/{max}",

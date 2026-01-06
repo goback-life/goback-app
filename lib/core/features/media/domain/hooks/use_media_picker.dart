@@ -5,24 +5,27 @@ import 'package:cloudless/core/features/media/domain/enums/pick_image_type.dart'
 import 'package:cloudless/core/features/media/domain/hooks/use_image_cropper.dart';
 import 'package:cloudless/core/features/media/domain/hooks/use_pick_and_compress_image_with_permission.dart';
 import 'package:cloudless/core/features/post/domain/models/parent_post_reference_model.dart';
+import 'package:cloudless/presentation/components/sheets/content_type_picker_sheet.dart';
 import 'package:cloudless/presentation/components/sheets/media_source_picker_sheet.dart';
 import 'package:cloudless/presentation/components/sheets/media_type_picker_sheet.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-/// Hook that manages the complete logic for selecting media (photo/video).
+/// Hook that manages the complete logic for selecting media (photo/video) or text.
 ///
-/// First shows a sheet to select the media type (photo/video),
+/// First shows a sheet to select content type (media/text),
+/// then if media is selected, shows a sheet to select the media type (photo/video),
 /// then a second sheet to select the source (camera/library).
 ///
-/// Returns a function that can be called to open the media picker
+/// Returns a function that can be called to open the picker
 /// and calls the [onMediaSelected] callback when a media is selected.
+/// For text posts, calls [onMediaSelected] with null to indicate text mode.
 ///
 /// For photos, applies cropping if [enableCropping] is true.
 /// For videos, cropping is ignored.
 ///
-/// If [forceMediaType] is specified, skips the media type selection
+/// If [forceMediaType] is specified, skips the content type and media type selection
 /// and uses the specified one directly (useful in post edit mode).
 ///
 /// If [parentPost] is provided, it will be displayed in the picker sheets
@@ -45,6 +48,25 @@ Future<void> Function() useMediaPicker({
 
   return () async {
     try {
+      // First, show content type picker (Media vs Text)
+      if (!ref.context.mounted) {
+        return;
+      }
+      final contentTypeSelection = await ContentTypePickerSheet.show(
+        ref.context,
+        parentPost: parentPost,
+      );
+      if (contentTypeSelection == null) {
+        return;
+      }
+
+      // If text is selected, trigger text mode
+      if (contentTypeSelection == ContentTypeSelection.text) {
+        await onMediaSelected(null);
+        return;
+      }
+
+      // If media is selected, continue with media selection flow
       final MediaType? mediaType;
       if (forceMediaType != null) {
         mediaType = forceMediaType;

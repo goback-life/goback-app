@@ -1,4 +1,5 @@
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
+import 'package:cloudless/core/features/post/domain/models/link_preview_model.dart';
 import 'package:cloudless/core/features/timezone/data/providers/current_timezone_provider.dart';
 import 'package:cloudless/core/features/timezone/data/providers/timezone_converter_provider.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -46,6 +47,7 @@ sealed class FeedPostModel with _$FeedPostModel {
     String? videoUrl,
     String? authorAvatarUrl,
     String? description,
+    @Default([]) List<LinkPreviewModel> linkPreviews,
   }) = _FeedPostModel;
 
   DateTime localPublishedAt(WidgetRef ref) {

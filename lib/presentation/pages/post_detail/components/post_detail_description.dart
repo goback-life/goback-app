@@ -1,3 +1,5 @@
+import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
+import 'package:cloudless/presentation/components/text/linkable_text.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -5,9 +7,14 @@ import 'package:flutter/material.dart';
 
 class PostDetailDescription extends HookWidget
     with MainLayout, PostDetailLayout {
-  const PostDetailDescription({required this.description, super.key});
+  const PostDetailDescription({
+    required this.description,
+    this.contentType,
+    super.key,
+  });
 
   final String description;
+  final ContentType? contentType;
 
   @override
   Widget build(BuildContext context) {
@@ -49,13 +56,29 @@ class PostDetailDescription extends HookWidget
                     height: 20.5 / 14.0,
                   ) ??
                   const TextStyle(),
-              child: Text(
-                description,
-                maxLines: showFullText.value
-                    ? null
-                    : (isLongText.value ? descriptionMaxLines.toInt() : null),
-                overflow: showFullText.value ? null : TextOverflow.clip,
-              ),
+              child: contentType == ContentType.text
+                  ? LinkableText(
+                      text: description,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.outlineVariant,
+                        height: 20.5 / 14.0,
+                      ),
+                      maxLines: showFullText.value
+                          ? null
+                          : (isLongText.value
+                              ? descriptionMaxLines.toInt()
+                              : null),
+                      overflow: showFullText.value ? null : TextOverflow.clip,
+                    )
+                  : Text(
+                      description,
+                      maxLines: showFullText.value
+                          ? null
+                          : (isLongText.value
+                              ? descriptionMaxLines.toInt()
+                              : null),
+                      overflow: showFullText.value ? null : TextOverflow.clip,
+                    ),
             ),
             if (isLongText.value) ...[
               SizedBox(height: descriptionTruncatorSpacing),

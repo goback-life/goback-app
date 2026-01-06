@@ -1,1 +1,1 @@
-enum ContentType { image, audio, video, doubleImage }
+enum ContentType { image, audio, video, doubleImage, text }

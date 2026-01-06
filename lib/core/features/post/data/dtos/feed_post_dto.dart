@@ -41,6 +41,7 @@ sealed class FeedPostDto with _$FeedPostDto {
     @JsonKey(name: 'parent_excluded_user_ids') String? parentExcludedUserIds,
     @JsonKey(name: 'author_avatar_url') String? authorAvatarUrl,
     String? description,
+    @JsonKey(name: 'link_previews') Map<String, dynamic>? linkPreviews,
   }) = _FeedPostDto;
 
   factory FeedPostDto.fromJson(Map<String, dynamic> json) =>
