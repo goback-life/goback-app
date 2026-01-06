@@ -392,7 +392,20 @@
                 "placeholder": "What's on your mind?",
                 "character_limit": "700 character limit",
                 "characters_remaining": "{count} characters remaining",
-                "characters_over_limit": "{count} characters over limit"
+                "characters_over_limit": "{count} characters over limit",
+                "add_alias": "Add alias",
+                "link_alias_dialog": {
+                    "title": "Add link alias",
+                    "hint": "Enter alias text",
+                    "label": "Alias"
+                },
+                "edit_link_dialog": {
+                    "title": "Edit link",
+                    "alias_label": "Link text",
+                    "alias_hint": "Text to display",
+                    "url_label": "Website address",
+                    "url_hint": "https://example.com"
+                }
             },
             "edit_content": "Edit",
             "hint_text": "Tell about this moment...",

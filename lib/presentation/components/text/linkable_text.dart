@@ -3,10 +3,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Widget that renders text with clickable URLs.
+/// Widget that renders text with clickable URLs and markdown links.
 /// 
-/// Automatically detects URLs in the text and makes them clickable.
-/// URLs are styled with blue color and underline.
+/// Automatically detects:
+/// - Markdown links [alias](url) - renders as clickable alias text
+/// - Regular URLs - renders as clickable links
 class LinkableText extends HookWidget {
   const LinkableText({
     required this.text,
@@ -22,6 +23,25 @@ class LinkableText extends HookWidget {
   final TextAlign? textAlign;
   final int? maxLines;
   final TextOverflow? overflow;
+
+  // Helper function to add text span
+  static void _addTextSpan(
+    List<TextSpan> spans,
+    String text,
+    int start,
+    int end,
+    TextStyle style,
+  ) {
+    if (start < end && end <= text.length) {
+      final textSegment = text.substring(start, end);
+      if (textSegment.isNotEmpty) {
+        spans.add(TextSpan(
+          text: textSegment,
+          style: style,
+        ));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,30 +62,34 @@ class LinkableText extends HookWidget {
       letterSpacing: defaultStyle.letterSpacing,
     );
 
-    // Regex pattern to match URLs
-    // Matches: http://, https://, and www. URLs
-    final urlPattern = RegExp(
-      r'(https?://[^\s]+|www\.[^\s]+)',
-      caseSensitive: false,
-    );
-
     // Memoize the spans creation to avoid recreating recognizers on every build
+    // Priority: Markdown links > Regular URLs
     final spans = useMemoized(() {
       final result = <TextSpan>[];
-      int lastMatchEnd = 0;
+      
+      // Track which parts of text are already processed
+      final processedRanges = <({int start, int end})>[];
 
-      for (final match in urlPattern.allMatches(text)) {
-        // Add text before the URL
-        if (match.start > lastMatchEnd) {
-          result.add(TextSpan(
-            text: text.substring(lastMatchEnd, match.start),
-            style: defaultStyle,
-          ));
+      // First, process markdown links [alias](url)
+      final markdownLinkPattern = RegExp(r'\[([^\]]+)\]\(([^)]+)\)');
+      
+      for (final match in markdownLinkPattern.allMatches(text)) {
+        final alias = match.group(1)!;
+        final url = match.group(2)!;
+        final start = match.start;
+        final end = match.end;
+
+        // Add text before this markdown link
+        if (start > 0) {
+          final lastEnd = processedRanges.isEmpty
+              ? 0
+              : processedRanges.last.end;
+          if (start > lastEnd) {
+            _addTextSpan(result, text, lastEnd, start, defaultStyle);
+          }
         }
 
-        // Add the URL as a clickable span
-        final url = match.group(0)!;
-        // Ensure URL has protocol for parsing
+        // Add the markdown link as clickable alias
         final urlWithProtocol = url.startsWith('http://') || url.startsWith('https://')
             ? url
             : 'https://$url';
@@ -78,7 +102,61 @@ class LinkableText extends HookWidget {
                 if (await canLaunchUrl(uri)) {
                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                 } else {
-                  // Fallback: try launching without canLaunchUrl check
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              }
+            } catch (e) {
+              // Silently fail if URL can't be launched
+            }
+          };
+        
+        result.add(TextSpan(
+          text: alias,
+          style: linkStyle,
+          recognizer: recognizer,
+        ));
+
+        processedRanges.add((start: start, end: end));
+      }
+
+      // Then, process regular URLs (but skip if inside markdown links)
+      final urlPattern = RegExp(
+        r'(https?://[^\s]+|www\.[^\s]+)',
+        caseSensitive: false,
+      );
+
+      for (final match in urlPattern.allMatches(text)) {
+        final start = match.start;
+        final end = match.end;
+
+        // Check if this URL is inside a processed range
+        final isInProcessedRange = processedRanges.any((range) =>
+            start >= range.start && end <= range.end);
+        
+        if (isInProcessedRange) continue;
+
+        // Add text before this URL
+        final lastEnd = processedRanges.isEmpty
+            ? 0
+            : processedRanges.map((r) => r.end).reduce((a, b) => a > b ? a : b);
+        if (start > lastEnd) {
+          _addTextSpan(result, text, lastEnd, start, defaultStyle);
+        }
+
+        // Add the URL as a clickable span
+        final url = match.group(0)!;
+        final urlWithProtocol = url.startsWith('http://') || url.startsWith('https://')
+            ? url
+            : 'https://$url';
+        
+        final recognizer = TapGestureRecognizer()
+          ..onTap = () async {
+            try {
+              final uri = Uri.tryParse(urlWithProtocol);
+              if (uri != null) {
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                } else {
                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                 }
               }
@@ -93,15 +171,15 @@ class LinkableText extends HookWidget {
           recognizer: recognizer,
         ));
 
-        lastMatchEnd = match.end;
+        processedRanges.add((start: start, end: end));
       }
 
-      // Add remaining text after the last URL
-      if (lastMatchEnd < text.length) {
-        result.add(TextSpan(
-          text: text.substring(lastMatchEnd),
-          style: defaultStyle,
-        ));
+      // Add remaining text
+      final lastEnd = processedRanges.isEmpty
+          ? 0
+          : processedRanges.map((r) => r.end).reduce((a, b) => a > b ? a : b);
+      if (lastEnd < text.length) {
+        _addTextSpan(result, text, lastEnd, text.length, defaultStyle);
       }
 
       return result;

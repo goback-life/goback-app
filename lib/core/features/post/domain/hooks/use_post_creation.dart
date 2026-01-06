@@ -6,6 +6,7 @@ import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:cloudless/core/features/post/domain/models/post_data_model.dart';
 import 'package:cloudless/core/features/post/domain/models/post_model.dart';
 import 'package:cloudless/core/features/post/domain/providers/create_post_provider.dart';
+import 'package:cloudless/core/features/post/domain/utilities/url_shortener.dart';
 import 'package:cloudless/core/features/post/domain/providers/parent_post_reference_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_action_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_creation_lock_provider.dart';
@@ -103,6 +104,14 @@ PostCreationResult usePostCreation(WidgetRef ref) {
           try {
             final timezone = await ref.read(currentTimezoneProvider.future);
 
+            // Shorten URLs in description for text posts (convert to markdown with domain alias)
+            final description = postCreationData.contentType == ContentType.text &&
+                    postCreationData.description.isNotEmpty
+                ? UrlShortener.shortenUrlsInText(postCreationData.description)
+                : (postCreationData.description.isEmpty
+                    ? null
+                    : postCreationData.description);
+
             final postData = PostDataModel(
               postId: postCreationData.postId,
               parentId: postCreationData.parentId,
@@ -113,9 +122,7 @@ PostCreationResult usePostCreation(WidgetRef ref) {
                   : [],
               thumbnailFile: postCreationData.thumbnailForUpload,
               contentDate: postCreationData.effectiveCreatedAt,
-              description: postCreationData.description.isEmpty
-                  ? null
-                  : postCreationData.description,
+              description: description,
               taggedUserIds: postCreationData.taggedUserIds,
               excludedUserIds: excludedUserIds,
               publishedTimezone: timezone,
