@@ -286,7 +286,7 @@ class InviteToCircleView extends HookConsumerWidget
                   child: PhoneFormField(
                     selectionControls: CustomTextSelectionControls(),
                     countrySelectorNavigator:
-                        const CountrySelectorNavigator.dialog(),
+                        const CountrySelectorNavigator.page(),
                     onTapOutside: (event) =>
                         FocusManager.instance.primaryFocus?.unfocus(),
                     controller: phoneController,
