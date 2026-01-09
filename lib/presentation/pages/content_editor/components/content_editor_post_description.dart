@@ -1,3 +1,4 @@
+import 'package:cloudless/core/features/post/domain/constants/text_post_constants.dart';
 import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/presentation/components/main_member/main_member_item.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -11,7 +12,7 @@ class ContentEditorPostDescription extends HookWidget {
     required this.onChanged,
     required this.allUsers,
     super.key,
-    this.maxLength = 500,
+    this.maxLength = TextPostConstants.maxTextPostLength,
   });
 
   final String initialText;

@@ -105,12 +105,21 @@ PostCreationResult usePostCreation(WidgetRef ref) {
             final timezone = await ref.read(currentTimezoneProvider.future);
 
             // Shorten URLs in description for text posts (convert to markdown with domain alias)
-            final description = postCreationData.contentType == ContentType.text &&
-                    postCreationData.description.isNotEmpty
-                ? UrlShortener.shortenUrlsInText(postCreationData.description)
-                : (postCreationData.description.isEmpty
-                    ? null
-                    : postCreationData.description);
+            String? description;
+            if (postCreationData.contentType == ContentType.text &&
+                postCreationData.description.isNotEmpty) {
+              final shortenedDescription =
+                  UrlShortener.shortenUrlsInText(postCreationData.description);
+              // Ensure description doesn't exceed database constraint (500 characters)
+              // after URL shortening, which can make text longer
+              description = shortenedDescription.length > 500
+                  ? shortenedDescription.substring(0, 500)
+                  : shortenedDescription;
+            } else {
+              description = postCreationData.description.isEmpty
+                  ? null
+                  : postCreationData.description;
+            }
 
             final postData = PostDataModel(
               postId: postCreationData.postId,
