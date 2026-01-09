@@ -186,7 +186,7 @@ fvm flutter run
 # Run with specific flavor
 fvm flutter run --flavor prestage
 fvm flutter run --flavor stage
-fvm flutter run --flavor production
+fvm flutter run --flavor production   
 ```
 
 ## Available VS Code Tasks

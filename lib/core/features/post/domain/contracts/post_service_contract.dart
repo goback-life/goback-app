@@ -93,6 +93,8 @@ abstract class PostServiceContract {
 
   Future<FeedPostDto> getPostById({required String postId});
 
+  Future<List<FeedPostDto>> getPostReplies({required String postId});
+
   Future<void> deletePost({required String postId, required String authorId});
 
   Future<void> hidePost({required String postId, required String userId});

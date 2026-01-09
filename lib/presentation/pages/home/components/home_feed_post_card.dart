@@ -1,15 +1,23 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
+import 'package:cloudless/core/features/connection/domain/providers/is_user_connected_provider.dart';
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/profile_image/profile_image_layout.dart';
 import 'package:cloudless/presentation/components/text/linkable_text.dart';
+import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
+import 'package:cloudless/presentation/pages/external_profile/external_profile_routable.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
+import 'package:cloudless/presentation/pages/post_detail/post_detail_page.dart';
+import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
+import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/dedecube_presentation.dart';
+import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
-class HomeFeedPostCard extends StatelessWidget
+class HomeFeedPostCard extends ConsumerWidget
     with MainLayout, HomeLayout, ProfileImageLayout {
   const HomeFeedPostCard({
     required this.post,
@@ -23,16 +31,24 @@ class HomeFeedPostCard extends StatelessWidget
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final aspectRatio = post.thumbnailWidth / post.thumbnailHeight;
     final isVideo = post.contentType == ContentType.video;
     final isText = post.contentType == ContentType.text;
+    final isReply = post.parentId != null;
 
     final displayImageUrl = post.imageUrl ?? '';
 
     final textTheme = theme.textTheme;
+
+    // Offset amount for reply posts
+    const replyOffset = 24.0;
+    // Arrow icon size
+    const arrowIconSize = 20.0;
+    // Spacing between arrow and post
+    const arrowSpacing = 8.0;
 
     return Padding(
       padding: EdgeInsets.only(top: feedPostTopPadding),
@@ -41,10 +57,30 @@ class HomeFeedPostCard extends StatelessWidget
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
         children: [
+          // Reply arrow (left side for other users)
+          if (isReply && !isCurrentUser) ...[
+            GestureDetector(
+              onTap: () => _navigateToParentPost(context, ref),
+              child: Container(
+                width: arrowIconSize,
+                height: arrowIconSize,
+                margin: EdgeInsets.only(
+                  right: arrowSpacing,
+                ),
+                child: Assets.svg.answer.render(
+                  colorFilter: colorScheme.primary.asSrcIn,
+                ),
+              ),
+            ),
+          ],
           Container(
             margin: EdgeInsets.only(
-              left: isCurrentUser ? 0 : feedPostOtherUserMarginLeft,
-              right: isCurrentUser ? feedPostCurrentUserMarginRight : 0,
+              left: isCurrentUser
+                  ? (isReply ? replyOffset : 0)
+                  : (isReply ? replyOffset : feedPostOtherUserMarginLeft),
+              right: isCurrentUser
+                  ? (isReply ? replyOffset : feedPostCurrentUserMarginRight)
+                  : (isReply ? replyOffset : 0),
             ),
             width: feedPostWidth,
             child: Column(
@@ -104,17 +140,36 @@ class HomeFeedPostCard extends StatelessWidget
                         ),
                 ),
                 const SizedBox(height: 8.0),
-                Text(
-                  '@${post.authorUsername ?? 'Unknown'}',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                GestureDetector(
+                  onTap: () => _navigateToUserProfile(ref),
+                  child: Text(
+                    '@${post.authorUsername ?? 'Unknown'}',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
+          // Reply arrow (right side for current user)
+          if (isReply && isCurrentUser) ...[
+            GestureDetector(
+              onTap: () => _navigateToParentPost(context, ref),
+              child: Container(
+                width: arrowIconSize,
+                height: arrowIconSize,
+                margin: EdgeInsets.only(
+                  left: arrowSpacing,
+                ),
+                child: Assets.svg.answer.render(
+                  colorFilter: colorScheme.primary.asSrcIn,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -166,6 +221,71 @@ class HomeFeedPostCard extends StatelessWidget
         text: previewText,
         style: textStyle,
         maxLines: null,
+      ),
+    );
+  }
+
+  Future<void> _navigateToUserProfile(WidgetRef ref) async {
+    final currentUserAsync = ref.read(getCurrentUserProvider);
+    final isCurrentUser = currentUserAsync.whenOrNull(
+          data: (userResult) =>
+              userResult.fold((user) => user.id == post.authorId, (error) => false),
+        ) ??
+        false;
+
+    if (isCurrentUser) {
+      router.push(const ProfileRoutable());
+    } else {
+      final connectionResult = await ref.read(
+        isUserConnectedProvider(post.authorId).future,
+      );
+      final isConnected = connectionResult.fold((isConnected) => isConnected, (
+        error,
+      ) {
+        logger.error('Failed to check user connection', exception: error);
+        return false;
+      });
+
+      if (isConnected) {
+        router.push(CircleProfileRoutable(userId: post.authorId));
+      } else {
+        router.push(ExternalProfileRoutable(userId: post.authorId));
+      }
+    }
+  }
+
+  Future<void> _navigateToParentPost(BuildContext context, WidgetRef ref) async {
+    if (post.parentId == null) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.transparent,
+      isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
+      builder: (sheetContext) => GestureDetector(
+        onTap: () => Navigator.of(sheetContext).pop(),
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          color: Colors.transparent,
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              margin: const EdgeInsets.only(
+                left: 12.0,
+                right: 12.0,
+                top: 150.0,
+                bottom: 20.0,
+              ),
+              child: PostDetailPage.byId(
+                postId: post.parentId!,
+                isFromCalendar: false,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

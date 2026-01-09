@@ -20,6 +20,8 @@ abstract class PostRepositoryContract {
 
   Future<Result<FeedPostModel>> getPostById({required String postId});
 
+  Future<Result<List<FeedPostModel>>> getPostReplies({required String postId});
+
   Future<Result<void>> deletePost({
     required String postId,
     required String authorId,

@@ -3,7 +3,6 @@ import 'package:cloudless/core/features/post/domain/models/parent_post_reference
 import 'package:cloudless/core/features/post/domain/utilities/text_post_parser.dart';
 import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/presentation/components/main_app_bar/main_app_bar.dart';
-import 'package:cloudless/presentation/components/parent_post_preview/parent_post_preview.dart';
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/content_editor_button.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/content_editor_post_description.dart';
@@ -83,9 +82,6 @@ class ContentEditorView extends HookConsumerWidget
                   slivers: [
                     SliverList(
                       delegate: SliverChildListDelegate([
-                        // Show parent post preview if in reply mode
-                        if (parentPost != null)
-                          ParentPostPreview(parentPost: parentPost!),
                         SizedBox(height: verticalSpacing),
 
                         // Show media selection only for non-text posts

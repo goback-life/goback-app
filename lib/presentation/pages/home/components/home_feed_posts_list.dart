@@ -46,6 +46,8 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     final isRefreshingRef = useRef(false);
     // Track if widget is still mounted to prevent updating disposed state
     final mountedRef = useRef(true);
+    // Track if we're refreshing when posts are empty (must be outside conditional for hook order)
+    final isRefreshingEmptyRef = useRef(false);
     
     useEffect(() {
       mountedRef.value = true;
@@ -83,16 +85,16 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
       return () => effectiveScrollController.removeListener(onScroll);
     }, [effectiveScrollController]);
 
-    if (isLoading) {
+    // Only show loading indicator on initial load (when posts are empty)
+    // During refresh, keep existing posts visible
+    if (isLoading && posts.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (posts.isEmpty) {
-      final isRefreshingEmpty = useState(false);
-
       return NotificationListener<ScrollUpdateNotification>(
         onNotification: (notification) {
-          if (effectiveScrollController.hasClients && !isRefreshingEmpty.value && !isLoading) {
+          if (effectiveScrollController.hasClients && !isRefreshingEmptyRef.value && !isLoading) {
             final position = effectiveScrollController.position;
             // In reverse ListView, minScrollExtent is at bottom (most recent posts)
             final isAtBottom = position.pixels <= position.minScrollExtent + 10;
@@ -101,13 +103,13 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
             
             if (isAtBottom && isScrollingUp) {
               debugPrint('🔄 Empty state pull-up refresh triggered');
-              isRefreshingEmpty.value = true;
+              isRefreshingEmptyRef.value = true;
               isRefreshingRef.value = true;
               onRefresh().then((_) {
                 debugPrint('📦 Empty state refresh Future completed, mounted: ${mountedRef.value}');
                 if (mountedRef.value) {
                   debugPrint('✅ Empty state refresh completed');
-                  isRefreshingEmpty.value = false;
+                  isRefreshingEmptyRef.value = false;
                   isRefreshingRef.value = false;
                 } else {
                   debugPrint('⚠️ Widget disposed, skipping state update');
@@ -115,7 +117,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
               }).catchError((error) {
                 debugPrint('❌ Empty state refresh error: $error');
                 if (mountedRef.value) {
-                  isRefreshingEmpty.value = false;
+                  isRefreshingEmptyRef.value = false;
                   isRefreshingRef.value = false;
                 }
               });
@@ -133,16 +135,16 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
               
               if (isAtBottom && 
                   notification.overscroll.abs() > 30 && // Lower threshold
-                  !isRefreshingEmpty.value &&
+                  !isRefreshingEmptyRef.value &&
                   !isLoading) {
                 debugPrint('🔄 Empty state overscroll refresh triggered');
-                isRefreshingEmpty.value = true;
+                isRefreshingEmptyRef.value = true;
                 isRefreshingRef.value = true;
                 onRefresh().then((_) {
                   debugPrint('📦 Empty state overscroll refresh Future completed, mounted: ${mountedRef.value}');
                   if (mountedRef.value) {
                     debugPrint('✅ Empty state overscroll refresh completed');
-                    isRefreshingEmpty.value = false;
+                    isRefreshingEmptyRef.value = false;
                     isRefreshingRef.value = false;
                   } else {
                     debugPrint('⚠️ Widget disposed, skipping state update');
@@ -150,7 +152,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
                 }).catchError((error) {
                   debugPrint('❌ Empty state overscroll refresh error: $error');
                   if (mountedRef.value) {
-                    isRefreshingEmpty.value = false;
+                    isRefreshingEmptyRef.value = false;
                     isRefreshingRef.value = false;
                   }
                 });
@@ -292,22 +294,9 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
           }
           return false;
         },
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-        child: Stack(
-          key: ValueKey(
-            sortedPosts.isEmpty 
-                ? 'empty' 
-                : '${sortedPosts.length}_${sortedPosts.first.id}',
-          ),
-          children: [
-            ListView.builder(
+      child: Stack(
+        children: [
+          ListView.builder(
               controller: effectiveScrollController,
               reverse: true,
               physics: const AlwaysScrollableScrollPhysics(
@@ -333,8 +322,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
                 );
               },
             ),
-          ],
-        ),
+        ],
       ),
       ),
     );

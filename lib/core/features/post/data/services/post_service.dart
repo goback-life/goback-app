@@ -500,6 +500,11 @@ class PostService implements PostServiceContract {
   }
 
   @override
+  Future<List<FeedPostDto>> getPostReplies({required String postId}) async {
+    return _queryService.getPostReplies(postId: postId);
+  }
+
+  @override
   Future<List<PostReactionDto>> getPostReactions({
     required String postId,
   }) async {

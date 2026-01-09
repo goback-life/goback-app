@@ -10,6 +10,7 @@ import 'package:cloudless/presentation/pages/post_detail/components/post_detail_
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_media.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_parent_preview.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_reactions.dart';
+import 'package:cloudless/presentation/pages/post_detail/components/post_detail_replies.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_tags.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
 import 'package:cloudless/presentation/pages/post_detail/utilities/post_detail_calendar.dart';
@@ -364,6 +365,7 @@ class PostDetailView extends HookConsumerWidget
                       ),
                       SizedBox(height: sectionSpacing),
                     ],
+                    PostDetailReplies(postId: post.id),
                     // Show description for non-text posts (text posts already shown above)
                     if (post.contentType != ContentType.text &&
                         post.description?.isNotEmpty == true) ...[

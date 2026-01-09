@@ -25,46 +25,49 @@ class ParentPostPreview extends HookConsumerWidget
     final textTheme = theme.textTheme;
     final isVideo = parentPost.contentType == ContentType.video;
     final isDeleted = parentPost.isDeleted;
+    final hasThumbnail = parentPost.thumbnailUrl.isNotEmpty;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(parentPostPreviewBorderRadius),
-          child: SizedBox(
-            width: parentPostPreviewThumbnailWidth,
-            height: parentPostPreviewThumbnailHeight,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                CachedNetworkImage(
-                  imageUrl: parentPost.thumbnailUrl,
-                  fit: BoxFit.cover,
-                ),
-                if (isDeleted)
-                  BackdropFilter(
-                    filter: ImageFilter.blur(
-                      sigmaX: parentPostPreviewBlurSigma,
-                      sigmaY: parentPostPreviewBlurSigma,
-                    ),
-                    child: Container(
-                      color: colorScheme.secondary.withValues(
-                        alpha: parentPostPreviewBlurOpacity,
+        if (hasThumbnail)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(parentPostPreviewBorderRadius),
+            child: SizedBox(
+              width: parentPostPreviewThumbnailWidth,
+              height: parentPostPreviewThumbnailHeight,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: parentPost.thumbnailUrl,
+                    fit: BoxFit.cover,
+                  ),
+                  if (isDeleted)
+                    BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: parentPostPreviewBlurSigma,
+                        sigmaY: parentPostPreviewBlurSigma,
+                      ),
+                      child: Container(
+                        color: colorScheme.secondary.withValues(
+                          alpha: parentPostPreviewBlurOpacity,
+                        ),
                       ),
                     ),
-                  ),
-                if (isVideo && !isDeleted)
-                  Center(
-                    child: Assets.svg.play.render(
-                      height: parentPostPreviewPlayIconSize,
-                      width: parentPostPreviewPlayIconSize,
+                  if (isVideo && !isDeleted)
+                    Center(
+                      child: Assets.svg.play.render(
+                        height: parentPostPreviewPlayIconSize,
+                        width: parentPostPreviewPlayIconSize,
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-        SizedBox(width: parentPostPreviewThumbnailToUsername),
+        if (hasThumbnail)
+          SizedBox(width: parentPostPreviewThumbnailToUsername),
         Text('@${parentPost.authorUsername}', style: textTheme.titleMedium),
       ],
     );

@@ -134,4 +134,10 @@ mixin PostDetailLayout on MainLayout {
   double get postDetailPageTopOffset => 80.0;
   double get postDetailPageBottomOffset => 30.0;
   double get postDetailPageHeaderSpacing => 20.0;
+
+  // Reply previews
+  double get replyPreviewWidth => 80.0;
+  double get replyPreviewHeight => 80.0;
+  double get replyPreviewBorderRadius => 6.0;
+  double get replyPreviewSpacing => 12.0;
 }

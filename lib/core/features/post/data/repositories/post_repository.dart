@@ -144,6 +144,20 @@ class PostRepository
   }
 
   @override
+  FutureResult<List<FeedPostModel>> getPostReplies({required String postId}) async {
+    return processSupabaseResult<dynamic, List<FeedPostModel>>(
+      request: () async {
+        final replyDtos = await postService.getPostReplies(postId: postId);
+        return Result.success(replyDtos);
+      },
+      responseMapper: (replyDtos) async {
+        return feedPostMapper.mapDtoList(replyDtos);
+      },
+      exceptionMapper: FeedPostExceptionMapper.fromSupabaseException,
+    );
+  }
+
+  @override
   FutureResult<void> deletePost({
     required String postId,
     required String authorId,

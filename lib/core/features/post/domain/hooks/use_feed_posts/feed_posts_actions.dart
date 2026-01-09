@@ -83,11 +83,11 @@ class FeedPostsActions {
     }
 
     try {
-      isLoading.value = true;
-      // Keep existing posts visible during refresh for smooth UX
-      // Only clear if this is initial load (posts already empty)
+      // Only set isLoading=true for initial load (when posts are empty)
+      // During refresh, keep posts visible for smooth UX
       final wasEmpty = posts.value.isEmpty;
       if (wasEmpty) {
+        isLoading.value = true;
         posts.value = [];
       }
       hasNextPage.value = true;
@@ -123,7 +123,10 @@ class FeedPostsActions {
     } catch (e) {
       errorMessage.value = 'Errore imprevisto: ${e.toString()}';
     } finally {
-      isLoading.value = false;
+      // Only reset isLoading if it was set (initial load)
+      if (isLoading.value) {
+        isLoading.value = false;
+      }
     }
   }
 }

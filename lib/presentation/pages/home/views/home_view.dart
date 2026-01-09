@@ -90,46 +90,57 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     useEffect(
       () {
         void onScroll() {
-          final atTop = scrollController.offset < 10;
+          try {
+            if (!scrollController.hasClients) return;
+            final atTop = scrollController.offset < 10;
 
-          final maxScroll = scrollController.position.maxScrollExtent;
-          final currentScroll = scrollController.offset;
-          final atBottom = maxScroll - currentScroll < 100;
+            final maxScroll = scrollController.position.maxScrollExtent;
+            final currentScroll = scrollController.offset;
+            final atBottom = maxScroll - currentScroll < 100;
 
-          // Mark that user has scrolled away from top
-          if (!atTop && !hasUserScrolled.value) {
-            hasUserScrolled.value = true;
-          }
-
-          if (isAtBottom.value != atBottom) {
-            isAtBottom.value = atBottom;
-          }
-
-          if (isAtTop.value != atTop) {
-            isAtTop.value = atTop;
-
-            // If user scrolled to top and there are new posts, reset the counter
-            // because they can see the new posts now
-            if (atTop && feedPosts.newPostsCount > 0) {
-              feedPosts.loadNewPosts(); // This resets the counter
+            // Mark that user has scrolled away from top
+            if (!atTop && !hasUserScrolled.value) {
+              hasUserScrolled.value = true;
             }
 
-            // Reset hasUserScrolled when user returns to top
-            // So that if new posts arrive while at top, banner won't show
-            if (atTop && hasUserScrolled.value) {
-              hasUserScrolled.value = false;
+            if (isAtBottom.value != atBottom) {
+              isAtBottom.value = atBottom;
             }
+
+            if (isAtTop.value != atTop) {
+              isAtTop.value = atTop;
+
+              // If user scrolled to top and there are new posts, reset the counter
+              // because they can see the new posts now
+              if (atTop && feedPosts.newPostsCount > 0) {
+                feedPosts.loadNewPosts(); // This resets the counter
+              }
+
+              // Reset hasUserScrolled when user returns to top
+              // So that if new posts arrive while at top, banner won't show
+              if (atTop && hasUserScrolled.value) {
+                hasUserScrolled.value = false;
+              }
+            }
+          } catch (e) {
+            // Controller may be attached to multiple scroll views or disposed
+            // Ignore the error and skip the update
           }
         }
 
         void checkScrollPosition() {
           if (scrollController.hasClients) {
             SchedulerBinding.instance.addPostFrameCallback((_) {
-              if (scrollController.hasClients && scrollController.offset < 10) {
-                if (!isAtTop.value) {
-                  isAtTop.value = true;
-                  hasUserScrolled.value = false;
+              try {
+                if (scrollController.hasClients && scrollController.offset < 10) {
+                  if (!isAtTop.value) {
+                    isAtTop.value = true;
+                    hasUserScrolled.value = false;
+                  }
                 }
+              } catch (e) {
+                // Controller may be attached to multiple scroll views or disposed
+                // Ignore the error and skip the update
               }
             });
           }
@@ -146,11 +157,19 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
     useEffect(() {
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (scrollController.hasClients && scrollController.offset < 10) {
-          if (!isAtTop.value) {
-            isAtTop.value = true;
-            hasUserScrolled.value = false;
+        try {
+          if (scrollController.hasClients) {
+            final offset = scrollController.offset;
+            if (offset < 10) {
+              if (!isAtTop.value) {
+                isAtTop.value = true;
+                hasUserScrolled.value = false;
+              }
+            }
           }
+        } catch (e) {
+          // Controller may be attached to multiple scroll views or disposed
+          // Ignore the error and skip the update
         }
       });
       return null;
@@ -363,11 +382,13 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
             ),
 
             // Lockout button - bottom left
-            Positioned(
-              bottom: bottomMargin + navBarHeight,
-              left: horizontalPadding,
-              child: const HomeLockoutButton(),
-            ),
+            // Only show when create content button is also available
+            if (showFeed && (feedPosts.posts.isNotEmpty || isRefreshingFeed.value))
+              Positioned(
+                bottom: bottomMargin + navBarHeight,
+                left: horizontalPadding,
+                child: const HomeLockoutButton(),
+              ),
 
             // Create content button - bottom right
             // Keep button visible during refresh or when feed has posts
