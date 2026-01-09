@@ -144,13 +144,30 @@ class _ReplyPreviewItem extends ConsumerWidget {
           ),
           SizedBox(width: replyPreviewSpacing),
           Expanded(
-            child: Text(
-              '@${reply.authorUsername ?? 'Unknown'}',
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '@${reply.authorUsername ?? 'Unknown'}',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (isText && reply.description != null && reply.description!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    reply.description!,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
             ),
           ),
         ],
