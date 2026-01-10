@@ -62,6 +62,7 @@ class FeedPostDtoToModelMapper {
       authorAvatarUrl: dto.authorAvatarUrl,
       description: dto.description,
       isAuthorConnected: dto.isAuthorConnected,
+      isLockoutPost: dto.isLockoutPost,
       linkPreviews: [], // TODO: Parse linkPreviews JSON when implemented
     );
   }

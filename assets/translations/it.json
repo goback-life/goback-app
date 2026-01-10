@@ -273,7 +273,11 @@
                         "content": "Non puoi diminuire il limite quando hai già superato i minuti richiesti. Riprova domani."
                     }
                 }
-            }
+            },
+            "lockout_join_button": "Unisciti",
+            "lockout_join_error_expired": "Questo lockout è scaduto",
+            "lockout_join_error_already_locked": "Sei già bloccato",
+            "lockout_join_success": "Ti sei unito al lockout di @{username}"
         },
         "profile": {
             "title": "Profilo",

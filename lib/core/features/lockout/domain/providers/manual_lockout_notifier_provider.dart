@@ -3,6 +3,7 @@ import 'package:cloudless/core/features/lockout/domain/models/manual_lockout_mod
 import 'package:cloudless/core/features/lockout/domain/use_cases/check_manual_lockout_use_case.dart';
 import 'package:cloudless/core/features/lockout/domain/use_cases/clear_manual_lockout_use_case.dart';
 import 'package:cloudless/core/features/lockout/domain/use_cases/get_lockout_remaining_time_use_case.dart';
+import 'package:cloudless/core/features/lockout/domain/use_cases/join_lockout_use_case.dart';
 import 'package:cloudless/core/features/lockout/domain/use_cases/set_manual_lockout_use_case.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -97,6 +98,48 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     final storable = ref.read(manualLockoutStorableProvider);
     final useCase = GetLockoutRemainingTimeUseCase(storable: storable);
     return await useCase.execute();
+  }
+
+  Future<void> joinLockout(DateTime lockoutEndTime) async {
+    final storable = ref.read(manualLockoutStorableProvider);
+    final useCase = JoinLockoutUseCase(
+      storable: storable,
+      lockoutEndTime: lockoutEndTime,
+    );
+
+    state = const AsyncValue.loading();
+    try {
+      await useCase.execute();
+
+      // Reload state
+      final checkUseCase = CheckManualLockoutUseCase(storable: storable);
+      final isLockedOut = await checkUseCase.execute();
+
+      Duration? remainingDuration;
+      if (isLockedOut) {
+        final getRemainingUseCase = GetLockoutRemainingTimeUseCase(
+          storable: storable,
+        );
+        remainingDuration = await getRemainingUseCase.execute();
+      }
+
+      state = AsyncValue.data(
+        ManualLockoutModel(
+          isLockedOut: isLockedOut && remainingDuration != null,
+          remainingDuration: remainingDuration,
+        ),
+      );
+
+      logger.info('Joined lockout ending at $lockoutEndTime');
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      logger.error(
+        'Error joining lockout',
+        exception: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   Future<void> refresh() async {

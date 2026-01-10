@@ -45,6 +45,7 @@ class PostRepository
           description: postData.description,
           thumbnailFile: postData.thumbnailFile,
           publishedTimezone: postData.publishedTimezone,
+          isLockoutPost: postData.isLockoutPost,
         );
 
         if (postData.taggedUserIds.isNotEmpty) {

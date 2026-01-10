@@ -280,7 +280,11 @@
                     }
                 }
             },
-            "go_back_button": "Go Back"
+            "go_back_button": "Go Back",
+            "lockout_join_button": "Join",
+            "lockout_join_error_expired": "This lockout has expired",
+            "lockout_join_error_already_locked": "You are already locked out",
+            "lockout_join_success": "You joined @{username}'s lockout"
         },
         "profile": {
             "title": "Profile",

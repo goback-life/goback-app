@@ -61,6 +61,7 @@ class PostService implements PostServiceContract {
     String? parentId,
     String? description,
     File? thumbnailFile,
+    bool isLockoutPost = false,
   }) async {
     int thumbnailWidth = 1080;
     int thumbnailHeight = 1080;
@@ -80,6 +81,7 @@ class PostService implements PostServiceContract {
         parentId: parentId,
         description: description,
         publishedTimezone: publishedTimezone,
+        isLockoutPost: isLockoutPost,
       );
 
       // Text posts don't need thumbnail update - return the draft post as is
@@ -116,6 +118,7 @@ class PostService implements PostServiceContract {
       parentId: parentId,
       description: description,
       publishedTimezone: publishedTimezone,
+      isLockoutPost: isLockoutPost,
     );
 
     try {
@@ -224,6 +227,7 @@ class PostService implements PostServiceContract {
     required String publishedTimezone,
     String? parentId,
     String? description,
+    bool isLockoutPost = false,
   }) async {
     return _crudService.createDraftPost(
       authorId: authorId,
@@ -234,6 +238,7 @@ class PostService implements PostServiceContract {
       contentDate: contentDate,
       parentId: parentId,
       description: description,
+      isLockoutPost: isLockoutPost,
     );
   }
 

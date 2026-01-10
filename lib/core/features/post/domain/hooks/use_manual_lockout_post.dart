@@ -76,9 +76,10 @@ Future<Result<PostModel>?> useManualLockoutPost(
       authorId: user.id,
       contentType: ContentType.image,
       mediaFiles: [logoFile],
-      contentDate: DateTime.now(),
+      contentDate: DateTime.now().toUtc(),
       description: description,
       publishedTimezone: timezone,
+      isLockoutPost: true, // Mark as lockout post for security validation
     );
 
     // Create post

@@ -24,6 +24,7 @@ class PostCrudService {
     required DateTime contentDate,
     String? parentId,
     String? description,
+    bool isLockoutPost = false,
   }) async {
     final currentUser = _supabaseClient.auth.currentUser;
     if (currentUser == null) {
@@ -45,6 +46,7 @@ class PostCrudService {
           'content_date': contentDate.toIso8601String(),
           'parent_id': parentId,
           'description': description,
+          'is_lockout_post': isLockoutPost,
         })
         .select()
         .single();

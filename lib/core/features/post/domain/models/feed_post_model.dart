@@ -47,6 +47,7 @@ sealed class FeedPostModel with _$FeedPostModel {
     String? videoUrl,
     String? authorAvatarUrl,
     String? description,
+    @Default(false) bool isLockoutPost,
     @Default([]) List<LinkPreviewModel> linkPreviews,
   }) = _FeedPostModel;
 
@@ -61,5 +62,38 @@ sealed class FeedPostModel with _$FeedPostModel {
       loading: () => publishedAt.toUtc().toLocal(),
       error: (_, __) => publishedAt.toUtc().toLocal(),
     );
+  }
+
+
+  /// Calculates the lockout end time from the post description and publishedAt timestamp.
+  /// Returns null if this is not a lockout post or if the duration cannot be parsed.
+  /// 
+  /// The description format is: "@username is going back for X hours/minutes"
+  DateTime? getLockoutEndTime() {
+    if (!isLockoutPost) {
+      return null;
+    }
+
+    final desc = description ?? '';
+    
+    // Try to parse hours first (format: "@username is going back for X hours")
+    final hoursMatch = RegExp(r'is going back for (\d+) hour').firstMatch(desc);
+    if (hoursMatch != null) {
+      final hours = int.tryParse(hoursMatch.group(1) ?? '');
+      if (hours != null && hours > 0) {
+        return publishedAt.add(Duration(hours: hours));
+      }
+    }
+
+    // Try to parse minutes (format: "@username is going back for X minutes")
+    final minutesMatch = RegExp(r'is going back for (\d+) minute').firstMatch(desc);
+    if (minutesMatch != null) {
+      final minutes = int.tryParse(minutesMatch.group(1) ?? '');
+      if (minutes != null && minutes > 0) {
+        return publishedAt.add(Duration(minutes: minutes));
+      }
+    }
+
+    return null;
   }
 }

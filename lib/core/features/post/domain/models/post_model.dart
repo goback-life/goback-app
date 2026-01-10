@@ -27,6 +27,7 @@ sealed class PostModel with _$PostModel {
     required String publishedTimezone,
     String? parentId,
     String? description,
+    @Default(false) bool isLockoutPost,
     @Default([]) List<MediaItemModel> mediaItems,
   }) = _PostModel;
 

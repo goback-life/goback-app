@@ -346,6 +346,15 @@ class PostDetailView extends HookConsumerWidget
                       ),
                       SizedBox(height: sectionSpacing),
                     ],
+                    // Show description for non-text posts (text posts already shown above)
+                    if (post.contentType != ContentType.text &&
+                        post.description?.isNotEmpty == true) ...[
+                      PostDetailDescription(
+                        description: post.description!,
+                        contentType: post.contentType,
+                      ),
+                      SizedBox(height: sectionSpacing),
+                    ],
                     PostDetailReactions(
                       post: post,
                       isCurrentUserPost: isCurrentUserPost,
@@ -366,15 +375,6 @@ class PostDetailView extends HookConsumerWidget
                       SizedBox(height: sectionSpacing),
                     ],
                     PostDetailReplies(postId: post.id),
-                    // Show description for non-text posts (text posts already shown above)
-                    if (post.contentType != ContentType.text &&
-                        post.description?.isNotEmpty == true) ...[
-                      PostDetailDescription(
-                        description: post.description!,
-                        contentType: post.contentType,
-                      ),
-                      SizedBox(height: sectionSpacing),
-                    ],
                   ],
                 ),
               ),

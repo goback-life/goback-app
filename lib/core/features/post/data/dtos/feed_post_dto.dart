@@ -40,6 +40,7 @@ sealed class FeedPostDto with _$FeedPostDto {
     @JsonKey(name: 'excluded_user_ids') String? excludedUserIds,
     @JsonKey(name: 'parent_excluded_user_ids') String? parentExcludedUserIds,
     @JsonKey(name: 'author_avatar_url') String? authorAvatarUrl,
+    @JsonKey(name: 'is_lockout_post') @Default(false) bool isLockoutPost,
     String? description,
     @JsonKey(name: 'link_previews') Map<String, dynamic>? linkPreviews,
   }) = _FeedPostDto;

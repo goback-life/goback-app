@@ -29,6 +29,7 @@ class PostDtoToModelMapper
       ),
       createdAt: DateTime.parse(dto.createdAt),
       updatedAt: DateTime.parse(dto.updatedAt),
+      isLockoutPost: dto.isLockoutPost,
     );
   }
 }

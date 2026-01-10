@@ -12,6 +12,7 @@ import 'package:cloudless/presentation/components/profile_image/profile_image_la
 import 'package:cloudless/presentation/components/text/linkable_text.dart';
 import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
 import 'package:cloudless/presentation/pages/external_profile/external_profile_routable.dart';
+import 'package:cloudless/presentation/pages/home/components/home_lockout_join_button.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_page.dart';
 import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
@@ -115,116 +116,146 @@ class HomeFeedPostCard extends HookConsumerWidget
               ),
             ),
           ],
-          Container(
-            margin: EdgeInsets.only(
-              left: isCurrentUser
-                  ? (isReply ? replyOffset : 0)
-                  : (isReply ? replyOffset : feedPostOtherUserMarginLeft),
-              right: isCurrentUser
-                  ? (isReply ? replyOffset : feedPostCurrentUserMarginRight)
-                  : (isReply ? replyOffset : 0),
-            ),
-            width: feedPostWidth,
-            child: GestureDetector(
-              onTap: onTap,
-              onHorizontalDragUpdate: canReply
-                  ? (details) => _handleSwipeUpdate(
-                        details,
-                        dragOffset,
-                        feedPostWidth,
-                      )
-                  : null,
-              onHorizontalDragEnd: canReply
-                  ? (details) => _handleSwipeEnd(
-                        context,
-                        ref,
-                        details,
-                        dragOffset,
-                        animationController,
-                        feedPostWidth,
-                        postCreationInitialization,
-                      )
-                  : null,
-              behavior: HitTestBehavior.translucent,
-              child: AnimatedBuilder(
-                animation: bounceAnimation,
-                builder: (context, child) {
-                  final offset = canReply
-                      ? dragOffset.value * (1 - bounceAnimation.value)
-                      : 0.0;
-                  return Transform.translate(
-                    offset: Offset(offset, 0),
-                    child: child,
-                  );
-                },
-                child: Column(
-                  crossAxisAlignment: isCurrentUser
-                      ? CrossAxisAlignment.end
-                      : CrossAxisAlignment.start,
-                  children: [
-                    isText
-                        ? _buildTextPost(context, theme, colorScheme, textTheme)
-                        : AspectRatio(
-                            aspectRatio: aspectRatio,
-                            child: ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(feedPostImageRadius),
-                              child: Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  CachedNetworkImage(
-                                    imageUrl: displayImageUrl,
-                                    fit: BoxFit.cover,
-                                    fadeInDuration:
-                                        const Duration(milliseconds: 200),
-                                    fadeOutDuration:
-                                        const Duration(milliseconds: 100),
-                                    memCacheWidth: (feedPostWidth * 2).toInt(),
-                                    memCacheHeight:
-                                        ((feedPostWidth * 2) / aspectRatio).toInt(),
-                                    placeholder: (context, url) => Stack(
-                                      children: [
-                                        Container(color: colorScheme.surface),
-                                        Positioned(
-                                          top: placeholderPadding,
-                                          left: placeholderPadding,
-                                          child: isVideo
-                                              ? Assets.svg.placeholderVideo.render()
-                                              : Assets.svg.placeholderImage
-                                                  .render(),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                margin: EdgeInsets.only(
+                  left: isCurrentUser
+                      ? (isReply ? replyOffset : 0)
+                      : (isReply ? replyOffset : feedPostOtherUserMarginLeft),
+                  right: isCurrentUser
+                      ? (isReply ? replyOffset : feedPostCurrentUserMarginRight)
+                      : (isReply ? replyOffset : 0),
+                ),
+                width: feedPostWidth,
+                child: GestureDetector(
+                  onTap: onTap,
+                  onHorizontalDragUpdate: canReply
+                      ? (details) => _handleSwipeUpdate(
+                            details,
+                            dragOffset,
+                            feedPostWidth,
+                          )
+                      : null,
+                  onHorizontalDragEnd: canReply
+                      ? (details) => _handleSwipeEnd(
+                            context,
+                            ref,
+                            details,
+                            dragOffset,
+                            animationController,
+                            feedPostWidth,
+                            postCreationInitialization,
+                          )
+                      : null,
+                  behavior: HitTestBehavior.translucent,
+                  child: AnimatedBuilder(
+                    animation: bounceAnimation,
+                    builder: (context, child) {
+                      final offset = canReply
+                          ? dragOffset.value * (1 - bounceAnimation.value)
+                          : 0.0;
+                      return Transform.translate(
+                        offset: Offset(offset, 0),
+                        child: child,
+                      );
+                    },
+                    child: Column(
+                      crossAxisAlignment: isCurrentUser
+                          ? CrossAxisAlignment.end
+                          : CrossAxisAlignment.start,
+                      children: [
+                        isText
+                            ? _buildTextPost(
+                                context, theme, colorScheme, textTheme)
+                            : AspectRatio(
+                                aspectRatio: aspectRatio,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                      feedPostImageRadius),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      CachedNetworkImage(
+                                        imageUrl: displayImageUrl,
+                                        fit: BoxFit.cover,
+                                        fadeInDuration: const Duration(
+                                            milliseconds: 200),
+                                        fadeOutDuration: const Duration(
+                                            milliseconds: 100),
+                                        memCacheWidth:
+                                            (feedPostWidth * 2).toInt(),
+                                        memCacheHeight: ((feedPostWidth * 2) /
+                                                aspectRatio)
+                                            .toInt(),
+                                        placeholder: (context, url) => Stack(
+                                          children: [
+                                            Container(
+                                                color: colorScheme.surface),
+                                            Positioned(
+                                              top: placeholderPadding,
+                                              left: placeholderPadding,
+                                              child: isVideo
+                                                  ? Assets.svg
+                                                      .placeholderVideo
+                                                      .render()
+                                                  : Assets.svg
+                                                      .placeholderImage
+                                                      .render(),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                        Container(color: colorScheme.surface),
-                                  ),
-                                  if (isVideo)
-                                    Center(
-                                      child: Assets.svg.play.render(
-                                        colorFilter:
-                                            colorScheme.primary.asSrcIn,
+                                        errorWidget: (context, url, error) =>
+                                            Container(
+                                                color: colorScheme.surface),
                                       ),
-                                    ),
-                                ],
+                                      if (isVideo)
+                                        Center(
+                                          child: Assets.svg.play.render(
+                                            colorFilter: colorScheme.primary
+                                                .asSrcIn,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
                               ),
+                        const SizedBox(height: 8.0),
+                        GestureDetector(
+                          onTap: () => _navigateToUserProfile(ref),
+                          child: Text(
+                            '@${post.authorUsername ?? 'Unknown'}',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
                             ),
                           ),
-                    const SizedBox(height: 8.0),
-                    GestureDetector(
-                      onTap: () => _navigateToUserProfile(ref),
-                      child: Text(
-                        '@${post.authorUsername ?? 'Unknown'}',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+              // Show join button on the right side (closest to middle) for other users' lockout posts
+              // Uses database flag for security - only posts created through official lockout flow
+              if (!isCurrentUser && post.isLockoutPost)
+                Builder(
+                  builder: (context) {
+                    // Calculate post preview height
+                    final postHeight = isText
+                        ? _calculateTextPostHeight(
+                            post.description ?? '', textTheme)
+                        : feedPostWidth / aspectRatio;
+                    return HomeLockoutJoinButton(
+                      post: post,
+                      postHeight: postHeight,
+                    );
+                  },
+                ),
+            ],
           ),
           // Reply arrow (right side for current user)
           if (isReply && isCurrentUser) ...[
@@ -247,14 +278,7 @@ class HomeFeedPostCard extends HookConsumerWidget
     );
   }
 
-  Widget _buildTextPost(
-    BuildContext context,
-    ThemeData theme,
-    ColorScheme colorScheme,
-    TextTheme textTheme,
-  ) {
-    final text = post.description ?? '';
-    
+  double _calculateTextPostHeight(String text, TextTheme textTheme) {
     // For preview, use up to 200 characters
     final previewText = text.length > 200 ? '${text.substring(0, 200)}...' : text;
     
@@ -275,7 +299,27 @@ class HomeFeedPostCard extends HookConsumerWidget
     // Calculate height: text height + padding (16px top + 16px bottom)
     final minHeight = 100.0;
     final maxHeight = 400.0;
-    final calculatedHeight = (textPainter.size.height + 32.0).clamp(minHeight, maxHeight);
+    return (textPainter.size.height + 32.0).clamp(minHeight, maxHeight);
+  }
+
+  Widget _buildTextPost(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    final text = post.description ?? '';
+    
+    // For preview, use up to 200 characters
+    final previewText = text.length > 200 ? '${text.substring(0, 200)}...' : text;
+    
+    // Calculate height
+    final calculatedHeight = _calculateTextPostHeight(text, textTheme);
+    
+    final textStyle = textTheme.bodyMedium?.copyWith(color: Colors.black) ??
+        const TextStyle(color: Colors.black);
+    final minHeight = 100.0;
+    final maxHeight = 400.0;
 
     return Container(
       width: feedPostWidth,

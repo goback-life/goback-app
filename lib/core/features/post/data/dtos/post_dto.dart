@@ -22,6 +22,7 @@ sealed class PostDto with _$PostDto {
     @JsonKey(name: 'published_timezone') required String publishedTimezone,
     @JsonKey(name: 'deleted_at') String? deletedAt,
     @JsonKey(name: 'parent_id') String? parentId,
+    @JsonKey(name: 'is_lockout_post') @Default(false) bool isLockoutPost,
     String? description,
   }) = _PostDto;
 

@@ -20,6 +20,7 @@ abstract class PostServiceContract {
     String? parentId,
     String? description,
     File? thumbnailFile,
+    bool isLockoutPost = false,
   });
 
   Future<List<String>> uploadMediaFiles(
@@ -39,6 +40,7 @@ abstract class PostServiceContract {
     required String publishedTimezone,
     String? parentId,
     String? description,
+    bool isLockoutPost = false,
   });
 
   /// Adds media entries to the post_media table.
