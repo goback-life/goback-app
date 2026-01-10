@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_circle_members.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
+import 'package:cloudless/core/features/notification/domain/providers/unread_notification_count_provider.dart';
 import 'package:cloudless/core/features/post/domain/enums/post_action_type.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_feed_posts/use_feed_posts.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_creation_initialization.dart';
@@ -86,6 +87,18 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
       }
       return null;
     }, [circleMembersData.isLoading, circleMembersData.allUsers.isNotEmpty]);
+
+    // Polling: Refresh unread notification count (start after user is loaded)
+    useEffect(() {
+      if (userId != null && userId.isNotEmpty) {
+        final timer = Timer.periodic(const Duration(seconds: 15), (_) {
+          ref.invalidate(unreadNotificationCountProvider(userId: userId));
+        });
+
+        return timer.cancel;
+      }
+      return null;
+    }, [userId]);
 
     // Listen to scroll position
     useEffect(

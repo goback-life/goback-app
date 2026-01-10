@@ -383,6 +383,17 @@
         "time_limit_reached": {
             "title": "tempo scaduto...\ngoback. to life",
             "button": "GoBack"
+        },
+        "notifications": {
+            "title": "Notifiche",
+            "markAllAsRead": "Segna tutto come letto",
+            "empty": "Nessuna notifica ancora",
+            "reactionSingle": "@{username} ha reagito al tuo post",
+            "reactionMultiple": "@{username} e altri {count} hanno reagito al tuo post",
+            "tag": "@{username} ti ha taggato in un post",
+            "replySingle": "@{username} ha risposto al tuo post",
+            "replyMultiple": "@{username} e altri {count} hanno risposto al tuo post",
+            "circleJoin": "@{username} si è unito alla tua cerchia"
         }
     },
     "permission": {

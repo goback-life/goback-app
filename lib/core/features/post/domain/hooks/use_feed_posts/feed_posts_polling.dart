@@ -1,3 +1,4 @@
+import 'package:cloudless/core/features/notification/domain/providers/unread_notification_count_provider.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/core/features/post/domain/providers/get_feed_posts_provider.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -50,6 +51,10 @@ class FeedPostsPolling {
         }
       }
     }, (error) {});
+
+    // Refresh notification count when checking for new posts
+    // (new posts may have generated new notifications)
+    ref.invalidate(unreadNotificationCountProvider(userId: userId));
   }
 
   /// Checks for new posts with retry logic (used after post creation/publication).

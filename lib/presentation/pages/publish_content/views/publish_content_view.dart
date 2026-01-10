@@ -5,6 +5,7 @@ import 'package:cloudless/core/features/post/domain/providers/parent_post_refere
 import 'package:cloudless/core/features/post/domain/providers/post_creation_notifier_provider.dart';
 import 'package:cloudless/presentation/components/alerts/main_alert.dart';
 import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
+import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
 import 'package:cloudless/presentation/components/main_data_loader.dart';
 import 'package:cloudless/presentation/components/main_empty_state.dart';
 import 'package:cloudless/presentation/components/main_member/main_member_item.dart';
@@ -17,8 +18,8 @@ import 'package:cloudless/presentation/pages/publish_content/publish_content_lay
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/hooks/use_loading_overlay.dart';
-import 'package:dedecube_presentation/widgets/layout/bottomed_list_view.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class PublishContentView extends HookConsumerWidget
@@ -57,94 +58,155 @@ class PublishContentView extends HookConsumerWidget
           );
         });
 
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: BottomedListView(
-            useSafeArea: true,
-            bottom: Padding(
-              padding: EdgeInsets.only(bottom: bottomMargin),
-              child: PublishContentButton(
-                onTap: contentCreation.canPublish && !isProcessing.value
-                    ? () async {
-                        if (isProcessing.value) {
-                          return;
-                        }
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        final textTheme = theme.textTheme;
 
-                        isProcessing.value = true;
-
-                        final excludedUsersList = memberExclusionData
-                            .excludedMembers
-                            .toList();
-
-                        final result = await contentCreation
-                            .publishPostWithExclusions(excludedUsersList);
-
-                        isProcessing.value = false;
-
-                        if (result != null && context.mounted) {
-                          result.fold(
-                            (post) {
-                              final successKey = postCreationData.isEditing
-                                  ? 'pages.publish_content.snackbar.update_success_message'
-                                  : 'pages.publish_content.snackbar.success_message';
-
-                              MainSnackbar.showSuccess(
-                                context,
-                                translator.translate(successKey),
-                              );
-
-                              if (context.mounted) {
-                                router.go(const HomeRoutable());
-                              }
-                            },
-                            (error) {
-                              final errorKey = postCreationData.isEditing
-                                  ? 'components.alert.post_error.update_error_message'
-                                  : 'components.alert.post_error.error_message';
-
-                              MainAlert.showError(
-                                context: context,
-                                title: translator.translate(
-                                  'components.alert.post_error.title',
-                                ),
-                                content: translator.translate(errorKey),
-                              );
-                            },
-                          );
-                        }
-                      }
-                    : null,
+        return Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (parentPost != null) ...[
+                      ParentPostPreview(parentPost: parentPost),
+                      SizedBox(height: membersListSearchToList),
+                    ],
+                    MainSearchBar(
+                      searchQuery: memberExclusionData.searchQuery,
+                      onSearchChanged: memberExclusionData.updateSearchQuery,
+                    ),
+                    SizedBox(height: membersListSearchToList),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CallToAction.primary.filled(
+                            action: memberExclusionData.selectAll,
+                            label: Text(
+                              translator.translate(
+                                'pages.publish_content.select_all',
+                              ),
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.primary,
+                              ),
+                            ),
+                            horizontalMargin: 0,
+                            borderRadius: BorderRadius.circular(8),
+                            height: 44,
+                          ),
+                        ),
+                        SizedBox(width: horizontalPadding / 2),
+                        Expanded(
+                          child: CallToAction.primary.filled(
+                            action: memberExclusionData.deselectAll,
+                            label: Text(
+                              translator.translate(
+                                'pages.publish_content.deselect_all',
+                              ),
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.primary,
+                              ),
+                            ),
+                            horizontalMargin: 0,
+                            borderRadius: BorderRadius.circular(8),
+                            height: 44,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: membersListSearchToList),
+                    MainMembersList(
+                      members: members,
+                      groupedMembers: memberExclusionData.groupedMembers,
+                      searchQuery: memberExclusionData.searchQuery,
+                      onSearchChanged: memberExclusionData.updateSearchQuery,
+                      action: MemberItemAction.selection,
+                      selectedMembers: memberExclusionData.selectedMembers,
+                      onMemberSelectionChanged:
+                          memberExclusionData.updateSelectedMembers,
+                      taggedUserIds: memberExclusionData.taggedUserIds,
+                      parentPostAuthorId: memberExclusionData.parentPostAuthorId,
+                      onSelectOnly: memberExclusionData.selectOnly,
+                    ),
+                    SizedBox(height: bottomMargin + 80),
+                  ],
+                ),
               ),
             ),
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (parentPost != null) ...[
-                    ParentPostPreview(parentPost: parentPost),
-                    SizedBox(height: membersListSearchToList),
+            SafeArea(
+              top: false,
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
+                  vertical: bottomMargin,
+                ),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
+                    ),
                   ],
-                  MainSearchBar(
-                    searchQuery: memberExclusionData.searchQuery,
-                    onSearchChanged: memberExclusionData.updateSearchQuery,
-                  ),
-                  SizedBox(height: membersListSearchToList),
-                  MainMembersList(
-                    members: members,
-                    groupedMembers: memberExclusionData.groupedMembers,
-                    searchQuery: memberExclusionData.searchQuery,
-                    onSearchChanged: memberExclusionData.updateSearchQuery,
-                    action: MemberItemAction.selection,
-                    selectedMembers: memberExclusionData.selectedMembers,
-                    onMemberSelectionChanged:
-                        memberExclusionData.updateSelectedMembers,
-                    taggedUserIds: memberExclusionData.taggedUserIds,
-                    parentPostAuthorId: memberExclusionData.parentPostAuthorId,
-                  ),
-                ],
+                ),
+                child: PublishContentButton(
+                  onTap: contentCreation.canPublish && !isProcessing.value
+                      ? () async {
+                          if (isProcessing.value) {
+                            return;
+                          }
+
+                          isProcessing.value = true;
+
+                          final excludedUsersList = memberExclusionData
+                              .excludedMembers
+                              .toList();
+
+                          final result = await contentCreation
+                              .publishPostWithExclusions(excludedUsersList);
+
+                          isProcessing.value = false;
+
+                          if (result != null && context.mounted) {
+                            result.fold(
+                              (post) {
+                                final successKey = postCreationData.isEditing
+                                    ? 'pages.publish_content.snackbar.update_success_message'
+                                    : 'pages.publish_content.snackbar.success_message';
+
+                                MainSnackbar.showSuccess(
+                                  context,
+                                  translator.translate(successKey),
+                                );
+
+                                if (context.mounted) {
+                                  router.go(const HomeRoutable());
+                                }
+                              },
+                              (error) {
+                                final errorKey = postCreationData.isEditing
+                                    ? 'components.alert.post_error.update_error_message'
+                                    : 'components.alert.post_error.error_message';
+
+                                MainAlert.showError(
+                                  context: context,
+                                  title: translator.translate(
+                                    'components.alert.post_error.title',
+                                  ),
+                                  content: translator.translate(errorKey),
+                                );
+                              },
+                            );
+                          }
+                        }
+                      : null,
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );

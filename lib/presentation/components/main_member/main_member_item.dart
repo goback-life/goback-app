@@ -19,6 +19,7 @@ class MainMemberItem extends StatelessWidget with MainLayout, MainMemberLayout {
     this.onTap,
     this.isDisabled = false,
     this.reactionEmoji,
+    this.onSelectOnly,
     super.key,
   });
 
@@ -29,6 +30,7 @@ class MainMemberItem extends StatelessWidget with MainLayout, MainMemberLayout {
   final VoidCallback? onTap;
   final bool isDisabled;
   final String? reactionEmoji;
+  final void Function(String memberId)? onSelectOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +61,13 @@ class MainMemberItem extends StatelessWidget with MainLayout, MainMemberLayout {
             break;
         }
       },
+      onLongPress: action == MemberItemAction.selection &&
+              onSelectOnly != null &&
+              !isDisabled
+          ? () {
+              onSelectOnly!(member.id);
+            }
+          : null,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: memberItemVerticalPadding),
         child: Row(

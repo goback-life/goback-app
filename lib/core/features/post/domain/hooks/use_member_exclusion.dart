@@ -16,6 +16,7 @@ typedef MemberExclusionResult = ({
   toggleMemberSelection,
   VoidCallback selectAll,
   VoidCallback deselectAll,
+  void Function(String memberId) selectOnly,
   void Function(
     List<ConnectionMemberModel> members, {
     List<String>? taggedUsers,
@@ -67,7 +68,31 @@ MemberExclusionResult useMemberExclusion(WidgetRef ref) {
   }
 
   void deselectAll() {
-    selectedMembers.value = {};
+    // Keep tagged users and parent post author selected
+    final requiredMembers = <String>{};
+    if (taggedUserIds.value.isNotEmpty) {
+      requiredMembers.addAll(taggedUserIds.value);
+    }
+    if (parentAuthorIdState.value != null) {
+      requiredMembers.add(parentAuthorIdState.value!);
+    }
+    selectedMembers.value = requiredMembers;
+  }
+
+  void selectOnly(String memberId) {
+    // Keep tagged users and parent post author selected
+    final requiredMembers = <String>{};
+    if (taggedUserIds.value.isNotEmpty) {
+      requiredMembers.addAll(taggedUserIds.value);
+    }
+    if (parentAuthorIdState.value != null) {
+      requiredMembers.add(parentAuthorIdState.value!);
+    }
+    // Add the selected member if it's not already in required members
+    if (!requiredMembers.contains(memberId)) {
+      requiredMembers.add(memberId);
+    }
+    selectedMembers.value = requiredMembers;
   }
 
   void initializeWith(
@@ -157,6 +182,7 @@ MemberExclusionResult useMemberExclusion(WidgetRef ref) {
     toggleMemberSelection: toggleMemberSelection,
     selectAll: selectAll,
     deselectAll: deselectAll,
+    selectOnly: selectOnly,
     initializeWith: initializeWith,
   );
 }

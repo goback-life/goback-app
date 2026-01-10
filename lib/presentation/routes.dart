@@ -7,6 +7,7 @@ import 'package:cloudless/presentation/pages/home/home_routable.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/invite_to_circle_routable.dart';
 import 'package:cloudless/presentation/pages/join_circle/join_circle_routable.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
+import 'package:cloudless/presentation/pages/notifications/notifications_routable.dart';
 import 'package:cloudless/presentation/pages/objective/objective_routable.dart';
 import 'package:cloudless/presentation/pages/otp/otp_routable.dart';
 import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
@@ -37,4 +38,5 @@ final List<BaseRoutable> routes = [
   const PublishContentRoutable(),
   const TimeLimitReachedRoutable(),
   const ManualLockoutRoutable(),
+  const NotificationsRoutable(),
 ];

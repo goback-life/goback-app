@@ -420,6 +420,9 @@
         },
         "publish_content": {
             "button": "Publish",
+            "select_all": "Select All",
+            "deselect_all": "Deselect All",
+            "only": "Only",
             "snackbar": {
                 "success_message": "Content published successfully!",
                 "update_success_message": "Content updated successfully!"
@@ -439,6 +442,17 @@
                 "confirm": "Confirm",
                 "error": "Duration must be greater than 1 hour"
             }
+        },
+        "notifications": {
+            "title": "Notifications",
+            "markAllAsRead": "Mark all as read",
+            "empty": "No notifications yet",
+            "reactionSingle": "@{username} reacted to your post",
+            "reactionMultiple": "@{username} and {count} others reacted to your post",
+            "tag": "@{username} tagged you in a post",
+            "replySingle": "@{username} replied to your post",
+            "replyMultiple": "@{username} and {count} others replied to your post",
+            "circleJoin": "@{username} joined your circle"
         }
     },
     "permission": {

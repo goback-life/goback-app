@@ -19,6 +19,7 @@ class MainMembersList extends HookConsumerWidget
     this.onMemberSelectionChanged,
     this.taggedUserIds,
     this.parentPostAuthorId,
+    this.onSelectOnly,
     super.key,
   });
 
@@ -31,6 +32,7 @@ class MainMembersList extends HookConsumerWidget
   final ValueChanged<Set<String>>? onMemberSelectionChanged;
   final Set<String>? taggedUserIds;
   final String? parentPostAuthorId;
+  final void Function(String memberId)? onSelectOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -93,6 +95,7 @@ class MainMembersList extends HookConsumerWidget
                                 _handleMemberSelection(item.id, selected)
                           : null,
                       isDisabled: isDisabled,
+                      onSelectOnly: onSelectOnly,
                     );
                   }
                   return const SizedBox.shrink();
