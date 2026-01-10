@@ -11,5 +11,6 @@ sealed class PostActionEvent with _$PostActionEvent {
   const factory PostActionEvent({
     required PostActionType action,
     required DateTime timestamp,
+    String? postId, // Post ID for create actions to enable immediate feed insertion
   }) = _PostActionEvent;
 }

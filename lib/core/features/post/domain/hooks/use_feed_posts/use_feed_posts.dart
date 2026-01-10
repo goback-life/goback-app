@@ -100,18 +100,33 @@ FeedPostsResult useFeedPosts(
               isMounted.value) {
             switch (next.action) {
               case PostActionType.create:
-                FeedPostsPolling.checkForNewPostsWithRetry(
-                  ref: ref,
-                  userId: userId,
-                  posts: posts,
-                  newestPostTimestamp: newestPostTimestamp,
-                  oldestPostTimestamp: oldestPostTimestamp,
-                  newPostsCount: newPostsCount,
-                  isMounted: isMounted.value,
-                  maxRetries: 3,
-                ).then((_) {
-                  ref.read(postActionNotifierProvider.notifier).clearAction();
-                });
+                // If we have a post ID, immediately fetch and add it to the feed
+                if (next.postId != null) {
+                  FeedPostsPolling.addPostImmediately(
+                    ref: ref,
+                    postId: next.postId!,
+                    userId: userId,
+                    posts: posts,
+                    newestPostTimestamp: newestPostTimestamp,
+                    oldestPostTimestamp: oldestPostTimestamp,
+                  ).then((_) {
+                    ref.read(postActionNotifierProvider.notifier).clearAction();
+                  });
+                } else {
+                  // Fallback to retry mechanism if no post ID
+                  FeedPostsPolling.checkForNewPostsWithRetry(
+                    ref: ref,
+                    userId: userId,
+                    posts: posts,
+                    newestPostTimestamp: newestPostTimestamp,
+                    oldestPostTimestamp: oldestPostTimestamp,
+                    newPostsCount: newPostsCount,
+                    isMounted: isMounted.value,
+                    maxRetries: 3,
+                  ).then((_) {
+                    ref.read(postActionNotifierProvider.notifier).clearAction();
+                  });
+                }
                 break;
               case PostActionType.update:
                 FeedPostsPolling.checkForPostUpdates(
@@ -198,23 +213,43 @@ FeedPostsResult useFeedPosts(
         if (postActionEvent != null) {
           switch (postActionEvent.action) {
             case PostActionType.create:
-              FeedPostsPolling.checkForNewPostsWithRetry(
-                ref: ref,
-                userId: userId,
-                posts: posts,
-                newestPostTimestamp: newestPostTimestamp,
-                oldestPostTimestamp: oldestPostTimestamp,
-                newPostsCount: newPostsCount,
-                isMounted: isMounted.value,
-                maxRetries: 3,
-              ).then((_) {
-                ref.read(postActionNotifierProvider.notifier).clearAction();
+              // If we have a post ID, immediately fetch and add it to the feed
+              if (postActionEvent.postId != null) {
+                FeedPostsPolling.addPostImmediately(
+                  ref: ref,
+                  postId: postActionEvent.postId!,
+                  userId: userId,
+                  posts: posts,
+                  newestPostTimestamp: newestPostTimestamp,
+                  oldestPostTimestamp: oldestPostTimestamp,
+                ).then((_) {
+                  ref.read(postActionNotifierProvider.notifier).clearAction();
 
-                if (!pollingController.isPollingActive) {
-                  pollingController.startPolling();
-                  updatePollingController.startPolling();
-                }
-              });
+                  if (!pollingController.isPollingActive) {
+                    pollingController.startPolling();
+                    updatePollingController.startPolling();
+                  }
+                });
+              } else {
+                // Fallback to retry mechanism if no post ID
+                FeedPostsPolling.checkForNewPostsWithRetry(
+                  ref: ref,
+                  userId: userId,
+                  posts: posts,
+                  newestPostTimestamp: newestPostTimestamp,
+                  oldestPostTimestamp: oldestPostTimestamp,
+                  newPostsCount: newPostsCount,
+                  isMounted: isMounted.value,
+                  maxRetries: 3,
+                ).then((_) {
+                  ref.read(postActionNotifierProvider.notifier).clearAction();
+
+                  if (!pollingController.isPollingActive) {
+                    pollingController.startPolling();
+                    updatePollingController.startPolling();
+                  }
+                });
+              }
               break;
             case PostActionType.update:
               FeedPostsPolling.checkForPostUpdates(

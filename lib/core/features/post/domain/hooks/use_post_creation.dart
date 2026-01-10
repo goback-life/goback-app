@@ -148,7 +148,7 @@ PostCreationResult usePostCreation(WidgetRef ref) {
                 } else {
                   ref
                       .read(postActionNotifierProvider.notifier)
-                      .notifyPostCreated();
+                      .notifyPostCreated(postId: post.id);
                 }
               },
               (error) {

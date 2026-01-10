@@ -1,6 +1,7 @@
 import 'package:cloudless/core/features/notification/domain/providers/unread_notification_count_provider.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/core/features/post/domain/providers/get_feed_posts_provider.dart';
+import 'package:cloudless/core/features/post/domain/providers/get_post_by_id_provider.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 
@@ -146,6 +147,57 @@ class FeedPostsPolling {
       } else {
         attempt++;
       }
+    }
+  }
+
+  /// Immediately fetches a post by ID and adds it to the feed.
+  /// Used when a post is just created to show it instantly.
+  static Future<void> addPostImmediately({
+    required WidgetRef ref,
+    required String postId,
+    required String userId,
+    required ValueNotifier<List<FeedPostModel>> posts,
+    required ValueNotifier<DateTime?> newestPostTimestamp,
+    required ValueNotifier<DateTime?> oldestPostTimestamp,
+  }) async {
+    if (postId.isEmpty || userId.isEmpty || userId.trim().isEmpty) {
+      return;
+    }
+
+    try {
+      final result = await ref.read(getPostByIdProvider(postId: postId).future);
+
+      result.fold(
+        (feedPost) {
+          // Check if post already exists in feed
+          final existingIds = posts.value.map((p) => p.id).toSet();
+          if (existingIds.contains(feedPost.id)) {
+            return;
+          }
+
+          // Add post to the beginning of the feed
+          posts.value = [feedPost, ...posts.value];
+
+          // Update timestamps
+          if (newestPostTimestamp.value == null ||
+              feedPost.createdAt.isAfter(newestPostTimestamp.value!)) {
+            newestPostTimestamp.value = feedPost.createdAt;
+          }
+
+          // If this is the first post, set it as oldest too
+          if (posts.value.length == 1) {
+            oldestPostTimestamp.value = feedPost.createdAt;
+          }
+
+          // Refresh notification count (new posts may have generated notifications)
+          ref.invalidate(unreadNotificationCountProvider(userId: userId));
+        },
+        (error) {
+          // Silently fail - the retry mechanism will handle it
+        },
+      );
+    } catch (e) {
+      // Silently fail - the retry mechanism will handle it
     }
   }
 

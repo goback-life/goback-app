@@ -13,10 +13,12 @@ class PostActionNotifier extends _$PostActionNotifier {
   PostActionEvent? build() => null;
 
   /// Notifies that a post was created.
-  void notifyPostCreated() {
+  /// [postId] is optional and enables immediate feed insertion.
+  void notifyPostCreated({String? postId}) {
     state = PostActionEvent(
       action: PostActionType.create,
       timestamp: DateTime.now(),
+      postId: postId,
     );
   }
 
