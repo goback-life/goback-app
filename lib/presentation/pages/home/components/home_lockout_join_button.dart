@@ -1,4 +1,5 @@
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
+import 'package:cloudless/core/features/post/domain/hooks/use_join_lockout_post.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
@@ -86,7 +87,39 @@ class HomeLockoutJoinButton extends HookConsumerWidget
     final lockoutNotifier = ref.read(manualLockoutNotifierProvider.notifier);
 
     try {
+      // Calculate remaining duration for the post description
+      final now = DateTime.now();
+      final remainingDuration = lockoutEndTime.difference(now);
+
+      // Join the lockout
       await lockoutNotifier.joinLockout(lockoutEndTime);
+
+      // Get post author information (the lockout creator)
+      final otherUserId = post.authorId;
+      final otherUserUsername = post.authorUsername ?? '';
+
+      // Create a post on the joiner's account
+      if (otherUserUsername.isNotEmpty) {
+        final postResult = await useJoinLockoutPost(
+          ref,
+          remainingDuration,
+          otherUserId,
+          otherUserUsername,
+        );
+
+        postResult?.fold(
+          (post) {
+            logger.info('Join lockout post created successfully: ${post.id}');
+          },
+          (error) {
+            logger.error(
+              'Failed to create join lockout post',
+              exception: error,
+            );
+            // Don't fail the entire join operation if post creation fails
+          },
+        );
+      }
 
       if (context.mounted) {
         router.go(const ManualLockoutRoutable());

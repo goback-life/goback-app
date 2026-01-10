@@ -68,16 +68,23 @@ sealed class FeedPostModel with _$FeedPostModel {
   /// Calculates the lockout end time from the post description and publishedAt timestamp.
   /// Returns null if this is not a lockout post or if the duration cannot be parsed.
   /// 
-  /// The description format is: "@username is going back for X hours/minutes"
+  /// Supports description formats:
+  /// - "@username is going back for X hours/minutes"
+  /// - "@username is going back for X hours/minutes with @other_user"
   DateTime? getLockoutEndTime() {
     if (!isLockoutPost) {
       return null;
     }
 
     final desc = description ?? '';
+    if (desc.isEmpty) {
+      return null;
+    }
     
-    // Try to parse hours first (format: "@username is going back for X hours")
-    final hoursMatch = RegExp(r'is going back for (\d+) hour').firstMatch(desc);
+    // Try to parse hours first (format: "@username is going back for X hours" or "X hours with @other")
+    // Use word boundary to match "hour" or "hours" but not "hoursly" etc.
+    // Match both singular and plural: "hour" or "hours"
+    final hoursMatch = RegExp(r'is going back for (\d+)\s+(?:hour|hours)').firstMatch(desc);
     if (hoursMatch != null) {
       final hours = int.tryParse(hoursMatch.group(1) ?? '');
       if (hours != null && hours > 0) {
@@ -85,8 +92,9 @@ sealed class FeedPostModel with _$FeedPostModel {
       }
     }
 
-    // Try to parse minutes (format: "@username is going back for X minutes")
-    final minutesMatch = RegExp(r'is going back for (\d+) minute').firstMatch(desc);
+    // Try to parse minutes (format: "@username is going back for X minutes" or "X minutes with @other")
+    // Match both singular and plural: "minute" or "minutes"
+    final minutesMatch = RegExp(r'is going back for (\d+)\s+(?:minute|minutes)').firstMatch(desc);
     if (minutesMatch != null) {
       final minutes = int.tryParse(minutesMatch.group(1) ?? '');
       if (minutes != null && minutes > 0) {
