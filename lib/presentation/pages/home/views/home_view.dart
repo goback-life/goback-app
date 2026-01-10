@@ -61,6 +61,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
     final feedPosts = useFeedPosts(ref, userId: userId ?? '');
     final isRefreshingFeed = useState(false);
+    final topPostDate = useState<DateTime?>(null);
 
     final circleMembersData = useCircleMembers(ref);
 
@@ -299,6 +300,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
           isAtTop.value,
           isAtBottom.value,
           isRefreshingFeed,
+          topPostDate,
         );
       },
     );
@@ -319,6 +321,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     bool isAtTop,
     bool isAtBottom,
     ValueNotifier<bool> isRefreshingFeed,
+    ValueNotifier<DateTime?> topPostDate,
   ) {
     return BackgroundImage(
       backgroundImage: Assets.png.background.provider(),
@@ -341,6 +344,9 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
                       } else {
                         debugPrint('📥 HomeView: State already matches, skipping update');
                       }
+                    },
+                    onTopPostDateChanged: (date) {
+                      topPostDate.value = date;
                     },
                   )
                 : _buildCircleActionsContent(
@@ -378,7 +384,18 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
               top: dateBadgeTopPadding,
               left: 0,
               right: 0,
-              child: const Center(child: HomeDateBadge()),
+              child: Center(
+                child: HomeDateBadge(
+                  displayDate: topPostDate.value ??
+                      (feedPosts.posts.isNotEmpty
+                          ? feedPosts.posts
+                              .reduce((a, b) =>
+                                  a.createdAt.isAfter(b.createdAt) ? a : b)
+                              .createdAt
+                              .toLocal()
+                          : null),
+                ),
+              ),
             ),
 
             // Lockout button - bottom left
@@ -417,6 +434,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     required ScrollController scrollController,
     required void Function(FeedPostModel) onPostTap,
     required void Function(bool) onRefreshStateChanged,
+    required void Function(DateTime?) onTopPostDateChanged,
   }) {
     final showLoading = feedPosts.isLoading && feedPosts.posts.isEmpty;
     
@@ -440,6 +458,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
       scrollController: scrollController,
       onPostTap: onPostTap,
       onRefreshStateChanged: onRefreshStateChanged,
+      onTopPostDateChanged: onTopPostDateChanged,
     );
   }
 

@@ -29,7 +29,7 @@ class PostQueryService {
     try {
       final params = {
         'p_user_id': userId,
-        'target_date': targetDate.toIso8601String().split('T')[0],
+        'target_timestamp': targetDate.toIso8601String(),
         'page_size': pageSize,
       };
 
@@ -47,7 +47,7 @@ class PostQueryService {
         'get_user_feed_count',
         params: {
           'p_user_id': userId,
-          'target_date': targetDate.toIso8601String().split('T')[0],
+          'target_timestamp': targetDate.toIso8601String(),
         },
       );
     } catch (e) {

@@ -19,6 +19,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     this.scrollController,
     this.onPostTap,
     this.onRefreshStateChanged,
+    this.onTopPostDateChanged,
     super.key,
   });
 
@@ -33,6 +34,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
   final ScrollController? scrollController;
   final void Function(FeedPostModel post)? onPostTap;
   final void Function(bool isRefreshing)? onRefreshStateChanged;
+  final void Function(DateTime? date)? onTopPostDateChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,34 +58,66 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
       };
     }, []);
     
-    void onScroll() {
-      // In reverse ListView, trigger pagination when scrolling towards older posts (top)
-      final position = effectiveScrollController.position;
-      final distanceFromOlderPostsEdge =
-          position.pixels - position.minScrollExtent;
+    // Sort posts once for use in ListView (computed here for the ListView)
+    final sortedPosts = List<FeedPostModel>.from(posts)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-      if (distanceFromOlderPostsEdge <= feedPostsListScrollTrigger) {
-        if (hasNextPage && !isLoadingMore && !isLoadingRef.value) {
-          isLoadingRef.value = true;
-          onLoadMore();
-          // Reset after a delay to allow the state to update
-          Future.delayed(const Duration(milliseconds: 500), () {
-            isLoadingRef.value = false;
+    useEffect(() {
+      void scrollHandler() {
+        // In reverse ListView, trigger pagination when scrolling towards older posts (top)
+        final position = effectiveScrollController.position;
+        final distanceFromOlderPostsEdge =
+            position.pixels - position.minScrollExtent;
+
+        if (distanceFromOlderPostsEdge <= feedPostsListScrollTrigger) {
+          if (hasNextPage && !isLoadingMore && !isLoadingRef.value) {
+            isLoadingRef.value = true;
+            onLoadMore();
+            // Reset after a delay to allow the state to update
+            Future.delayed(const Duration(milliseconds: 500), () {
+              isLoadingRef.value = false;
+            });
+          }
+        }
+        
+        // Track which post is at the top - compute from posts parameter directly to avoid capturing sortedPosts
+        // This recomputes on each scroll but avoids serialization issues
+        if (posts.isNotEmpty && onTopPostDateChanged != null) {
+          // Recompute sorted posts inside handler to avoid capturing from outer scope
+          final currentSorted = List<FeedPostModel>.from(posts)
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          
+          DateTime topPostDate;
+          if (position.maxScrollExtent > position.minScrollExtent) {
+            // Calculate scroll progress (0 = at bottom/newest, 1 = at top/oldest)
+            final scrollRange = position.maxScrollExtent - position.minScrollExtent;
+            final scrollProgress = (position.pixels - position.minScrollExtent) / scrollRange;
+            // Map to post index (0 = newest, last = oldest)
+            final topIndex = (scrollProgress * (currentSorted.length - 1)).clamp(0.0, currentSorted.length - 1.0).round();
+            topPostDate = currentSorted[topIndex].createdAt.toLocal();
+          } else {
+            topPostDate = currentSorted.first.createdAt.toLocal();
+          }
+          
+          // Extract to primitives before creating any closures
+          final callback = onTopPostDateChanged;
+          final date = topPostDate;
+          // Use postFrameCallback to defer and avoid serialization during ValueNotifier updates
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            callback?.call(date);
           });
         }
       }
-      
-      // Detect pull-up refresh at bottom (most recent posts)
-      // In reverse ListView, minScrollExtent is at bottom
-      // When user is at bottom and tries to scroll further, position stays at minScrollExtent
-      // but we can detect this via overscroll notification instead
-      // This scroll listener is mainly for pagination
-    }
 
-    useEffect(() {
-      effectiveScrollController.addListener(onScroll);
-      return () => effectiveScrollController.removeListener(onScroll);
-    }, [effectiveScrollController]);
+      effectiveScrollController.addListener(scrollHandler);
+      // Trigger initial calculation after first frame
+      Future.microtask(() {
+        if (effectiveScrollController.hasClients) {
+          scrollHandler();
+        }
+      });
+      return () => effectiveScrollController.removeListener(scrollHandler);
+    }, [effectiveScrollController, posts.length]);
 
     // Only show loading indicator on initial load (when posts are empty)
     // During refresh, keep existing posts visible
@@ -183,8 +217,6 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
       );
     }
 
-    final sortedPosts = List<FeedPostModel>.from(posts)
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     // Track refresh state for parent callback (use ref to avoid ValueNotifier disposal issues)
     final isRefreshingStateRef = useRef(false);
@@ -316,6 +348,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
                 final isCurrentUser = post.authorId == currentUserId;
 
                 return HomeFeedPostCard(
+                  key: ValueKey('post_${post.id}'),
                   post: post,
                   isCurrentUser: isCurrentUser,
                   onTap: onPostTap != null ? () => onPostTap!(post) : null,

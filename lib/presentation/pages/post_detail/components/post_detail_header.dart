@@ -51,7 +51,7 @@ class PostDetailHeader extends HookConsumerWidget
         ),
         const Spacer(),
         Text(
-          DateFormatter.formatTimeOnly(
+          DateFormatter.formatTimeWithDateIfNeeded(
             post.localPublishedAt(ref),
             locale,
             convertToLocal: false,

@@ -35,9 +35,11 @@ class DateFormatter {
 
   /// Formats a date in "day month" format with localization and capitalized month
   /// Format: "d MMMM" (e.g. "1 October" in English, "1 Ottobre" in Italian)
+  /// Converts the date to local timezone before formatting.
   static String formatDayMonth(DateTime date, String locale) {
+    final localDate = date.toLocal();
     final formatter = DateFormat('d MMMM', locale);
-    final formatted = formatter.format(date);
+    final formatted = formatter.format(localDate);
     return _capitalizeMonth(formatted);
   }
 
@@ -107,5 +109,29 @@ class DateFormatter {
     final localDate = convertToLocal ? date.toLocal() : date;
     final formatter = DateFormat('H.mm', locale);
     return formatter.format(localDate);
+  }
+
+  /// Formats time with date if the date is different from today
+  /// Format: "H.mm" if same day, "d MMMM - H.mm" if different day (e.g. "1 October - 14.30")
+  static String formatTimeWithDateIfNeeded(
+    DateTime date,
+    String locale, {
+    bool convertToLocal = true,
+    DateTime? referenceDate,
+  }) {
+    final localDate = convertToLocal ? date.toLocal() : date;
+    final now = referenceDate ?? DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final postDate = DateTime(localDate.year, localDate.month, localDate.day);
+    
+    if (postDate == today) {
+      // Same day: show only time
+      return formatTimeOnly(date, locale, convertToLocal: convertToLocal);
+    } else {
+      // Different day: show date and time
+      final formatter = DateFormat('d MMMM - H.mm', locale);
+      final formatted = formatter.format(localDate);
+      return _capitalizeMonth(formatted);
+    }
   }
 }

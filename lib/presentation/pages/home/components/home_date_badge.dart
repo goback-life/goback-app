@@ -5,17 +5,24 @@ import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 class HomeDateBadge extends StatelessWidget with MainLayout, HomeLayout {
-  const HomeDateBadge({super.key});
+  const HomeDateBadge({
+    this.displayDate,
+    super.key,
+  });
+
+  /// The date to display. If null, shows today's date.
+  final DateTime? displayDate;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-    final now = DateTime.now();
     final locale = translator.currentLocale.toString();
 
-    final formattedDate = DateFormatter.formatDayMonth(now, locale);
+    // Use displayDate if provided, otherwise use today
+    final dateToShow = displayDate ?? DateTime.now();
+    final formattedDate = DateFormatter.formatDayMonth(dateToShow, locale);
 
     return Container(
       padding: EdgeInsets.symmetric(
