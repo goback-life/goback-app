@@ -9,25 +9,25 @@
             },
             "delete_account": {
                 "title": "Vuoi eliminare definitivamente il tuo account?",
-                "content": "Perderai tutti i tuoi ricordi, e le tue cerchie, sei sicuro di voler procedere?",
-                "delete": "Si, elimina l’account",
+                "content": "Perderai tutti i tuoi ricordi e le tue cerchie, sei sicuro di voler procedere?",
+                "delete": "Sì, elimina l'account",
                 "cancel": "Ho cambiato idea",
                 "error_title": "Errore",
                 "error_content": "Si è verificato un errore durante l'eliminazione del tuo account. Riprova più tardi.",
                 "ok": "OK"
             },
             "logout_error": {
-                "title": "Impossibile effettuare il logout",
+                "title": "Errore di logout",
                 "content": "Riprova più tardi."
             },
             "remove_error": {
-                "title": "Impossibile rimuovere l'amico",
+                "title": "Errore rimozione amico",
                 "content": "Riprova più tardi."
             },
             "post_error": {
                 "title": "Si è verificato un errore",
-                "error_message": "Errore durante la pubblicazione. \nRiprova.",
-                "update_error_message": "Errore durante l'aggiornamento. \nRiprova."
+                "error_message": "Errore durante la pubblicazione del post. \nRiprova.",
+                "update_error_message": "Errore durante l'aggiornamento del post. \nRiprova."
             },
             "calendar_error": {
                 "error_title": "Errore",
@@ -53,7 +53,7 @@
             },
             "generic_error": {
                 "title": "Errore",
-                "content": "Si è verificato un errore. \nRiprova più tardi."
+                "content": "Si è verificato un errore. Riprova più tardi."
             },
             "session_expired": {
                 "title": "Sessione scaduta",
@@ -66,7 +66,7 @@
                 "cancel": "Ho cambiato idea"
             },
             "join_circle": {
-                "title": "Vuoi unirti alla cerchia di @{username}?",
+                "title": "Vuoi unirti a @{username}?",
                 "content": "Entra e, se vuoi, puoi lasciarla in ogni momento.",
                 "confirm": "Voglio unirmi",
                 "cancel": "Ho cambiato idea"
@@ -76,27 +76,33 @@
             "cancel": "No"
         },
         "image_picker_sheet": {
-            "title": "Scegli l'immagine",
+            "title": "Seleziona immagine",
             "camera": "Scatta nuova foto",
             "gallery": "Carica nuova foto",
             "cancel": "Annulla"
         },
         "media_source_picker_sheet": {
             "title": "Seleziona sorgente",
-            "title_image": "Scegli l'immagine",
-            "title_video": "Scegli il video",
+            "title_image": "Scegli immagine",
+            "title_video": "Scegli video",
             "capture": "Scatta",
             "library": "Libreria",
             "cancel": "Annulla"
         },
         "media_type_picker_sheet": {
-            "title": "Seleziona contenuto",
+            "title": "Seleziona tipo",
             "photo": "Foto",
             "video": "Video",
             "cancel": "Annulla"
         },
+        "content_type_picker_sheet": {
+            "title": "Crea post",
+            "media": "Foto/Video",
+            "text": "Testo",
+            "cancel": "Annulla"
+        },
         "image_cropper": {
-            "title": "Ritaglia l'immagine",
+            "title": "Ritaglia immagine",
             "done": "Fatto",
             "cancel": "Annulla"
         },
@@ -115,16 +121,16 @@
             "report": "Segnala"
         },
         "full_screen_image": {
-            "flipping_image": "Applicazione del riflesso..."
+            "flipping_image": "Riflessione immagine..."
         },
         "full_screen_image_flip_menu": {
-            "flip_horizontal": "Rifletti orizzontale",
-            "flip_vertical": "Rifletti verticale"
+            "flip_horizontal": "Rifletti orizzontalmente",
+            "flip_vertical": "Rifletti verticalmente"
         },
         "delete_post": {
             "title": "Vuoi eliminare definitivamente questo post?",
             "content": "Il post verrà eliminato e non sarà possibile ripristinarlo",
-            "confirm": "Si, elimina il post",
+            "confirm": "Sì, elimina il post",
             "cancel": "Ho cambiato idea",
             "error_title": "Errore",
             "error_content": "Si è verificato un errore durante l'eliminazione del post. Riprova più tardi."
@@ -132,7 +138,7 @@
         "hide_post": {
             "title": "Vuoi nascondere definitivamente questo post?",
             "content": "Il post verrà nascosto e non sarà possibile ripristinarlo",
-            "confirm": "Si, nascondi il post",
+            "confirm": "Sì, nascondi il post",
             "cancel": "Ho cambiato idea",
             "error_title": "Errore",
             "error_content": "Si è verificato un errore durante il nascondimento del post. Riprova più tardi."
@@ -142,9 +148,9 @@
             "subtitle": "Seleziona il motivo per cui stai segnalando \nquesto post",
             "reasons": {
                 "nudity": "Nudità o contenuti sessuali",
-                "shocking_content": "Contenuti scioccanti",
-                "hate_speech": "Incitamento all'odio",
-                "bullying": "Molestie o bullismo",
+                "shocking_content": "Contenuti scioccanti o disturbanti",
+                "hate_speech": "Incitamento all'odio o istigazione",
+                "bullying": "Bullismo o molestie",
                 "spam": "Spam o contenuti ingannevoli",
                 "changed_mind": "Ho cambiato idea"
             }
@@ -178,10 +184,10 @@
             "subtitle": "Seleziona il motivo per cui stai segnalando \nquesto utente",
             "reasons": {
                 "harassment": "Molestie o bullismo",
-                "hate_speech": "Incitamento all'odio",
+                "hate_speech": "Incitamento all'odio o istigazione",
                 "inappropriate_content": "Contenuti inappropriati",
                 "spam": "Spam o truffa",
-                "impersonation": "Furto d'identità",
+                "impersonation": "Sostituzione di persona",
                 "changed_mind": "Ho cambiato idea"
             }
         },
@@ -202,29 +208,29 @@
         "verify_phone": {
             "snackbars": {
                 "success": "Codice di verifica inviato con successo",
-                "error": "Errore dell’invio del codice"
+                "error": "Errore durante l'invio del codice"
             }
         },
         "objective": {
-            "title": "The Project",
-            "description": "Torna a vivere davvero!\n\n•    Hai {shortMinutes} or {longMinutes} minuti sull'app\n•    Salva nel calendario un tuo ricordo al giorno\n•     Puoi invitare solo i tuoi contatti\n\nDopo {longMinutes} minuti non hai più scuse, torna a vivere. Inoltre ad ogni mezzanotte il feed si azzera, torna a condividere senza pressioni perchè goback. è solamente per i tuoi amici stretti.\n\n<bold>goback. to life</bold>",
+            "title": "Il Progetto",
+            "description": "Torniamo a \"vivere\" davvero!\n\n•   Hai {shortMinutes} o {longMinutes} minuti al giorno sull'app\n•   Salva uno dei tuoi ricordi al giorno\n•    Puoi invitare solo i tuoi contatti telefonici\n\nDopo {longMinutes} minuti non hai più scuse, torna alla vita. Ogni mezzanotte il feed si resetta, torna a condividere senza pressioni, hai solo i tuoi amici stretti qui!\n\n<bold>torna alla vita</bold>",
             "button": "Continua"
         },
         "sign_in": {
             "title": "Accedi",
             "privacy_text": "Accetto <privacy>Privacy policy</privacy> e <terms>Termini di utilizzo</terms>",
-            "privacy_policy_url": "https://www.iubenda.com/privacy-policy/44339319",
-            "terms_of_service_url": "https://www.iubenda.com/termini-e-condizioni/44339319",
+            "privacy_policy_url": "https://www.iubenda.com/privacy-policy/66024372",
+            "terms_of_service_url": "https://www.iubenda.com/terms-and-conditions/66024372",
             "label": "Numero di telefono",
             "button": "Continua",
-            "initial_phone_value": "+39",
+            "initial_phone_value": "+1",
             "error": {
                 "phone_required": "Inserisci il tuo numero di telefono",
-                "phone_invalid": "Il formato del numero non è valido"
+                "phone_invalid": "Il formato del numero di telefono non è valido"
             }
         },
         "otp": {
-            "title": "Ti abbiamo appena mandato un SMS",
+            "title": "Ti abbiamo appena inviato un SMS",
             "description": "Inserisci il codice di sicurezza inviato al numero ",
             "resend_code": "Non hai ricevuto il codice?",
             "button": "Invia",
@@ -249,8 +255,8 @@
             "description": "Bio",
             "button": "Salva",
             "error": {
-                "username_invalid": "Puoi usare solo lettere, numeri . e _",
-                "username_required": "Inserisci il nome utente",
+                "username_invalid": "Puoi usare solo lettere, numeri, . e _",
+                "username_required": "Inserisci lo username",
                 "username_too_short": "Minimo 3 caratteri"
             }
         },
@@ -263,7 +269,7 @@
             },
             "no_circle_box": {
                 "title": "Ciao @{username}",
-                "description": "Invita i tuoi close friends and goback. to life"
+                "description": "Invita i tuoi amici stretti e torna alla vita"
             },
             "time_limit": {
                 "minutes_format": "{minutes}",
@@ -274,6 +280,7 @@
                     }
                 }
             },
+            "go_back_button": "Torna alla vita",
             "lockout_join_button": "Unisciti",
             "lockout_join_error_expired": "Questo lockout è scaduto",
             "lockout_join_error_already_locked": "Sei già bloccato",
@@ -300,9 +307,9 @@
         "settings": {
             "title": "Impostazioni",
             "account": "Account",
-            "phone_number": "Numero: +",
+            "phone_number": "Numero: ",
             "phone_number_error": "Impossibile visualizzare il numero di telefono",
-            "delete_data": "Elimina i dati",
+            "delete_data": "Elimina dati",
             "preferences": "Preferenze",
             "objective": "Obiettivo",
             "notifications": "Notifiche",
@@ -331,41 +338,79 @@
             "title": "La tua cerchia",
             "box": {
                 "title": "Un posto speciale",
-                "description": "Invita i tuoi close friends only",
+                "description": "Invita solo i tuoi amici stretti",
                 "invite_button": "Invita nella tua cerchia",
-                "join_button": "Unisciti ad una cerchia"
+                "join_button": "Unisciti a una cerchia",
+                "remove_friend_message": "Hai raggiunto il limite di 150 amici. Rimuovi un amico per aggiungerne di nuovi.",
+                "review_button": "Rivedi la tua cerchia"
             },
-            "empty": "Non hai ancora nessuno nella cerchia, invita un’amico ora!",
+            "empty": "Non hai ancora nessuno nella tua cerchia, invita un amico ora!",
             "loading_members": "Caricamento membri..."
+        },
+        "review_circle": {
+            "title": "Rivedi la tua cerchia",
+            "remove_button": "Rimuovi selezionati",
+            "remove_button_disabled": "Seleziona amici da rimuovere",
+            "confirmation_title": "Rimuovere amici?",
+            "confirmation_content": "Rimuovere {count} amico/i dalla tua cerchia?",
+            "confirmation_confirm": "Rimuovi",
+            "confirmation_cancel": "Annulla",
+            "success_message": "{count} amico/i rimosso/i con successo",
+            "partial_success_title": "Successo parziale",
+            "partial_success_content": "{success} amico/i rimosso/i con successo, {failure} rimozioni fallite"
         },
         "invite_to_circle": {
             "title": "Invita nella tua cerchia",
-            "no_contacts_available": "Nessun contatto disponibile per l'invito",
-            "permission_description": "Per invitare i tuoi amici, concedi l'accesso ai contatti del tuo dispositivo.",
-            "generating_code": "Generazione del codice di invito...",
-            "code_generation_failed": "Generazione del codice di invito non riuscita. Riprova più tardi.",
-            "sms_message": "Entra nella cerchia di @{username} su goback . Il codice per entrare è: {code}",
+            "friend_count": "{count} / 150 amici",
+            "no_contacts_available": "Nessun contatto disponibile con numero di telefono",
+            "permission_description": "Abbiamo bisogno dell'accesso ai tuoi contatti per invitare i tuoi amici nella cerchia",
+            "generating_code": "Generazione codice di invito...",
+            "code_generation_failed": "Generazione del codice di invito fallita. Riprova più tardi.",
+            "sms_message": "Unisciti alla cerchia di @{username} su goback. Il codice per unirti è: {code}",
             "phone_number_label": "Numero di telefono",
+            "phone_has_account": "Questo numero ha già un account goback",
+            "phone_no_account": "Questo numero non ha un account goback",
             "send_invite_button": "Invia invito",
             "success_message": "Invito inviato con successo!",
             "error": {
                 "phone_required": "Inserisci un numero di telefono",
-                "phone_invalid": "Il formato del numero non è valido"
+                "phone_invalid": "Il formato del numero di telefono non è valido"
             }
         },
         "join_circle": {
-            "title": "Unisciti ad una cerchia",
-            "subtitle": "Inserisci il codice che hai \nricevuto via SMS",
-            "description": "Entra nella tua nuova cerchia, ti stanno aspettando!",
+            "title": "Unisciti a una cerchia",
+            "subtitle": "Inserisci il codice che hai ricevuto via SMS",
+            "description": "Unisciti alla tua nuova cerchia, ti stanno aspettando!",
             "button": "Invia",
             "error": {
                 "title": "Si è verificato un errore",
                 "invalid_code": "Il codice di invito è scaduto o non è valido",
                 "already_in_circle": "Sei già in questa cerchia",
-                "connect_yourself": "Non puoi collegarti con te stesso!"
+                "connect_yourself": "Non puoi collegarti con te stesso!",
+                "circle_size_limit": "Hai raggiunto la dimensione massima della cerchia (150). Rimuovi un amico per aggiungerne uno nuovo.",
+                "target_circle_size_limit": "L'utente che stai cercando di raggiungere ha raggiunto la dimensione massima della cerchia (150)."
             }
         },
         "content_editor": {
+            "text_post": {
+                "placeholder": "A cosa stai pensando?",
+                "character_limit": "Limite di 700 caratteri",
+                "characters_remaining": "{count} caratteri rimanenti",
+                "characters_over_limit": "{count} caratteri oltre il limite",
+                "add_alias": "Aggiungi alias",
+                "link_alias_dialog": {
+                    "title": "Aggiungi alias link",
+                    "hint": "Inserisci il testo dell'alias",
+                    "label": "Alias"
+                },
+                "edit_link_dialog": {
+                    "title": "Modifica link",
+                    "alias_label": "Testo del link",
+                    "alias_hint": "Testo da visualizzare",
+                    "url_label": "Indirizzo del sito web",
+                    "url_hint": "https://example.com"
+                }
+            },
             "edit_content": "Modifica",
             "hint_text": "Racconta questo momento...",
             "character_count": "{current}/{max}",
@@ -375,14 +420,28 @@
         },
         "publish_content": {
             "button": "Pubblica",
+            "select_all": "Seleziona tutto",
+            "deselect_all": "Deseleziona tutto",
+            "only": "Solo",
             "snackbar": {
                 "success_message": "Contenuto pubblicato con successo!",
                 "update_success_message": "Contenuto aggiornato con successo!"
             }
         },
         "time_limit_reached": {
-            "title": "tempo scaduto...\ngoback. to life",
-            "button": "GoBack"
+            "title": "tempo scaduto...\ntorna alla vita",
+            "button": "Torna alla vita"
+        },
+        "manual_lockout": {
+            "title": "torna alla vita",
+            "button": "Torna alla vita",
+            "dialog": {
+                "title": "torna alla vita",
+                "description": "Seleziona per quanto tempo vuoi tornare alla vita (minimo 1 ora)",
+                "cancel": "Annulla",
+                "confirm": "Conferma",
+                "error": "La durata deve essere maggiore di 1 ora"
+            }
         },
         "notifications": {
             "title": "Notifiche",

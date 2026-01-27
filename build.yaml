@@ -9,7 +9,7 @@ builders:
 targets:
   $default:
     builders:  
-      cloudless|icon_assets:
+      my_app|icon_assets:
         generate_for:
           - lib/presentation/assets/utilities/icon_assets_builder.dart
       flutter_gen:
