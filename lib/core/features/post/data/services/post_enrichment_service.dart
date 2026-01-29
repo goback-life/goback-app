@@ -9,12 +9,15 @@ class PostEnrichmentService {
 
   final Ref ref;
 
-  /// Enriches post data with signed URLs for avatar, thumbnail, video, and parent thumbnail.
+  /// Enriches post data with signed URLs for avatar, thumbnail, and video.
+  /// All URLs are fetched in parallel for better performance.
   Future<void> enrichPostWithSignedUrls(Map<String, dynamic> postData) async {
-    await _enrichAvatarUrl(postData);
-    await _enrichThumbnailUrl(postData);
-    await _enrichVideoUrl(postData);
-    await _enrichParentThumbnailUrl(postData);
+    // Fetch all signed URLs in parallel instead of sequentially
+    await Future.wait([
+      _enrichAvatarUrl(postData),
+      _enrichThumbnailUrl(postData),
+      _enrichVideoUrl(postData),
+    ]);
   }
 
   Future<void> _enrichAvatarUrl(Map<String, dynamic> postData) async {
@@ -74,23 +77,4 @@ class PostEnrichmentService {
     }
   }
 
-  Future<void> _enrichParentThumbnailUrl(Map<String, dynamic> postData) async {
-    final parentThumbnailUrl = postData['parent_thumbnail_url'] as String?;
-    if (parentThumbnailUrl == null || parentThumbnailUrl.isEmpty) {
-      return;
-    }
-
-    try {
-      final signedParentThumbnailUrl = await ref.read(
-        signedUrlProvider(SupabaseBuckets.postMedia, parentThumbnailUrl).future,
-      );
-      postData['parent_thumbnail_url'] = signedParentThumbnailUrl;
-    } catch (e) {
-      logger.error(
-        'Error getting signed URL for parent thumbnail: $parentThumbnailUrl',
-        exception: e,
-      );
-      postData['parent_thumbnail_url'] = null;
-    }
-  }
 }

@@ -1,7 +1,5 @@
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
-import 'package:cloudless/core/features/post/domain/models/parent_post_reference_model.dart';
-import 'package:cloudless/core/features/post/domain/providers/parent_post_reference_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_creation_notifier_provider.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/pages/content_editor/content_editor_routable.dart';
@@ -67,34 +65,12 @@ class PostDetailEditAction extends HookConsumerWidget
           excludedUserIds: post.excludedUserIds,
           createdAt: post.createdAt,
           contentType: post.contentType,
-          parentId: post.parentId,
           imageUrl: post.imageUrl,
           videoUrl: post.videoUrl,
           thumbnailUrl: post.contentType == ContentType.video
               ? post.imageUrl
               : null,
         );
-
-    if (post.parentId != null &&
-        post.parentAuthorUsername != null &&
-        post.parentThumbnailUrl != null) {
-      final parentPostReference = ParentPostReferenceModel(
-        id: post.parentId!,
-        authorId: post.parentAuthorId,
-        authorUsername: post.parentAuthorUsername!,
-        thumbnailUrl: post.parentThumbnailUrl!,
-        thumbnailWidth: post.thumbnailWidth,
-        thumbnailHeight: post.thumbnailHeight,
-        contentType: post.parentContentType ?? ContentType.image,
-        isDeleted: post.parentDeletedAt != null,
-      );
-
-      ref
-          .read(parentPostReferenceNotifierProvider.notifier)
-          .setParentPost(parentPostReference);
-    } else {
-      ref.read(parentPostReferenceNotifierProvider.notifier).clear();
-    }
 
     onActionCompleted();
 

@@ -9,11 +9,10 @@ part 'add_post_to_calendar_provider.g.dart';
 Future<Result<bool>> addPostToCalendar(
   Ref ref, {
   required String postId,
-  required DateTime calendarDate,
 }) async {
   final useCase = AddPostToCalendarUseCase(
     repository: ref.watch(calendarRepositoryProvider),
   );
 
-  return await useCase.execute(postId: postId, calendarDate: calendarDate);
+  return await useCase.execute(postId: postId);
 }

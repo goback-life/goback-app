@@ -6,7 +6,7 @@ class RemovePostFromCalendarUseCase {
 
   final CalendarRepositoryContract repository;
 
-  Future<Result<bool>> execute({required DateTime calendarDate}) async {
-    return await repository.removePostFromCalendar(calendarDate: calendarDate);
+  Future<Result<bool>> execute({required String postId}) async {
+    return await repository.removePostFromCalendar(postId: postId);
   }
 }

@@ -39,10 +39,8 @@ class _HomeCreateContentButtonState extends State<HomeCreateContentButton>
   void didUpdateWidget(HomeCreateContentButton oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isRefreshing && !oldWidget.isRefreshing) {
-      debugPrint('🔄 Button: Starting rotation animation');
       _rotationController.repeat();
     } else if (!widget.isRefreshing && oldWidget.isRefreshing) {
-      debugPrint('🛑 Button: Stopping rotation animation');
       _rotationController.stop();
       _rotationController.reset();
     }

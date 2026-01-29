@@ -15,7 +15,7 @@ class ConnectionDtoToModelMapper
 
     final profile = _profileMapper.mapDto(dto.profiles!);
     return ConnectionMemberModel(
-      connectionId: dto.connectionId,
+      friendshipId: dto.connectionId,
       profile: profile,
     );
   }

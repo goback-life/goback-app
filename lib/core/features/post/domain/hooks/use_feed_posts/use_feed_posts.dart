@@ -5,6 +5,7 @@ import 'package:cloudless/core/features/post/domain/hooks/use_feed_posts/feed_po
 import 'package:cloudless/core/features/post/domain/hooks/use_feed_posts/feed_posts_polling.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_polling_controller.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
+import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_action_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_published_notifier_provider.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -64,7 +65,7 @@ FeedPostsResult useFeedPosts(
       newestPostTimestamp: newestPostTimestamp,
       newPostsCount: newPostsCount,
     ),
-    interval: const Duration(seconds: 15),
+    interval: const Duration(seconds: 60),
   );
 
   final updatePollingController = usePollingController(
@@ -73,7 +74,7 @@ FeedPostsResult useFeedPosts(
       userId: userId,
       posts: posts,
     ),
-    interval: const Duration(seconds: 15),
+    interval: const Duration(seconds: 60),
   );
 
   useEffect(() {
@@ -193,20 +194,42 @@ FeedPostsResult useFeedPosts(
         lastTargetDate.value = effectiveTargetDate;
         hasInitialized.value = true;
 
-        FeedPostsActions.loadInitialPosts(
-          ref: ref,
-          userId: userId,
-          isLoading: isLoading,
-          posts: posts,
-          hasNextPage: hasNextPage,
-          errorMessage: errorMessage,
-          newPostsCount: newPostsCount,
-          newestPostTimestamp: newestPostTimestamp,
-          oldestPostTimestamp: oldestPostTimestamp,
-        ).then((_) {
+        // Check cache first for instant display
+        final cache = ref.read(feedPostsCacheProvider);
+        final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
+
+        if (cacheNotifier.isCacheValid && cacheNotifier.currentUserId == userId) {
+          // Use cached posts immediately
+          // ignore: avoid_print
+          print('[useFeedPosts] Using cached posts: ${cache.posts.length}');
+          posts.value = cache.posts;
+          hasNextPage.value = cache.hasNextPage;
+          if (cache.posts.isNotEmpty) {
+            newestPostTimestamp.value = cache.posts.first.createdAt;
+            oldestPostTimestamp.value = cache.posts.last.createdAt;
+          }
           pollingController.startPolling();
           updatePollingController.startPolling();
-        });
+        } else {
+          // ignore: avoid_print
+          print('[useFeedPosts] Calling loadInitialPosts with userId: $userId');
+          FeedPostsActions.loadInitialPosts(
+            ref: ref,
+            userId: userId,
+            isLoading: isLoading,
+            posts: posts,
+            hasNextPage: hasNextPage,
+            errorMessage: errorMessage,
+            newPostsCount: newPostsCount,
+            newestPostTimestamp: newestPostTimestamp,
+            oldestPostTimestamp: oldestPostTimestamp,
+          ).then((_) {
+            // ignore: avoid_print
+            print('[useFeedPosts] loadInitialPosts completed, posts.value.length: ${posts.value.length}');
+            pollingController.startPolling();
+            updatePollingController.startPolling();
+          });
+        }
       } else if ((hasPublishedPost || postActionEvent != null) &&
           userId.isNotEmpty &&
           userId.trim().isEmpty == false) {
@@ -359,7 +382,6 @@ FeedPostsResult useFeedPosts(
         hasNextPage: hasNextPage,
         errorMessage: errorMessage,
         oldestPostTimestamp: oldestPostTimestamp,
-        effectiveTargetDate: effectiveTargetDate,
         isLoading: isLoading,
       );
     }

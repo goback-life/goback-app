@@ -14,6 +14,8 @@ sealed class GetProfileResponseDto with _$GetProfileResponseDto {
     String? biography,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
     @JsonKey(name: 'phone_number') String? phoneNumber,
+    @JsonKey(name: 'weekly_lockout_minutes') int? weeklyLockoutMinutes,
+    @JsonKey(name: 'notifications_checked_at') DateTime? notificationsCheckedAt,
   }) = _GetProfileResponseDto;
 
   factory GetProfileResponseDto.fromJson(Map<String, dynamic> json) =>

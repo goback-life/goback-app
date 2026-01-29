@@ -29,8 +29,8 @@ class NotificationItem extends HookConsumerWidget
     ColorScheme colorScheme,
     NotificationType notificationType,
   ) {
-    // For circle_join notifications (no related post), show person icon
-    if (notificationType == NotificationType.circleJoin) {
+    // For friend_joined notifications (no related post), show person icon
+    if (notificationType == NotificationType.friendJoined) {
       return Icon(
         Icons.person_outline,
         color: colorScheme.onSurface.withOpacity(0.5),
@@ -83,7 +83,7 @@ class NotificationItem extends HookConsumerWidget
     if (usernames.isEmpty) return '';
 
     final firstUsername = usernames.first;
-    final otherCount = notification.count - 1;
+    final otherCount = notification.actorCount - 1;
 
     switch (notification.type) {
       case NotificationType.reaction:
@@ -108,10 +108,10 @@ class NotificationItem extends HookConsumerWidget
           context: context,
           arguments: {'username': firstUsername},
         );
-      case NotificationType.reply:
+      case NotificationType.comment:
         if (otherCount > 0) {
           return translator.translate(
-            'pages.notifications.replyMultiple',
+            'pages.notifications.commentMultiple',
             context: context,
             arguments: {
               'username': firstUsername,
@@ -120,13 +120,25 @@ class NotificationItem extends HookConsumerWidget
           );
         }
         return translator.translate(
-          'pages.notifications.replySingle',
+          'pages.notifications.commentSingle',
           context: context,
           arguments: {'username': firstUsername},
         );
-      case NotificationType.circleJoin:
+      case NotificationType.lockoutStarted:
         return translator.translate(
-          'pages.notifications.circleJoin',
+          'pages.notifications.lockoutStarted',
+          context: context,
+          arguments: {'username': firstUsername},
+        );
+      case NotificationType.lockoutJoined:
+        return translator.translate(
+          'pages.notifications.lockoutJoined',
+          context: context,
+          arguments: {'username': firstUsername},
+        );
+      case NotificationType.friendJoined:
+        return translator.translate(
+          'pages.notifications.friendJoined',
           context: context,
           arguments: {'username': firstUsername},
         );
@@ -228,7 +240,7 @@ class NotificationItem extends HookConsumerWidget
                   const SizedBox(height: 4),
                   Text(
                     DateFormat.yMMMd().add_jm().format(
-                          notification.latestCreatedAt,
+                          notification.updatedAt,
                         ),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurface.withOpacity(0.6),

@@ -2,8 +2,10 @@
 enum NotificationType {
   reaction('reaction'),
   tag('tag'),
-  reply('reply'),
-  circleJoin('circle_join');
+  comment('comment'),
+  lockoutStarted('lockout_started'),
+  lockoutJoined('lockout_joined'),
+  friendJoined('friend_joined');
 
   const NotificationType(this.value);
 

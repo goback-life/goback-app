@@ -13,7 +13,6 @@ sealed class PostCreationDto with _$PostCreationDto {
   const factory PostCreationDto({
     required String publishedTimezone,
     String? postId,
-    String? parentId,
     String? mainImagePath,
     String? thumbnailPath,
     String? firstFramePath,
@@ -69,8 +68,6 @@ sealed class PostCreationDto with _$PostCreationDto {
   }
 
   bool get isEditing => postId != null;
-
-  bool get isReply => parentId != null;
 
   DateTime get effectiveCreatedAt => createdAt ?? DateTime.now();
 }

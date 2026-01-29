@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/background_image.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
+import 'package:cloudless/presentation/pages/lockout_complete/lockout_complete_routable.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/manual_lockout_exit_button.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
@@ -23,14 +25,16 @@ class ManualLockoutView extends HookConsumerWidget
 
     final lockoutStateAsync = ref.watch(manualLockoutNotifierProvider);
     final countdown = useState('');
+    final hasNavigated = useState(false);
 
     useEffect(() {
       Timer? timer;
 
       lockoutStateAsync.whenData((lockoutState) {
-        if (!lockoutState.isLockedOut) {
-          // Lockout expired, navigate back to home
-          router.go(const HomeRoutable());
+        if (!lockoutState.isLockedOut && !hasNavigated.value) {
+          // Lockout expired, navigate to lockout complete screen
+          hasNavigated.value = true;
+          _navigateToLockoutComplete(ref);
           return;
         }
 
@@ -42,9 +46,10 @@ class ManualLockoutView extends HookConsumerWidget
             updatedState.whenData((state) {
               if (state.isLockedOut && state.remainingDuration != null) {
                 countdown.value = _formatDuration(state.remainingDuration!);
-              } else {
+              } else if (!hasNavigated.value) {
                 // Lockout expired
-                router.go(const HomeRoutable());
+                hasNavigated.value = true;
+                _navigateToLockoutComplete(ref);
               }
             });
           });
@@ -124,6 +129,19 @@ class ManualLockoutView extends HookConsumerWidget
     } else {
       return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     }
+  }
+
+  Future<void> _navigateToLockoutComplete(WidgetRef ref) async {
+    final storable = ref.read(manualLockoutStorableProvider);
+    final sessionId = await storable.getLockoutSessionId();
+
+    logger.info('Lockout complete - sessionId: $sessionId');
+
+    // Always navigate to lockout complete screen, even without sessionId
+    // User can still create a post, it just won't be linked to a session
+    final effectiveSessionId = sessionId ?? '';
+    logger.info('Navigating to LockoutComplete screen with sessionId: $effectiveSessionId');
+    router.go(LockoutCompleteRoutable(lockoutSessionId: effectiveSessionId));
   }
 }
 

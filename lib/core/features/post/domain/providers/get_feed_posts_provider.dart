@@ -10,11 +10,8 @@ part 'get_feed_posts_provider.g.dart';
 Future<Result<FeedResponseModel>> getFeedPosts(
   Ref ref, {
   required String userId,
-  required DateTime targetDate,
   int pageSize = 15,
-  int pageOffset = 0,
-  DateTime? cursorBefore,
-  DateTime? cursorAfter,
+  DateTime? cursor,
 }) async {
   final useCase = GetFeedPostsUseCase(
     repository: ref.watch(postRepositoryProvider),
@@ -22,11 +19,8 @@ Future<Result<FeedResponseModel>> getFeedPosts(
 
   final result = await useCase.execute(
     userId: userId,
-    targetDate: targetDate,
     pageSize: pageSize,
-    pageOffset: pageOffset,
-    cursorBefore: cursorBefore,
-    cursorAfter: cursorAfter,
+    cursor: cursor,
   );
 
   return result;

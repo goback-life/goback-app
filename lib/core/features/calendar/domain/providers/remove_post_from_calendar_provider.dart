@@ -8,11 +8,11 @@ part 'remove_post_from_calendar_provider.g.dart';
 @Riverpod(keepAlive: false)
 Future<Result<bool>> removePostFromCalendar(
   Ref ref, {
-  required DateTime calendarDate,
+  required String postId,
 }) async {
   final useCase = RemovePostFromCalendarUseCase(
     repository: ref.watch(calendarRepositoryProvider),
   );
 
-  return await useCase.execute(calendarDate: calendarDate);
+  return await useCase.execute(postId: postId);
 }

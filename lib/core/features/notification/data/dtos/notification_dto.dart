@@ -18,7 +18,7 @@ sealed class NotificationDto with _$NotificationDto {
     required String id,
     @JsonKey(name: 'user_id') required String userId,
     @JsonKey(name: 'notification_type') required String notificationType,
-    @JsonKey(name: 'related_post_id') String? relatedPostId,
+    @JsonKey(name: 'reference_id') String? referenceId,
     @JsonKey(name: 'related_user_id') required String relatedUserId,
     @JsonKey(name: 'created_at') required String createdAt,
     @JsonKey(name: 'read_at') String? readAt,

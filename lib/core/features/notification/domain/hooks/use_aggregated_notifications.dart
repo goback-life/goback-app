@@ -14,13 +14,13 @@ AggregatedNotificationsResult useAggregatedNotifications(
   WidgetRef ref, {
   required String userId,
   int pageSize = 20,
-  int pageOffset = 0,
+  DateTime? cursor,
 }) {
   final notifications = ref.watch(
     aggregatedNotificationsProvider(
       userId: userId,
       pageSize: pageSize,
-      pageOffset: pageOffset,
+      cursor: cursor,
     ),
   );
 
@@ -29,7 +29,7 @@ AggregatedNotificationsResult useAggregatedNotifications(
       aggregatedNotificationsProvider(
         userId: userId,
         pageSize: pageSize,
-        pageOffset: pageOffset,
+        cursor: cursor,
       ),
     );
   }

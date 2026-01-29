@@ -1,3 +1,4 @@
+import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_join_lockout_post.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
@@ -32,24 +33,17 @@ class HomeLockoutJoinButton extends HookConsumerWidget
         ) ??
         false;
 
-    // Get lockout end time from post
-    final lockoutEndTime = post.getLockoutEndTime();
-    final now = DateTime.now();
-    final remainingDuration =
-        lockoutEndTime != null ? lockoutEndTime.difference(now) : null;
-    final isLockoutActive =
-        remainingDuration != null && remainingDuration > Duration.zero;
-    final isEnabled = isLockoutActive && !isAlreadyLockedOut;
-
-    // Don't show button if not a lockout post or if lockout expired
+    // Don't show button if not a lockout post or if user is already locked out
     // Uses database flag for security - only posts created through official lockout flow
-    if (!post.isLockoutPost || !isLockoutActive) {
+    if (!post.isLockoutPost) {
       return const SizedBox.shrink();
     }
 
+    final isEnabled = !isAlreadyLockedOut;
+
     return GestureDetector(
       onTap: isEnabled
-          ? () => _handleJoinLockout(context, ref, lockoutEndTime!)
+          ? () => _handleJoinLockout(context, ref)
           : null,
       child: Container(
         width: 40.0,
@@ -82,27 +76,51 @@ class HomeLockoutJoinButton extends HookConsumerWidget
   Future<void> _handleJoinLockout(
     BuildContext context,
     WidgetRef ref,
-    DateTime lockoutEndTime,
   ) async {
     final lockoutNotifier = ref.read(manualLockoutNotifierProvider.notifier);
+    final lockoutSessionId = post.lockoutId;
+
+    if (lockoutSessionId == null) {
+      logger.warning('Lockout post has no lockoutId');
+      return;
+    }
 
     try {
-      // Calculate remaining duration for the post description
-      final now = DateTime.now();
-      final remainingDuration = lockoutEndTime.difference(now);
+      // Get session details to calculate remaining duration
+      final sessionService = ref.read(lockoutSessionServiceProvider);
+      final sessionResult = await sessionService.getSessionById(lockoutSessionId);
 
-      // Join the lockout
-      await lockoutNotifier.joinLockout(lockoutEndTime);
+      Duration? remainingDuration;
+      await sessionResult.asyncFold(
+        (session) async {
+          if (session != null) {
+            final endsAt = DateTime.parse(session.endsAt);
+            final now = DateTime.now();
+            remainingDuration = endsAt.difference(now);
+
+            // Check if session is still active
+            if (remainingDuration!.isNegative) {
+              throw Exception('expired');
+            }
+          }
+        },
+        (error) async {
+          throw error;
+        },
+      );
+
+      // Join the lockout using session ID
+      await lockoutNotifier.joinLockout(lockoutSessionId);
 
       // Get post author information (the lockout creator)
       final otherUserId = post.authorId;
       final otherUserUsername = post.authorUsername ?? '';
 
       // Create a post on the joiner's account
-      if (otherUserUsername.isNotEmpty) {
+      if (otherUserUsername.isNotEmpty && remainingDuration != null) {
         final postResult = await useJoinLockoutPost(
           ref,
-          remainingDuration,
+          remainingDuration!,
           otherUserId,
           otherUserUsername,
         );

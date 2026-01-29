@@ -17,7 +17,7 @@ class NotificationDtoToModelMapper {
       id: dto.id,
       userId: dto.userId,
       type: notificationType,
-      relatedPostId: dto.relatedPostId,
+      referenceId: dto.referenceId,
       relatedUserId: dto.relatedUserId,
       createdAt: DateTime.tryParse(dto.createdAt) ?? DateTime.now(),
       readAt: dto.readAt != null ? DateTime.tryParse(dto.readAt!) : null,

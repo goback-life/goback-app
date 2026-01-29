@@ -1,6 +1,9 @@
 import 'dart:io';
 
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
+import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
+import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
+import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout_post_provider.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_creation_dto.dart';
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:cloudless/core/features/post/domain/models/post_data_model.dart';
@@ -104,6 +107,31 @@ PostCreationResult usePostCreation(WidgetRef ref) {
           try {
             final timezone = await ref.read(currentTimezoneProvider.future);
 
+            // Check if this is a lockout post
+            final pendingLockoutId = ref.read(pendingLockoutPostProvider);
+            logger.info('Creating post with pendingLockoutId: $pendingLockoutId');
+
+            // Auto-tag lockout participants when creating a lockout post
+            var finalTaggedUserIds = List<String>.from(postCreationData.taggedUserIds);
+            if (pendingLockoutId != null) {
+              final sessionService = ref.read(lockoutSessionServiceProvider);
+              final sessionResult = await sessionService.getSessionById(pendingLockoutId);
+              sessionResult.fold(
+                (session) {
+                  if (session != null && session.participants.isNotEmpty) {
+                    // Merge participants with existing tagged users, avoiding duplicates
+                    for (final participantId in session.participants) {
+                      if (!finalTaggedUserIds.contains(participantId)) {
+                        finalTaggedUserIds.add(participantId);
+                      }
+                    }
+                    logger.info('Auto-tagged ${session.participants.length} lockout participants');
+                  }
+                },
+                (error) => logger.warning('Failed to fetch lockout participants: $error'),
+              );
+            }
+
             // Shorten URLs in description for text posts (convert to markdown with domain alias)
             final description = postCreationData.contentType == ContentType.text &&
                     postCreationData.description.isNotEmpty
@@ -114,18 +142,17 @@ PostCreationResult usePostCreation(WidgetRef ref) {
 
             final postData = PostDataModel(
               postId: postCreationData.postId,
-              parentId: postCreationData.parentId,
               authorId: user.id,
               contentType: postCreationData.contentType,
               mediaFiles: postCreationData.mainImage != null
                   ? [postCreationData.mainImage!]
                   : [],
               thumbnailFile: postCreationData.thumbnailForUpload,
-              contentDate: postCreationData.effectiveCreatedAt,
               description: description,
-              taggedUserIds: postCreationData.taggedUserIds,
+              taggedUserIds: finalTaggedUserIds,
               excludedUserIds: excludedUserIds,
               publishedTimezone: timezone,
+              lockoutId: pendingLockoutId,
             );
 
             final Result<PostModel> result;
@@ -137,9 +164,26 @@ PostCreationResult usePostCreation(WidgetRef ref) {
             }
 
             result.fold(
-              (post) {
+              (post) async {
                 postCreationNotifier.reset();
                 ref.read(parentPostReferenceNotifierProvider.notifier).clear();
+
+                // Link post to lockout session and clear pending state
+                if (pendingLockoutId != null) {
+                  // Update lockout session with post_id (triggers weekly stats update)
+                  final sessionService = ref.read(lockoutSessionServiceProvider);
+                  final updateResult = await sessionService.updateSessionPostId(
+                    sessionId: pendingLockoutId,
+                    postId: post.id,
+                  );
+                  updateResult.fold(
+                    (_) => logger.info('Linked post ${post.id} to lockout session $pendingLockoutId'),
+                    (error) => logger.warning('Failed to link post to lockout session: $error'),
+                  );
+
+                  ref.read(pendingLockoutPostProvider.notifier).clear();
+                  ref.read(manualLockoutStorableProvider).clearLockout();
+                }
 
                 if (postCreationData.isEditing) {
                   ref

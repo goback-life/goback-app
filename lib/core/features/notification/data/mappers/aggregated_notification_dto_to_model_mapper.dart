@@ -5,7 +5,7 @@ import 'package:cloudless/core/features/notification/domain/models/aggregated_no
 /// Mapper that converts [AggregatedNotificationDto] to [AggregatedNotificationModel].
 ///
 /// **Timezone Handling:**
-/// The `latestCreatedAt` timestamp from the DTO is in ISO 8601 format
+/// The `updatedAt` timestamp from the DTO is in ISO 8601 format
 /// with UTC timezone. When parsed with [DateTime.tryParse], the resulting DateTime
 /// object represents the UTC time. The conversion to the user's local timezone
 /// happens later when these timestamps are formatted for display in the UI.
@@ -15,12 +15,13 @@ class AggregatedNotificationDtoToModelMapper {
 
     return AggregatedNotificationModel(
       type: notificationType,
-      relatedPostId: dto.relatedPostId,
+      referenceId: dto.referenceId,
+      latestActorId: dto.latestActorId,
       actorIds: dto.actorIds,
       actorUsernames: dto.actorUsernames,
       actorAvatarUrls: dto.actorAvatarUrls,
-      count: dto.count,
-      latestCreatedAt: DateTime.tryParse(dto.latestCreatedAt) ?? DateTime.now(),
+      actorCount: dto.actorCount,
+      updatedAt: DateTime.tryParse(dto.updatedAt) ?? DateTime.now(),
       isRead: dto.isRead,
       postThumbnailUrl: dto.postThumbnailUrl,
       postContentType: dto.postContentType,

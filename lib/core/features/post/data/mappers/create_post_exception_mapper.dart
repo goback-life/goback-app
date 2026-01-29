@@ -2,6 +2,7 @@ import 'package:cloudless/core/exceptions/main_exception.dart';
 import 'package:cloudless/core/exceptions/unhandled_exception.dart';
 import 'package:cloudless/core/features/media/domain/exceptions/invalid_media_exception.dart';
 import 'package:cloudless/core/features/post/data/exceptions/create_post_failed_exception.dart';
+import 'package:cloudless/core/features/post/data/exceptions/post_rate_limit_exception.dart';
 import 'package:cloudless/core/features/post/data/exceptions/post_upload_failed_exception.dart';
 import 'package:cloudless/core/features/post/domain/exceptions/post_exception.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -26,6 +27,11 @@ class CreatePostExceptionsMapper {
         'Storage bucket not found',
       ),
       StorageException(:final message) => PostUploadFailedException(message),
+
+      // Rate limit exceeded (custom trigger error)
+      PostgrestException(code: 'P0001', :final message)
+          when message.contains('Rate limit exceeded') =>
+        const PostRateLimitException(),
 
       // Database constraint violations
       PostgrestException(code: '23503', :final message) => UnhandledException(

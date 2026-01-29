@@ -23,6 +23,7 @@ PostCreationInitializationResult usePostCreationInitialization(
   ParentPostReferenceModel? parentPost,
   VoidCallback? onNavigateToEditor,
   ValueNotifier<bool>? loadingNotifier,
+  bool skipContentTypePicker = false,
 }) {
   final postCreationState = ref.watch(postCreationNotifierProvider);
   final postCreationNotifier = ref.read(postCreationNotifierProvider.notifier);
@@ -31,6 +32,7 @@ PostCreationInitializationResult usePostCreationInitialization(
     ref: ref,
     parentPost: parentPost,
     loadingNotifier: loadingNotifier,
+    skipContentTypePicker: skipContentTypePicker,
     onMediaSelected: (File? file) async {
       // If file is null, it means text was selected
       if (file == null) {

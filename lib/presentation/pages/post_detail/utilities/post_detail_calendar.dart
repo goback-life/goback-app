@@ -56,16 +56,10 @@ class PostDetailCalendar {
     String userId,
     CalendarPostsCache cacheNotifier,
   ) async {
-    final calendarDate = cacheNotifier.getPostCalendarDate(post.id);
-
-    if (calendarDate == null) {
-      return;
-    }
-
     cacheNotifier.removePostOptimistically(post.id);
 
     final result = await ref.read(
-      removePostFromCalendarProvider(calendarDate: calendarDate).future,
+      removePostFromCalendarProvider(postId: post.id).future,
     );
 
     result.fold(
@@ -105,13 +99,8 @@ class PostDetailCalendar {
     String userId,
     CalendarPostsCache cacheNotifier,
   ) async {
-    final currentDate = DateTime.now();
-
     final result = await ref.read(
-      addPostToCalendarProvider(
-        postId: post.id,
-        calendarDate: currentDate,
-      ).future,
+      addPostToCalendarProvider(postId: post.id).future,
     );
 
     result.fold(

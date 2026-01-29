@@ -60,7 +60,7 @@ class ConnectionRepository
       responseMapper: (membersDtos) async {
         return membersDtos.map((dto) {
           return ConnectionMemberModel(
-            connectionId: dto.connectionId,
+            friendshipId: dto.friendshipId,
             profile: ProfileModel(
               id: dto.id,
               username: dto.username,

@@ -77,11 +77,9 @@ Future<Result<PostModel>?> useJoinLockoutPost(
       authorId: user.id, // Post on joiner's account
       contentType: ContentType.image,
       mediaFiles: [logoFile],
-      contentDate: DateTime.now().toUtc(),
       description: description,
       taggedUserIds: [otherUserId], // Tag the other user (lockout creator)
       publishedTimezone: timezone,
-      isLockoutPost: true, // Mark as lockout post for security validation
     );
 
     // Create post

@@ -113,15 +113,17 @@ class ConnectionService implements ConnectionServiceContract {
         throw const TargetUserCircleSizeLimitException();
       }
 
-      final existingConnection = await supabase
-        .from('connections')
+      // Check for existing friendship using ordered UUID pair
+      final orderedIds = _orderUserIds(currentUserId, creatorId);
+      final existingFriendship = await supabase
+        .from('friendships')
         .select('id')
-        .eq('user_id', currentUserId)
-        .eq('connection_id', creatorId)
+        .eq('user_id_1', orderedIds.$1)
+        .eq('user_id_2', orderedIds.$2)
         .limit(1)
         .maybeSingle();
 
-      if (existingConnection != null) {
+      if (existingFriendship != null) {
         throw const UsersAlreadyConnectedException();
       }
 
@@ -147,7 +149,7 @@ class ConnectionService implements ConnectionServiceContract {
           .single();
 
       await supabase.rpc(
-        'join_circle_transaction',
+        'join_friendship_transaction',
         params: {
           'invite_id': inviteData['id'],
           'user_id': currentUserId,
@@ -166,11 +168,8 @@ class ConnectionService implements ConnectionServiceContract {
   /// This allows for fast initial data loading while avatar URLs are fetched separately.
   FutureResult<List<GetCircleMembersResponseDto>> getCircleMembersBasic() async {
     try {
-      final userId = supabase.auth.currentUser!.id;
-
-      final result =
-          await supabase.rpc('get_circle_members', params: {'user_id': userId})
-              as List<dynamic>;
+      // get_user_friends() uses auth.uid() internally, no parameters needed
+      final result = await supabase.rpc('get_user_friends') as List<dynamic>;
 
       final members = <GetCircleMembersResponseDto>[];
 
@@ -178,18 +177,20 @@ class ConnectionService implements ConnectionServiceContract {
         final data = memberData as Map<String, dynamic>;
 
         try {
+          // Map SQL columns to DTO: friend_id -> id
+          final friendId = data['friend_id']?.toString() ?? '';
           final dto = GetCircleMembersResponseDto.fromJson({
-            'connection_id': data['connection_id']?.toString() ?? '',
-            'id': data['id']?.toString() ?? '',
+            'friendship_id': friendId, // Use friend_id as friendship_id
+            'id': friendId,
             'username': data['username']?.toString() ?? '',
             'biography': data['biography']?.toString(),
-            'avatar_url': null, // Set to null initially
-            'phone_number': data['phone_number']?.toString(),
+            'avatar_url': data['avatar_url']?.toString(),
+            'phone_number': null, // Not returned by get_user_friends
           });
 
           members.add(dto);
         } catch (e) {
-          logger.error('Error processing member ${data['id']}', exception: e);
+          logger.error('Error processing member ${data['friend_id']}', exception: e);
           continue;
         }
       }
@@ -204,78 +205,69 @@ class ConnectionService implements ConnectionServiceContract {
     }
   }
 
-  /// Fetches avatar URLs for a list of members synchronously (preserving original mechanism).
-  /// This method fetches URLs one by one in sequence, exactly as before.
-  /// Includes retry logic for network errors that commonly occur when app resumes from background.
+  /// Fetches avatar URLs for a list of members with rate limiting.
   /// Skips members that already have avatar URLs to avoid unnecessary network requests.
+  /// Uses batched processing (10 concurrent requests) to avoid overwhelming the server.
   FutureResult<List<GetCircleMembersResponseDto>> enrichMembersWithAvatars(
     List<GetCircleMembersResponseDto> members,
   ) async {
+    // ignore: avoid_print
+    print('[AvatarRefresh] Starting avatar enrichment for ${members.length} members');
+    final stopwatch = Stopwatch()..start();
+
+    int skipped = 0;
+    int fetched = 0;
+    int failed = 0;
+
     final enrichedMembers = <GetCircleMembersResponseDto>[];
+    const batchSize = 10; // Process 10 at a time to avoid overwhelming server
 
-    for (final member in members) {
-      // Skip if avatar URL already exists (from previous successful fetch)
-      // This avoids unnecessary network requests when refreshing on app resume
-      if (member.avatarUrl != null && member.avatarUrl!.isNotEmpty) {
-        enrichedMembers.add(member);
-        continue;
-      }
+    for (var i = 0; i < members.length; i += batchSize) {
+      final batch = members.skip(i).take(batchSize).toList();
 
-      String? avatarUrl;
-      
-      // Retry logic for network errors (common when app resumes from background)
-      const maxRetries = 2;
-      const initialDelay = Duration(milliseconds: 500);
-      
-      for (int attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          avatarUrl = await ref.read(
-            signedUrlProvider(
-              SupabaseBuckets.avatars,
-              member.id,
-            ).future,
-          );
-          break; // Success, exit retry loop
-        } catch (e) {
-          final isNetworkError = _isNetworkError(e);
-          final isLastAttempt = attempt == maxRetries;
-          
-          if (isNetworkError && !isLastAttempt) {
-            // Wait before retrying with exponential backoff
-            final delay = Duration(
-              milliseconds: initialDelay.inMilliseconds * (1 << attempt),
-            );
-            await Future.delayed(delay);
-            continue;
+      final batchResults = await Future.wait(
+        batch.map((member) async {
+          // Skip if avatar URL already exists
+          if (member.avatarUrl != null && member.avatarUrl!.isNotEmpty) {
+            skipped++;
+            return member;
           }
-          
-          // Log error only on last attempt or if it's not a network error
-          if (isLastAttempt || !isNetworkError) {
-            logger.error(
-              'Error getting avatar for member ${member.id}',
-              exception: e,
-            );
-          }
-          // Keep avatarUrl as null if fetch fails
-          avatarUrl = null;
-          break;
-        }
-      }
 
-      enrichedMembers.add(member.copyWith(avatarUrl: avatarUrl));
+          String? avatarUrl;
+          try {
+            avatarUrl = await ref.read(
+              signedUrlProvider(
+                SupabaseBuckets.avatars,
+                member.id,
+              ).future,
+            );
+            fetched++;
+          } catch (e) {
+            // Log first few failures to understand the error
+            if (failed < 3) {
+              // ignore: avoid_print
+              print('[AvatarRefresh] Error for ${member.id}: $e');
+            }
+            avatarUrl = null;
+            failed++;
+          }
+
+          return member.copyWith(avatarUrl: avatarUrl);
+        }),
+      );
+
+      enrichedMembers.addAll(batchResults);
     }
 
-    return Result.success(enrichedMembers);
-  }
+    stopwatch.stop();
 
-  /// Checks if an exception is a network-related error that should be retried.
-  bool _isNetworkError(Object error) {
-    final errorString = error.toString().toLowerCase();
-    return errorString.contains('clientexception') ||
-        errorString.contains('socketexception') ||
-        errorString.contains('failed host lookup') ||
-        errorString.contains('connection abort') ||
-        errorString.contains('no address associated with hostname');
+    // ignore: avoid_print
+    print(
+      '[AvatarRefresh] Completed in ${stopwatch.elapsedMilliseconds}ms - '
+      'fetched: $fetched, skipped: $skipped, failed: $failed',
+    );
+
+    return Result.success(enrichedMembers);
   }
 
   @override
@@ -296,10 +288,23 @@ class ConnectionService implements ConnectionServiceContract {
     try {
       final currentUserId = supabase.auth.currentUser!.id;
 
-      await supabase.rpc(
-        'remove_bidirectional_connection',
-        params: {'user_a': currentUserId, 'user_b': userId},
-      );
+      // Order UUIDs to match the friendship_ordered constraint (user_a_id < user_b_id)
+      final String userA;
+      final String userB;
+      if (currentUserId.compareTo(userId) < 0) {
+        userA = currentUserId;
+        userB = userId;
+      } else {
+        userA = userId;
+        userB = currentUserId;
+      }
+
+      // Direct DELETE - RLS policy allows users to delete their own friendships
+      await supabase
+          .from('friendships')
+          .delete()
+          .eq('user_a_id', userA)
+          .eq('user_b_id', userB);
 
       return Result.success(true);
     } on PostgrestException catch (e) {
@@ -329,24 +334,32 @@ class ConnectionService implements ConnectionServiceContract {
 
   Future<int> _getCircleSize(String userId) async {
     final result = await supabase
-        .from('connections')
+        .from('friendships')
         .select('id')
-        .or('user_id.eq.$userId,connection_id.eq.$userId')
+        .or('user_a_id.eq.$userId,user_b_id.eq.$userId')
         .count();
 
     return result.count;
+  }
+
+  /// Orders two user IDs to match the friendships table constraint (user_id_1 < user_id_2).
+  (String, String) _orderUserIds(String userIdA, String userIdB) {
+    return userIdA.compareTo(userIdB) < 0
+        ? (userIdA, userIdB)
+        : (userIdB, userIdA);
   }
 
   @override
   FutureResult<bool> isUserConnected(String userId) async {
     try {
       final currentUserId = supabase.auth.currentUser!.id;
+      final orderedIds = _orderUserIds(currentUserId, userId);
 
       final response = await supabase
-          .from('connections')
+          .from('friendships')
           .select('id')
-          .or('user_id.eq.$currentUserId,connection_id.eq.$currentUserId')
-          .or('user_id.eq.$userId,connection_id.eq.$userId')
+          .eq('user_id_1', orderedIds.$1)
+          .eq('user_id_2', orderedIds.$2)
           .limit(1);
 
       return Result.success(response.isNotEmpty);

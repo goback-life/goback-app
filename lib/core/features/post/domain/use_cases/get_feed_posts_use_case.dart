@@ -9,19 +9,13 @@ class GetFeedPostsUseCase {
 
   Future<Result<FeedResponseModel>> execute({
     required String userId,
-    required DateTime targetDate,
     int pageSize = 15,
-    int pageOffset = 0,
-    DateTime? cursorBefore,
-    DateTime? cursorAfter,
+    DateTime? cursor,
   }) async {
     return await repository.getFeedPosts(
       userId: userId,
-      targetDate: targetDate,
       pageSize: pageSize,
-      pageOffset: pageOffset,
-      cursorBefore: cursorBefore,
-      cursorAfter: cursorAfter,
+      cursor: cursor,
     );
   }
 }

@@ -11,16 +11,11 @@ abstract class PostRepositoryContract {
   Future<Result<PostModel>> updatePost(PostDataModel postData);
   Future<Result<FeedResponseModel>> getFeedPosts({
     required String userId,
-    required DateTime targetDate,
     int pageSize = 15,
-    int pageOffset = 0,
-    DateTime? cursorBefore,
-    DateTime? cursorAfter,
+    DateTime? cursor,
   });
 
   Future<Result<FeedPostModel>> getPostById({required String postId});
-
-  Future<Result<List<FeedPostModel>>> getPostReplies({required String postId});
 
   Future<Result<void>> deletePost({
     required String postId,

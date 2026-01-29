@@ -9,18 +9,11 @@ class CheckManualLockoutUseCase implements UseCaseContract<bool> {
 
   @override
   Future<bool> execute() async {
-    final isLockedOut = await storable.isLockedOut();
-
-    // If lockout has expired, clear it
-    if (!isLockedOut) {
-      final lockoutEnd = await storable.getLockoutEnd();
-      if (lockoutEnd != null) {
-        // Lockout expired, clear it
-        await storable.clearLockout();
-      }
-    }
-
-    return isLockedOut;
+    // Note: We intentionally do NOT clear expired lockouts here.
+    // The lockout data (including sessionId) must persist until the user
+    // either creates a post or skips on the lockout_complete screen.
+    // Clearing is handled by lockout_complete_view and use_post_creation.
+    return await storable.isLockedOut();
   }
 }
 

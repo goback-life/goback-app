@@ -6,13 +6,7 @@ class AddPostToCalendarUseCase {
 
   final CalendarRepositoryContract repository;
 
-  Future<Result<bool>> execute({
-    required String postId,
-    required DateTime calendarDate,
-  }) async {
-    return await repository.addPostToCalendar(
-      postId: postId,
-      calendarDate: calendarDate,
-    );
+  Future<Result<bool>> execute({required String postId}) async {
+    return await repository.addPostToCalendar(postId: postId);
   }
 }

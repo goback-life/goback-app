@@ -1,5 +1,6 @@
 import 'package:cloudless/core/features/notification/domain/providers/unread_notification_count_provider.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
+import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/get_feed_posts_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/get_post_by_id_provider.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -19,15 +20,11 @@ class FeedPostsPolling {
       return;
     }
 
-    final referenceTime = newestPostTimestamp.value;
-    final bufferTime = referenceTime?.subtract(const Duration(seconds: 1));
-
+    // Load latest posts without cursor to check for new ones
     final result = await ref.read(
       getFeedPostsProvider(
         userId: userId,
-        targetDate: DateTime.now(),
         pageSize: 15,
-        cursorAfter: bufferTime,
       ).future,
     );
 
@@ -41,6 +38,9 @@ class FeedPostsPolling {
         if (actualNewPosts.isNotEmpty) {
           posts.value = [...actualNewPosts, ...posts.value];
           newestPostTimestamp.value = actualNewPosts.first.createdAt;
+
+          // Sync with cache
+          ref.read(feedPostsCacheProvider.notifier).updateCache(posts.value);
 
           final postsFromOthers = actualNewPosts
               .where((p) => p.authorId != userId)
@@ -71,14 +71,11 @@ class FeedPostsPolling {
       return;
     }
 
-    final referenceTime = newestPostTimestamp.value ?? DateTime.now();
-
+    // Load latest posts to check for new ones created after last fetch
     final result = await ref.read(
       getFeedPostsProvider(
         userId: userId,
-        targetDate: referenceTime,
         pageSize: 15,
-        cursorAfter: newestPostTimestamp.value,
       ).future,
     );
 
@@ -96,6 +93,9 @@ class FeedPostsPolling {
           if (posts.value.length == actualNewPosts.length) {
             oldestPostTimestamp.value = actualNewPosts.last.createdAt;
           }
+
+          // Sync with cache
+          ref.read(feedPostsCacheProvider.notifier).updateCache(posts.value);
 
           final postsFromOthers = actualNewPosts
               .where((p) => p.authorId != userId)
@@ -189,6 +189,9 @@ class FeedPostsPolling {
             oldestPostTimestamp.value = feedPost.createdAt;
           }
 
+          // Sync with cache
+          ref.read(feedPostsCacheProvider.notifier).addPost(feedPost);
+
           // Refresh notification count (new posts may have generated notifications)
           ref.invalidate(unreadNotificationCountProvider(userId: userId));
         },
@@ -215,14 +218,10 @@ class FeedPostsPolling {
       return;
     }
 
-    final referenceDate = posts.value.isNotEmpty
-        ? posts.value.first.createdAt
-        : DateTime.now();
-
+    // Load posts to check for updates
     final result = await ref.read(
       getFeedPostsProvider(
         userId: userId,
-        targetDate: referenceDate,
         pageSize: posts.value.length + 10,
       ).future,
     );
@@ -248,15 +247,22 @@ class FeedPostsPolling {
 
       if (deletedPostIds.isNotEmpty || updatedPosts.isNotEmpty) {
         final newPosts = List<FeedPostModel>.from(currentPosts);
+        final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
 
         if (deletedPostIds.isNotEmpty) {
           newPosts.removeWhere((p) => deletedPostIds.contains(p.id));
+          // Sync deletions with cache
+          for (final id in deletedPostIds) {
+            cacheNotifier.removePost(id);
+          }
         }
 
         for (final updatedPost in updatedPosts) {
           final index = newPosts.indexWhere((p) => p.id == updatedPost.id);
           if (index != -1) {
             newPosts[index] = updatedPost;
+            // Sync update with cache
+            cacheNotifier.updatePost(updatedPost);
           }
         }
 

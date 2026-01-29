@@ -2,6 +2,7 @@ import 'package:dedecube_startup/dedecube_startup.dart';
 
 /// Stores manual lockout data: lockout end timestamp and start timestamp
 class ManualLockoutStorable extends Storable<Map> {
+  static const _tag = '[ManualLockoutStorable]';
   @override
   String get key => 'manual_lockout';
 
@@ -12,18 +13,36 @@ class ManualLockoutStorable extends Storable<Map> {
     final data = await get(defaultValue: <String, dynamic>{
       'lockoutEndTimestamp': null,
       'lockoutStartTimestamp': null,
+      'lockoutSessionId': null,
     });
-    return Map<String, dynamic>.from(data);
+    final result = Map<String, dynamic>.from(data);
+    logger.info('$_tag getLockoutData: $result');
+    return result;
   }
 
   Future<void> setLockoutData({
     required DateTime lockoutEndTimestamp,
     required DateTime lockoutStartTimestamp,
+    String? lockoutSessionId,
   }) async {
-    await set(<String, dynamic>{
+    final dataToStore = <String, dynamic>{
       'lockoutEndTimestamp': lockoutEndTimestamp.toIso8601String(),
       'lockoutStartTimestamp': lockoutStartTimestamp.toIso8601String(),
-    });
+      'lockoutSessionId': lockoutSessionId,
+    };
+    logger.info('$_tag setLockoutData: $dataToStore');
+    await set(dataToStore);
+
+    // Verify storage immediately after setting
+    final verifyData = await get(defaultValue: <String, dynamic>{});
+    logger.info('$_tag setLockoutData verify: $verifyData');
+  }
+
+  Future<String?> getLockoutSessionId() async {
+    final data = await getLockoutData();
+    final sessionId = data['lockoutSessionId'] as String?;
+    logger.info('$_tag getLockoutSessionId: $sessionId');
+    return sessionId;
   }
 
   Future<DateTime?> getLockoutEnd() async {
@@ -50,6 +69,7 @@ class ManualLockoutStorable extends Storable<Map> {
     await set(<String, dynamic>{
       'lockoutEndTimestamp': null,
       'lockoutStartTimestamp': null,
+      'lockoutSessionId': null,
     });
   }
 }

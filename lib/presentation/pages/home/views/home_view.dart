@@ -1,13 +1,15 @@
 import 'dart:async';
 
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
+import 'package:cloudless/core/features/connection/domain/hooks/use_app_resume_refresh.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_circle_members.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
+import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/notification/domain/providers/unread_notification_count_provider.dart';
 import 'package:cloudless/core/features/post/domain/enums/post_action_type.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_feed_posts/use_feed_posts.dart';
-import 'package:cloudless/core/features/post/domain/hooks/use_post_creation_initialization.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
+import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_action_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_published_notifier_provider.dart';
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
@@ -15,31 +17,26 @@ import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/background_image.dart';
 import 'package:cloudless/presentation/components/main_data_loader.dart';
 import 'package:cloudless/presentation/pages/home/components/home_circle_actions_widget.dart';
-import 'package:cloudless/presentation/pages/home/components/home_create_content_button.dart';
 import 'package:cloudless/presentation/pages/home/components/home_date_badge.dart';
 import 'package:cloudless/presentation/pages/home/components/home_feed_posts_list.dart';
 import 'package:cloudless/presentation/pages/home/components/home_lockout_button.dart';
 import 'package:cloudless/presentation/pages/home/components/home_new_posts_banner.dart';
 import 'package:cloudless/presentation/pages/home/components/home_scroll_indicator.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
+import 'package:cloudless/presentation/pages/lockout_complete/lockout_complete_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_page.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
+import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
-  const HomeView({super.key, this.loadingNotifier});
-
-  final ValueNotifier<bool>? loadingNotifier;
+  const HomeView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUserAsync = ref.watch(getCurrentUserProvider);
-    final postCreationInitialization = usePostCreationInitialization(
-      ref,
-      loadingNotifier: loadingNotifier,
-    );
     final scrollController = useScrollController();
 
     // Initialize isAtTop based on actual scroll position (not always true)
@@ -61,37 +58,67 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     }, [currentUserAsync]);
 
     final feedPosts = useFeedPosts(ref, userId: userId ?? '');
+    // ignore: avoid_print
+    print('[HomeView] feedPosts.posts.length: ${feedPosts.posts.length}, isLoading: ${feedPosts.isLoading}, userId: $userId');
     final isRefreshingFeed = useState(false);
     final topPostDate = useState<DateTime?>(null);
 
     final circleMembersData = useCircleMembers(ref);
 
-    // Polling: Refresh circle members (start after initial load completes)
-    useEffect(() {
-      print('[HomeView] Polling useEffect evaluated');
-      print('[HomeView] circleMembersData.isLoading: ${circleMembersData.isLoading}');
-      print('[HomeView] circleMembersData.allUsers.length: ${circleMembersData.allUsers.length}');
-      print('[HomeView] Polling condition: !isLoading=${!circleMembersData.isLoading} && isNotEmpty=${circleMembersData.allUsers.isNotEmpty}');
-      
-      // Wait for initial load to complete before starting polling
-      if (!circleMembersData.isLoading && circleMembersData.allUsers.isNotEmpty) {
-        print('[HomeView] ✅ Starting polling timer (15s interval)');
-        final timer = Timer.periodic(const Duration(seconds: 15), (_) {
-          print('[HomeView] Polling timer triggered - invalidating provider');
-          ref.invalidate(getCircleMembersProvider);
-        });
-
-        return timer.cancel;
-      } else {
-        print('[HomeView] ❌ Polling NOT started - condition not met');
-      }
-      return null;
-    }, [circleMembersData.isLoading, circleMembersData.allUsers.isNotEmpty]);
-
-    // Polling: Refresh unread notification count (start after user is loaded)
+    // Preload feed in background and set up periodic cleanup
     useEffect(() {
       if (userId != null && userId.isNotEmpty) {
-        final timer = Timer.periodic(const Duration(seconds: 15), (_) {
+        // Preload feed in background for instant access
+        ref.read(feedPostsCacheProvider.notifier).preloadFeed(userId);
+
+        // Periodic cleanup of expired posts (every 5 minutes)
+        final cleanupTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+          ref.read(feedPostsCacheProvider.notifier).removeExpiredPosts();
+        });
+
+        return cleanupTimer.cancel;
+      }
+      return null;
+    }, [userId]);
+
+    // Check for completed lockout that hasn't been posted yet
+    useEffect(() {
+      Future<void> checkPendingLockout() async {
+        final storable = ref.read(manualLockoutStorableProvider);
+        final lockoutEnd = await storable.getLockoutEnd();
+        final isLockedOut = await storable.isLockedOut();
+
+        // If there was a lockout (has end time) and it has ended, redirect to complete screen
+        // This handles both cases: with and without sessionId
+        if (lockoutEnd != null && !isLockedOut) {
+          final sessionId = await storable.getLockoutSessionId();
+          router.go(LockoutCompleteRoutable(lockoutSessionId: sessionId ?? ''));
+        }
+      }
+      checkPendingLockout();
+      return null;
+    }, []);
+
+    // Refresh data when app resumes from background
+    // This replaces aggressive polling - data is fetched in parallel on resume
+    useAppResumeRefresh(
+      onResume: () {
+        debugPrint('[HomeView] App resume refresh triggered - invalidating circle members and notifications');
+        // Refresh circle members (avatars fetched in parallel)
+        ref.invalidate(getCircleMembersProvider);
+        // Refresh notification count
+        if (userId != null && userId.isNotEmpty) {
+          ref.invalidate(unreadNotificationCountProvider(userId: userId));
+        }
+      },
+    );
+
+    // Refresh unread notification count on app resume and with light polling (60s)
+    // Push notifications will handle time-critical alerts when implemented
+    useEffect(() {
+      if (userId != null && userId.isNotEmpty) {
+        // Light polling at 60s interval (will be replaced by push notifications later)
+        final timer = Timer.periodic(const Duration(seconds: 60), (_) {
           ref.invalidate(unreadNotificationCountProvider(userId: userId));
         });
 
@@ -301,7 +328,6 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
         return _buildHomeContent(
           context,
           ref,
-          postCreationInitialization,
           feedPosts,
           userId!,
           hasFeedReady || hasCircleMembers, // Show feed if ready OR if we have members
@@ -322,7 +348,6 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
   Widget _buildHomeContent(
     BuildContext context,
     WidgetRef ref,
-    PostCreationInitializationResult postCreationInit,
     FeedPostsResult feedPosts,
     String currentUserId,
     bool showFeed,
@@ -346,16 +371,11 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
                 ? _buildFeedContent(
                     feedPosts: feedPosts,
                     currentUserId: currentUserId,
-                    postCreationInit: postCreationInit,
                     scrollController: scrollController,
                     onPostTap: (post) => _navigateToPostDetail(context, post),
                     onRefreshStateChanged: (isRefreshing) {
-                      debugPrint('📥 HomeView: Received refresh state change: $isRefreshing (current: ${isRefreshingFeed.value})');
                       if (isRefreshingFeed.value != isRefreshing) {
                         isRefreshingFeed.value = isRefreshing;
-                        debugPrint('📥 HomeView: Updated isRefreshingFeed.value to: ${isRefreshingFeed.value}');
-                      } else {
-                        debugPrint('📥 HomeView: State already matches, skipping update');
                       }
                     },
                     onTopPostDateChanged: (date) {
@@ -412,28 +432,14 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
             ),
 
             // Lockout button - bottom left
-            // Only show when create content button is also available
-            if (showFeed && (feedPosts.posts.isNotEmpty || isRefreshingFeed.value))
+            // Always show when feed view is active (even if empty) - this is the entry point
+            if (showFeed)
               Positioned(
                 bottom: bottomMargin + navBarHeight,
                 left: horizontalPadding,
                 child: const HomeLockoutButton(),
               ),
 
-            // Create content button - bottom right
-            // Keep button visible during refresh or when feed has posts
-            if (showFeed && (feedPosts.posts.isNotEmpty || isRefreshingFeed.value))
-              Positioned(
-                bottom: bottomMargin + navBarHeight,
-                right: horizontalPadding,
-                child: HomeCreateContentButton(
-                  key: const ValueKey('create_content_button'),
-                  onPressed: () {
-                    postCreationInit.selectMainImage();
-                  },
-                  isRefreshing: isRefreshingFeed.value,
-                ),
-              ),
           ],
         ),
       ),
@@ -443,18 +449,20 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
   Widget _buildFeedContent({
     required FeedPostsResult feedPosts,
     required String currentUserId,
-    required PostCreationInitializationResult postCreationInit,
     required ScrollController scrollController,
     required void Function(FeedPostModel) onPostTap,
     required void Function(bool) onRefreshStateChanged,
     required void Function(DateTime?) onTopPostDateChanged,
   }) {
     final showLoading = feedPosts.isLoading && feedPosts.posts.isEmpty;
-    
+
+    // ignore: avoid_print
+    print('[HomeView._buildFeedContent] posts: ${feedPosts.posts.length}, showLoading: $showLoading');
+
     if (showLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    
+
     return HomeFeedPostsList(
       posts: feedPosts.posts,
       currentUserId: currentUserId,
@@ -465,9 +473,6 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
         feedPosts.loadMore();
       },
       onRefresh: feedPosts.refresh,
-      onCreatePost: () {
-        postCreationInit.selectMainImage();
-      },
       scrollController: scrollController,
       onPostTap: onPostTap,
       onRefreshStateChanged: onRefreshStateChanged,

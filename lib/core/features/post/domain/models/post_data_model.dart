@@ -11,14 +11,13 @@ sealed class PostDataModel with _$PostDataModel {
     required String authorId,
     required ContentType contentType,
     required List<File> mediaFiles,
-    required DateTime contentDate,
     required String publishedTimezone,
     String? postId,
-    String? parentId,
     String? description,
     File? thumbnailFile,
     @Default([]) List<String> taggedUserIds,
     @Default([]) List<String> excludedUserIds,
-    @Default(false) bool isLockoutPost,
+    /// Reference to lockout_sessions table if this is a lockout post
+    String? lockoutId,
   }) = _PostDataModel;
 }

@@ -14,15 +14,16 @@ sealed class PostDto with _$PostDto {
     @JsonKey(name: 'thumbnail_url') required String thumbnailUrl,
     @JsonKey(name: 'thumbnail_width') required int thumbnailWidth,
     @JsonKey(name: 'thumbnail_height') required int thumbnailHeight,
-    @JsonKey(name: 'content_date') required String contentDate,
-    required String status,
     @JsonKey(name: 'created_at') required String createdAt,
     @JsonKey(name: 'updated_at') required String updatedAt,
-    @JsonKey(name: 'published_at') required String publishedAt,
-    @JsonKey(name: 'published_timezone') required String publishedTimezone,
-    @JsonKey(name: 'deleted_at') String? deletedAt,
-    @JsonKey(name: 'parent_id') String? parentId,
-    @JsonKey(name: 'is_lockout_post') @Default(false) bool isLockoutPost,
+    @JsonKey(name: 'published_at') String? publishedAt,
+    @JsonKey(name: 'published_timezone') String? publishedTimezone,
+    /// Reference to lockout_sessions table if this is a lockout post
+    @JsonKey(name: 'lockout_id') String? lockoutId,
+    /// When this post was saved to calendar (null if not saved)
+    @JsonKey(name: 'calendar_saved_at') String? calendarSavedAt,
+    /// Excluded user IDs as UUID[] array
+    @JsonKey(name: 'excluded_user_ids') List<String>? excludedUserIds,
     String? description,
   }) = _PostDto;
 

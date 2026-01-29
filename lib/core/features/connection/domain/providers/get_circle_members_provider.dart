@@ -1,5 +1,6 @@
 import 'package:cloudless/core/features/connection/data/dtos/get_circle_members_response_dto.dart';
 import 'package:cloudless/core/features/connection/data/providers/connection_service_provider.dart';
+import 'package:cloudless/core/features/connection/domain/contracts/connection_service_contract.dart';
 import 'package:cloudless/core/features/connection/domain/models/connection_member_model.dart';
 import 'package:cloudless/core/models/profile_model.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -21,33 +22,55 @@ part 'get_circle_members_provider.g.dart';
 class GetCircleMembers extends _$GetCircleMembers {
   @override
   Future<Result<List<ConnectionMemberModel>>> build() async {
+    // ignore: avoid_print
+    print('[GetCircleMembersProvider] build() called - fetching circle members');
     final service = ref.watch(connectionServiceProvider);
 
     // First, get basic member data (fast, without avatar URLs)
     final basicResult = await service.getCircleMembersBasic();
-    
+
     // Handle errors - if basic fetch fails, return error
-    return await basicResult.asyncFold(
-      (basicMembers) async {
-        // Convert and emit data with placeholders (allows UI to render immediately)
+    return basicResult.fold(
+      (basicMembers) {
+        // Convert to models with placeholder avatars (from DB cache if available)
         final placeholderModels = _convertToConnectionMembers(basicMembers);
-        state = AsyncValue.data(Result.success(placeholderModels));
 
-        // Then fetch all avatar URLs synchronously (preserving original mechanism)
-        final enrichedResult = await service.enrichMembersWithAvatars(basicMembers);
-        final completeMembers = enrichedResult.fold(
-          (members) => members,
-          (error) => basicMembers, // Fall back to basic members if enrichment fails
-        );
+        // Start avatar enrichment in background - don't await!
+        // This allows the UI to render immediately with placeholders
+        _enrichAvatarsInBackground(service, basicMembers);
 
-        // Convert and emit complete data with all avatar URLs
-        final completeModels = _convertToConnectionMembers(completeMembers);
-        state = AsyncValue.data(Result.success(completeModels));
-
-        return Result.success(completeModels);
+        // Return immediately with placeholder data
+        // ignore: avoid_print
+        print('[GetCircleMembersProvider] Returning ${placeholderModels.length} members (avatars loading in background)');
+        return Result.success(placeholderModels);
       },
-      (error) async => Result.failure(error),
+      (error) => Result.failure(error),
     );
+  }
+
+  /// Enriches avatars in the background without blocking the provider.
+  /// Updates state when complete.
+  Future<void> _enrichAvatarsInBackground(
+    ConnectionServiceContract service,
+    List<GetCircleMembersResponseDto> basicMembers,
+  ) async {
+    try {
+      final enrichedResult = await service.enrichMembersWithAvatars(basicMembers);
+      final completeMembers = enrichedResult.fold(
+        (members) => members,
+        (error) => basicMembers, // Fall back to basic members if enrichment fails
+      );
+
+      // Update state with complete data (avatars loaded)
+      final completeModels = _convertToConnectionMembers(completeMembers);
+      state = AsyncValue.data(Result.success(completeModels));
+      // ignore: avoid_print
+      print('[GetCircleMembersProvider] Avatar enrichment complete - state updated');
+    } catch (e) {
+      // ignore: avoid_print
+      print('[GetCircleMembersProvider] Avatar enrichment failed: $e');
+      // Keep placeholder data on error - don't update state
+    }
   }
 
   List<ConnectionMemberModel> _convertToConnectionMembers(
@@ -55,7 +78,7 @@ class GetCircleMembers extends _$GetCircleMembers {
   ) {
     return dtos.map((dto) {
       return ConnectionMemberModel(
-        connectionId: dto.connectionId,
+        friendshipId: dto.friendshipId,
         profile: ProfileModel(
           id: dto.id,
           username: dto.username,

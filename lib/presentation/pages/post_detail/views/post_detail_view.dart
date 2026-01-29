@@ -8,9 +8,7 @@ import 'package:cloudless/presentation/pages/post_detail/components/post_detail_
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_description.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_header.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_media.dart';
-import 'package:cloudless/presentation/pages/post_detail/components/post_detail_parent_preview.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_reactions.dart';
-import 'package:cloudless/presentation/pages/post_detail/components/post_detail_replies.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_tags.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
 import 'package:cloudless/presentation/pages/post_detail/utilities/post_detail_calendar.dart';
@@ -66,20 +64,6 @@ class PostDetailView extends HookConsumerWidget
           false;
     }, [currentUserAsync, postDetailResult.post?.authorId]);
 
-    final isExcludedFromParent = useMemoized(() {
-      final post = postDetailResult.post;
-      if (post == null || post.parentId == null) {
-        return false;
-      }
-
-      return currentUserAsync.whenOrNull(
-            data: (userResult) => userResult.fold(
-              (user) => post.parentExcludedUserIds.contains(user.id),
-              (error) => false,
-            ),
-          ) ??
-          false;
-    }, [currentUserAsync, postDetailResult.post?.parentExcludedUserIds]);
 
     useEffect(() {
       var isMounted = true;
@@ -140,9 +124,9 @@ class PostDetailView extends HookConsumerWidget
 
         return posts.any((p) {
           final postCalendarDate = DateTime(
-            p.calendarDate.year,
-            p.calendarDate.month,
-            p.calendarDate.day,
+            p.calendarSavedAt.year,
+            p.calendarSavedAt.month,
+            p.calendarSavedAt.day,
           );
           return p.postId == postId &&
               postCalendarDate.isAtSameMomentAs(normalizedHeaderDate);
@@ -237,17 +221,17 @@ class PostDetailView extends HookConsumerWidget
 
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
-        final postContentDate = DateTime(
-          post.contentDate.year,
-          post.contentDate.month,
-          post.contentDate.day,
+        final postCreatedDate = DateTime(
+          post.createdAt.year,
+          post.createdAt.month,
+          post.createdAt.day,
         );
 
-        final isToday = postContentDate.isAtSameMomentAs(today);
+        final isToday = postCreatedDate.isAtSameMomentAs(today);
 
         return isToday || isPostInCalendar;
       },
-      [isCurrentUserPost, postDetailResult.post?.contentDate, isPostInCalendar],
+      [isCurrentUserPost, postDetailResult.post?.createdAt, isPostInCalendar],
     );
 
     if (postDetailResult.post == null) {
@@ -294,26 +278,6 @@ class PostDetailView extends HookConsumerWidget
                   useSafeArea: false,
                   bottom: Row(
                     children: [
-                      if (post.parentId != null &&
-                          post.parentThumbnailUrl != null &&
-                          !isExcludedFromParent) ...[
-                        PostDetailParentPreview(
-                          thumbnailUrl: post.parentThumbnailUrl!,
-                          isParentVideo:
-                              post.parentContentType == ContentType.video,
-                          isParentDeleted: post.parentDeletedAt != null,
-                          onTap: () =>
-                              PostDetailNavigation.navigateToParentPost(
-                                context,
-                                ref,
-                                post.parentId!,
-                                post,
-                                isFromCalendar: isFromCalendar,
-                                headerDate: headerDate,
-                                calendarUserId: calendarUserId,
-                              ),
-                        ),
-                      ],
                       const Spacer(),
                       PostDetailActions(
                         isCurrentUserPost: isCurrentUserPost,
@@ -374,7 +338,6 @@ class PostDetailView extends HookConsumerWidget
                       ),
                       SizedBox(height: sectionSpacing),
                     ],
-                    PostDetailReplies(postId: post.id),
                   ],
                 ),
               ),

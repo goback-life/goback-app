@@ -265,7 +265,9 @@
             "feed_empty_box": {
                 "title": "Inizia a vivere @{username}",
                 "description": "Condividere è ancora più bello con chi conta davvero: inizia ora e crea il tuo primo ricordo indimenticabile di oggi.",
-                "create_content_button": "Condividi ora"
+                "create_content_button": "Condividi ora",
+                "no_activity_title": "Tutto tranquillo per ora",
+                "no_activity_description": "Inizia un lockout per tornare indietro e condividere un momento con la tua cerchia"
             },
             "no_circle_box": {
                 "title": "Ciao @{username}",
@@ -442,6 +444,12 @@
                 "confirm": "Conferma",
                 "error": "La durata deve essere maggiore di 1 ora"
             }
+        },
+        "lockout_complete": {
+            "title": "bentornato!",
+            "subtitle": "Condividi cosa hai fatto mentre eri offline",
+            "share_button": "Condividi cosa ho fatto",
+            "skip_button": "Salta"
         },
         "notifications": {
             "title": "Notifiche",

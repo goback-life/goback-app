@@ -13,6 +13,8 @@ sealed class ProfileModel with _$ProfileModel {
     String? biography,
     String? avatarUrl,
     String? phoneNumber,
+    @JsonKey(name: 'weekly_lockout_minutes') int? weeklyLockoutMinutes,
+    @JsonKey(name: 'notifications_checked_at') DateTime? notificationsCheckedAt,
   }) = _ProfileModel;
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) =>

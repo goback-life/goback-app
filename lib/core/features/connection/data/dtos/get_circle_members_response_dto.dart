@@ -7,7 +7,7 @@ part 'get_circle_members_response_dto.g.dart';
 @freezed
 sealed class GetCircleMembersResponseDto with _$GetCircleMembersResponseDto {
   const factory GetCircleMembersResponseDto({
-    @JsonKey(name: 'connection_id') required String connectionId,
+    @JsonKey(name: 'friendship_id') required String friendshipId,
     required String id,
     required String username,
     String? biography,

@@ -40,6 +40,7 @@ app.*.map.json
 # Android related
 /android/app/debug
 /android/app/profile
+
 /android/app/release
 **/.cxx
 
@@ -70,3 +71,4 @@ fastlane/build
 fastlane/metadata
 .crashlytics
 
+tmpclaude*

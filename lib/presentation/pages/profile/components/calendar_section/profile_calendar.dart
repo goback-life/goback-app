@@ -193,7 +193,7 @@ class ProfileCalendar extends HookConsumerWidget
 
     final postsByDay = <String, CalendarPostModel>{};
     for (final post in calendarCache) {
-      final postDate = post.calendarDate;
+      final postDate = post.calendarSavedAt;
       if ((postDate.isAfter(firstVisibleDay) ||
               postDate.isAtSameMomentAs(firstVisibleDay)) &&
           (postDate.isBefore(lastVisibleDay) ||
@@ -265,7 +265,7 @@ class ProfileCalendar extends HookConsumerWidget
           final postsByDay = <String, CalendarPostModel>{};
           for (final post in posts) {
             final dateKey =
-                '${post.calendarDate.year}-${post.calendarDate.month.toString().padLeft(2, '0')}-${post.calendarDate.day.toString().padLeft(2, '0')}';
+                '${post.calendarSavedAt.year}-${post.calendarSavedAt.month.toString().padLeft(2, '0')}-${post.calendarSavedAt.day.toString().padLeft(2, '0')}';
             postsByDay[dateKey] = post;
           }
           calendarPostsByDay.value = postsByDay;
@@ -306,7 +306,6 @@ class ProfileCalendar extends HookConsumerWidget
       authorId: post.authorId,
       authorUsername: post.authorUsername,
       authorAvatarUrl: post.authorAvatarUrl,
-      contentDate: post.contentDate,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
       imageUrl: post.thumbnailUrl,
@@ -318,22 +317,16 @@ class ProfileCalendar extends HookConsumerWidget
       taggedUsernames: post.taggedUsernames,
       taggedUserIds: post.taggedUserIds,
       excludedUserIds: post.excludedUserIds,
-      parentExcludedUserIds: post.parentExcludedUserIds,
       isAuthorConnected: post.isAuthorConnected,
-      parentId: post.parentId,
-      parentAuthorId: post.parentAuthorId,
-      parentAuthorUsername: post.parentAuthorUsername,
-      parentThumbnailUrl: post.parentThumbnailUrl,
-      parentContentType: post.parentContentType,
-      parentDeletedAt: post.parentDeletedAt,
       publishedAt: post.publishedAt,
       publishedTimezone: post.publishedTimezone,
+      calendarSavedAt: post.calendarSavedAt,
     );
 
     await PostDetailPage.showFromCalendar(
       context,
       post: feedPost,
-      headerDate: post.calendarDate,
+      headerDate: post.calendarSavedAt,
       calendarUserId: userId,
     );
 

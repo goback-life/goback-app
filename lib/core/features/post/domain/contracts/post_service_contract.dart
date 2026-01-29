@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:cloudless/core/features/post/data/dtos/feed_post_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/feed_response_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_dto.dart';
-import 'package:cloudless/core/features/post/data/dtos/post_exclusion_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_media_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_reaction_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_report_dto.dart';
@@ -15,12 +14,13 @@ abstract class PostServiceContract {
     required String authorId,
     required ContentType contentType,
     required List<File> mediaFiles,
-    required DateTime contentDate,
     required String publishedTimezone,
-    String? parentId,
     String? description,
     File? thumbnailFile,
-    bool isLockoutPost = false,
+    /// Reference to lockout_sessions table if this is a lockout post
+    String? lockoutId,
+    /// List of user IDs to exclude from seeing this post
+    List<String>? excludedUserIds,
   });
 
   Future<List<String>> uploadMediaFiles(
@@ -36,11 +36,11 @@ abstract class PostServiceContract {
     required String thumbnailUrl,
     required int thumbnailWidth,
     required int thumbnailHeight,
-    required DateTime contentDate,
-    required String publishedTimezone,
-    String? parentId,
     String? description,
-    bool isLockoutPost = false,
+    /// Reference to lockout_sessions table if this is a lockout post
+    String? lockoutId,
+    /// List of user IDs to exclude from seeing this post
+    List<String>? excludedUserIds,
   });
 
   /// Adds media entries to the post_media table.
@@ -57,7 +57,9 @@ abstract class PostServiceContract {
     required List<String> taggedUserIds,
   });
 
-  Future<List<PostExclusionDto>> addPostExclusions({
+  /// Sets exclusions (privacy settings) on a post.
+  /// Stores excluded user IDs as a UUID[] array directly on the posts table.
+  Future<void> setPostExclusions({
     required String postId,
     required List<String> excludedUserIds,
   });
@@ -86,16 +88,11 @@ abstract class PostServiceContract {
 
   Future<FeedResponseDto> getFeedPosts({
     required String userId,
-    required DateTime targetDate,
     int pageSize = 15,
-    int pageOffset = 0,
-    DateTime? cursorBefore,
-    DateTime? cursorAfter,
+    DateTime? cursor,
   });
 
   Future<FeedPostDto> getPostById({required String postId});
-
-  Future<List<FeedPostDto>> getPostReplies({required String postId});
 
   Future<void> deletePost({required String postId, required String authorId});
 

@@ -21,14 +21,12 @@ class PostCreationNotifier extends _$PostCreationNotifier {
     required List<String> excludedUserIds,
     required DateTime createdAt,
     required ContentType contentType,
-    String? parentId,
     String? imageUrl,
     String? videoUrl,
     String? thumbnailUrl,
   }) {
     state = PostCreationDto(
       postId: postId,
-      parentId: parentId,
       existingImageUrl: contentType == ContentType.image ? imageUrl : null,
       existingVideoUrl: contentType == ContentType.video ? videoUrl : null,
       existingThumbnailUrl: contentType == ContentType.video
@@ -39,14 +37,6 @@ class PostCreationNotifier extends _$PostCreationNotifier {
       taggedUserIds: taggedUserIds,
       excludedUserIds: excludedUserIds,
       createdAt: createdAt,
-      publishedTimezone: DateTime.now().timeZoneName,
-    );
-  }
-
-  void loadReplyMode({required String parentId}) {
-    state = PostCreationDto(
-      parentId: parentId,
-      createdAt: DateTime.now(),
       publishedTimezone: DateTime.now().timeZoneName,
     );
   }

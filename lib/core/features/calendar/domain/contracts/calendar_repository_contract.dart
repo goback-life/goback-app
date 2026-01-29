@@ -16,16 +16,15 @@ abstract class CalendarRepositoryContract {
     int limit = 42,
   });
 
-  /// Adds a post to the calendar for a specific date.
+  /// Saves a post to the user's calendar.
   ///
+  /// Sets the calendar_saved_at timestamp on the post.
   /// Returns true if the operation was successful, false otherwise.
-  FutureResult<bool> addPostToCalendar({
-    required String postId,
-    required DateTime calendarDate,
-  });
+  FutureResult<bool> addPostToCalendar({required String postId});
 
-  /// Removes a post from the calendar for a specific date.
+  /// Removes a post from the user's calendar.
   ///
+  /// Clears the calendar_saved_at timestamp on the post.
   /// Returns true if the operation was successful, false otherwise.
-  FutureResult<bool> removePostFromCalendar({required DateTime calendarDate});
+  FutureResult<bool> removePostFromCalendar({required String postId});
 }

@@ -8,7 +8,7 @@ part 'connection_dto.g.dart';
 @freezed
 sealed class ConnectionDto with _$ConnectionDto {
   const factory ConnectionDto({
-    @JsonKey(name: 'connection_id') required String connectionId,
+    @JsonKey(name: 'friendship_id') required String connectionId,
     ProfileDto? profiles,
   }) = _ConnectionDto;
 

@@ -1,0 +1,34 @@
+// ignore_for_file: invalid_annotation_target
+
+import 'package:dedecube_core/dedecube_core.dart';
+
+part 'lockout_session_dto.freezed.dart';
+part 'lockout_session_dto.g.dart';
+
+/// DTO for lockout sessions from the database.
+///
+/// Represents a server-side lockout session that tracks when users
+/// go offline together. Includes location data and participants.
+@freezed
+sealed class LockoutSessionDto with _$LockoutSessionDto {
+  const factory LockoutSessionDto({
+    required String id,
+    @JsonKey(name: 'user_id') required String userId,
+    @JsonKey(name: 'started_at') required String startedAt,
+    @JsonKey(name: 'ends_at') required String endsAt,
+    @JsonKey(name: 'action_text') String? actionText,
+    @JsonKey(name: 'location_lat') double? locationLat,
+    @JsonKey(name: 'location_lng') double? locationLng,
+    @JsonKey(name: 'location_name') String? locationName,
+    @JsonKey(name: 'post_id') String? postId,
+    @JsonKey(name: 'created_at') String? createdAt,
+    /// Friends who joined this lockout session (UUID array)
+    @Default([]) List<String> participants,
+    // Denormalized from RPC join:
+    String? username,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
+  }) = _LockoutSessionDto;
+
+  factory LockoutSessionDto.fromJson(Map<String, dynamic> json) =>
+      _$LockoutSessionDtoFromJson(json);
+}

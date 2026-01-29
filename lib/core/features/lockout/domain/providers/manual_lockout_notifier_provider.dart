@@ -1,3 +1,4 @@
+import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/models/manual_lockout_model.dart';
 import 'package:cloudless/core/features/lockout/domain/use_cases/check_manual_lockout_use_case.dart';
@@ -32,15 +33,47 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     );
   }
 
-  Future<void> setLockout(Duration duration) async {
+  /// Sets a lockout for the given duration.
+  ///
+  /// Creates a lockout session in the database and stores locally.
+  /// Returns the session ID for use when creating a lockout post.
+  Future<String?> setLockout(
+    Duration duration, {
+    String? actionText,
+    double? locationLat,
+    double? locationLng,
+    String? locationName,
+  }) async {
     final storable = ref.read(manualLockoutStorableProvider);
-    final useCase = SetManualLockoutUseCase(
-      storable: storable,
-      duration: duration,
-    );
-
+    final sessionService = ref.read(lockoutSessionServiceProvider);
     state = const AsyncValue.loading();
+    String? sessionId;
+
     try {
+      // Create session in database first
+      final sessionResult = await sessionService.createSession(
+        duration: duration,
+        actionText: actionText,
+        locationLat: locationLat,
+        locationLng: locationLng,
+        locationName: locationName,
+      );
+
+      sessionResult.fold(
+        (session) {
+          sessionId = session.id;
+          logger.info('Lockout session created with ID: $sessionId');
+        },
+        (error) => logger.warning('Failed to create DB session: $error'),
+      );
+
+      // Store locally with session ID for post creation after lockout ends
+      logger.info('Storing lockout locally with sessionId: $sessionId');
+      final useCase = SetManualLockoutUseCase(
+        storable: storable,
+        duration: duration,
+        sessionId: sessionId,
+      );
       await useCase.execute();
 
       // Reload state
@@ -63,6 +96,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       );
 
       logger.info('Manual lockout set for ${duration.inHours} hours');
+      return sessionId;
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
       logger.error(
@@ -70,6 +104,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
         exception: error,
         stackTrace: stackTrace,
       );
+      return null;
     }
   }
 
@@ -100,15 +135,41 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     return await useCase.execute();
   }
 
-  Future<void> joinLockout(DateTime lockoutEndTime) async {
+  /// Joins an existing lockout session by session ID.
+  ///
+  /// Calls the database RPC to join and stores locally.
+  Future<void> joinLockout(String lockoutSessionId) async {
     final storable = ref.read(manualLockoutStorableProvider);
-    final useCase = JoinLockoutUseCase(
-      storable: storable,
-      lockoutEndTime: lockoutEndTime,
-    );
+    final sessionService = ref.read(lockoutSessionServiceProvider);
 
     state = const AsyncValue.loading();
     try {
+      // Get session details to determine end time
+      final sessionResult = await sessionService.getSessionById(lockoutSessionId);
+      DateTime? lockoutEndTime;
+
+      await sessionResult.asyncFold(
+        (session) async {
+          if (session != null) {
+            lockoutEndTime = DateTime.parse(session.endsAt);
+            // Join session in database
+            await sessionService.joinSession(sessionId: lockoutSessionId);
+          }
+        },
+        (error) async {
+          logger.warning('Failed to get session: $error');
+        },
+      );
+
+      if (lockoutEndTime == null) {
+        throw Exception('Could not get lockout session end time');
+      }
+
+      // Store locally
+      final useCase = JoinLockoutUseCase(
+        storable: storable,
+        lockoutEndTime: lockoutEndTime!,
+      );
       await useCase.execute();
 
       // Reload state
@@ -130,7 +191,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
         ),
       );
 
-      logger.info('Joined lockout ending at $lockoutEndTime');
+      logger.info('Joined lockout session $lockoutSessionId');
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
       logger.error(

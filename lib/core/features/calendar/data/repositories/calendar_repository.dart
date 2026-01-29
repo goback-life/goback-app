@@ -25,11 +25,11 @@ class CalendarRepository implements CalendarRepositoryContract {
     int limit = 42,
   }) async {
     try {
+      // Convert referenceDate to year/month for the service
       final dtos = await calendarService.getCalendarPosts(
         userId: userId,
-        referenceDate: referenceDate,
-        direction: direction,
-        limit: limit,
+        year: referenceDate.year,
+        month: referenceDate.month,
       );
 
       final models = calendarPostMapper.mapDtoList(dtos);
@@ -44,15 +44,9 @@ class CalendarRepository implements CalendarRepositoryContract {
   }
 
   @override
-  FutureResult<bool> addPostToCalendar({
-    required String postId,
-    required DateTime calendarDate,
-  }) async {
+  FutureResult<bool> addPostToCalendar({required String postId}) async {
     try {
-      final response = await calendarService.addPostToCalendar(
-        postId: postId,
-        calendarDate: calendarDate,
-      );
+      final response = await calendarService.addPostToCalendar(postId: postId);
 
       if (!response.success) {
         return Result.failure(
@@ -75,12 +69,10 @@ class CalendarRepository implements CalendarRepositoryContract {
   }
 
   @override
-  FutureResult<bool> removePostFromCalendar({
-    required DateTime calendarDate,
-  }) async {
+  FutureResult<bool> removePostFromCalendar({required String postId}) async {
     try {
       final response = await calendarService.removePostFromCalendar(
-        calendarDate: calendarDate,
+        postId: postId,
       );
 
       if (!response.success) {

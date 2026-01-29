@@ -7,20 +7,20 @@ class MarkNotificationsAsReadUseCase
     required this.repository,
     required this.userId,
     required this.notificationType,
-    this.relatedPostId,
+    this.referenceId,
   });
 
   final NotificationRepositoryContract repository;
   final String userId;
   final String notificationType;
-  final String? relatedPostId;
+  final String? referenceId;
 
   @override
   Future<Result<void>> execute() async {
     return await repository.markNotificationsAsRead(
       userId: userId,
       notificationType: notificationType,
-      relatedPostId: relatedPostId,
+      referenceId: referenceId,
     );
   }
 }

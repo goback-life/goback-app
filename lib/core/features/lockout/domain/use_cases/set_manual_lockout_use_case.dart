@@ -6,10 +6,12 @@ class SetManualLockoutUseCase implements UseCaseContract<void> {
   const SetManualLockoutUseCase({
     required this.storable,
     required this.duration,
+    this.sessionId,
   });
 
   final ManualLockoutStorable storable;
   final Duration duration;
+  final String? sessionId;
 
   @override
   Future<void> execute() async {
@@ -19,6 +21,7 @@ class SetManualLockoutUseCase implements UseCaseContract<void> {
     await storable.setLockoutData(
       lockoutEndTimestamp: lockoutEnd,
       lockoutStartTimestamp: now,
+      lockoutSessionId: sessionId,
     );
   }
 }

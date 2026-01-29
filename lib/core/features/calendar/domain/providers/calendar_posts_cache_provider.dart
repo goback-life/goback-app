@@ -45,7 +45,7 @@ class CalendarPostsCache extends _$CalendarPostsCache {
   /// Returns null if the post is not in the calendar.
   DateTime? getPostCalendarDate(String postId) {
     try {
-      return state.firstWhere((post) => post.postId == postId).calendarDate;
+      return state.firstWhere((post) => post.postId == postId).calendarSavedAt;
     } catch (e) {
       return null;
     }
@@ -57,16 +57,16 @@ class CalendarPostsCache extends _$CalendarPostsCache {
   void addPostOptimistically(CalendarPostModel post) {
     // Remove any existing post for the same date (max 1 post per day)
     final postDate = DateTime(
-      post.calendarDate.year,
-      post.calendarDate.month,
-      post.calendarDate.day,
+      post.calendarSavedAt.year,
+      post.calendarSavedAt.month,
+      post.calendarSavedAt.day,
     );
 
     final filtered = state.where((p) {
       final pDate = DateTime(
-        p.calendarDate.year,
-        p.calendarDate.month,
-        p.calendarDate.day,
+        p.calendarSavedAt.year,
+        p.calendarSavedAt.month,
+        p.calendarSavedAt.day,
       );
       return !pDate.isAtSameMomentAs(postDate);
     }).toList();
@@ -94,14 +94,14 @@ class CalendarPostsCache extends _$CalendarPostsCache {
   /// Gets all posts sorted by calendar date in ascending order.
   List<CalendarPostModel> getSortedPosts() {
     final sorted = List<CalendarPostModel>.from(state)
-      ..sort((a, b) => a.calendarDate.compareTo(b.calendarDate));
+      ..sort((a, b) => a.calendarSavedAt.compareTo(b.calendarSavedAt));
     return sorted;
   }
 
   /// Gets all posts sorted by calendar date for a specific author.
   List<CalendarPostModel> getSortedPostsByAuthor(String authorId) {
     final filtered = state.where((post) => post.authorId == authorId).toList()
-      ..sort((a, b) => a.calendarDate.compareTo(b.calendarDate));
+      ..sort((a, b) => a.calendarSavedAt.compareTo(b.calendarSavedAt));
     return filtered;
   }
 
@@ -119,9 +119,9 @@ class CalendarPostsCache extends _$CalendarPostsCache {
 
     for (final post in sorted) {
       final postDate = DateTime(
-        post.calendarDate.year,
-        post.calendarDate.month,
-        post.calendarDate.day,
+        post.calendarSavedAt.year,
+        post.calendarSavedAt.month,
+        post.calendarSavedAt.day,
       );
       if (postDate.isAfter(normalizedDate)) {
         return post;
@@ -145,9 +145,9 @@ class CalendarPostsCache extends _$CalendarPostsCache {
     for (var i = sorted.length - 1; i >= 0; i--) {
       final post = sorted[i];
       final postDate = DateTime(
-        post.calendarDate.year,
-        post.calendarDate.month,
-        post.calendarDate.day,
+        post.calendarSavedAt.year,
+        post.calendarSavedAt.month,
+        post.calendarSavedAt.day,
       );
       if (postDate.isBefore(normalizedDate)) {
         return post;
@@ -174,9 +174,9 @@ class CalendarPostsCache extends _$CalendarPostsCache {
 
     final currentIndex = sorted.indexWhere((post) {
       final postDate = DateTime(
-        post.calendarDate.year,
-        post.calendarDate.month,
-        post.calendarDate.day,
+        post.calendarSavedAt.year,
+        post.calendarSavedAt.month,
+        post.calendarSavedAt.day,
       );
       return postDate.isAtSameMomentAs(normalizedDate);
     });
@@ -210,9 +210,9 @@ class CalendarPostsCache extends _$CalendarPostsCache {
 
     final currentIndex = sorted.indexWhere((post) {
       final postDate = DateTime(
-        post.calendarDate.year,
-        post.calendarDate.month,
-        post.calendarDate.day,
+        post.calendarSavedAt.year,
+        post.calendarSavedAt.month,
+        post.calendarSavedAt.day,
       );
       return postDate.isAtSameMomentAs(normalizedDate);
     });

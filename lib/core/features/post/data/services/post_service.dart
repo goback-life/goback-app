@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:cloudless/core/features/post/data/dtos/feed_post_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/feed_response_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_dto.dart';
-import 'package:cloudless/core/features/post/data/dtos/post_exclusion_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_media_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_reaction_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_report_dto.dart';
@@ -56,12 +55,11 @@ class PostService implements PostServiceContract {
     required String authorId,
     required ContentType contentType,
     required List<File> mediaFiles,
-    required DateTime contentDate,
     required String publishedTimezone,
-    String? parentId,
     String? description,
     File? thumbnailFile,
-    bool isLockoutPost = false,
+    String? lockoutId,
+    List<String>? excludedUserIds,
   }) async {
     int thumbnailWidth = 1080;
     int thumbnailHeight = 1080;
@@ -77,11 +75,9 @@ class PostService implements PostServiceContract {
         thumbnailUrl: '', // Empty for text posts - render text directly
         thumbnailWidth: thumbnailWidth,
         thumbnailHeight: thumbnailHeight,
-        contentDate: contentDate,
-        parentId: parentId,
         description: description,
-        publishedTimezone: publishedTimezone,
-        isLockoutPost: isLockoutPost,
+        lockoutId: lockoutId,
+        excludedUserIds: excludedUserIds,
       );
 
       // Text posts don't need thumbnail update - return the draft post as is
@@ -114,11 +110,9 @@ class PostService implements PostServiceContract {
       thumbnailUrl: '',
       thumbnailWidth: thumbnailWidth,
       thumbnailHeight: thumbnailHeight,
-      contentDate: contentDate,
-      parentId: parentId,
       description: description,
-      publishedTimezone: publishedTimezone,
-      isLockoutPost: isLockoutPost,
+      lockoutId: lockoutId,
+      excludedUserIds: excludedUserIds,
     );
 
     try {
@@ -223,11 +217,9 @@ class PostService implements PostServiceContract {
     required String thumbnailUrl,
     required int thumbnailWidth,
     required int thumbnailHeight,
-    required DateTime contentDate,
-    required String publishedTimezone,
-    String? parentId,
     String? description,
-    bool isLockoutPost = false,
+    String? lockoutId,
+    List<String>? excludedUserIds,
   }) async {
     return _crudService.createDraftPost(
       authorId: authorId,
@@ -235,10 +227,9 @@ class PostService implements PostServiceContract {
       thumbnailUrl: thumbnailUrl,
       thumbnailWidth: thumbnailWidth,
       thumbnailHeight: thumbnailHeight,
-      contentDate: contentDate,
-      parentId: parentId,
       description: description,
-      isLockoutPost: isLockoutPost,
+      lockoutId: lockoutId,
+      excludedUserIds: excludedUserIds,
     );
   }
 
@@ -267,11 +258,11 @@ class PostService implements PostServiceContract {
   }
 
   @override
-  Future<List<PostExclusionDto>> addPostExclusions({
+  Future<void> setPostExclusions({
     required String postId,
     required List<String> excludedUserIds,
   }) async {
-    return _crudService.addPostExclusions(
+    return _crudService.setPostExclusions(
       postId: postId,
       excludedUserIds: excludedUserIds,
     );
@@ -408,11 +399,8 @@ class PostService implements PostServiceContract {
       await addPostTags(postId: postId, taggedUserIds: taggedUserIds);
     }
 
-    await supabaseClient.from('post_exclusions').delete().eq('post_id', postId);
-
-    if (excludedUserIds.isNotEmpty) {
-      await addPostExclusions(postId: postId, excludedUserIds: excludedUserIds);
-    }
+    // Update exclusions directly on the post (stored as UUID[] array)
+    await setPostExclusions(postId: postId, excludedUserIds: excludedUserIds);
 
     return PostDto.fromJson(postResponse);
   }
@@ -432,7 +420,22 @@ class PostService implements PostServiceContract {
     required String postId,
     required String userId,
   }) async {
-    await addPostExclusions(postId: postId, excludedUserIds: [userId]);
+    // Fetch current exclusions and add the new user
+    final currentPost = await supabaseClient
+        .from('posts')
+        .select('excluded_user_ids')
+        .eq('id', postId)
+        .single();
+
+    final currentExclusions = List<String>.from(
+      (currentPost['excluded_user_ids'] as List<dynamic>?) ?? [],
+    );
+
+    if (!currentExclusions.contains(userId)) {
+      currentExclusions.add(userId);
+      await setPostExclusions(postId: postId, excludedUserIds: currentExclusions);
+    }
+
     logger.info('Post $postId hidden for user $userId');
   }
 
@@ -473,40 +476,29 @@ class PostService implements PostServiceContract {
   /// Retrieves feed posts for a user.
   ///
   /// **Timezone Handling:**
-  /// Posts are retrieved based on their `created_at` timestamp which is stored
+  /// Posts are retrieved based on their `published_at` timestamp which is stored
   /// in UTC timezone in the database. The sorting and filtering of posts is
   /// performed in UTC to ensure consistent ordering across all users regardless
   /// of their timezone.
   ///
-  /// When posts are displayed in the UI, the `created_at` timestamp is converted
+  /// When posts are displayed in the UI, the `published_at` timestamp is converted
   /// to the user's local timezone through the data mapping layer.
   @override
   Future<FeedResponseDto> getFeedPosts({
     required String userId,
-    required DateTime targetDate,
     int pageSize = 15,
-    int pageOffset = 0,
-    DateTime? cursorBefore,
-    DateTime? cursorAfter,
+    DateTime? cursor,
   }) async {
     return _queryService.getFeedPosts(
       userId: userId,
-      targetDate: targetDate,
       pageSize: pageSize,
-      pageOffset: pageOffset,
-      cursorBefore: cursorBefore,
-      cursorAfter: cursorAfter,
+      cursor: cursor,
     );
   }
 
   @override
   Future<FeedPostDto> getPostById({required String postId}) async {
     return _queryService.getPostById(postId: postId);
-  }
-
-  @override
-  Future<List<FeedPostDto>> getPostReplies({required String postId}) async {
-    return _queryService.getPostReplies(postId: postId);
   }
 
   @override

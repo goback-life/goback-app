@@ -18,7 +18,7 @@ sealed class NotificationModel with _$NotificationModel {
     required String id,
     required String userId,
     required NotificationType type,
-    String? relatedPostId,
+    String? referenceId,
     required String relatedUserId,
     required DateTime createdAt,
     DateTime? readAt,

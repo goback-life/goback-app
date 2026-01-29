@@ -1,4 +1,5 @@
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
+import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/get_feed_posts_provider.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,6 @@ class FeedPostsActions {
   static Future<void> loadOlderPosts({
     required WidgetRef ref,
     required String userId,
-    required DateTime effectiveTargetDate,
     required ValueNotifier<bool> isLoading,
     required ValueNotifier<bool> isLoadingMore,
     required ValueNotifier<bool> hasNextPage,
@@ -31,9 +31,8 @@ class FeedPostsActions {
       final result = await ref.read(
         getFeedPostsProvider(
           userId: userId,
-          targetDate: effectiveTargetDate,
           pageSize: 15,
-          cursorBefore: oldestPostTimestamp.value,
+          cursor: oldestPostTimestamp.value,
         ).future,
       );
 
@@ -49,6 +48,12 @@ class FeedPostsActions {
             if (newPosts.isNotEmpty) {
               posts.value = [...posts.value, ...newPosts];
               oldestPostTimestamp.value = newPosts.last.createdAt;
+
+              // Sync with cache
+              ref.read(feedPostsCacheProvider.notifier).updateCache(
+                posts.value,
+                hasNextPage: feedResponse.hasNextPage,
+              );
             }
           }
 
@@ -94,19 +99,22 @@ class FeedPostsActions {
       errorMessage.value = null;
       newPostsCount.value = 0;
 
-      final currentTime = DateTime.now();
-
       final result = await ref.read(
         getFeedPostsProvider(
           userId: userId,
-          targetDate: currentTime,
           pageSize: 15,
         ).future,
       );
 
       result.fold(
         (feedResponse) {
+          // ignore: avoid_print
+          print('[FeedPostsActions] loadInitialPosts received ${feedResponse.posts.length} posts');
+          // ignore: avoid_print
+          print('[FeedPostsActions] First post ID: ${feedResponse.posts.isNotEmpty ? feedResponse.posts.first.id : "none"}');
           posts.value = feedResponse.posts;
+          // ignore: avoid_print
+          print('[FeedPostsActions] posts.value set to ${posts.value.length} posts');
           hasNextPage.value = feedResponse.hasNextPage;
 
           if (feedResponse.posts.isNotEmpty) {
@@ -114,9 +122,19 @@ class FeedPostsActions {
             oldestPostTimestamp.value = feedResponse.posts.last.createdAt;
           }
 
+          // Sync with cache
+          ref.read(feedPostsCacheProvider.notifier).updateCache(
+            feedResponse.posts,
+            hasNextPage: feedResponse.hasNextPage,
+          );
+
           errorMessage.value = null;
         },
         (error) {
+          // ignore: avoid_print
+          print('[FeedPostsActions] loadInitialPosts ERROR: $error');
+          // ignore: avoid_print
+          print('[FeedPostsActions] Error type: ${error.runtimeType}');
           errorMessage.value = error.toString();
         },
       );

@@ -19,17 +19,21 @@ sealed class PostModel with _$PostModel {
     required String thumbnailUrl,
     required int thumbnailWidth,
     required int thumbnailHeight,
-    required DateTime contentDate,
     required PostStatus status,
     required DateTime createdAt,
     required DateTime updatedAt,
     required DateTime publishedAt,
     required String publishedTimezone,
-    String? parentId,
     String? description,
-    @Default(false) bool isLockoutPost,
+    /// Reference to lockout_sessions table if this is a lockout post
+    String? lockoutId,
+    /// When this post was saved to calendar (null if not saved)
+    DateTime? calendarSavedAt,
     @Default([]) List<MediaItemModel> mediaItems,
   }) = _PostModel;
+
+  /// Returns true if this is a lockout post (has a lockout session reference)
+  bool get isLockoutPost => lockoutId != null;
 
   DateTime localPublishedAt(WidgetRef ref) {
     final currentTimezoneAsync = ref.watch(currentTimezoneProvider);

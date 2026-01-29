@@ -265,7 +265,9 @@
             "feed_empty_box": {
                 "title": "Start living @{username}",
                 "description": "Sharing is even more beautiful with those who really matter: start now and create your first unforgettable memory of today.",
-                "create_content_button": "Share now"
+                "create_content_button": "Share now",
+                "no_activity_title": "All quiet for now",
+                "no_activity_description": "Start a lockout to go back and share a moment with your circle"
             },
             "no_circle_box": {
                 "title": "Hi @{username}",
@@ -442,6 +444,12 @@
                 "confirm": "Confirm",
                 "error": "Duration must be greater than 1 hour"
             }
+        },
+        "lockout_complete": {
+            "title": "welcome back!",
+            "subtitle": "Share what you did while offline",
+            "share_button": "Share what I did",
+            "skip_button": "Skip"
         },
         "notifications": {
             "title": "Notifications",

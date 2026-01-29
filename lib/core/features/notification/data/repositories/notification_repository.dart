@@ -22,7 +22,7 @@ class NotificationRepository
   Future<Result<List<AggregatedNotificationModel>>> getAggregatedNotifications({
     required String userId,
     int pageSize = 20,
-    int pageOffset = 0,
+    DateTime? cursor,
   }) async {
     return processSupabaseResult<
         List<AggregatedNotificationDto>,
@@ -31,7 +31,7 @@ class NotificationRepository
         final dtos = await notificationService.getAggregatedNotifications(
           userId: userId,
           pageSize: pageSize,
-          pageOffset: pageOffset,
+          cursor: cursor,
         );
         return Result.success(dtos);
       },
@@ -46,14 +46,14 @@ class NotificationRepository
   Future<Result<void>> markNotificationsAsRead({
     required String userId,
     required String notificationType,
-    String? relatedPostId,
+    String? referenceId,
   }) async {
     return processSupabaseResult<void, void>(
       request: () async {
         await notificationService.markNotificationsAsRead(
           userId: userId,
           notificationType: notificationType,
-          relatedPostId: relatedPostId,
+          referenceId: referenceId,
         );
         return Result.success(null);
       },

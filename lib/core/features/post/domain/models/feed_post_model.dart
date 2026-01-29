@@ -23,7 +23,6 @@ sealed class FeedPostModel with _$FeedPostModel {
   const factory FeedPostModel({
     required String id,
     required String authorId,
-    required DateTime contentDate,
     required DateTime publishedAt,
     required String publishedTimezone,
     required DateTime createdAt,
@@ -31,25 +30,24 @@ sealed class FeedPostModel with _$FeedPostModel {
     required List<String> taggedUsernames,
     required List<String> taggedUserIds,
     required List<String> excludedUserIds,
-    required List<String> parentExcludedUserIds,
     required int thumbnailWidth,
     required int thumbnailHeight,
     required ContentType contentType,
     required bool isAuthorConnected,
-    String? parentId,
-    String? parentAuthorId,
-    String? parentThumbnailUrl,
-    String? parentAuthorUsername,
-    ContentType? parentContentType,
-    DateTime? parentDeletedAt,
     String? authorUsername,
     String? imageUrl,
     String? videoUrl,
     String? authorAvatarUrl,
     String? description,
-    @Default(false) bool isLockoutPost,
+    /// Reference to lockout_sessions table if this is a lockout post
+    String? lockoutId,
+    /// When this post was saved to calendar (null if not saved)
+    DateTime? calendarSavedAt,
     @Default([]) List<LinkPreviewModel> linkPreviews,
   }) = _FeedPostModel;
+
+  /// Returns true if this is a lockout post (has a lockout session reference)
+  bool get isLockoutPost => lockoutId != null;
 
   DateTime localPublishedAt(WidgetRef ref) {
     final currentTimezoneAsync = ref.watch(currentTimezoneProvider);
@@ -62,46 +60,5 @@ sealed class FeedPostModel with _$FeedPostModel {
       loading: () => publishedAt.toUtc().toLocal(),
       error: (_, __) => publishedAt.toUtc().toLocal(),
     );
-  }
-
-
-  /// Calculates the lockout end time from the post description and publishedAt timestamp.
-  /// Returns null if this is not a lockout post or if the duration cannot be parsed.
-  /// 
-  /// Supports description formats:
-  /// - "@username is going back for X hours/minutes"
-  /// - "@username is going back for X hours/minutes with @other_user"
-  DateTime? getLockoutEndTime() {
-    if (!isLockoutPost) {
-      return null;
-    }
-
-    final desc = description ?? '';
-    if (desc.isEmpty) {
-      return null;
-    }
-    
-    // Try to parse hours first (format: "@username is going back for X hours" or "X hours with @other")
-    // Use word boundary to match "hour" or "hours" but not "hoursly" etc.
-    // Match both singular and plural: "hour" or "hours"
-    final hoursMatch = RegExp(r'is going back for (\d+)\s+(?:hour|hours)').firstMatch(desc);
-    if (hoursMatch != null) {
-      final hours = int.tryParse(hoursMatch.group(1) ?? '');
-      if (hours != null && hours > 0) {
-        return publishedAt.add(Duration(hours: hours));
-      }
-    }
-
-    // Try to parse minutes (format: "@username is going back for X minutes" or "X minutes with @other")
-    // Match both singular and plural: "minute" or "minutes"
-    final minutesMatch = RegExp(r'is going back for (\d+)\s+(?:minute|minutes)').firstMatch(desc);
-    if (minutesMatch != null) {
-      final minutes = int.tryParse(minutesMatch.group(1) ?? '');
-      if (minutes != null && minutes > 0) {
-        return publishedAt.add(Duration(minutes: minutes));
-      }
-    }
-
-    return null;
   }
 }

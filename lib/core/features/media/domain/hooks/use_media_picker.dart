@@ -28,6 +28,9 @@ import 'package:image_picker/image_picker.dart';
 /// If [forceMediaType] is specified, skips the content type and media type selection
 /// and uses the specified one directly (useful in post edit mode).
 ///
+/// If [skipContentTypePicker] is true, skips the content type picker (Media/Text)
+/// and goes directly to the media type picker (Photo/Video).
+///
 /// If [parentPost] is provided, it will be displayed in the picker sheets
 /// to show the context of the reply being created.
 ///
@@ -41,6 +44,7 @@ Future<void> Function() useMediaPicker({
   bool enableCropping = true,
   CropType cropType = CropType.circle,
   MediaType? forceMediaType,
+  bool skipContentTypePicker = false,
   ParentPostReferenceModel? parentPost,
 }) {
   final pickAndCompressImage = usePickAndCompressImageWithPermission();
@@ -48,25 +52,27 @@ Future<void> Function() useMediaPicker({
 
   return () async {
     try {
-      // First, show content type picker (Media vs Text)
-      if (!ref.context.mounted) {
-        return;
-      }
-      final contentTypeSelection = await ContentTypePickerSheet.show(
-        ref.context,
-        parentPost: parentPost,
-      );
-      if (contentTypeSelection == null) {
-        return;
+      // Show content type picker (Media vs Text) unless skipped
+      if (!skipContentTypePicker) {
+        if (!ref.context.mounted) {
+          return;
+        }
+        final contentTypeSelection = await ContentTypePickerSheet.show(
+          ref.context,
+          parentPost: parentPost,
+        );
+        if (contentTypeSelection == null) {
+          return;
+        }
+
+        // If text is selected, trigger text mode
+        if (contentTypeSelection == ContentTypeSelection.text) {
+          await onMediaSelected(null);
+          return;
+        }
       }
 
-      // If text is selected, trigger text mode
-      if (contentTypeSelection == ContentTypeSelection.text) {
-        await onMediaSelected(null);
-        return;
-      }
-
-      // If media is selected, continue with media selection flow
+      // Continue with media selection flow (Photo/Video)
       final MediaType? mediaType;
       if (forceMediaType != null) {
         mediaType = forceMediaType;

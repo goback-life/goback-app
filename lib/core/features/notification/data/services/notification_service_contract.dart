@@ -4,13 +4,13 @@ abstract class NotificationServiceContract {
   Future<List<AggregatedNotificationDto>> getAggregatedNotifications({
     required String userId,
     int pageSize = 20,
-    int pageOffset = 0,
+    DateTime? cursor,
   });
 
   Future<void> markNotificationsAsRead({
     required String userId,
     required String notificationType,
-    String? relatedPostId,
+    String? referenceId,
   });
 
   Future<void> markAllNotificationsAsRead({required String userId});

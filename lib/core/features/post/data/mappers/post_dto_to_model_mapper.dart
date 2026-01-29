@@ -19,17 +19,18 @@ class PostDtoToModelMapper
       thumbnailUrl: dto.thumbnailUrl,
       thumbnailWidth: dto.thumbnailWidth,
       thumbnailHeight: dto.thumbnailHeight,
-      contentDate: DateTime.parse(dto.contentDate),
-      publishedAt: DateTime.parse(dto.publishedAt),
+      publishedAt: dto.publishedAt != null
+          ? DateTime.parse(dto.publishedAt!)
+          : DateTime.now(),
       description: dto.description,
-      parentId: dto.parentId,
-      publishedTimezone: dto.publishedTimezone,
-      status: PostStatus.values.firstWhere(
-        (status) => status.name == dto.status,
-      ),
+      publishedTimezone: dto.publishedTimezone ?? 'UTC',
+      status: PostStatus.published,
       createdAt: DateTime.parse(dto.createdAt),
       updatedAt: DateTime.parse(dto.updatedAt),
-      isLockoutPost: dto.isLockoutPost,
+      lockoutId: dto.lockoutId,
+      calendarSavedAt: dto.calendarSavedAt != null
+          ? DateTime.tryParse(dto.calendarSavedAt!)
+          : null,
     );
   }
 }

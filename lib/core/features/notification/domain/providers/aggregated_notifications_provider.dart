@@ -11,13 +11,13 @@ Future<Result<List<AggregatedNotificationModel>>> aggregatedNotifications(
   Ref ref, {
   required String userId,
   int pageSize = 20,
-  int pageOffset = 0,
+  DateTime? cursor,
 }) async {
   final useCase = GetAggregatedNotificationsUseCase(
     repository: ref.watch(notificationRepositoryProvider),
     userId: userId,
     pageSize: pageSize,
-    pageOffset: pageOffset,
+    cursor: cursor,
   );
 
   return useCase.execute();

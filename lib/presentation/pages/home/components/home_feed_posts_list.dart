@@ -15,7 +15,6 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     required this.hasNextPage,
     required this.onLoadMore,
     required this.onRefresh,
-    required this.onCreatePost,
     this.scrollController,
     this.onPostTap,
     this.onRefreshStateChanged,
@@ -30,7 +29,6 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
   final bool hasNextPage;
   final VoidCallback onLoadMore;
   final Future<void> Function() onRefresh;
-  final VoidCallback onCreatePost;
   final ScrollController? scrollController;
   final void Function(FeedPostModel post)? onPostTap;
   final void Function(bool isRefreshing)? onRefreshStateChanged;
@@ -38,6 +36,8 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // ignore: avoid_print
+    print('[HomeFeedPostsList] build called with ${posts.length} posts, isLoading: $isLoading');
     final internalScrollController = useScrollController();
     final effectiveScrollController =
         scrollController ?? internalScrollController;
@@ -136,20 +136,14 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
             final isScrollingUp = notification.scrollDelta! < 0;
             
             if (isAtBottom && isScrollingUp) {
-              debugPrint('🔄 Empty state pull-up refresh triggered');
               isRefreshingEmptyRef.value = true;
               isRefreshingRef.value = true;
               onRefresh().then((_) {
-                debugPrint('📦 Empty state refresh Future completed, mounted: ${mountedRef.value}');
                 if (mountedRef.value) {
-                  debugPrint('✅ Empty state refresh completed');
                   isRefreshingEmptyRef.value = false;
                   isRefreshingRef.value = false;
-                } else {
-                  debugPrint('⚠️ Widget disposed, skipping state update');
                 }
               }).catchError((error) {
-                debugPrint('❌ Empty state refresh error: $error');
                 if (mountedRef.value) {
                   isRefreshingEmptyRef.value = false;
                   isRefreshingRef.value = false;
@@ -167,24 +161,18 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
               final position = effectiveScrollController.position;
               final isAtBottom = position.pixels <= position.minScrollExtent + 20;
               
-              if (isAtBottom && 
-                  notification.overscroll.abs() > 30 && // Lower threshold
+              if (isAtBottom &&
+                  notification.overscroll.abs() > 30 &&
                   !isRefreshingEmptyRef.value &&
                   !isLoading) {
-                debugPrint('🔄 Empty state overscroll refresh triggered');
                 isRefreshingEmptyRef.value = true;
                 isRefreshingRef.value = true;
                 onRefresh().then((_) {
-                  debugPrint('📦 Empty state overscroll refresh Future completed, mounted: ${mountedRef.value}');
                   if (mountedRef.value) {
-                    debugPrint('✅ Empty state overscroll refresh completed');
                     isRefreshingEmptyRef.value = false;
                     isRefreshingRef.value = false;
-                  } else {
-                    debugPrint('⚠️ Widget disposed, skipping state update');
                   }
                 }).catchError((error) {
-                  debugPrint('❌ Empty state overscroll refresh error: $error');
                   if (mountedRef.value) {
                     isRefreshingEmptyRef.value = false;
                     isRefreshingRef.value = false;
@@ -223,16 +211,9 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     
     // Helper to safely update refresh state and notify parent
     void setRefreshing(bool value) {
-      if (!mountedRef.value) {
-        debugPrint('⚠️ Widget not mounted, skipping refresh state update');
-        return;
-      }
-      // Only update if value changed to avoid unnecessary callbacks
-      if (isRefreshingStateRef.value == value) {
-        return;
-      }
+      if (!mountedRef.value) return;
+      if (isRefreshingStateRef.value == value) return;
       isRefreshingStateRef.value = value;
-      debugPrint('📢 Calling onRefreshStateChanged with value: $value');
       onRefreshStateChanged?.call(value);
     }
     
@@ -255,23 +236,16 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
           final isTryingToPullUp = notification.scrollDelta! < -5;
           
           if (isAtBottom && isTryingToPullUp) {
-            debugPrint('🔄 Pull-up refresh triggered at bottom');
             isRefreshingRef.value = true;
             setRefreshing(true);
             onRefresh().then((_) {
-              debugPrint('📦 Refresh Future completed, mounted: ${mountedRef.value}');
-              // Add small delay to ensure state propagates
               Future.delayed(const Duration(milliseconds: 50), () {
                 if (mountedRef.value) {
-                  debugPrint('✅ Pull-up refresh completed, resetting state');
                   isRefreshingRef.value = false;
                   setRefreshing(false);
-                } else {
-                  debugPrint('⚠️ Widget disposed, skipping state update');
                 }
               });
             }).catchError((error) {
-              debugPrint('❌ Pull-up refresh error: $error');
               Future.delayed(const Duration(milliseconds: 50), () {
                 if (mountedRef.value) {
                   isRefreshingRef.value = false;
@@ -298,23 +272,16 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
             // Use absolute value to catch overscroll in either direction
             // Lower threshold to make it more sensitive
             if (isAtBottom && notification.overscroll.abs() > 5) {
-              debugPrint('🔄 Overscroll refresh triggered at bottom (overscroll: ${notification.overscroll})');
               isRefreshingRef.value = true;
               setRefreshing(true);
               onRefresh().then((_) {
-                debugPrint('📦 Overscroll refresh Future completed, mounted: ${mountedRef.value}');
-                // Add small delay to ensure state propagates
                 Future.delayed(const Duration(milliseconds: 50), () {
                   if (mountedRef.value) {
-                    debugPrint('✅ Overscroll refresh completed, resetting state');
                     isRefreshingRef.value = false;
                     setRefreshing(false);
-                  } else {
-                    debugPrint('⚠️ Widget disposed, skipping state update');
                   }
                 });
               }).catchError((error) {
-                debugPrint('❌ Overscroll refresh error: $error');
                 Future.delayed(const Duration(milliseconds: 50), () {
                   if (mountedRef.value) {
                     isRefreshingRef.value = false;

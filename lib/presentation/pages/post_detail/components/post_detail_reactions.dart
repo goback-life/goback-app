@@ -1,13 +1,8 @@
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
-import 'package:cloudless/core/features/post/domain/hooks/use_post_creation_initialization.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_reactions.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
-import 'package:cloudless/core/features/post/domain/models/parent_post_reference_model.dart';
 import 'package:cloudless/core/features/post/domain/models/post_reaction_model.dart';
-import 'package:cloudless/core/features/post/domain/providers/parent_post_reference_notifier_provider.dart';
-import 'package:cloudless/core/features/post/domain/providers/post_creation_notifier_provider.dart';
 import 'package:cloudless/core/models/user_model.dart';
-import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/custom_emoji_picker.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_reaction_add_button.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_reaction_counter.dart';
@@ -37,25 +32,6 @@ class PostDetailReactions extends HookConsumerWidget
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final parentPostReference = ParentPostReferenceModel(
-      id: post.id,
-      authorId: post.authorId,
-      authorUsername: post.authorUsername ?? 'Unknown',
-      thumbnailUrl: post.imageUrl ?? '',
-      thumbnailWidth: post.thumbnailWidth,
-      thumbnailHeight: post.thumbnailHeight,
-      contentType: post.contentType,
-    );
-
-    final postCreationInitialization = usePostCreationInitialization(
-      ref,
-      parentPost: parentPostReference,
-      onNavigateToEditor: () {
-        if (context.mounted) {
-          router.pop();
-        }
-      },
-    );
     final reactionsResult = usePostReactions(ref, post.id);
     final AsyncValue<Result<List<PostReactionModel>>> reactions =
         reactionsResult.reactions
@@ -175,53 +151,8 @@ class PostDetailReactions extends HookConsumerWidget
             ),
           ],
         ),
-        const Spacer(),
-        if (!isCurrentUserPost && post.isAuthorConnected && !isFromCalendar)
-          GestureDetector(
-            onTap: () async =>
-                _handleReplyTap(context, ref, postCreationInitialization),
-            child: Container(
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(reactionBorderRadius),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: reactionHorizontalPadding,
-                  vertical: reactionVerticalPadding,
-                ),
-                child: Assets.svg.answer.render(),
-              ),
-            ),
-          ),
       ],
     );
-  }
-
-  Future<void> _handleReplyTap(
-    BuildContext context,
-    WidgetRef ref,
-    PostCreationInitializationResult postCreationInitialization,
-  ) async {
-    final parentPostReference = ParentPostReferenceModel(
-      id: post.id,
-      authorId: post.authorId,
-      authorUsername: post.authorUsername ?? 'Unknown',
-      thumbnailUrl: post.imageUrl ?? '',
-      thumbnailWidth: post.thumbnailWidth,
-      thumbnailHeight: post.thumbnailHeight,
-      contentType: post.contentType,
-    );
-
-    await ref
-        .read(parentPostReferenceNotifierProvider.notifier)
-        .setParentPost(parentPostReference);
-
-    ref
-        .read(postCreationNotifierProvider.notifier)
-        .loadReplyMode(parentId: post.id);
-
-    postCreationInitialization.selectMainImage();
   }
 
   Map<String, int> _groupReactions(List<PostReactionModel> reactions) {

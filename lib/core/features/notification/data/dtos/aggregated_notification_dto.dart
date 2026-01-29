@@ -17,12 +17,16 @@ part 'aggregated_notification_dto.g.dart';
 sealed class AggregatedNotificationDto with _$AggregatedNotificationDto {
   const factory AggregatedNotificationDto({
     @JsonKey(name: 'notification_type') required String notificationType,
-    @JsonKey(name: 'related_post_id') String? relatedPostId,
+    /// Reference ID (post_id, lockout_session_id, etc.) depending on type
+    @JsonKey(name: 'reference_id') String? referenceId,
+    /// Latest actor ID for display
+    @JsonKey(name: 'latest_actor_id') String? latestActorId,
     @JsonKey(name: 'actor_ids') required List<String> actorIds,
     @JsonKey(name: 'actor_usernames') required List<String> actorUsernames,
     @JsonKey(name: 'actor_avatar_urls') List<String>? actorAvatarUrls,
-    required int count,
-    @JsonKey(name: 'latest_created_at') required String latestCreatedAt,
+    /// Number of actors for this notification group
+    @JsonKey(name: 'actor_count') required int actorCount,
+    @JsonKey(name: 'updated_at') required String updatedAt,
     @JsonKey(name: 'is_read') required bool isRead,
     @JsonKey(name: 'post_thumbnail_url') String? postThumbnailUrl,
     @JsonKey(name: 'post_content_type') String? postContentType,
@@ -41,19 +45,20 @@ sealed class AggregatedNotificationDto with _$AggregatedNotificationDto {
 
     final actorIds = parseJsonbArray(json['actor_ids']);
     final actorUsernames = parseJsonbArray(json['actor_usernames']);
-    final actorAvatarUrls = json['actor_avatar_urls'] != null 
+    final actorAvatarUrls = json['actor_avatar_urls'] != null
         ? parseJsonbArray(json['actor_avatar_urls'])
         : null;
 
     return AggregatedNotificationDto(
       notificationType: json['notification_type'] as String,
-      relatedPostId: json['related_post_id'] as String?,
+      referenceId: json['reference_id'] as String?,
+      latestActorId: json['latest_actor_id'] as String?,
       actorIds: actorIds,
       actorUsernames: actorUsernames,
       actorAvatarUrls: actorAvatarUrls,
-      count: json['count'] as int,
-      latestCreatedAt: json['latest_created_at'] as String,
-      isRead: json['is_read'] as bool,
+      actorCount: json['actor_count'] as int? ?? actorIds.length,
+      updatedAt: json['updated_at'] as String,
+      isRead: json['is_read'] as bool? ?? false,
       postThumbnailUrl: json['post_thumbnail_url'] as String?,
       postContentType: json['post_content_type'] as String?,
     );

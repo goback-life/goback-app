@@ -40,25 +40,19 @@ class PostRepository
           authorId: postData.authorId,
           contentType: postData.contentType,
           mediaFiles: postData.mediaFiles,
-          contentDate: postData.contentDate,
-          parentId: postData.parentId,
           description: postData.description,
           thumbnailFile: postData.thumbnailFile,
           publishedTimezone: postData.publishedTimezone,
-          isLockoutPost: postData.isLockoutPost,
+          lockoutId: postData.lockoutId,
+          excludedUserIds: postData.excludedUserIds.isNotEmpty
+              ? postData.excludedUserIds
+              : null,
         );
 
         if (postData.taggedUserIds.isNotEmpty) {
           await postService.addPostTags(
             postId: draftPost.id,
             taggedUserIds: postData.taggedUserIds,
-          );
-        }
-
-        if (postData.excludedUserIds.isNotEmpty) {
-          await postService.addPostExclusions(
-            postId: draftPost.id,
-            excludedUserIds: postData.excludedUserIds,
           );
         }
 
@@ -105,26 +99,25 @@ class PostRepository
   @override
   FutureResult<FeedResponseModel> getFeedPosts({
     required String userId,
-    required DateTime targetDate,
     int pageSize = 15,
-    int pageOffset = 0,
-    DateTime? cursorBefore,
-    DateTime? cursorAfter,
+    DateTime? cursor,
   }) async {
     return processSupabaseResult<dynamic, FeedResponseModel>(
       request: () async {
         final feedResponseDto = await postService.getFeedPosts(
           userId: userId,
-          targetDate: targetDate,
           pageSize: pageSize,
-          pageOffset: pageOffset,
-          cursorBefore: cursorBefore,
-          cursorAfter: cursorAfter,
+          cursor: cursor,
         );
+        // ignore: avoid_print
+        print('[PostRepository] getFeedPosts: ${feedResponseDto.posts.length} posts from service');
         return Result.success(feedResponseDto);
       },
       responseMapper: (feedResponseDto) async {
-        return feedResponseMapper.mapDto(feedResponseDto);
+        final mapped = feedResponseMapper.mapDto(feedResponseDto);
+        // ignore: avoid_print
+        print('[PostRepository] getFeedPosts: ${mapped.posts.length} posts after mapping');
+        return mapped;
       },
       exceptionMapper: FeedPostExceptionMapper.fromSupabaseException,
     );
@@ -139,20 +132,6 @@ class PostRepository
       },
       responseMapper: (feedPostDto) async {
         return feedPostMapper.mapDto(feedPostDto);
-      },
-      exceptionMapper: FeedPostExceptionMapper.fromSupabaseException,
-    );
-  }
-
-  @override
-  FutureResult<List<FeedPostModel>> getPostReplies({required String postId}) async {
-    return processSupabaseResult<dynamic, List<FeedPostModel>>(
-      request: () async {
-        final replyDtos = await postService.getPostReplies(postId: postId);
-        return Result.success(replyDtos);
-      },
-      responseMapper: (replyDtos) async {
-        return feedPostMapper.mapDtoList(replyDtos);
       },
       exceptionMapper: FeedPostExceptionMapper.fromSupabaseException,
     );

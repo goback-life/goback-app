@@ -1,5 +1,4 @@
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
-import 'package:cloudless/core/features/post/domain/hooks/use_manual_lockout_post.dart';
 import 'package:cloudless/core/features/time_limit/domain/providers/time_limit_tracker_notifier_provider.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/pages/home/components/manual_lockout_dialog.dart';
@@ -41,21 +40,7 @@ class HomeLockoutButton extends HookConsumerWidget
         }
 
         try {
-          // Create post with app logo
-          final postResult = await useManualLockoutPost(ref, duration);
-          postResult?.fold(
-            (post) {
-              logger.info('Manual lockout post created successfully');
-            },
-            (error) {
-              logger.error(
-                'Failed to create manual lockout post',
-                exception: error,
-              );
-            },
-          );
-
-          // Set lockout
+          // Set lockout (post will be created after lockout ends)
           final lockoutNotifier = ref.read(manualLockoutNotifierProvider.notifier);
           await lockoutNotifier.setLockout(duration);
 

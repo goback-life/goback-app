@@ -1,4 +1,3 @@
-import 'package:cloudless/core/features/post/domain/providers/post_creation_notifier_provider.dart';
 import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
 import 'package:cloudless/presentation/pages/content_editor/content_editor_layout.dart';
 import 'package:cloudless/presentation/pages/publish_content/publish_content_routable.dart';
@@ -17,11 +16,7 @@ class ContentEditorButton extends HookConsumerWidget
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final postCreationState = ref.watch(postCreationNotifierProvider);
-    final isReplyMode = postCreationState.parentId != null;
-    final buttonText = isReplyMode
-        ? 'Create Reply'
-        : translator.translate('pages.content_editor.button');
+    final buttonText = translator.translate('pages.content_editor.button');
 
     return CallToAction.primary.filled(
       horizontalMargin: 0,

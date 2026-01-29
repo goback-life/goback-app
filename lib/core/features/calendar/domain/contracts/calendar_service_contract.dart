@@ -1,38 +1,45 @@
 import 'package:cloudless/core/features/calendar/data/dtos/calendar_operation_response_dto.dart';
 import 'package:cloudless/core/features/calendar/data/dtos/calendar_post_dto.dart';
-import 'package:cloudless/core/features/calendar/domain/enums/calendar_load_direction.dart';
 
 abstract class CalendarServiceContract {
-  /// Retrieves calendar posts for a specific user relative to a reference date.
+  /// Retrieves calendar posts for a specific user for a given month.
   ///
   /// [userId] - The ID of the user whose calendar to query.
-  /// [referenceDate] - The date to use as reference point.
-  /// [direction] - Whether to load posts before or after the reference date.
-  /// [limit] - Maximum number of posts to return (default: 42 for grid view).
+  /// [year] - The year to query.
+  /// [month] - The month to query (1-12).
   ///
-  /// Returns a list of posts ordered by calendar date.
-  /// - If direction is 'before': posts are returned in descending order (newest first).
-  /// - If direction is 'after': posts are returned in ascending order (oldest first).
+  /// Returns a list of posts saved to calendar for that month.
   Future<List<CalendarPostDto>> getCalendarPosts({
     required String userId,
-    required DateTime referenceDate,
-    required CalendarLoadDirection direction,
-    int limit = 42,
+    required int year,
+    required int month,
   });
 
-  /// Adds a post to the calendar for a specific date.
+  /// Retrieves calendar posts for a friend for a given month.
   ///
-  /// Only the post author can add their own posts to their calendar.
-  /// Maximum one post per day.
+  /// [friendId] - The ID of the friend whose calendar to view.
+  /// [year] - The year to query.
+  /// [month] - The month to query (1-12).
+  ///
+  /// Returns a list of posts saved to calendar for that month.
+  Future<List<CalendarPostDto>> getFriendCalendarPosts({
+    required String friendId,
+    required int year,
+    required int month,
+  });
+
+  /// Saves a post to the user's calendar.
+  ///
+  /// Sets the calendar_saved_at timestamp on the post.
+  /// Only the post author can save their own posts.
   Future<CalendarOperationResponseDto> addPostToCalendar({
     required String postId,
-    required DateTime calendarDate,
   });
 
-  /// Removes a post from the calendar for a specific date.
+  /// Removes a post from the user's calendar.
   ///
-  /// Only the calendar owner can remove posts from their calendar.
+  /// Clears the calendar_saved_at timestamp on the post.
   Future<CalendarOperationResponseDto> removePostFromCalendar({
-    required DateTime calendarDate,
+    required String postId,
   });
 }

@@ -37,7 +37,6 @@ class NotificationsView extends HookConsumerWidget {
               ref,
               userId: user.id,
               pageSize: 20,
-              pageOffset: 0,
             );
 
             return notificationsHook.notifications.when(
@@ -72,8 +71,8 @@ class NotificationsView extends HookConsumerWidget {
                           }
                           final notification = notifications[index - 1];
                           return NotificationItem(
-                            key: ValueKey('notification_${notification.type.value}_${notification.relatedPostId ?? 'null'}_${notification.latestCreatedAt.millisecondsSinceEpoch}'),
-                            itemKey: 'notification_${notification.type.value}_${notification.relatedPostId ?? 'null'}_${notification.latestCreatedAt.millisecondsSinceEpoch}',
+                            key: ValueKey('notification_${notification.type.value}_${notification.referenceId ?? 'null'}_${notification.updatedAt.millisecondsSinceEpoch}'),
+                            itemKey: 'notification_${notification.type.value}_${notification.referenceId ?? 'null'}_${notification.updatedAt.millisecondsSinceEpoch}',
                             notification: notification,
                             onTap: () async {
                               await _handleNotificationTap(
@@ -157,7 +156,7 @@ class NotificationsView extends HookConsumerWidget {
       repository: ref.read(notificationRepositoryProvider),
       userId: userId,
       notificationType: notification.type.value,
-      relatedPostId: notification.relatedPostId,
+      referenceId: notification.referenceId,
     );
 
     final result = await useCase.execute();
@@ -169,14 +168,13 @@ class NotificationsView extends HookConsumerWidget {
           aggregatedNotificationsProvider(
             userId: userId,
             pageSize: 20,
-            pageOffset: 0,
-          ),
+                      ),
         );
         ref.invalidate(
           unreadNotificationCountProvider(userId: userId),
         );
         logger.info(
-          'Notification marked as read: ${notification.type.value}, postId: ${notification.relatedPostId}',
+          'Notification marked as read: ${notification.type.value}, postId: ${notification.referenceId}',
         );
       },
       (error) {
@@ -198,9 +196,9 @@ class NotificationsView extends HookConsumerWidget {
     switch (notification.type) {
       case NotificationType.reaction:
       case NotificationType.tag:
-      case NotificationType.reply:
+      case NotificationType.comment:
         // Navigate to the related post
-        if (notification.relatedPostId != null) {
+        if (notification.referenceId != null) {
           await showModalBottomSheet<void>(
             context: context,
             backgroundColor: Colors.transparent,
@@ -224,7 +222,7 @@ class NotificationsView extends HookConsumerWidget {
                       bottom: 20.0,
                     ),
                     child: PostDetailPage.byId(
-                      postId: notification.relatedPostId!,
+                      postId: notification.referenceId!,
                     ),
                   ),
                 ),
@@ -232,8 +230,42 @@ class NotificationsView extends HookConsumerWidget {
             ),
           );
         }
-        break;
-      case NotificationType.circleJoin:
+      case NotificationType.lockoutStarted:
+      case NotificationType.lockoutJoined:
+        // Lockout notifications - navigate to the lockout post if available
+        if (notification.referenceId != null) {
+          await showModalBottomSheet<void>(
+            context: context,
+            backgroundColor: Colors.transparent,
+            barrierColor: Colors.transparent,
+            isScrollControlled: true,
+            isDismissible: true,
+            enableDrag: true,
+            builder: (sheetContext) => GestureDetector(
+              onTap: () => Navigator.of(sheetContext).pop(),
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.transparent,
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Container(
+                    margin: const EdgeInsets.only(
+                      left: 12.0,
+                      right: 12.0,
+                      top: 150.0,
+                      bottom: 20.0,
+                    ),
+                    child: PostDetailPage.byId(
+                      postId: notification.referenceId!,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+      case NotificationType.friendJoined:
         // Navigate to the actor's profile (first actor who joined)
         if (notification.actorIds.isNotEmpty) {
           final actorId = notification.actorIds.first;
@@ -270,7 +302,6 @@ class NotificationsView extends HookConsumerWidget {
             }
           }
         }
-        break;
     }
   }
 
@@ -292,8 +323,7 @@ class NotificationsView extends HookConsumerWidget {
           aggregatedNotificationsProvider(
             userId: userId,
             pageSize: 20,
-            pageOffset: 0,
-          ),
+                      ),
         );
         ref.invalidate(
           unreadNotificationCountProvider(userId: userId),

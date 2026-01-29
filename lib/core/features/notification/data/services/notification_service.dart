@@ -9,23 +9,19 @@ class NotificationService implements NotificationServiceContract {
 
   final SupabaseClient supabaseClient;
 
-  /// Gets aggregated notifications for a user using RPC function.
-  /// Follows the same pattern as get_user_feed.
+  /// Gets the notification feed for a user using RPC function.
+  /// Returns aggregated notifications with actor info.
+  /// Note: The RPC function uses auth.uid() internally - no parameters needed.
   @override
   Future<List<AggregatedNotificationDto>> getAggregatedNotifications({
     required String userId,
     int pageSize = 20,
-    int pageOffset = 0,
+    DateTime? cursor,
   }) async {
     try {
-      final response = await supabaseClient.rpc(
-        'get_aggregated_notifications',
-        params: {
-          'p_user_id': userId,
-          'page_size': pageSize,
-          'page_offset': pageOffset,
-        },
-      );
+      // get_notification_feed() uses auth.uid() internally, no parameters needed
+      // It returns a maximum of 50 notifications ordered by updated_at DESC
+      final response = await supabaseClient.rpc('get_notification_feed');
 
       if (response == null || response is! List) {
         return [];
@@ -34,31 +30,35 @@ class NotificationService implements NotificationServiceContract {
       final notifications = <AggregatedNotificationDto>[];
       for (final json in response) {
         final data = json as Map<String, dynamic>;
-        // Convert JSONB arrays to List<String>
-        final actorIds = _parseJsonbArray(data['actor_ids']);
-        final actorUsernames = _parseJsonbArray(data['actor_usernames']);
-        final actorAvatarUrls = data['actor_avatar_urls'] != null
-            ? _parseJsonbArray(data['actor_avatar_urls'])
-            : null;
 
+        // Map database columns to DTO fields
+        // DB returns: id, type, reference_id, latest_actor_id, latest_actor_username,
+        //             latest_actor_avatar, actor_count, created_at, updated_at, read_at
         notifications.add(AggregatedNotificationDto(
-          notificationType: data['notification_type'] as String,
-          relatedPostId: data['related_post_id'] as String?,
-          actorIds: actorIds,
-          actorUsernames: actorUsernames,
-          actorAvatarUrls: actorAvatarUrls,
-          count: data['count'] as int,
-          latestCreatedAt: data['latest_created_at'] as String,
-          isRead: data['is_read'] as bool,
-          postThumbnailUrl: data['post_thumbnail_url'] as String?,
-          postContentType: data['post_content_type'] as String?,
+          notificationType: data['type'] as String,
+          referenceId: data['reference_id']?.toString(),
+          latestActorId: data['latest_actor_id']?.toString(),
+          actorIds: data['latest_actor_id'] != null
+              ? [data['latest_actor_id'].toString()]
+              : [],
+          actorUsernames: data['latest_actor_username'] != null
+              ? [data['latest_actor_username'] as String]
+              : [],
+          actorAvatarUrls: data['latest_actor_avatar'] != null
+              ? [data['latest_actor_avatar'] as String]
+              : null,
+          actorCount: data['actor_count'] as int? ?? 1,
+          updatedAt: data['updated_at'] as String,
+          isRead: data['read_at'] != null,
+          postThumbnailUrl: null, // Not returned by this RPC
+          postContentType: null, // Not returned by this RPC
         ));
       }
 
       return notifications;
     } catch (e, stackTrace) {
       logger.error(
-        'Failed to get aggregated notifications',
+        'Failed to get notification feed',
         exception: e,
         stackTrace: stackTrace,
       );
@@ -67,12 +67,12 @@ class NotificationService implements NotificationServiceContract {
   }
 
   /// Marks a notification group as read.
-  /// This marks all notifications with the same type and related_post_id as read.
+  /// This marks all notifications with the same type and reference_id as read.
   @override
   Future<void> markNotificationsAsRead({
     required String userId,
     required String notificationType,
-    String? relatedPostId,
+    String? referenceId,
   }) async {
     try {
       var updateQuery = supabaseClient
@@ -81,18 +81,18 @@ class NotificationService implements NotificationServiceContract {
           .eq('user_id', userId)
           .eq('notification_type', notificationType);
 
-      if (relatedPostId != null) {
-        updateQuery = updateQuery.eq('related_post_id', relatedPostId);
+      if (referenceId != null) {
+        updateQuery = updateQuery.eq('reference_id', referenceId);
       } else {
-        // For notifications without related_post_id (e.g., circle_join)
-        updateQuery = updateQuery.isFilter('related_post_id', null);
+        // For notifications without reference_id (e.g., friend_joined)
+        updateQuery = updateQuery.isFilter('reference_id', null);
       }
 
       // Execute the update query - await ensures it completes
       await updateQuery;
 
       logger.info(
-        'Notifications marked as read for user $userId, type: $notificationType, postId: $relatedPostId',
+        'Notifications marked as read for user $userId, type: $notificationType, referenceId: $referenceId',
       );
     } catch (e, stackTrace) {
       logger.error(

@@ -1,5 +1,4 @@
 import 'package:cloudless/core/features/post/data/dtos/post_dto.dart';
-import 'package:cloudless/core/features/post/data/dtos/post_exclusion_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_media_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_tag_dto.dart';
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
@@ -21,10 +20,11 @@ class PostCrudService {
     required String thumbnailUrl,
     required int thumbnailWidth,
     required int thumbnailHeight,
-    required DateTime contentDate,
-    String? parentId,
     String? description,
-    bool isLockoutPost = false,
+    /// Reference to lockout_sessions table if this is a lockout post
+    String? lockoutId,
+    /// List of user IDs to exclude from seeing this post (stored as UUID[])
+    List<String>? excludedUserIds,
   }) async {
     final currentUser = _supabaseClient.auth.currentUser;
     if (currentUser == null) {
@@ -35,19 +35,24 @@ class PostCrudService {
       logger.error('User ID mismatch: ${currentUser.id} vs $authorId');
     }
 
+    final insertData = <String, dynamic>{
+      'author_id': authorId,
+      'content_type': contentType.name.toLowerCase(),
+      'thumbnail_url': thumbnailUrl,
+      'thumbnail_width': thumbnailWidth,
+      'thumbnail_height': thumbnailHeight,
+      'description': description,
+      'lockout_id': lockoutId,
+    };
+
+    // Set excluded_user_ids as UUID[] array if provided
+    if (excludedUserIds != null && excludedUserIds.isNotEmpty) {
+      insertData['excluded_user_ids'] = excludedUserIds;
+    }
+
     final response = await _supabaseClient
         .from('posts')
-        .insert({
-          'author_id': authorId,
-          'content_type': contentType.name.toLowerCase(),
-          'thumbnail_url': thumbnailUrl,
-          'thumbnail_width': thumbnailWidth,
-          'thumbnail_height': thumbnailHeight,
-          'content_date': contentDate.toIso8601String(),
-          'parent_id': parentId,
-          'description': description,
-          'is_lockout_post': isLockoutPost,
-        })
+        .insert(insertData)
         .select()
         .single();
 
@@ -97,30 +102,29 @@ class PostCrudService {
     return response.map((json) => PostTagDto.fromJson(json)).toList();
   }
 
-  /// Adds exclusions (privacy settings) to a post.
-  Future<List<PostExclusionDto>> addPostExclusions({
+  /// Sets exclusions (privacy settings) on a post.
+  /// Stores excluded user IDs as a UUID[] array directly on the posts table.
+  Future<void> setPostExclusions({
     required String postId,
     required List<String> excludedUserIds,
   }) async {
-    final List<Map<String, dynamic>> exclusionDataList = [];
-
-    for (final userId in excludedUserIds) {
-      exclusionDataList.add({'post_id': postId, 'excluded_user_id': userId});
-    }
-
-    final response = await _supabaseClient
-        .from('post_exclusions')
-        .insert(exclusionDataList)
-        .select();
-
-    return response.map((json) => PostExclusionDto.fromJson(json)).toList();
+    await _supabaseClient
+        .from('posts')
+        .update({'excluded_user_ids': excludedUserIds})
+        .eq('id', postId);
   }
 
-  /// Publishes a draft post.
+  /// Publishes a draft post by setting the published_at timestamp.
   Future<PostDto> publishPost(String postId) async {
+    final now = DateTime.now();
+    final timezone = now.timeZoneName;
+
     final response = await _supabaseClient
         .from('posts')
-        .update({'status': 'published'})
+        .update({
+          'published_at': now.toUtc().toIso8601String(),
+          'published_timezone': timezone,
+        })
         .eq('id', postId)
         .select()
         .single();
@@ -132,19 +136,16 @@ class PostCrudService {
   Future<PostDto> updatePost({
     required String postId,
     String? description,
-    DateTime? contentDate,
     String? thumbnailUrl,
     int? thumbnailWidth,
     int? thumbnailHeight,
     ContentType? contentType,
+    List<String>? excludedUserIds,
   }) async {
     final Map<String, dynamic> updates = {};
 
     if (description != null) {
       updates['description'] = description;
-    }
-    if (contentDate != null) {
-      updates['content_date'] = contentDate.toIso8601String();
     }
     if (thumbnailUrl != null) {
       updates['thumbnail_url'] = thumbnailUrl;
@@ -157,6 +158,9 @@ class PostCrudService {
     }
     if (contentType != null) {
       updates['content_type'] = contentType.name.toLowerCase();
+    }
+    if (excludedUserIds != null) {
+      updates['excluded_user_ids'] = excludedUserIds;
     }
 
     final response = await _supabaseClient
