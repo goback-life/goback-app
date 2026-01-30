@@ -304,6 +304,10 @@
             "button": "Edit Profile",
             "calendar": {
                 "month_format": "{month} {year}"
+            },
+            "weekly_stats": {
+                "hours_format": "{hours} hours offline this week",
+                "no_lockouts": "No lockouts this week"
             }
         },
         "settings": {
@@ -443,6 +447,16 @@
                 "cancel": "Cancel",
                 "confirm": "Confirm",
                 "error": "Duration must be greater than 1 hour"
+            },
+            "friends_locked_out": {
+                "title": "Friends offline",
+                "error": "Failed to join lockout",
+                "join_dialog": {
+                    "title": "Join @{username}?",
+                    "description": "You will be locked out for {time} remaining",
+                    "confirm": "Join",
+                    "cancel": "Cancel"
+                }
             }
         },
         "lockout_complete": {

@@ -12,6 +12,8 @@ class GetProfileResponseDtoToModelMapper
       biography: dto.biography,
       avatarUrl: dto.avatarUrl,
       phoneNumber: dto.phoneNumber,
+      weeklyLockoutMinutes: dto.weeklyLockoutMinutes,
+      notificationsCheckedAt: dto.notificationsCheckedAt,
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/background_image.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
 import 'package:cloudless/presentation/pages/lockout_complete/lockout_complete_routable.dart';
+import 'package:cloudless/presentation/pages/manual_lockout/components/friends_locked_out_list.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/manual_lockout_exit_button.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
@@ -107,7 +108,9 @@ class ManualLockoutView extends HookConsumerWidget
                     ),
                   const Spacer(flex: 2),
                   Assets.svg.logoApp.render(width: logoSize, height: logoSize),
-                  const Spacer(flex: 3),
+                  const Spacer(flex: 2),
+                  const FriendsLockedOutList(),
+                  const Spacer(flex: 1),
                   const ManualLockoutExitButton(),
                   SizedBox(height: buttonBottomPadding),
                 ],

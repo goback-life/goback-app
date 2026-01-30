@@ -3,6 +3,7 @@ import 'package:cloudless/presentation/components/profile_image/profile_image.da
 import 'package:cloudless/presentation/components/username_field.dart';
 import 'package:cloudless/presentation/pages/profile/components/calendar_section/profile_calendar.dart';
 import 'package:cloudless/presentation/pages/profile/components/edit_profile_button.dart';
+import 'package:cloudless/presentation/pages/profile/components/profile_weekly_stats.dart';
 import 'package:cloudless/presentation/pages/profile/profile_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -35,6 +36,8 @@ class ProfileView extends HookConsumerWidget with MainLayout, ProfileLayout {
           ),
           SizedBox(height: verticalSpacing),
           const EditProfileButton(),
+          SizedBox(height: verticalSpacing),
+          const ProfileWeeklyStats(),
           SizedBox(height: buttonToCalendar),
         ],
       ),

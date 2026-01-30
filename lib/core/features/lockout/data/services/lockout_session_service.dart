@@ -67,6 +67,26 @@ class LockoutSessionService {
     }
   }
 
+  /// Marks a lockout session as complete and updates weekly stats.
+  ///
+  /// Call this when user skips creating a post but we still want to count
+  /// the lockout time. Uses RPC to calculate and update minutes server-side.
+  FutureResult<void> completeSessionWithoutPost(String sessionId) async {
+    try {
+      await supabase.rpc(
+        'complete_lockout_session',
+        params: {'p_session_id': sessionId},
+      );
+      return Result.success(null);
+    } catch (e) {
+      logger.warning('Failed to complete lockout session: $e');
+      // Non-fatal - don't block the user
+      return Result.failure(
+        e is Exception ? e : Exception('Failed to complete session: $e'),
+      );
+    }
+  }
+
   /// Joins an existing lockout session.
   ///
   /// Calls the join_lockout_session RPC which adds the current user

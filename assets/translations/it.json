@@ -304,6 +304,10 @@
             "button": "Modifica profilo",
             "calendar": {
                 "month_format": "{month} {year}"
+            },
+            "weekly_stats": {
+                "hours_format": "{hours} ore offline questa settimana",
+                "no_lockouts": "Nessun lockout questa settimana"
             }
         },
         "settings": {
@@ -443,6 +447,16 @@
                 "cancel": "Annulla",
                 "confirm": "Conferma",
                 "error": "La durata deve essere maggiore di 1 ora"
+            },
+            "friends_locked_out": {
+                "title": "Amici offline",
+                "error": "Impossibile unirsi al lockout",
+                "join_dialog": {
+                    "title": "Unirsi a @{username}?",
+                    "description": "Sarai offline per {time} rimanenti",
+                    "confirm": "Unisciti",
+                    "cancel": "Annulla"
+                }
             }
         },
         "lockout_complete": {

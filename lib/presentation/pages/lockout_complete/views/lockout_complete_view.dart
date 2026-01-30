@@ -1,3 +1,4 @@
+import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout_post_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_creation_initialization.dart';
@@ -108,6 +109,11 @@ class LockoutCompleteView extends HookConsumerWidget
                   // Skip button
                   TextButton(
                     onPressed: () async {
+                      // Count lockout minutes even when skipping post creation
+                      if (lockoutSessionId.isNotEmpty) {
+                        final sessionService = ref.read(lockoutSessionServiceProvider);
+                        await sessionService.completeSessionWithoutPost(lockoutSessionId);
+                      }
                       // Clear storage and go home
                       final storable = ref.read(manualLockoutStorableProvider);
                       await storable.clearLockout();

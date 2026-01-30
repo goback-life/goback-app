@@ -163,14 +163,14 @@ PostCreationResult usePostCreation(WidgetRef ref) {
               result = await ref.read(createPostProvider(postData).future);
             }
 
-            result.fold(
+            // Handle post-creation cleanup before returning (must await)
+            await result.asyncFold(
               (post) async {
                 postCreationNotifier.reset();
                 ref.read(parentPostReferenceNotifierProvider.notifier).clear();
 
                 // Link post to lockout session and clear pending state
                 if (pendingLockoutId != null) {
-                  // Update lockout session with post_id (triggers weekly stats update)
                   final sessionService = ref.read(lockoutSessionServiceProvider);
                   final updateResult = await sessionService.updateSessionPostId(
                     sessionId: pendingLockoutId,
@@ -182,20 +182,16 @@ PostCreationResult usePostCreation(WidgetRef ref) {
                   );
 
                   ref.read(pendingLockoutPostProvider.notifier).clear();
-                  ref.read(manualLockoutStorableProvider).clearLockout();
+                  await ref.read(manualLockoutStorableProvider).clearLockout();
                 }
 
                 if (postCreationData.isEditing) {
-                  ref
-                      .read(postActionNotifierProvider.notifier)
-                      .notifyPostUpdated();
+                  ref.read(postActionNotifierProvider.notifier).notifyPostUpdated();
                 } else {
-                  ref
-                      .read(postActionNotifierProvider.notifier)
-                      .notifyPostCreated(postId: post.id);
+                  ref.read(postActionNotifierProvider.notifier).notifyPostCreated(postId: post.id);
                 }
               },
-              (error) {
+              (error) async {
                 logger.error(
                   'Failed to ${postCreationData.isEditing ? "update" : "create"} post',
                   exception: error,

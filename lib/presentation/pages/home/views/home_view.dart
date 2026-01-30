@@ -68,8 +68,8 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     // Preload feed in background and set up periodic cleanup
     useEffect(() {
       if (userId != null && userId.isNotEmpty) {
-        // Preload feed in background for instant access
-        ref.read(feedPostsCacheProvider.notifier).preloadFeed(userId);
+        // Preload feed in background for instant access (deferred to avoid build-time state modification)
+        Future.microtask(() => ref.read(feedPostsCacheProvider.notifier).preloadFeed(userId));
 
         // Periodic cleanup of expired posts (every 5 minutes)
         final cleanupTimer = Timer.periodic(const Duration(minutes: 5), (_) {
