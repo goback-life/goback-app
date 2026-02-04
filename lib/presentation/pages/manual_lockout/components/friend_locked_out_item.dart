@@ -12,7 +12,7 @@ class FriendLockedOutItem extends StatelessWidget {
   final LockoutSessionModel session;
   final VoidCallback onTap;
 
-  static const double _avatarSize = 40.0;
+  static const double _avatarSize = 48.0;
 
   @override
   Widget build(BuildContext context) {
@@ -21,33 +21,49 @@ class FriendLockedOutItem extends StatelessWidget {
     final textTheme = theme.textTheme;
 
     final timeRemaining = _formatTimeRemaining(session.endsAt);
+    final hasActivity = session.actionText != null && session.actionText!.isNotEmpty;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 70,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        width: 90,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildAvatar(colorScheme, textTheme),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               session.username ?? '',
               style: textTheme.bodySmall?.copyWith(
                 color: colorScheme.surface,
+                fontWeight: FontWeight.w600,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 2),
             Text(
               timeRemaining,
               style: textTheme.labelSmall?.copyWith(
-                color: colorScheme.surface.withValues(alpha: 0.7),
+                color: colorScheme.surface.withValues(alpha: 0.8),
               ),
               textAlign: TextAlign.center,
             ),
+            if (hasActivity) ...[
+              const SizedBox(height: 2),
+              Text(
+                session.actionText!,
+                style: textTheme.labelSmall?.copyWith(
+                  color: colorScheme.surface.withValues(alpha: 0.6),
+                  fontStyle: FontStyle.italic,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ],
           ],
         ),
       ),

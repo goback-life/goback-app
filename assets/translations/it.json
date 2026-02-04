@@ -450,6 +450,7 @@
             },
             "friends_locked_out": {
                 "title": "Amici offline",
+                "empty": "Nessun amico \u00e8 offline in questo momento",
                 "error": "Impossibile unirsi al lockout",
                 "join_dialog": {
                     "title": "Unirsi a @{username}?",

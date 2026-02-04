@@ -450,6 +450,7 @@
             },
             "friends_locked_out": {
                 "title": "Friends offline",
+                "empty": "No friends are offline right now",
                 "error": "Failed to join lockout",
                 "join_dialog": {
                     "title": "Join @{username}?",

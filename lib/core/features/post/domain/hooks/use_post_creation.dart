@@ -118,14 +118,23 @@ PostCreationResult usePostCreation(WidgetRef ref) {
               final sessionResult = await sessionService.getSessionById(pendingLockoutId);
               sessionResult.fold(
                 (session) {
-                  if (session != null && session.participants.isNotEmpty) {
-                    // Merge participants with existing tagged users, avoiding duplicates
+                  if (session != null) {
+                    // Tag the session owner (if current user is a joiner)
+                    if (!finalTaggedUserIds.contains(session.userId) &&
+                        session.userId != user.id) {
+                      finalTaggedUserIds.add(session.userId);
+                      logger.info('Auto-tagged lockout owner: ${session.userId}');
+                    }
+                    // Tag all participants (joiners)
                     for (final participantId in session.participants) {
-                      if (!finalTaggedUserIds.contains(participantId)) {
+                      if (!finalTaggedUserIds.contains(participantId) &&
+                          participantId != user.id) {
                         finalTaggedUserIds.add(participantId);
                       }
                     }
-                    logger.info('Auto-tagged ${session.participants.length} lockout participants');
+                    if (session.participants.isNotEmpty) {
+                      logger.info('Auto-tagged ${session.participants.length} lockout participants');
+                    }
                   }
                 },
                 (error) => logger.warning('Failed to fetch lockout participants: $error'),
@@ -169,9 +178,13 @@ PostCreationResult usePostCreation(WidgetRef ref) {
                 postCreationNotifier.reset();
                 ref.read(parentPostReferenceNotifierProvider.notifier).clear();
 
-                // Link post to lockout session and clear pending state
+                // Link post to lockout session and update weekly stats
                 if (pendingLockoutId != null) {
                   final sessionService = ref.read(lockoutSessionServiceProvider);
+                  final storable = ref.read(manualLockoutStorableProvider);
+                  final userStartedAt = await storable.getLockoutStart();
+
+                  // Link post to session
                   final updateResult = await sessionService.updateSessionPostId(
                     sessionId: pendingLockoutId,
                     postId: post.id,
@@ -181,8 +194,14 @@ PostCreationResult usePostCreation(WidgetRef ref) {
                     (error) => logger.warning('Failed to link post to lockout session: $error'),
                   );
 
+                  // Update weekly stats with user's actual start time (important for joiners)
+                  await sessionService.completeSessionWithStats(
+                    pendingLockoutId,
+                    userStartedAt: userStartedAt,
+                  );
+
                   ref.read(pendingLockoutPostProvider.notifier).clear();
-                  await ref.read(manualLockoutStorableProvider).clearLockout();
+                  await storable.clearLockout();
                 }
 
                 if (postCreationData.isEditing) {

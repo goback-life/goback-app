@@ -69,13 +69,19 @@ class LockoutSessionService {
 
   /// Marks a lockout session as complete and updates weekly stats.
   ///
-  /// Call this when user skips creating a post but we still want to count
-  /// the lockout time. Uses RPC to calculate and update minutes server-side.
-  FutureResult<void> completeSessionWithoutPost(String sessionId) async {
+  /// [userStartedAt] - When THIS user started their lockout (may differ from
+  /// session start for joiners). Pass null to use session's started_at.
+  FutureResult<void> completeSessionWithoutPost(
+    String sessionId, {
+    DateTime? userStartedAt,
+  }) async {
     try {
       await supabase.rpc(
         'complete_lockout_session',
-        params: {'p_session_id': sessionId},
+        params: {
+          'p_session_id': sessionId,
+          'p_user_started_at': userStartedAt?.toUtc().toIso8601String(),
+        },
       );
       return Result.success(null);
     } catch (e) {
@@ -83,6 +89,31 @@ class LockoutSessionService {
       // Non-fatal - don't block the user
       return Result.failure(
         e is Exception ? e : Exception('Failed to complete session: $e'),
+      );
+    }
+  }
+
+  /// Updates weekly stats for a lockout session (used when post is created).
+  ///
+  /// Unlike completeSessionWithoutPost, this does NOT delete the session
+  /// since the post needs to reference it.
+  FutureResult<void> completeSessionWithStats(
+    String sessionId, {
+    DateTime? userStartedAt,
+  }) async {
+    try {
+      await supabase.rpc(
+        'update_lockout_weekly_stats',
+        params: {
+          'p_session_id': sessionId,
+          'p_user_started_at': userStartedAt?.toUtc().toIso8601String(),
+        },
+      );
+      return Result.success(null);
+    } catch (e) {
+      logger.warning('Failed to update weekly stats: $e');
+      return Result.failure(
+        e is Exception ? e : Exception('Failed to update stats: $e'),
       );
     }
   }
@@ -140,14 +171,26 @@ class LockoutSessionService {
   /// Returns sessions with denormalized user profile data.
   FutureResult<List<LockoutSessionDto>> getFriendsLockedOut() async {
     try {
+      // ignore: avoid_print
+      print('[SERVICE] getFriendsLockedOut: Calling RPC...');
       final response = await supabase.rpc('get_friends_locked_out');
+      // ignore: avoid_print
+      print('[SERVICE] getFriendsLockedOut: Raw response: $response');
 
       final sessions = (response as List)
-          .map((json) => LockoutSessionDto.fromJson(json as Map<String, dynamic>))
+          .map((json) {
+            // ignore: avoid_print
+            print('[SERVICE] Parsing session: $json');
+            return LockoutSessionDto.fromJson(json as Map<String, dynamic>);
+          })
           .toList();
 
+      // ignore: avoid_print
+      print('[SERVICE] Parsed ${sessions.length} sessions');
       return Result.success(sessions);
     } catch (e) {
+      // ignore: avoid_print
+      print('[SERVICE] ERROR: $e');
       logger.error('Failed to get friends locked out', exception: e);
       return Result.failure(
         e is Exception ? e : Exception('Failed to get friends locked out: $e'),

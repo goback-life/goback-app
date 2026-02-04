@@ -62,7 +62,7 @@ class ProfileWeeklyStats extends HookConsumerWidget {
     if (weeklyLockoutMinutes == null || weeklyLockoutMinutes == 0) {
       displayText = translator.translate('pages.profile.weekly_stats.no_lockouts');
     } else {
-      final hours = (weeklyLockoutMinutes / 60).toStringAsFixed(1);
+      final hours = (weeklyLockoutMinutes / 60).toStringAsFixed(2);
       displayText = translator.translate(
         'pages.profile.weekly_stats.hours_format',
         context: context,

@@ -1,3 +1,4 @@
+import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/time_limit/domain/providers/time_limit_tracker_notifier_provider.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
@@ -33,6 +34,10 @@ class HomeLockoutButton extends HookConsumerWidget
 
     return GestureDetector(
       onTap: () async {
+        // Pre-fetch friends locked out while user selects duration
+        // This ensures data is cached by the time lockout screen loads
+        ref.read(friendsLockedOutCacheProvider.notifier).ensureFresh();
+
         // Show time selection dialog
         final duration = await ManualLockoutDialog.show(context);
         if (duration == null || !context.mounted) {

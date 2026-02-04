@@ -1,5 +1,7 @@
+import 'dart:async';
+
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
-import 'package:cloudless/core/features/lockout/domain/providers/get_friends_locked_out_provider.dart';
+import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/friend_locked_out_item.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/join_lockout_dialog.dart';
@@ -7,8 +9,18 @@ import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
+/// Displays friends currently in lockout sessions.
+///
+/// Design principles:
+/// - Watches cache state directly for instant updates
+/// - Never shows loading after initial load (seamless UX)
+/// - Polls every minute for new friends
+/// - Refreshes on app resume
+/// - Data persists across minimize/maximize
 class FriendsLockedOutList extends HookConsumerWidget {
   const FriendsLockedOutList({super.key});
+
+  static const _pollInterval = Duration(minutes: 1);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,18 +28,94 @@ class FriendsLockedOutList extends HookConsumerWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final friendsAsync = ref.watch(getFriendsLockedOutProvider);
+    // Watch the cache state directly - this is the single source of truth
+    final cacheState = ref.watch(friendsLockedOutCacheProvider);
+    final cacheNotifier = ref.read(friendsLockedOutCacheProvider.notifier);
 
-    return friendsAsync.when(
-      data: (result) => result.fold(
-        (friends) {
-          if (friends.isEmpty) return const SizedBox.shrink();
-          return _buildList(context, ref, friends, colorScheme, textTheme);
-        },
-        (_) => const SizedBox.shrink(),
+    // ignore: avoid_print
+    print('[WIDGET] build: ${cacheState.activeLockouts.length} friends, isFetching=${cacheState.isFetching}');
+
+    // Ensure data is fresh on first build (defer to after frame completes)
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        cacheNotifier.ensureFresh();
+      });
+      return null;
+    }, const []);
+
+    // Poll for new friends every minute
+    useEffect(() {
+      final timer = Timer.periodic(_pollInterval, (_) {
+        cacheNotifier.refresh();
+      });
+      return timer.cancel;
+    }, const []);
+
+    // Refresh on app resume
+    useEffect(() {
+      final observer = _LifecycleObserver((lifecycleState) {
+        // ignore: avoid_print
+        print('[WIDGET] Lifecycle: $lifecycleState');
+        if (lifecycleState == AppLifecycleState.resumed) {
+          // ignore: avoid_print
+          print('[WIDGET] App resumed - calling refresh()');
+          cacheNotifier.refresh();
+        }
+      });
+      WidgetsBinding.instance.addObserver(observer);
+      return () => WidgetsBinding.instance.removeObserver(observer);
+    }, const []);
+
+    // Remove expired lockouts periodically (every 30s)
+    useEffect(() {
+      final timer = Timer.periodic(const Duration(seconds: 30), (_) {
+        cacheNotifier.removeExpiredLockouts();
+      });
+      return timer.cancel;
+    }, const []);
+
+    final friends = cacheState.activeLockouts;
+
+    // Only show loading spinner on initial load (no data yet)
+    if (friends.isEmpty && cacheState.isFetching) {
+      return _buildLoading(colorScheme);
+    }
+
+    // Show empty state if no friends locked out
+    if (friends.isEmpty) {
+      return _buildEmptyState(colorScheme, textTheme);
+    }
+
+    // Show the list of friends
+    return _buildList(context, ref, friends, colorScheme, textTheme);
+  }
+
+  Widget _buildEmptyState(ColorScheme colorScheme, TextTheme textTheme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Text(
+        translator.translate('pages.manual_lockout.friends_locked_out.empty'),
+        style: textTheme.bodyMedium?.copyWith(
+          color: colorScheme.surface.withValues(alpha: 0.6),
+        ),
+        textAlign: TextAlign.center,
       ),
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildLoading(ColorScheme colorScheme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: colorScheme.surface.withValues(alpha: 0.6),
+          ),
+        ),
+      ),
     );
   }
 
@@ -53,7 +141,7 @@ class FriendsLockedOutList extends HookConsumerWidget {
         ),
         const SizedBox(height: 8),
         SizedBox(
-          height: 100,
+          height: 120,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -83,7 +171,6 @@ class FriendsLockedOutList extends HookConsumerWidget {
     try {
       final notifier = ref.read(manualLockoutNotifierProvider.notifier);
       await notifier.joinLockout(session.id);
-      // Lockout state already updated, view will reflect changes
     } catch (e) {
       logger.error('Error joining lockout', exception: e);
       if (context.mounted) {
@@ -96,5 +183,16 @@ class FriendsLockedOutList extends HookConsumerWidget {
         );
       }
     }
+  }
+}
+
+class _LifecycleObserver extends WidgetsBindingObserver {
+  _LifecycleObserver(this.onStateChange);
+
+  final void Function(AppLifecycleState) onStateChange;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    onStateChange(state);
   }
 }

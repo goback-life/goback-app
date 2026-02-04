@@ -109,13 +109,20 @@ class LockoutCompleteView extends HookConsumerWidget
                   // Skip button
                   TextButton(
                     onPressed: () async {
-                      // Count lockout minutes even when skipping post creation
-                      if (lockoutSessionId.isNotEmpty) {
-                        final sessionService = ref.read(lockoutSessionServiceProvider);
-                        await sessionService.completeSessionWithoutPost(lockoutSessionId);
-                      }
-                      // Clear storage and go home
                       final storable = ref.read(manualLockoutStorableProvider);
+
+                      // Count lockout minutes even when skipping post creation
+                      // Pass user's actual start time (important for joiners)
+                      if (lockoutSessionId.isNotEmpty) {
+                        final userStartedAt = await storable.getLockoutStart();
+                        final sessionService = ref.read(lockoutSessionServiceProvider);
+                        await sessionService.completeSessionWithoutPost(
+                          lockoutSessionId,
+                          userStartedAt: userStartedAt,
+                        );
+                      }
+
+                      // Clear storage and go home
                       await storable.clearLockout();
                       router.go(const HomeRoutable());
                     },

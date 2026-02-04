@@ -5,6 +5,10 @@ import 'package:dedecube_core/dedecube_core.dart';
 part 'lockout_session_dto.freezed.dart';
 part 'lockout_session_dto.g.dart';
 
+/// Reads 'lockout_id' (from RPC) or 'id' (from direct query).
+Object? _readId(Map<dynamic, dynamic> json, String key) =>
+    json['lockout_id'] ?? json['id'];
+
 /// DTO for lockout sessions from the database.
 ///
 /// Represents a server-side lockout session that tracks when users
@@ -12,7 +16,8 @@ part 'lockout_session_dto.g.dart';
 @freezed
 sealed class LockoutSessionDto with _$LockoutSessionDto {
   const factory LockoutSessionDto({
-    required String id,
+    /// Session ID - RPC returns 'lockout_id', direct queries return 'id'
+    @JsonKey(readValue: _readId) required String id,
     @JsonKey(name: 'user_id') required String userId,
     @JsonKey(name: 'started_at') required String startedAt,
     @JsonKey(name: 'ends_at') required String endsAt,
