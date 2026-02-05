@@ -80,10 +80,14 @@ Before implementing, examine:
    - Name: `send-lockout-notification`
    - Trigger: Called from database trigger on `lockout_sessions` INSERT
    - Logic:
-     1. Get user's friends from `connections` table
-     2. Get device tokens for all friends
-     3. Build FCM payload with lockout details
-     4. Send batch notification via FCM HTTP v1 API
+     1. Get user's friends from `friendships` table
+     2. **Filter out friends who are already in an active lockout** (they can't join anyway)
+        - Check `lockout_sessions` where `user_id = friend_id OR friend_id = ANY(participants)` and `ends_at > NOW()` and `post_id IS NULL`
+     3. Get device tokens for remaining friends
+     4. Build FCM payload with lockout details
+     5. Send batch notification via FCM HTTP v1 API
+
+   > **Note:** In-app notifications are still created for ALL friends (including locked-out ones) via the database trigger. They can view these in their notification menu after their lockout ends. Only PUSH notifications should be filtered.
 
    ```typescript
    // supabase/functions/send-lockout-notification/index.ts
@@ -191,3 +195,21 @@ After implementation, verify:
 - Edge Function needs FCM service account credentials
 - Use FCM HTTP v1 API (not legacy) for better reliability
 </notes>
+
+<reminder>
+## Post-Implementation: Run Flutter Analyze
+
+After ALL changes are complete, run:
+```bash
+fvm flutter analyze
+```
+
+There are existing compile errors in the codebase that need attention:
+- `comment_service.dart` - `gt()` method undefined
+- `get_friends_locked_out_provider.dart` - `getCachedOrFetch()` undefined
+- `home_go_back_button.dart` - missing `use_manual_lockout_post.dart` import
+- `create_comment_provider.dart` / `delete_comment_provider.dart` - `isSuccess` getter missing
+- Layout issues with `Expanded` widgets in profile/sign-in views
+
+Ensure any new code doesn't introduce additional errors and consider fixing these existing issues.
+</reminder>

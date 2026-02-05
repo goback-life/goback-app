@@ -206,6 +206,27 @@ class FriendsLockedOutList extends HookConsumerWidget {
     WidgetRef ref,
     LockoutSessionModel session,
   ) async {
+    // Check if user is already locked out before showing dialog
+    final lockoutState = ref.read(manualLockoutNotifierProvider);
+    final isAlreadyLockedOut = lockoutState.whenOrNull(
+          data: (state) => state.isLockedOut,
+        ) ??
+        false;
+
+    if (isAlreadyLockedOut) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              translator.translate('pages.home.lockout_join_error_already_locked'),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+      return;
+    }
+
     final shouldJoin = await JoinLockoutDialog.show(context, session);
     if (shouldJoin != true || !context.mounted) return;
 
@@ -215,11 +236,15 @@ class FriendsLockedOutList extends HookConsumerWidget {
     } catch (e) {
       logger.error('Error joining lockout', exception: e);
       if (context.mounted) {
+        // Check for "already locked out" error from RPC
+        final errorMessage = e.toString().contains('already in an active lockout')
+            ? translator.translate('pages.home.lockout_join_error_already_locked')
+            : translator.translate('pages.manual_lockout.friends_locked_out.error');
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              translator.translate('pages.manual_lockout.friends_locked_out.error'),
-            ),
+            content: Text(errorMessage),
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }

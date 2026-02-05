@@ -124,10 +124,19 @@ class LockoutSessionService {
   /// as a participant in the session.
   FutureResult<void> joinSession({required String sessionId}) async {
     try {
-      await supabase.rpc(
+      final response = await supabase.rpc(
         'join_lockout_session',
-        params: {'p_session_id': sessionId},
+        params: {'p_lockout_id': sessionId},
       );
+
+      // RPC returns JSON with success/error fields
+      if (response is Map<String, dynamic>) {
+        final success = response['success'] as bool? ?? false;
+        if (!success) {
+          final error = response['error'] as String? ?? 'Unknown error';
+          return Result.failure(Exception(error));
+        }
+      }
 
       return Result.success(null);
     } catch (e) {

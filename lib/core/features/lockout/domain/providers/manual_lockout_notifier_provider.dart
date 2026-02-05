@@ -147,19 +147,34 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       // Get session details to determine end time
       final sessionResult = await sessionService.getSessionById(lockoutSessionId);
       DateTime? lockoutEndTime;
+      Exception? sessionError;
 
       await sessionResult.asyncFold(
         (session) async {
           if (session != null) {
             lockoutEndTime = DateTime.parse(session.endsAt);
-            // Join session in database
-            await sessionService.joinSession(sessionId: lockoutSessionId);
+            // Join session in database - check result for RPC errors
+            final joinResult = await sessionService.joinSession(
+              sessionId: lockoutSessionId,
+            );
+            joinResult.fold(
+              (_) {},
+              (error) {
+                sessionError = error;
+              },
+            );
           }
         },
         (error) async {
           logger.warning('Failed to get session: $error');
+          sessionError = error;
         },
       );
+
+      // Throw any error from the RPC (e.g., "already in an active lockout")
+      if (sessionError != null) {
+        throw sessionError!;
+      }
 
       if (lockoutEndTime == null) {
         throw Exception('Could not get lockout session end time');
