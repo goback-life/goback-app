@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(iconv:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

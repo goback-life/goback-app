@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
@@ -32,8 +33,25 @@ class FriendsLockedOutList extends HookConsumerWidget {
     final cacheState = ref.watch(friendsLockedOutCacheProvider);
     final cacheNotifier = ref.read(friendsLockedOutCacheProvider.notifier);
 
+    // Track the current user's lockout session ID for same-lockout detection
+    final storable = ref.read(manualLockoutStorableProvider);
+    final currentSessionId = useState<String?>(null);
+
+    // Fetch current session ID on mount and when cache updates
+    useEffect(() {
+      void fetchSessionId() {
+        storable.getLockoutSessionId().then((id) {
+          // ignore: avoid_print
+          print('[SAME-LOCKOUT] Fetched currentSessionId: $id');
+          currentSessionId.value = id;
+        });
+      }
+      fetchSessionId();
+      return null;
+    }, [cacheState.activeLockouts.length]);
+
     // ignore: avoid_print
-    print('[WIDGET] build: ${cacheState.activeLockouts.length} friends, isFetching=${cacheState.isFetching}');
+    print('[WIDGET] build: ${cacheState.activeLockouts.length} friends, isFetching=${cacheState.isFetching}, currentSessionId=${currentSessionId.value}');
 
     // Ensure data is fresh on first build (defer to after frame completes)
     useEffect(() {
@@ -87,7 +105,14 @@ class FriendsLockedOutList extends HookConsumerWidget {
     }
 
     // Show the list of friends
-    return _buildList(context, ref, friends, colorScheme, textTheme);
+    return _buildList(
+      context,
+      ref,
+      friends,
+      colorScheme,
+      textTheme,
+      currentSessionId.value,
+    );
   }
 
   Widget _buildEmptyState(ColorScheme colorScheme, TextTheme textTheme) {
@@ -125,7 +150,15 @@ class FriendsLockedOutList extends HookConsumerWidget {
     List<LockoutSessionModel> friends,
     ColorScheme colorScheme,
     TextTheme textTheme,
+    String? currentSessionId,
   ) {
+    // ignore: avoid_print
+    print('[SAME-LOCKOUT] _buildList: currentSessionId=$currentSessionId');
+    for (final f in friends) {
+      final matches = currentSessionId != null && f.id == currentSessionId;
+      // ignore: avoid_print
+      print('[SAME-LOCKOUT]   -> ${f.username}: id=${f.id}, matches=$matches');
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -149,9 +182,17 @@ class FriendsLockedOutList extends HookConsumerWidget {
             separatorBuilder: (_, __) => const SizedBox(width: 4),
             itemBuilder: (context, index) {
               final session = friends[index];
+              final isInSameLockout =
+                  currentSessionId != null && session.id == currentSessionId;
+              // ignore: avoid_print
+              print('[SAME-LOCKOUT] Friend ${session.username}: '
+                  'session.id=${session.id}, '
+                  'currentSessionId=$currentSessionId, '
+                  'match=$isInSameLockout');
               return FriendLockedOutItem(
                 session: session,
                 onTap: () => _handleJoinTap(context, ref, session),
+                isInSameLockout: isInSameLockout,
               );
             },
           ),

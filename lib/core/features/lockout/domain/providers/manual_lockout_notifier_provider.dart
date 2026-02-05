@@ -165,10 +165,11 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
         throw Exception('Could not get lockout session end time');
       }
 
-      // Store locally
+      // Store locally with session ID for same-lockout detection
       final useCase = JoinLockoutUseCase(
         storable: storable,
         lockoutEndTime: lockoutEndTime!,
+        lockoutSessionId: lockoutSessionId,
       );
       await useCase.execute();
 

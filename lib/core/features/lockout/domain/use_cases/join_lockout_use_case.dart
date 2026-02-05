@@ -7,10 +7,12 @@ class JoinLockoutUseCase implements UseCaseContract<void> {
   const JoinLockoutUseCase({
     required this.storable,
     required this.lockoutEndTime,
+    required this.lockoutSessionId,
   });
 
   final ManualLockoutStorable storable;
   final DateTime lockoutEndTime;
+  final String lockoutSessionId;
 
   @override
   Future<void> execute() async {
@@ -26,6 +28,7 @@ class JoinLockoutUseCase implements UseCaseContract<void> {
     await storable.setLockoutData(
       lockoutEndTimestamp: lockoutEndTime,
       lockoutStartTimestamp: now,
+      lockoutSessionId: lockoutSessionId,
     );
   }
 }

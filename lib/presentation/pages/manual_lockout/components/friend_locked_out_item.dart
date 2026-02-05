@@ -7,10 +7,12 @@ class FriendLockedOutItem extends StatelessWidget {
     super.key,
     required this.session,
     required this.onTap,
+    this.isInSameLockout = false,
   });
 
   final LockoutSessionModel session;
   final VoidCallback onTap;
+  final bool isInSameLockout;
 
   static const double _avatarSize = 48.0;
 
@@ -28,6 +30,12 @@ class FriendLockedOutItem extends StatelessWidget {
       child: Container(
         width: 90,
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        decoration: isInSameLockout
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.pinkAccent, width: 3),
+              )
+            : null,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
