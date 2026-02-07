@@ -58,35 +58,60 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
       };
     }, []);
     
-    // Sort posts once for use in ListView (computed here for the ListView)
-    final sortedPosts = List<FeedPostModel>.from(posts)
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    // Memoize sorted posts to avoid O(n log n) sort on every frame
+    final sortedPosts = useMemoized(
+      () => List<FeedPostModel>.from(posts)
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+      [posts],
+    );
+
+    // Store sorted posts in ref for scroll handler access without recalculating
+    final sortedPostsRef = useRef<List<FeedPostModel>>([]);
+    useEffect(() {
+      sortedPostsRef.value = sortedPosts;
+      return null;
+    }, [sortedPosts]);
+
+    // Track scroll velocity for responsive loading
+    final lastScrollPosition = useRef<double>(0);
+    final lastScrollTime = useRef<DateTime>(DateTime.now());
 
     useEffect(() {
       void scrollHandler() {
-        // In reverse ListView, trigger pagination when scrolling towards older posts (top)
         final position = effectiveScrollController.position;
+        final now = DateTime.now();
+
+        // Calculate scroll velocity (pixels per second)
+        final timeDelta = now.difference(lastScrollTime.value).inMilliseconds;
+        final positionDelta = (position.pixels - lastScrollPosition.value).abs();
+        final velocity = timeDelta > 0 ? (positionDelta / timeDelta) * 1000 : 0;
+
+        lastScrollPosition.value = position.pixels;
+        lastScrollTime.value = now;
+
+        // In reverse ListView, trigger pagination when scrolling towards older posts (top)
         final distanceFromOlderPostsEdge =
             position.pixels - position.minScrollExtent;
 
-        if (distanceFromOlderPostsEdge <= feedPostsListScrollTrigger) {
+        // Dynamic trigger distance based on scroll velocity
+        // Fast scrolling = trigger earlier (up to 3x the normal threshold)
+        final velocityMultiplier = (1 + (velocity / 500)).clamp(1.0, 3.0);
+        final dynamicTrigger = feedPostsListScrollTrigger * velocityMultiplier;
+
+        if (distanceFromOlderPostsEdge <= dynamicTrigger) {
           if (hasNextPage && !isLoadingMore && !isLoadingRef.value) {
             isLoadingRef.value = true;
             onLoadMore();
             // Reset after a delay to allow the state to update
-            Future.delayed(const Duration(milliseconds: 500), () {
+            Future.delayed(const Duration(milliseconds: 300), () {
               isLoadingRef.value = false;
             });
           }
         }
         
-        // Track which post is at the top - compute from posts parameter directly to avoid capturing sortedPosts
-        // This recomputes on each scroll but avoids serialization issues
-        if (posts.isNotEmpty && onTopPostDateChanged != null) {
-          // Recompute sorted posts inside handler to avoid capturing from outer scope
-          final currentSorted = List<FeedPostModel>.from(posts)
-            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-          
+        // Track which post is at the top using memoized sortedPostsRef (no recomputation)
+        final currentSorted = sortedPostsRef.value;
+        if (currentSorted.isNotEmpty && onTopPostDateChanged != null) {
           DateTime topPostDate;
           if (position.maxScrollExtent > position.minScrollExtent) {
             // Calculate scroll progress (0 = at bottom/newest, 1 = at top/oldest)
@@ -98,7 +123,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
           } else {
             topPostDate = currentSorted.first.createdAt.toLocal();
           }
-          
+
           // Extract to primitives before creating any closures
           final callback = onTopPostDateChanged;
           final date = topPostDate;

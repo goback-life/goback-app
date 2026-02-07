@@ -10,6 +10,7 @@ import 'package:cloudless/core/features/post/domain/models/post_data_model.dart'
 import 'package:cloudless/core/features/post/domain/models/post_model.dart';
 import 'package:cloudless/core/features/post/domain/providers/create_post_provider.dart';
 import 'package:cloudless/core/features/post/domain/utilities/url_shortener.dart';
+import 'package:cloudless/core/features/post/domain/exceptions/post_exception.dart';
 import 'package:cloudless/core/features/post/domain/providers/parent_post_reference_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_action_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_creation_lock_provider.dart';
@@ -85,6 +86,16 @@ PostCreationResult usePostCreation(WidgetRef ref) {
         postCreationData.contentType != ContentType.text &&
         postCreationData.mainImage == null) {
       return null;
+    }
+
+    // Lockout guard: new posts require a lockout session (defense in depth)
+    // Editing existing posts does not require lockout context
+    final pendingLockoutId = ref.read(pendingLockoutPostProvider);
+    if (!postCreationData.isEditing && pendingLockoutId == null) {
+      logger.warning('Post creation blocked: no lockout session');
+      return Result.failure(
+        const PostException('Post creation requires lockout session', 'lockout_required'),
+      );
     }
 
     return currentUser.when(

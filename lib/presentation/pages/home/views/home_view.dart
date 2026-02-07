@@ -65,15 +65,26 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
     final circleMembersData = useCircleMembers(ref);
 
-    // Preload feed in background and set up periodic cleanup
+    // Preload feed in background or perform full rebuild if needed
     useEffect(() {
       if (userId != null && userId.isNotEmpty) {
-        // Preload feed in background for instant access (deferred to avoid build-time state modification)
-        Future.microtask(() => ref.read(feedPostsCacheProvider.notifier).preloadFeed(userId));
+        final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
 
-        // Periodic cleanup of expired posts (every 5 minutes)
-        final cleanupTimer = Timer.periodic(const Duration(minutes: 5), (_) {
-          ref.read(feedPostsCacheProvider.notifier).removeExpiredPosts();
+        // Check if full rebuild is needed (cold start or >6 hours since last validation)
+        Future.microtask(() {
+          if (cacheNotifier.needsFullRebuild) {
+            // ignore: avoid_print
+            print('[HomeView] Cache needs full rebuild');
+            cacheNotifier.fullCacheRebuild(userId);
+          } else {
+            cacheNotifier.preloadFeed(userId);
+          }
+        });
+
+        // Periodic memory cleanup of expired posts (every 30 minutes)
+        // Note: Filtering happens in getter, this just removes from state
+        final cleanupTimer = Timer.periodic(const Duration(minutes: 30), (_) {
+          cacheNotifier.removeExpiredPosts();
         });
 
         return cleanupTimer.cancel;
@@ -99,6 +110,9 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
       return null;
     }, []);
 
+    // Track when app was last active for signed URL refresh
+    final lastActiveTime = useRef<DateTime>(DateTime.now());
+
     // Refresh data when app resumes from background
     // This replaces aggressive polling - data is fetched in parallel on resume
     useAppResumeRefresh(
@@ -109,7 +123,17 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
         // Refresh notification count
         if (userId != null && userId.isNotEmpty) {
           ref.invalidate(unreadNotificationCountProvider(userId: userId));
+
+          // Check if we need to refresh signed URLs (backgrounded > 3 hours)
+          final backgroundDuration =
+              DateTime.now().difference(lastActiveTime.value);
+          if (backgroundDuration > const Duration(hours: 3)) {
+            debugPrint(
+                '[HomeView] Backgrounded for ${backgroundDuration.inHours}h - re-enriching cached posts');
+            ref.read(feedPostsCacheProvider.notifier).reEnrichCachedPosts();
+          }
         }
+        lastActiveTime.value = DateTime.now();
       },
     );
 

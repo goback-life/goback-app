@@ -11,11 +11,9 @@ import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart'
 /// happens later when these timestamps are formatted for display in the UI.
 class FeedPostDtoToModelMapper {
   FeedPostModel mapDto(FeedPostDto dto) {
-    final taggedUsernames =
-        dto.taggedUsernames?.split(',').map((e) => e.trim()).toList() ?? [];
-    final taggedUserIds =
-        dto.taggedUserIds?.split(',').map((e) => e.trim()).toList() ?? [];
-    // excludedUserIds now comes as UUID[] array from database
+    // Arrays come directly from database RPC
+    final taggedUsernames = dto.taggedUsernames ?? [];
+    final taggedUserIds = dto.taggedUserIds ?? [];
     final excludedUserIds = dto.excludedUserIds ?? [];
 
     final contentType = ContentType.values.firstWhere(

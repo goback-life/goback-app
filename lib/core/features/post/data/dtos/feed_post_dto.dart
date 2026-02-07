@@ -28,8 +28,8 @@ sealed class FeedPostDto with _$FeedPostDto {
     @JsonKey(name: 'content_type') required String contentType,
     @JsonKey(name: 'is_author_connected') bool? isAuthorConnected,
     @JsonKey(name: 'video_url') String? videoUrl,
-    @JsonKey(name: 'tagged_usernames') String? taggedUsernames,
-    @JsonKey(name: 'tagged_user_ids') String? taggedUserIds,
+    @JsonKey(name: 'tagged_usernames') List<String>? taggedUsernames,
+    @JsonKey(name: 'tagged_user_ids') List<String>? taggedUserIds,
     /// Excluded user IDs as UUID[] array from database
     @JsonKey(name: 'excluded_user_ids') List<String>? excludedUserIds,
     @JsonKey(name: 'author_avatar_url') String? authorAvatarUrl,

@@ -14,6 +14,7 @@ sealed class PostMediaDto with _$PostMediaDto {
     @JsonKey(name: 'media_url') required String mediaUrl,
     @JsonKey(name: 'sort_order') required int sortOrder,
     @JsonKey(name: 'created_at') required String createdAt,
+    @JsonKey(name: 'duration_seconds') double? durationSeconds,
   }) = _PostMediaDto;
 
   factory PostMediaDto.fromJson(Map<String, dynamic> json) =>

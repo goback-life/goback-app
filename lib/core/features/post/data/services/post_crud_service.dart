@@ -60,19 +60,26 @@ class PostCrudService {
   }
 
   /// Adds media files to a post.
+  /// For videos, [durationSeconds] should be provided to enable server-side validation.
   Future<List<PostMediaDto>> addPostMedia({
     required String postId,
     required List<String> mediaUrls,
     required ContentType contentType,
+    double? durationSeconds,
   }) async {
     final List<Map<String, dynamic>> mediaDataList = [];
 
     for (final url in mediaUrls) {
-      mediaDataList.add({
+      final data = <String, dynamic>{
         'post_id': postId,
         'media_url': url,
         'media_type': contentType.name.toLowerCase(),
-      });
+      };
+      // Add duration for videos (first URL assumed to be the video)
+      if (contentType == ContentType.video && durationSeconds != null) {
+        data['duration_seconds'] = durationSeconds;
+      }
+      mediaDataList.add(data);
     }
 
     final response = await _supabaseClient

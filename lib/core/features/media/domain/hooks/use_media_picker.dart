@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloudless/core/features/media/domain/enums/media_type.dart';
+import 'package:video_player/video_player.dart';
 import 'package:cloudless/core/features/media/domain/enums/pick_image_type.dart';
 import 'package:cloudless/core/features/media/domain/hooks/use_image_cropper.dart';
 import 'package:cloudless/core/features/media/domain/hooks/use_pick_and_compress_image_with_permission.dart';
@@ -186,7 +187,10 @@ Future<void> _handlePhotoSelection({
   }
 }
 
-/// Handles video selection with proper error handling
+/// Maximum allowed video duration in seconds (60 seconds = 1 minute)
+const _maxVideoDurationSeconds = 60;
+
+/// Handles video selection with duration validation
 Future<void> _handleVideoSelection({
   required WidgetRef ref,
   required ImageSource imageSource,
@@ -196,10 +200,43 @@ Future<void> _handleVideoSelection({
     final picker = ImagePicker();
     final XFile? video = await picker.pickVideo(source: imageSource);
 
-    if (video != null) {
-      await onMediaSelected(File(video.path));
+    if (video == null) return;
+
+    final file = File(video.path);
+
+    // Validate video duration before accepting
+    final duration = await _getVideoDuration(file);
+    if (duration != null && duration.inSeconds > _maxVideoDurationSeconds) {
+      // Show error to user - video too long
+      if (ref.context.mounted) {
+        ScaffoldMessenger.of(ref.context).showSnackBar(
+          const SnackBar(
+            content: Text('Videos must be 60 seconds or less'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
     }
+
+    await onMediaSelected(file);
   } catch (e) {
     // Handle permission denied or other errors silently
+  }
+}
+
+/// Gets the duration of a video file.
+/// Returns null if duration cannot be determined.
+Future<Duration?> _getVideoDuration(File videoFile) async {
+  VideoPlayerController? controller;
+  try {
+    controller = VideoPlayerController.file(videoFile);
+    await controller.initialize();
+    return controller.value.duration;
+  } catch (e) {
+    // Return null if we can't determine duration (allow the video)
+    return null;
+  } finally {
+    await controller?.dispose();
   }
 }

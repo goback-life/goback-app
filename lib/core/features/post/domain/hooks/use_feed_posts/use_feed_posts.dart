@@ -1,9 +1,6 @@
 import 'dart:async';
 
 import 'package:cloudless/core/features/post/domain/enums/post_action_type.dart';
-import 'package:cloudless/core/features/post/domain/hooks/use_feed_posts/feed_posts_actions.dart';
-import 'package:cloudless/core/features/post/domain/hooks/use_feed_posts/feed_posts_polling.dart';
-import 'package:cloudless/core/features/post/domain/hooks/use_polling_controller.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_action_notifier_provider.dart';
@@ -23,33 +20,41 @@ typedef FeedPostsResult = ({
   VoidCallback loadNewPosts,
 });
 
-/// Custom hook for managing feed posts with polling, pagination, and real-time updates.
+/// Custom hook for managing feed posts with cache-first loading.
+///
+/// Design:
+/// 1. Returns cached posts immediately if available
+/// 2. Loads first 15 posts on initial access
+/// 3. Background loads remaining posts progressively (up to 200)
+/// 4. UI updates reactively as more posts load
+/// 5. Checks for deletions every 30 seconds
+/// 6. Edits are NOT fetched for feed - only when user taps post detail
 FeedPostsResult useFeedPosts(
   WidgetRef ref, {
   required String userId,
   DateTime? targetDate,
 }) {
-  final effectiveTargetDate = useMemoized(() => targetDate ?? DateTime.now(), [
-    targetDate?.millisecondsSinceEpoch,
-  ]);
+  // Watch the cache state - reactive updates as background loading progresses
+  final cacheState = ref.watch(feedPostsCacheProvider);
+  final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
 
-  final posts = useState<List<FeedPostModel>>([]);
   final isLoading = useState<bool>(false);
   final isLoadingMore = useState<bool>(false);
-  final hasNextPage = useState<bool>(true);
   final errorMessage = useState<String?>(null);
   final newPostsCount = useState<int>(0);
 
-  // Cursor-based pagination
-  final newestPostTimestamp = useState<DateTime?>(null);
-  final oldestPostTimestamp = useState<DateTime?>(null);
-
-  // State management
-  final isMounted = useRef(true);
+  // Track initialization
   final hasInitialized = useRef(false);
   final lastUserId = useRef<String?>(null);
-  final lastTargetDate = useRef<DateTime?>(null);
-  final savedUserId = useRef<String>('');
+  final isMounted = useRef(true);
+
+  // Post action/publish listeners
+  final postPublishedFlag = ref.watch(postPublishedNotifierProvider);
+  final postActionEvent = ref.watch(postActionNotifierProvider);
+
+  // Computed values from cache
+  final posts = cacheState.posts;
+  final hasNextPage = cacheState.hasNextPage && !cacheState.fullyLoaded;
 
   Future<void> loadNewPosts() async {
     if (newPostsCount.value > 0) {
@@ -57,360 +62,149 @@ FeedPostsResult useFeedPosts(
     }
   }
 
-  final pollingController = usePollingController(
-    onPoll: () => FeedPostsPolling.checkForNewPosts(
-      ref: ref,
-      userId: userId,
-      posts: posts,
-      newestPostTimestamp: newestPostTimestamp,
-      newPostsCount: newPostsCount,
-    ),
-    interval: const Duration(seconds: 60),
-  );
-
-  final updatePollingController = usePollingController(
-    onPoll: () => FeedPostsPolling.checkForPostUpdates(
-      ref: ref,
-      userId: userId,
-      posts: posts,
-    ),
-    interval: const Duration(seconds: 60),
-  );
-
+  // Initialize feed and set up deletion polling
   useEffect(() {
-    return () {
-      pollingController.stopPolling();
-      updatePollingController.stopPolling();
-    };
-  }, []);
+    isMounted.value = true;
+    Timer? deletionTimer;
 
-  final postPublishedFlag = ref.watch(postPublishedNotifierProvider);
-  final postActionEvent = ref.watch(postActionNotifierProvider);
+    final shouldLoad = userId != lastUserId.value ||
+        !hasInitialized.value ||
+        (cacheNotifier.currentUserId != userId);
 
-  useEffect(
-    () {
-      isMounted.value = true;
+    if (shouldLoad && userId.isNotEmpty && userId.trim().isNotEmpty) {
+      lastUserId.value = userId;
+      hasInitialized.value = true;
 
-      final hasPublishedPost = postPublishedFlag != null;
+      // Check if cache already has posts for this user
+      if (cacheNotifier.currentUserId == userId && cacheState.initialLoadComplete) {
+        // Already have posts, check for new ones and deletions
+        // ignore: avoid_print
+        print('[useFeedPosts] Using cached posts: ${cacheState.posts.length}');
+        cacheNotifier.refresh(userId);
+        cacheNotifier.checkForDeletions(userId);
+      } else {
+        // Need to load initial posts
+        isLoading.value = cacheState.posts.isEmpty;
+        // ignore: avoid_print
+        print('[useFeedPosts] Loading initial posts for user: $userId');
 
-      ref
-        ..listen(postActionNotifierProvider, (previous, next) {
-          if (next != null &&
-              userId.isNotEmpty &&
-              userId.trim().isEmpty == false &&
-              isMounted.value) {
-            switch (next.action) {
-              case PostActionType.create:
-                // If we have a post ID, immediately fetch and add it to the feed
-                if (next.postId != null) {
-                  FeedPostsPolling.addPostImmediately(
-                    ref: ref,
-                    postId: next.postId!,
-                    userId: userId,
-                    posts: posts,
-                    newestPostTimestamp: newestPostTimestamp,
-                    oldestPostTimestamp: oldestPostTimestamp,
-                  ).then((_) {
-                    ref.read(postActionNotifierProvider.notifier).clearAction();
-                  });
-                } else {
-                  // Fallback to retry mechanism if no post ID
-                  FeedPostsPolling.checkForNewPostsWithRetry(
-                    ref: ref,
-                    userId: userId,
-                    posts: posts,
-                    newestPostTimestamp: newestPostTimestamp,
-                    oldestPostTimestamp: oldestPostTimestamp,
-                    newPostsCount: newPostsCount,
-                    isMounted: isMounted.value,
-                    maxRetries: 3,
-                  ).then((_) {
-                    ref.read(postActionNotifierProvider.notifier).clearAction();
-                  });
-                }
-                break;
-              case PostActionType.update:
-                FeedPostsPolling.checkForPostUpdates(
-                  ref: ref,
-                  userId: userId,
-                  posts: posts,
-                ).then((_) {
-                  ref.read(postActionNotifierProvider.notifier).clearAction();
-                });
-                break;
-              case PostActionType.delete:
-              case PostActionType.hide:
-              case PostActionType.report:
-                FeedPostsActions.loadInitialPosts(
-                  ref: ref,
-                  userId: userId,
-                  isLoading: isLoading,
-                  posts: posts,
-                  hasNextPage: hasNextPage,
-                  errorMessage: errorMessage,
-                  newPostsCount: newPostsCount,
-                  newestPostTimestamp: newestPostTimestamp,
-                  oldestPostTimestamp: oldestPostTimestamp,
-                ).then((_) {
-                  ref.read(postActionNotifierProvider.notifier).clearAction();
-                });
-                break;
-            }
+        cacheNotifier.loadInitialPosts(userId).then((loadedPosts) {
+          if (isMounted.value) {
+            isLoading.value = false;
+            // ignore: avoid_print
+            print('[useFeedPosts] Initial load complete: ${loadedPosts.length} posts');
           }
-        })
-        ..listen(postPublishedNotifierProvider, (previous, next) {
-          if (next != null &&
-              userId.isNotEmpty &&
-              userId.trim().isEmpty == false &&
-              isMounted.value) {
-            FeedPostsPolling.checkForNewPostsWithRetry(
-              ref: ref,
-              userId: userId,
-              posts: posts,
-              newestPostTimestamp: newestPostTimestamp,
-              oldestPostTimestamp: oldestPostTimestamp,
-              newPostsCount: newPostsCount,
-              isMounted: isMounted.value,
-              maxRetries: 3,
-            ).then((_) {
-              ref
-                  .read(postPublishedNotifierProvider.notifier)
-                  .clearPublishedFlag();
-            });
+        }).catchError((error) {
+          if (isMounted.value) {
+            isLoading.value = false;
+            errorMessage.value = error.toString();
           }
         });
-
-      final shouldReload =
-          userId != lastUserId.value ||
-          effectiveTargetDate != lastTargetDate.value ||
-          !hasInitialized.value;
-
-      if (userId.isNotEmpty && userId.trim().isNotEmpty) {
-        savedUserId.value = userId;
       }
 
-      if (shouldReload && userId.isNotEmpty && userId.trim().isEmpty == false) {
-        lastUserId.value = userId;
-        lastTargetDate.value = effectiveTargetDate;
-        hasInitialized.value = true;
-
-        // Check cache first for instant display
-        final cache = ref.read(feedPostsCacheProvider);
-        final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
-
-        if (cacheNotifier.isCacheValid && cacheNotifier.currentUserId == userId) {
-          // Use cached posts immediately
-          // ignore: avoid_print
-          print('[useFeedPosts] Using cached posts: ${cache.posts.length}');
-          posts.value = cache.posts;
-          hasNextPage.value = cache.hasNextPage;
-          if (cache.posts.isNotEmpty) {
-            newestPostTimestamp.value = cache.posts.first.createdAt;
-            oldestPostTimestamp.value = cache.posts.last.createdAt;
-          }
-          pollingController.startPolling();
-          updatePollingController.startPolling();
-        } else {
-          // ignore: avoid_print
-          print('[useFeedPosts] Calling loadInitialPosts with userId: $userId');
-          FeedPostsActions.loadInitialPosts(
-            ref: ref,
-            userId: userId,
-            isLoading: isLoading,
-            posts: posts,
-            hasNextPage: hasNextPage,
-            errorMessage: errorMessage,
-            newPostsCount: newPostsCount,
-            newestPostTimestamp: newestPostTimestamp,
-            oldestPostTimestamp: oldestPostTimestamp,
-          ).then((_) {
-            // ignore: avoid_print
-            print('[useFeedPosts] loadInitialPosts completed, posts.value.length: ${posts.value.length}');
-            pollingController.startPolling();
-            updatePollingController.startPolling();
-          });
+      // Poll for deletions every 30 seconds (staggered to cover all posts)
+      deletionTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+        if (isMounted.value) {
+          cacheNotifier.checkForDeletionsStaggered(userId);
         }
-      } else if ((hasPublishedPost || postActionEvent != null) &&
-          userId.isNotEmpty &&
-          userId.trim().isEmpty == false) {
-        if (postActionEvent != null) {
-          switch (postActionEvent.action) {
-            case PostActionType.create:
-              // If we have a post ID, immediately fetch and add it to the feed
-              if (postActionEvent.postId != null) {
-                FeedPostsPolling.addPostImmediately(
-                  ref: ref,
-                  postId: postActionEvent.postId!,
-                  userId: userId,
-                  posts: posts,
-                  newestPostTimestamp: newestPostTimestamp,
-                  oldestPostTimestamp: oldestPostTimestamp,
-                ).then((_) {
-                  ref.read(postActionNotifierProvider.notifier).clearAction();
-
-                  if (!pollingController.isPollingActive) {
-                    pollingController.startPolling();
-                    updatePollingController.startPolling();
-                  }
-                });
-              } else {
-                // Fallback to retry mechanism if no post ID
-                FeedPostsPolling.checkForNewPostsWithRetry(
-                  ref: ref,
-                  userId: userId,
-                  posts: posts,
-                  newestPostTimestamp: newestPostTimestamp,
-                  oldestPostTimestamp: oldestPostTimestamp,
-                  newPostsCount: newPostsCount,
-                  isMounted: isMounted.value,
-                  maxRetries: 3,
-                ).then((_) {
-                  ref.read(postActionNotifierProvider.notifier).clearAction();
-
-                  if (!pollingController.isPollingActive) {
-                    pollingController.startPolling();
-                    updatePollingController.startPolling();
-                  }
-                });
-              }
-              break;
-            case PostActionType.update:
-              FeedPostsPolling.checkForPostUpdates(
-                ref: ref,
-                userId: userId,
-                posts: posts,
-              ).then((_) {
-                ref.read(postActionNotifierProvider.notifier).clearAction();
-
-                if (!pollingController.isPollingActive) {
-                  pollingController.startPolling();
-                  updatePollingController.startPolling();
-                }
-              });
-              break;
-            case PostActionType.delete:
-            case PostActionType.hide:
-            case PostActionType.report:
-              FeedPostsActions.loadInitialPosts(
-                ref: ref,
-                userId: userId,
-                isLoading: isLoading,
-                posts: posts,
-                hasNextPage: hasNextPage,
-                errorMessage: errorMessage,
-                newPostsCount: newPostsCount,
-                newestPostTimestamp: newestPostTimestamp,
-                oldestPostTimestamp: oldestPostTimestamp,
-              ).then((_) {
-                ref.read(postActionNotifierProvider.notifier).clearAction();
-
-                if (!pollingController.isPollingActive) {
-                  pollingController.startPolling();
-                  updatePollingController.startPolling();
-                }
-              });
-              break;
-          }
-        } else {
-          FeedPostsPolling.checkForNewPostsWithRetry(
-            ref: ref,
-            userId: userId,
-            posts: posts,
-            newestPostTimestamp: newestPostTimestamp,
-            oldestPostTimestamp: oldestPostTimestamp,
-            newPostsCount: newPostsCount,
-            isMounted: isMounted.value,
-            maxRetries: 3,
-          ).then((_) {
-            ref
-                .read(postPublishedNotifierProvider.notifier)
-                .clearPublishedFlag();
-
-            if (!pollingController.isPollingActive) {
-              pollingController.startPolling();
-              updatePollingController.startPolling();
-            }
-          });
-        }
-      } else if (userId.isEmpty || userId.trim().isEmpty) {
-        posts.value = [];
-        errorMessage.value = null;
-        hasNextPage.value = true;
-        newestPostTimestamp.value = null;
-        oldestPostTimestamp.value = null;
-        newPostsCount.value = 0;
-        isLoading.value = false;
-        isLoadingMore.value = false;
-
-        hasInitialized.value = false;
-        lastUserId.value = null;
-        lastTargetDate.value = null;
-        pollingController.stopPolling();
-        updatePollingController.stopPolling();
-      } else {
-        // Ensure polling is active even when no action is needed
-        if (!pollingController.isPollingActive && hasInitialized.value) {
-          pollingController.startPolling();
-          updatePollingController.startPolling();
-        }
-      }
-
-      return () {
-        isMounted.value = false;
-        // DON'T stop polling here - it's managed by the separate polling useEffect
-      };
-    },
-    [
-      userId,
-      effectiveTargetDate.millisecondsSinceEpoch,
-      postPublishedFlag?.millisecondsSinceEpoch,
-      postActionEvent?.timestamp.millisecondsSinceEpoch,
-    ],
-  );
-
-  void loadMore() {
-    if (!isLoadingMore.value &&
-        !isLoading.value &&
-        hasNextPage.value &&
-        userId.isNotEmpty &&
-        userId.trim().isNotEmpty) {
-      FeedPostsActions.loadOlderPosts(
-        ref: ref,
-        userId: userId,
-        posts: posts,
-        isLoadingMore: isLoadingMore,
-        hasNextPage: hasNextPage,
-        errorMessage: errorMessage,
-        oldestPostTimestamp: oldestPostTimestamp,
-        isLoading: isLoading,
-      );
+      });
+    } else if (userId.isEmpty || userId.trim().isEmpty) {
+      // User logged out
+      hasInitialized.value = false;
+      lastUserId.value = null;
+      isLoading.value = false;
+      errorMessage.value = null;
+      newPostsCount.value = 0;
     }
+
+    return () {
+      isMounted.value = false;
+      deletionTimer?.cancel();
+    };
+  }, [userId]);
+
+  // Handle post creation/delete/hide actions
+  useEffect(() {
+    if (postActionEvent != null && userId.isNotEmpty && isMounted.value) {
+      switch (postActionEvent.action) {
+        case PostActionType.create:
+          if (postActionEvent.postId != null) {
+            // Fetch the new post and add to cache
+            cacheNotifier.fetchAndAddPost(postActionEvent.postId!).then((added) {
+              if (!added) {
+                // Fallback: refresh to find the new post
+                cacheNotifier.refresh(userId);
+              }
+              ref.read(postActionNotifierProvider.notifier).clearAction();
+            });
+          } else {
+            cacheNotifier.refresh(userId).then((_) {
+              ref.read(postActionNotifierProvider.notifier).clearAction();
+            });
+          }
+          break;
+        case PostActionType.update:
+          // Edits don't matter for feed preview (only description changes)
+          // Post detail page refetches when opened
+          ref.read(postActionNotifierProvider.notifier).clearAction();
+          break;
+        case PostActionType.delete:
+        case PostActionType.hide:
+        case PostActionType.report:
+          if (postActionEvent.postId != null) {
+            cacheNotifier.removePost(postActionEvent.postId!);
+          }
+          ref.read(postActionNotifierProvider.notifier).clearAction();
+          break;
+      }
+    }
+    return null;
+  }, [postActionEvent?.timestamp.millisecondsSinceEpoch]);
+
+  // Handle post published flag
+  useEffect(() {
+    if (postPublishedFlag != null && userId.isNotEmpty && isMounted.value) {
+      cacheNotifier.refresh(userId).then((_) {
+        ref.read(postPublishedNotifierProvider.notifier).clearPublishedFlag();
+      });
+    }
+    return null;
+  }, [postPublishedFlag?.millisecondsSinceEpoch]);
+
+  /// Loads more posts - called when user scrolls to older posts.
+  void loadMore() {
+    if (isLoadingMore.value || isLoading.value) return;
+    if (cacheState.fullyLoaded) return;
+    if (userId.isEmpty) return;
+
+    isLoadingMore.value = true;
+
+    cacheNotifier.loadMorePostsNow(userId).then((loaded) {
+      if (isMounted.value) {
+        isLoadingMore.value = false;
+      }
+    }).catchError((error) {
+      if (isMounted.value) {
+        isLoadingMore.value = false;
+        errorMessage.value = error.toString();
+      }
+    });
   }
 
+  /// Refreshes the feed - checks for new posts.
   Future<void> refresh() async {
-    if (userId.isNotEmpty && userId.trim().isNotEmpty) {
-      await FeedPostsActions.loadInitialPosts(
-        ref: ref,
-        userId: userId,
-        isLoading: isLoading,
-        posts: posts,
-        hasNextPage: hasNextPage,
-        errorMessage: errorMessage,
-        newPostsCount: newPostsCount,
-        newestPostTimestamp: newestPostTimestamp,
-        oldestPostTimestamp: oldestPostTimestamp,
-      );
-    }
+    if (userId.isEmpty) return;
+    await cacheNotifier.refresh(userId);
+    await cacheNotifier.checkForDeletions(userId);
   }
 
   return (
-    posts: posts.value,
+    posts: posts,
     isLoading: isLoading.value,
-    isLoadingMore: isLoadingMore.value,
-    hasNextPage: hasNextPage.value,
+    isLoadingMore: isLoadingMore.value || cacheState.isPreloading,
+    hasNextPage: hasNextPage,
     newPostsCount: newPostsCount.value,
     errorMessage: errorMessage.value,
-
     loadMore: loadMore,
     refresh: refresh,
     loadNewPosts: loadNewPosts,

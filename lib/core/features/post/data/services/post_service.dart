@@ -420,23 +420,17 @@ class PostService implements PostServiceContract {
     required String postId,
     required String userId,
   }) async {
-    // Fetch current exclusions and add the new user
-    final currentPost = await supabaseClient
-        .from('posts')
-        .select('excluded_user_ids')
-        .eq('id', postId)
-        .single();
-
-    final currentExclusions = List<String>.from(
-      (currentPost['excluded_user_ids'] as List<dynamic>?) ?? [],
+    // Use atomic RPC to prevent race conditions when hiding from multiple devices
+    final result = await supabaseClient.rpc(
+      'hide_post_for_user',
+      params: {'p_post_id': postId, 'p_user_id': userId},
     );
 
-    if (!currentExclusions.contains(userId)) {
-      currentExclusions.add(userId);
-      await setPostExclusions(postId: postId, excludedUserIds: currentExclusions);
+    if (result == true) {
+      logger.info('Post $postId hidden for user $userId');
+    } else {
+      logger.info('Post $postId already hidden for user $userId (no-op)');
     }
-
-    logger.info('Post $postId hidden for user $userId');
   }
 
   Future<void> _deletePost(String postId) async {

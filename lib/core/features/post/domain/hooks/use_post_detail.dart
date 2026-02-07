@@ -9,28 +9,24 @@ typedef PostDetailResult = ({
   String? errorMessage,
 });
 
+/// Hook for loading post detail with cache-then-network strategy.
+/// Shows fallback immediately, then fetches fresh data to show edits.
 PostDetailResult usePostDetail({
   required WidgetRef ref,
   required String postId,
   FeedPostModel? fallbackPost,
 }) {
-  final post = useState<FeedPostModel?>(null);
-  final isLoading = useState<bool>(true);
+  final post = useState<FeedPostModel?>(fallbackPost);
+  final isLoading = useState<bool>(fallbackPost == null);
   final errorMessage = useState<String?>(null);
 
   useEffect(() {
-    // If we have a fallback post with matching ID, use it immediately
+    // Show fallback immediately for instant UI
     if (fallbackPost != null && fallbackPost.id == postId) {
       post.value = fallbackPost;
-      isLoading.value = false;
-      errorMessage.value = null;
-      return null;
     }
 
-    // Otherwise, load the post from the backend
-    isLoading.value = true;
-    errorMessage.value = null;
-
+    // Always fetch fresh data from server (shows edits like description changes)
     Future<void> loadPost() async {
       final result = await ref.read(getPostByIdProvider(postId: postId).future);
 
@@ -41,9 +37,11 @@ PostDetailResult usePostDetail({
         },
         (error) {
           logger.error('Failed to load post: $postId', exception: error);
-          post.value = null;
+          // Keep fallback if fetch fails
+          if (post.value == null) {
+            errorMessage.value = 'Impossibile caricare il post';
+          }
           isLoading.value = false;
-          errorMessage.value = 'Impossibile caricare il post';
         },
       );
     }
@@ -51,7 +49,7 @@ PostDetailResult usePostDetail({
     loadPost();
 
     return null;
-  }, [postId, fallbackPost]);
+  }, [postId]);
 
   return (
     post: post.value,

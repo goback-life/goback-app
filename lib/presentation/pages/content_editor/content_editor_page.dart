@@ -7,9 +7,11 @@ import 'package:cloudless/core/features/media/domain/hooks/use_image_cropper.dar
 import 'package:cloudless/core/features/media/domain/hooks/use_image_picker.dart';
 import 'package:cloudless/core/features/media/domain/hooks/use_media_picker.dart';
 import 'package:cloudless/core/features/media/domain/hooks/use_thumbnail_picker.dart';
+import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout_post_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_creation.dart';
 import 'package:cloudless/core/features/post/domain/providers/parent_post_reference_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_creation_notifier_provider.dart';
+import 'package:cloudless/presentation/pages/home/home_routable.dart';
 import 'package:cloudless/core/utilities/date_formatter.dart';
 import 'package:cloudless/core/utilities/video_thumbnail_helper.dart';
 import 'package:cloudless/presentation/components/error_view/main_error_view.dart';
@@ -30,6 +32,23 @@ class ContentEditorPage extends HookConsumerWidget
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final contentEditorData = ref.watch(postCreationNotifierProvider);
+    final pendingLockoutId = ref.watch(pendingLockoutPostProvider);
+
+    // Block direct editor access without lockout context (unless editing)
+    // This is defense-in-depth; the post creation hook also enforces this
+    final isEditing = contentEditorData.isEditing;
+    final hasLockout = pendingLockoutId != null;
+    if (!isEditing && !hasLockout) {
+      // Schedule navigation after this build frame completes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          router.go(HomeRoutable());
+        }
+      });
+      return const SizedBox.shrink();
+    }
+
     final contentCreation = usePostCreation(ref);
     final circleMembersData = useCircleMembers(ref);
     final asyncValue = ref.watch(getCircleMembersProvider);
@@ -41,8 +60,6 @@ class ContentEditorPage extends HookConsumerWidget
     final isExtractingThumbnail = useState<bool>(false);
     final pickedFramePosition = useState<Duration?>(null);
     final isMediaSelectionLoading = useState(false);
-
-    final contentEditorData = ref.watch(postCreationNotifierProvider);
 
     useLoadingOverlay(isMediaSelectionLoading, context: context);
 
