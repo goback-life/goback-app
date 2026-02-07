@@ -250,17 +250,29 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
 
     return NotificationListener<ScrollUpdateNotification>(
       onNotification: (notification) {
-        // Fallback: detect when at bottom and trying to scroll further
-        if (effectiveScrollController.hasClients && 
-            !getIsRefreshing() && 
-            !isRefreshingRef.value &&
-            !isLoading) {
+        // Debug: log scroll state occasionally
+        if (effectiveScrollController.hasClients) {
           final position = effectiveScrollController.position;
-          final isAtBottom = position.pixels <= position.minScrollExtent + 5;
+          final isAtBottom = position.pixels <= position.minScrollExtent + 20;
+          if (isAtBottom && notification.scrollDelta != null && notification.scrollDelta! < 0) {
+            // ignore: avoid_print
+            print('[HomeFeedPostsList] ScrollUpdate: pixels=${position.pixels.toStringAsFixed(1)}, min=${position.minScrollExtent.toStringAsFixed(1)}, delta=${notification.scrollDelta}, isRefreshing=${isRefreshingRef.value}, isLoading=$isLoading');
+          }
+        }
+
+        // Fallback: detect when at bottom and trying to scroll further
+        // Remove isLoading check to allow refresh during loading
+        if (effectiveScrollController.hasClients &&
+            !getIsRefreshing() &&
+            !isRefreshingRef.value) {
+          final position = effectiveScrollController.position;
+          final isAtBottom = position.pixels <= position.minScrollExtent + 20;
           // In reversed list, negative scrollDelta when at bottom means trying to pull up
-          final isTryingToPullUp = notification.scrollDelta! < -5;
-          
+          final isTryingToPullUp = notification.scrollDelta != null && notification.scrollDelta! < -2;
+
           if (isAtBottom && isTryingToPullUp) {
+            // ignore: avoid_print
+            print('[HomeFeedPostsList] Pull-to-refresh triggered via ScrollUpdateNotification');
             isRefreshingRef.value = true;
             setRefreshing(true);
             onRefresh().then((_) {
@@ -284,19 +296,28 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
       },
       child: NotificationListener<OverscrollNotification>(
         onNotification: (notification) {
+          // Debug: log overscroll
+          if (effectiveScrollController.hasClients) {
+            final position = effectiveScrollController.position;
+            // ignore: avoid_print
+            print('[HomeFeedPostsList] Overscroll: ${notification.overscroll.toStringAsFixed(1)}, pixels=${position.pixels.toStringAsFixed(1)}, min=${position.minScrollExtent.toStringAsFixed(1)}, isRefreshing=${isRefreshingRef.value}, isLoading=$isLoading');
+          }
+
           // In reverse ListView, minScrollExtent is at bottom (most recent posts)
-          if (effectiveScrollController.hasClients && 
-              !getIsRefreshing() && 
-              !isRefreshingRef.value &&
-              !isLoading) {
+          // Remove isLoading check to allow refresh during loading
+          if (effectiveScrollController.hasClients &&
+              !getIsRefreshing() &&
+              !isRefreshingRef.value) {
             final position = effectiveScrollController.position;
             // Check if we're at or very close to the bottom
             final isAtBottom = position.pixels <= position.minScrollExtent + 100;
-            
-            // When at bottom and overscrolling (trying to pull up), trigger refresh
-            // Use absolute value to catch overscroll in either direction
-            // Lower threshold to make it more sensitive
-            if (isAtBottom && notification.overscroll.abs() > 5) {
+
+            // When at bottom and overscrolling (trying to pull down in reversed list), trigger refresh
+            // In reversed ListView with BouncingScrollPhysics, NEGATIVE overscroll means
+            // trying to go below minScrollExtent (pulling down to refresh)
+            if (isAtBottom && notification.overscroll < -5) {
+              // ignore: avoid_print
+              print('[HomeFeedPostsList] Pull-to-refresh triggered via OverscrollNotification (overscroll: ${notification.overscroll})');
               isRefreshingRef.value = true;
               setRefreshing(true);
               onRefresh().then((_) {

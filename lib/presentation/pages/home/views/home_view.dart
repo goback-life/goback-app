@@ -72,11 +72,16 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
         // Check if full rebuild is needed (cold start or >6 hours since last validation)
         Future.microtask(() {
-          if (cacheNotifier.needsFullRebuild) {
+          final needsRebuild = cacheNotifier.needsFullRebuild;
+          // ignore: avoid_print
+          print('[HomeView] Checking cache: needsFullRebuild=$needsRebuild');
+          if (needsRebuild) {
             // ignore: avoid_print
             print('[HomeView] Cache needs full rebuild');
             cacheNotifier.fullCacheRebuild(userId);
           } else {
+            // ignore: avoid_print
+            print('[HomeView] Cache valid, calling preloadFeed');
             cacheNotifier.preloadFeed(userId);
           }
         });
@@ -116,13 +121,19 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     // Refresh data when app resumes from background
     // This replaces aggressive polling - data is fetched in parallel on resume
     useAppResumeRefresh(
-      onResume: () {
-        debugPrint('[HomeView] App resume refresh triggered - invalidating circle members and notifications');
+      onResume: () async {
+        debugPrint('[HomeView] App resume refresh triggered');
         // Refresh circle members (avatars fetched in parallel)
         ref.invalidate(getCircleMembersProvider);
-        // Refresh notification count
+        // Refresh notification count and feed
         if (userId != null && userId.isNotEmpty) {
           ref.invalidate(unreadNotificationCountProvider(userId: userId));
+
+          // Always refresh feed on app resume to get new/deleted posts
+          final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
+          debugPrint('[HomeView] Refreshing feed and checking deletions');
+          await cacheNotifier.refresh(userId);
+          await cacheNotifier.checkForDeletions(userId);
 
           // Check if we need to refresh signed URLs (backgrounded > 3 hours)
           final backgroundDuration =
@@ -130,12 +141,26 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
           if (backgroundDuration > const Duration(hours: 3)) {
             debugPrint(
                 '[HomeView] Backgrounded for ${backgroundDuration.inHours}h - re-enriching cached posts');
-            ref.read(feedPostsCacheProvider.notifier).reEnrichCachedPosts();
+            await cacheNotifier.reEnrichCachedPosts();
           }
         }
         lastActiveTime.value = DateTime.now();
       },
     );
+
+    // Periodic refresh for new posts while app is open (every 60 seconds)
+    useEffect(() {
+      if (userId != null && userId.isNotEmpty) {
+        final timer = Timer.periodic(const Duration(seconds: 60), (_) async {
+          debugPrint('[HomeView] Periodic refresh triggered');
+          final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
+          await cacheNotifier.refresh(userId);
+          await cacheNotifier.checkForDeletions(userId);
+        });
+        return timer.cancel;
+      }
+      return null;
+    }, [userId]);
 
     // Refresh unread notification count on app resume and with light polling (60s)
     // Push notifications will handle time-critical alerts when implemented
