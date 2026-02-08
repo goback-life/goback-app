@@ -35,7 +35,10 @@ class CalendarPostDtoToModelMapper {
       isOwnPost: dto.isOwnPost,
       publishedAt: DateTime.tryParse(dto.publishedAt) ?? DateTime.now(),
       publishedTimezone: dto.publishedTimezone,
-      calendarSavedAt: DateTime.tryParse(dto.calendarSavedAt) ?? DateTime.now(),
+      lockoutId: dto.lockoutId,
+      calendarSavedAt: dto.calendarSavedAt != null
+          ? DateTime.tryParse(dto.calendarSavedAt!)
+          : null,
     );
   }
 

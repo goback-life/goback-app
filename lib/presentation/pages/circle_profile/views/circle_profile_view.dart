@@ -5,7 +5,6 @@ import 'package:cloudless/presentation/components/profile_description.dart';
 import 'package:cloudless/presentation/components/profile_image/profile_image.dart';
 import 'package:cloudless/presentation/components/username_field.dart';
 import 'package:cloudless/presentation/pages/circle_profile/circle_profile_layout.dart';
-import 'package:cloudless/presentation/pages/circle_profile/components/call_friend_button.dart';
 import 'package:cloudless/presentation/pages/profile/components/calendar_section/profile_calendar.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -72,8 +71,6 @@ class CircleProfileView extends HookConsumerWidget
                 ),
                 child: ProfileDescription(profileId: userId),
               ),
-              SizedBox(height: verticalSpacing),
-              CallFriendButton(phoneNumber: profileToUse.phoneNumber),
               SizedBox(height: buttonToCalendar),
             ],
           );

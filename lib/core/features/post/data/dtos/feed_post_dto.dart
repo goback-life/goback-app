@@ -39,6 +39,8 @@ sealed class FeedPostDto with _$FeedPostDto {
     @JsonKey(name: 'calendar_saved_at') String? calendarSavedAt,
     String? description,
     @JsonKey(name: 'link_previews') Map<String, dynamic>? linkPreviews,
+    @JsonKey(name: 'reaction_count') int? reactionCount,
+    @JsonKey(name: 'comment_count') int? commentCount,
   }) = _FeedPostDto;
 
   factory FeedPostDto.fromJson(Map<String, dynamic> json) =>

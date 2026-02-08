@@ -18,22 +18,22 @@ class CommentService implements CommentServiceContract {
     DateTime? cursor,
   }) async {
     try {
-      var query = supabase
+      var filterQuery = supabase
           .from('post_comments')
           .select('''
             id, post_id, author_id, content, created_at, deleted_at,
             profiles!author_id (username, avatar_url)
           ''')
           .eq('post_id', postId)
-          .isFilter('deleted_at', null)
-          .order('created_at', ascending: true)
-          .limit(limit);
+          .isFilter('deleted_at', null);
 
       if (cursor != null) {
-        query = query.gt('created_at', cursor.toIso8601String());
+        filterQuery = filterQuery.gt('created_at', cursor.toIso8601String());
       }
 
-      final response = await query;
+      final response = await filterQuery
+          .order('created_at', ascending: true)
+          .limit(limit);
 
       final comments = (response as List).map((json) {
         final data = json as Map<String, dynamic>;

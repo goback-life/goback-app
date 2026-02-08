@@ -140,4 +140,26 @@ mixin PostDetailLayout on MainLayout {
   double get replyPreviewHeight => 80.0;
   double get replyPreviewBorderRadius => 6.0;
   double get replyPreviewSpacing => 12.0;
+
+  // Comments
+  double get commentCounterSpacing => 8.0;
+  double get commentIconSize => 14.0;
+  double get commentAvatarSize => 32.0;
+  double get commentItemSpacing => 12.0;
+  double get commentContentSpacing => 8.0;
+  double get commentInputMaxHeight => 100.0;
+  double get commentMaxLength => 250;
+  double get commentDeleteIconSize => 16.0;
+
+  // Comments List Modal
+  double get commentsListMaxHeightRatio => 0.75;
+  double get commentsListTopPadding => 14.0;
+  double get commentsListHandleWidth => 50.0;
+  double get commentsListHandleHeight => 5.0;
+  double get commentsListHandleRadius => 100.0;
+  double get commentsListHandleToContent => 24.0;
+  double get commentsListHorizontalPadding => 16.0;
+  double get commentsListBottomPadding => 16.0;
+  double get commentsListBorderRadius => 12.0;
+  double get commentsListInputPadding => 12.0;
 }

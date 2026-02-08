@@ -20,8 +20,6 @@ sealed class CalendarPostDto with _$CalendarPostDto {
     @JsonKey(name: 'is_own_post') required bool isOwnPost,
     @JsonKey(name: 'published_at') required String publishedAt,
     @JsonKey(name: 'published_timezone') required String publishedTimezone,
-    /// When the post was saved to calendar
-    @JsonKey(name: 'calendar_saved_at') required String calendarSavedAt,
     @JsonKey(name: 'author_avatar_url') String? authorAvatarUrl,
     @JsonKey(name: 'thumbnail_url') String? thumbnailUrl,
     String? description,
@@ -30,6 +28,10 @@ sealed class CalendarPostDto with _$CalendarPostDto {
     @JsonKey(name: 'tagged_user_ids') String? taggedUserIds,
     /// Excluded user IDs as UUID[] array
     @JsonKey(name: 'excluded_user_ids') List<String>? excludedUserIds,
+    /// The lockout session ID this post was created from
+    @JsonKey(name: 'lockout_id') String? lockoutId,
+    /// When the post was saved to calendar (legacy, now optional)
+    @JsonKey(name: 'calendar_saved_at') String? calendarSavedAt,
   }) = _CalendarPostDto;
 
   factory CalendarPostDto.fromJson(Map<String, dynamic> json) =>

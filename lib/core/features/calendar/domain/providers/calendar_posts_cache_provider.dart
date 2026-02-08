@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'calendar_posts_cache_provider.g.dart';
 
 /// Cache provider for calendar posts to avoid redundant database calls.
-/// Maintains a list of all calendar posts for the current user's selected month.
+/// Maintains a list of all lockout posts for the current user's selected month.
 /// This cache is shared across the app (calendar view, post detail, etc.).
 @Riverpod(keepAlive: true)
 class CalendarPostsCache extends _$CalendarPostsCache {
@@ -41,11 +41,11 @@ class CalendarPostsCache extends _$CalendarPostsCache {
     state = [...state, ...uniqueNewPosts];
   }
 
-  /// Gets the calendar date for a specific post if it exists in the calendar.
+  /// Gets the published date for a specific post if it exists in the calendar.
   /// Returns null if the post is not in the calendar.
   DateTime? getPostCalendarDate(String postId) {
     try {
-      return state.firstWhere((post) => post.postId == postId).calendarSavedAt;
+      return state.firstWhere((post) => post.postId == postId).publishedAt;
     } catch (e) {
       return null;
     }
@@ -53,20 +53,20 @@ class CalendarPostsCache extends _$CalendarPostsCache {
 
   /// Adds a single post to the cache optimistically (without DB reload).
   /// If a post already exists for the same date, it will be replaced.
-  /// This is useful for optimistic UI updates after adding a post to calendar.
+  /// This is useful for optimistic UI updates after creating a lockout post.
   void addPostOptimistically(CalendarPostModel post) {
     // Remove any existing post for the same date (max 1 post per day)
     final postDate = DateTime(
-      post.calendarSavedAt.year,
-      post.calendarSavedAt.month,
-      post.calendarSavedAt.day,
+      post.publishedAt.year,
+      post.publishedAt.month,
+      post.publishedAt.day,
     );
 
     final filtered = state.where((p) {
       final pDate = DateTime(
-        p.calendarSavedAt.year,
-        p.calendarSavedAt.month,
-        p.calendarSavedAt.day,
+        p.publishedAt.year,
+        p.publishedAt.month,
+        p.publishedAt.day,
       );
       return !pDate.isAtSameMomentAs(postDate);
     }).toList();
@@ -76,7 +76,7 @@ class CalendarPostsCache extends _$CalendarPostsCache {
   }
 
   /// Removes a single post from the cache optimistically (without DB reload).
-  /// This is useful for optimistic UI updates after removing a post from calendar.
+  /// This is useful for optimistic UI updates after removing a post.
   void removePostOptimistically(String postId) {
     state = state.where((post) => post.postId != postId).toList();
   }
@@ -91,17 +91,17 @@ class CalendarPostsCache extends _$CalendarPostsCache {
   /// Gets the current cached user ID.
   String? get currentUserId => _currentUserId;
 
-  /// Gets all posts sorted by calendar date in ascending order.
+  /// Gets all posts sorted by published date in ascending order.
   List<CalendarPostModel> getSortedPosts() {
     final sorted = List<CalendarPostModel>.from(state)
-      ..sort((a, b) => a.calendarSavedAt.compareTo(b.calendarSavedAt));
+      ..sort((a, b) => a.publishedAt.compareTo(b.publishedAt));
     return sorted;
   }
 
-  /// Gets all posts sorted by calendar date for a specific author.
+  /// Gets all posts sorted by published date for a specific author.
   List<CalendarPostModel> getSortedPostsByAuthor(String authorId) {
     final filtered = state.where((post) => post.authorId == authorId).toList()
-      ..sort((a, b) => a.calendarSavedAt.compareTo(b.calendarSavedAt));
+      ..sort((a, b) => a.publishedAt.compareTo(b.publishedAt));
     return filtered;
   }
 
@@ -119,9 +119,9 @@ class CalendarPostsCache extends _$CalendarPostsCache {
 
     for (final post in sorted) {
       final postDate = DateTime(
-        post.calendarSavedAt.year,
-        post.calendarSavedAt.month,
-        post.calendarSavedAt.day,
+        post.publishedAt.year,
+        post.publishedAt.month,
+        post.publishedAt.day,
       );
       if (postDate.isAfter(normalizedDate)) {
         return post;
@@ -145,9 +145,9 @@ class CalendarPostsCache extends _$CalendarPostsCache {
     for (var i = sorted.length - 1; i >= 0; i--) {
       final post = sorted[i];
       final postDate = DateTime(
-        post.calendarSavedAt.year,
-        post.calendarSavedAt.month,
-        post.calendarSavedAt.day,
+        post.publishedAt.year,
+        post.publishedAt.month,
+        post.publishedAt.day,
       );
       if (postDate.isBefore(normalizedDate)) {
         return post;
@@ -174,9 +174,9 @@ class CalendarPostsCache extends _$CalendarPostsCache {
 
     final currentIndex = sorted.indexWhere((post) {
       final postDate = DateTime(
-        post.calendarSavedAt.year,
-        post.calendarSavedAt.month,
-        post.calendarSavedAt.day,
+        post.publishedAt.year,
+        post.publishedAt.month,
+        post.publishedAt.day,
       );
       return postDate.isAtSameMomentAs(normalizedDate);
     });
@@ -210,9 +210,9 @@ class CalendarPostsCache extends _$CalendarPostsCache {
 
     final currentIndex = sorted.indexWhere((post) {
       final postDate = DateTime(
-        post.calendarSavedAt.year,
-        post.calendarSavedAt.month,
-        post.calendarSavedAt.day,
+        post.publishedAt.year,
+        post.publishedAt.month,
+        post.publishedAt.day,
       );
       return postDate.isAtSameMomentAs(normalizedDate);
     });

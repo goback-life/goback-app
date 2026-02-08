@@ -193,7 +193,7 @@ class ProfileCalendar extends HookConsumerWidget
 
     final postsByDay = <String, CalendarPostModel>{};
     for (final post in calendarCache) {
-      final postDate = post.calendarSavedAt;
+      final postDate = post.publishedAt;
       if ((postDate.isAfter(firstVisibleDay) ||
               postDate.isAtSameMomentAs(firstVisibleDay)) &&
           (postDate.isBefore(lastVisibleDay) ||
@@ -265,7 +265,7 @@ class ProfileCalendar extends HookConsumerWidget
           final postsByDay = <String, CalendarPostModel>{};
           for (final post in posts) {
             final dateKey =
-                '${post.calendarSavedAt.year}-${post.calendarSavedAt.month.toString().padLeft(2, '0')}-${post.calendarSavedAt.day.toString().padLeft(2, '0')}';
+                '${post.publishedAt.year}-${post.publishedAt.month.toString().padLeft(2, '0')}-${post.publishedAt.day.toString().padLeft(2, '0')}';
             postsByDay[dateKey] = post;
           }
           calendarPostsByDay.value = postsByDay;
@@ -320,13 +320,13 @@ class ProfileCalendar extends HookConsumerWidget
       isAuthorConnected: post.isAuthorConnected,
       publishedAt: post.publishedAt,
       publishedTimezone: post.publishedTimezone,
-      calendarSavedAt: post.calendarSavedAt,
+      calendarSavedAt: post.publishedAt,
     );
 
     await PostDetailPage.showFromCalendar(
       context,
       post: feedPost,
-      headerDate: post.calendarSavedAt,
+      headerDate: post.publishedAt,
       calendarUserId: userId,
     );
 

@@ -1,0 +1,2769 @@
+
+ ▐▛███▜▌   Claude Code v2.1.22
+▝▜█████▛▘  Opus 4.5 · Claude Max
+  ▘▘ ▝▝    ~\Documents\GitHub\main\goback-app
+
+❯ /clear 
+  ⎿  (no content)
+
+❯ /taches-cc-resources:create-plan 
+  ⎿  Interrupted · What should Claude do instead?
+
+❯ /taches-cc-resources:create-plan You are working inside a repository 
+containing the code for a social network called goback. The overall aim of this 
+project is to create a system of social media that is designed to align with 
+human neurochemistry, rather than exploit it. Examples of this are features like
+ limiting the size of a user's network to 150 users as this is the resolution 
+beyond which social ties begin to become less meaningful. The premise is that we
+ evolved to socialise in a certain way, and social interaction online is not 
+build to enhance this, or with this in mind at all. 
+
+You will be making changes to this repository that will help us transform our 
+prototype into a scalable product. All the development 'best practice' you need 
+has been added to the @CLAUDE.md file, but I would like to emphasize one thing: 
+you are building a platform that is satisfying to use above all, it should be 
+designed emotionally, appear instanteneous, and feel personal. Take inspiration 
+from products like twitter that load weblinks in the background before they are 
+clicked on so that the user experiences instant responsiveness. With this in 
+mind, we prioritise instant rresponse over computational robustness - show the 
+user what they want and then do the computation, so be optimistic about the 
+computation suceeding.
+
+with this in mind, I would like you to plan out the development of the prompt 
+found in /prompts under 005, profile calendar updates. 
+  ⎿  Read CLAUDE.md (260 lines)
+
+● Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● I've read the prompt file. Now I'll launch Explore agents to understand the
+  current codebase structure for the profile feature, calendar implementation,
+  and lockout functionality.
+
+● 3 Explore agents finished (ctrl+o to expand)
+   ├─ Explore profile feature structure · 24 tool uses · 45.3k tokens
+   │  ⎿  Done
+   ├─ Explore lockout feature and weekly stats · 33 tool uses · 52.7k tokens
+   │  ⎿  Done
+   └─ Explore profile UI and presentation · 21 tool uses · 34.9k tokens
+      ⎿  Done
+
+● I have comprehensive information from the exploration. Now I'll launch a Plan
+  agent to design the implementation approach.
+
+● Plan(Design calendar refactor plan)
+  ⎿  Done (32 tool uses · 68.1k tokens · 12m 23s)
+
+● Excellent. Now I'll read the critical files to verify the plan and then write
+  the final plan document.
+
+● Read 3 files (ctrl+o to expand)
+
+● I now have a complete picture. The current calendar service has the sequential
+   N+1 URL signing issue (lines 34-82 show the for loop). Let me also check the
+  existing RPC function and the DTO structure, then write the final plan.
+
+● Read 2 files (ctrl+o to expand)
+
+● Now I have all the information needed. Let me write the final plan document.
+
+● Updated plan
+  ⎿  /plan to preview
+
+● I have written the complete plan. Before requesting approval, I have a few
+  clarifying questions about the requirements.
+
+● User answered Claude's questions:
+  ⎿  · The prompt mentions weekly lockout stats should display on profile. 
+     The current implementation already shows weeklyLockoutMinutes from the 
+     profile model. Should I create any additional use cases or providers 
+     for this, or is the current implementation sufficient? → Current is 
+     sufficient
+
+     · The current calendar can show posts from other users (friends). 
+     Should the lockout calendar also support viewing friends' lockout 
+     history, or should it only show the current user's own lockout posts? →
+      My profile should only show my lockout posts and history, but if I 
+     view another user's profile, I should see theirs so long as they are in
+      my circle (friend)
+
+● Good - I have the answers. The weekly stats are already sufficient, and the
+  calendar should support both own profile (own posts) and friend profiles
+  (their posts). This matches my current plan. Let me update the plan to make
+  this explicit.
+
+● Updated plan
+  ⎿  /plan to preview
+
+● Updated plan
+  ⎿  /plan to preview
+
+● The plan is complete with clarifications incorporated. The plan covers:
+
+  1. Database migration - New RPC get_user_lockout_calendar that queries posts
+  by lockout_id IS NOT NULL
+  2. Calendar refactor - Switch from "saved posts" to "lockout posts", with
+  batch URL signing for performance
+  3. Model updates - Add lockoutId, make calendarSavedAt optional, use
+  publishedAt for date grouping
+  4. Remove save/unsave - Delete 4 files (use cases and providers) no longer
+  needed
+  5. Remove call feature - Delete 2 files and update circle_profile_view.dart
+  6. Weekly stats - Confirmed current implementation is sufficient (no changes
+  needed)
+
+● User approved Claude's plan
+  ⎿  Plan saved to: ~\.claude\plans\hidden-mixing-wall.md · /plan to edit
+     Phase 5: Profile Calendar Updates - Implementation Plan
+
+     Goal
+
+     Refactor the calendar to show lockout history (not saved posts), ensure
+      weekly lockout stats display works, and remove the call function.
+     Focus on data layer only - UI changes are Phase 6.
+
+     Non-Goals
+
+     - No UI changes (Phase 6)
+     - Do not implement new stats visualizations
+     - Do not change profile CRUD operations
+     - Do not modify lockout session creation/joining
+     - Do not create new weekly stats use case (current profile model with
+     weeklyLockoutMinutes is sufficient)
+
+     Summary of Changes
+     Category: Calendar RPC
+     Action: Create get_user_lockout_calendar to query posts by lockout_id 
+     IS NOT 
+       NULL
+     ────────────────────────────────────────
+     Category: Calendar Service
+     Action: Switch RPC call, add batch URL signing for performance
+     ────────────────────────────────────────
+     Category: Calendar Models
+     Action: Add lockoutId field, make calendarSavedAt optional
+     ────────────────────────────────────────
+     Category: Calendar Cache
+     Action: Change date grouping from calendarSavedAt to publishedAt
+     ────────────────────────────────────────
+     Category: Save/Unsave
+     Action: Remove add/remove calendar use cases and providers
+     ────────────────────────────────────────
+     Category: Call Feature
+     Action: Delete call button component and hook
+     ---
+     Tasks
+
+     Task 1: Create Database Migration
+
+     File: db/migrations/005_lockout_calendar.sql
+
+     Create RPC function get_user_lockout_calendar(p_target_user_id UUID, 
+     p_year INT, p_month INT):
+     - Returns posts where lockout_id IS NOT NULL
+     - Filters by year/month based on published_at timezone-aware
+     - Includes friendship check for viewing others' calendars
+     - Returns same columns as current get_user_calendar plus lockout_id
+
+     Key query filter:
+     WHERE p.author_id = p_target_user_id
+       AND p.lockout_id IS NOT NULL
+       AND EXTRACT(YEAR FROM p.published_at AT TIME ZONE 
+     COALESCE(p.published_timezone, 'UTC')) = p_year
+       AND EXTRACT(MONTH FROM p.published_at AT TIME ZONE 
+     COALESCE(p.published_timezone, 'UTC')) = p_month
+
+     Calendar visibility:
+     - Own profile: Shows user's own lockout posts
+     - Friend profile: Shows that friend's lockout posts (friendship check
+     required)
+
+     ---
+     Task 2: Update Calendar DTO
+
+     File: lib/core/features/calendar/data/dtos/calendar_post_dto.dart
+
+     Changes:
+     - Add: @JsonKey(name: 'lockout_id') String? lockoutId
+     - Change: calendarSavedAt from required to optional (String?)
+
+     ---
+     Task 3: Update Calendar Model
+
+     File: lib/core/features/calendar/domain/models/calendar_post_model.dart
+
+     Changes:
+     - Add: String? lockoutId
+     - Change: calendarSavedAt from required DateTime to DateTime?
+
+     ---
+     Task 4: Update Calendar Mapper
+
+     File: lib/core/features/calendar/data/mappers/calendar_post_dto_to_mode
+     l_mapper.dart
+
+     Changes:
+     - Map lockoutId from DTO to model
+     - Handle nullable calendarSavedAt
+
+     ---
+     Task 5: Refactor Calendar Service (CRITICAL - Performance Fix)
+
+     File: lib/core/features/calendar/data/services/calendar_service.dart
+
+     Changes:
+
+     1. Switch RPC call from get_user_calendar to get_user_lockout_calendar
+     2. Batch URL signing - Replace sequential for-loop (lines 34-82) with 
+     parallel processing:
+
+     // Collect all URL signing futures
+     final urlFutures = response.map((json) async {
+       final postJson = json as Map<String, dynamic>;
+       final authorId = postJson['author_id'] as String;
+
+       // Start all URL fetches in parallel
+       final avatarFuture = _getAvatarUrl(authorId);
+       final thumbnailFuture = _getThumbnailUrl(postJson['thumbnail_url']);
+       final videoFuture = _getVideoUrl(postJson['video_url']);
+
+       final urls = await Future.wait([avatarFuture, thumbnailFuture,
+     videoFuture]);
+
+       postJson['author_avatar_url'] = urls[0];
+       postJson['thumbnail_url'] = urls[1];
+       postJson['video_url'] = urls[2];
+
+       return CalendarPostDto.fromJson(postJson);
+     });
+
+     final posts = await Future.wait(urlFutures);
+
+     3. Remove methods:
+       - addPostToCalendar (lines 168-182)
+       - removePostFromCalendar (lines 184-205)
+
+     ---
+     Task 6: Update Calendar Service Contract
+
+     File: lib/core/features/calendar/domain/contracts/calendar_service_cont
+     ract.dart
+
+     Changes:
+     - Remove addPostToCalendar method signature
+     - Remove removePostFromCalendar method signature
+
+     ---
+     Task 7: Update Calendar Cache Provider
+
+     File: lib/core/features/calendar/domain/providers/calendar_posts_cache_
+     provider.dart
+
+     Changes to use publishedAt instead of calendarSavedAt:
+
+     - getPostCalendarDate (line 46-51): Return publishedAt instead of 
+     calendarSavedAt
+     - addPostOptimistically (lines 57-76): Use publishedAt for date 
+     comparisons
+     - getSortedPosts (lines 95-99): Sort by publishedAt
+     - getSortedPostsByAuthor (lines 102-106): Sort by publishedAt
+     - getNextPost / getPreviousPost / isNearEnd / isNearBeginning: Use
+     publishedAt for date comparisons
+
+     ---
+     Task 8: Delete Save/Unsave Use Cases and Providers
+
+     Files to delete:
+     - lib/core/features/calendar/domain/use_cases/add_post_to_calendar_use_
+     case.dart
+     - lib/core/features/calendar/domain/use_cases/remove_post_from_calendar
+     _use_case.dart
+     - lib/core/features/calendar/domain/providers/add_post_to_calendar_prov
+     ider.dart
+     - lib/core/features/calendar/domain/providers/remove_post_from_calendar
+     _provider.dart
+
+     ---
+     Task 9: Remove Call Feature Files
+
+     Files to delete:
+     - lib/presentation/pages/circle_profile/components/call_friend_button.d
+     art
+     - lib/presentation/pages/circle_profile/hooks/use_call_launch.dart
+
+     File to update (this is a UI file but the import removal is necessary):
+     - lib/presentation/pages/circle_profile/views/circle_profile_view.dart
+       - Remove line 8: import '...call_friend_button.dart'
+       - Remove line 76: CallFriendButton(phoneNumber: 
+     profileToUse.phoneNumber),
+
+     ---
+     Files Summary
+
+     New Files (1)
+
+
+     ┌────────────────────────────────────────┬──────────────────────────┐
+     │                  File                  │         Purpose          │
+     ├────────────────────────────────────────┼──────────────────────────┤
+     │ db/migrations/005_lockout_calendar.sql │ RPC for lockout calendar │
+     └────────────────────────────────────────┴──────────────────────────┘
+     Modified Files (7)
+     File: lib/core/features/calendar/data/dtos/calendar_post_dto.dart
+     Changes: Add lockoutId, optional calendarSavedAt
+     ────────────────────────────────────────
+     File: lib/core/features/calendar/domain/models/calendar_post_model.dart
+     Changes: Add lockoutId, optional calendarSavedAt
+     ────────────────────────────────────────
+     File: lib/core/features/calendar/data/mappers/calendar_post_dto_to_mode
+     l_mapper.dart
+     Changes: Map new fields
+     ────────────────────────────────────────
+     File: lib/core/features/calendar/data/services/calendar_service.dart
+     Changes: New RPC, batch URLs, remove save/unsave
+     ────────────────────────────────────────
+     File: lib/core/features/calendar/domain/contracts/calendar_service_cont
+     ract.dart
+     Changes: Remove save/unsave contract
+     ────────────────────────────────────────
+     File: lib/core/features/calendar/domain/providers/calendar_posts_cache_
+     provider.dart
+     Changes: Use publishedAt for dates
+     ────────────────────────────────────────
+     File:
+     lib/presentation/pages/circle_profile/views/circle_profile_view.dart
+     Changes: Remove CallFriendButton import and usage
+
+     Deleted Files (6)
+     File: lib/core/features/calendar/domain/use_cases/add_post_to_calendar_
+     use_case.dart
+     Reason: No longer needed
+     ────────────────────────────────────────
+     File: lib/core/features/calendar/domain/use_cases/remove_post_from_cale
+     ndar_use_case.dart
+     Reason: No longer needed
+     ────────────────────────────────────────
+     File: lib/core/features/calendar/domain/providers/add_post_to_calendar_
+     provider.dart
+     Reason: No longer needed
+     ────────────────────────────────────────
+     File: lib/core/features/calendar/domain/providers/remove_post_from_cale
+     ndar_provider.dart
+     Reason: No longer needed
+     ────────────────────────────────────────
+     File: lib/presentation/pages/circle_profile/components/call_friend_butt
+     on.dart
+     Reason: Removing call feature
+     ────────────────────────────────────────
+     File: lib/presentation/pages/circle_profile/hooks/use_call_launch.dart
+     Reason: Removing call feature
+     ---
+     Verification
+
+     1. Database migration applies cleanly - Run migration in stage
+     environment
+     2. RPC returns correct data - Query should return only posts with
+     lockout_id IS NOT NULL
+     3. Calendar loads with batch URL signing - Should be significantly
+     faster (< 5 seconds vs 337 seconds)
+     4. Calendar displays lockout posts by published date - Posts grouped by
+      published_at
+     5. Call button removed - Circle profile no longer shows call option
+     6. Build succeeds - fvm flutter analyze passes (user must run)
+     7. Existing profile features work - Profile CRUD, avatar upload,
+     username editing
+
+     ---
+     Phase 6 Preview (UI - Not This Phase)
+
+     After this phase, Phase 6 will handle:
+     - Update profile_calendar.dart to use publishedAt for day indicators
+     - Update any remaining UI references to "saved posts"
+     - Calendar grid visual refinements
+     - Weekly stats formatting improvements
+
+● I'll start implementing the plan. Let me create tasks and begin with the
+  database migration.
+
+● Read 1 file (ctrl+o to expand)
+
+● Let me look at the existing get_user_calendar RPC to understand its structure.
+
+● Searched for 2 patterns (ctrl+o to expand)
+
+● I have a good understanding of the existing RPC. Now let me also check the DTO
+   mapper to understand how to properly update it.
+
+● Read 1 file (ctrl+o to expand)
+
+● Now I have all the information I need. Let me create the database migration
+  first.
+
+● Write(db\migrations\005_lockout_calendar.sql)
+  ⎿  Wrote 1 lines to db\migrations\005_lockout_calendar.sql
+       1 -- =============================================================
+         ===============
+       2 -- MIGRATION 005: Lockout Calendar RPC
+       3 -- =============================================================
+         ===============
+       4 -- Replaces get_user_calendar (saved posts) with get_user_lockou
+         t_calendar
+       5 -- Shows posts where lockout_id IS NOT NULL instead of calendar_
+         saved_at IS NOT NULL
+       6 -- =============================================================
+         ===============
+       7 
+       8 -- -------------------------------------------------------------
+         ---------------
+       9 -- get_user_lockout_calendar - View user's lockout posts by mont
+         h
+      10 -- -------------------------------------------------------------
+         ---------------
+
+● Update(lib\core\features\calendar\data\dtos\calendar_post_dto.dart)
+  ⎿  Added 4 lines, removed 2 lines
+      20      @JsonKey(name: 'is_own_post') required bool isOwnPost,
+      21      @JsonKey(name: 'published_at') required String publishedAt,
+      22      @JsonKey(name: 'published_timezone') required String publis
+          hedTimezone,
+      23 -    /// When the post was saved to calendar                    
+      24 -    @JsonKey(name: 'calendar_saved_at') required String calenda
+         -rSavedAt,                                                      
+      23      @JsonKey(name: 'author_avatar_url') String? authorAvatarUrl
+          ,
+      24      @JsonKey(name: 'thumbnail_url') String? thumbnailUrl,
+      25      String? description,
+     ...
+      28      @JsonKey(name: 'tagged_user_ids') String? taggedUserIds,
+      29      /// Excluded user IDs as UUID[] array
+      30      @JsonKey(name: 'excluded_user_ids') List<String>? excludedU
+          serIds,
+      31 +    /// The lockout session ID this post was created from      
+      32 +    @JsonKey(name: 'lockout_id') String? lockoutId,            
+      33 +    /// When the post was saved to calendar (legacy, now option
+         +al)                                                            
+      34 +    @JsonKey(name: 'calendar_saved_at') String? calendarSavedAt
+         +,                                                              
+      35    }) = _CalendarPostDto;
+      36  
+      37    factory CalendarPostDto.fromJson(Map<String, dynamic> json) =
+          >
+
+● Update(lib\core\features\calendar\domain\models\calendar_post_model.dart)
+  ⎿  Added 4 lines, removed 2 lines
+      21      required bool isOwnPost,
+      22      required DateTime publishedAt,
+      23      required String publishedTimezone,
+      24 -    /// When this post was saved to calendar                   
+      25 -    required DateTime calendarSavedAt,                         
+      24      String? authorAvatarUrl,
+      25      String? thumbnailUrl,
+      26      String? description,
+      27      String? videoUrl,
+      28 +    /// The lockout session ID this post was created from      
+      29 +    String? lockoutId,                                         
+      30 +    /// When this post was saved to calendar (legacy, now optio
+         +nal)                                                           
+      31 +    DateTime? calendarSavedAt,                                 
+      32    }) = _CalendarPostModel;
+      33  }
+
+● Update(lib\core\features\calendar\data\mappers\calendar_post_dto_to_model_mapp
+        er.dart)
+  ⎿  Added 4 lines, removed 1 line
+      35        isOwnPost: dto.isOwnPost,
+      36        publishedAt: DateTime.tryParse(dto.publishedAt) ?? DateTi
+          me.now(),
+      37        publishedTimezone: dto.publishedTimezone,
+      38 -      calendarSavedAt: DateTime.tryParse(dto.calendarSavedAt) ?
+         -? DateTime.now(),                                              
+      38 +      lockoutId: dto.lockoutId,                                
+      39 +      calendarSavedAt: dto.calendarSavedAt != null             
+      40 +          ? DateTime.tryParse(dto.calendarSavedAt!)            
+      41 +          : null,                                              
+      42      );
+      43    }
+      44  
+
+● Now let me refactor the Calendar Service with the new RPC and batch URL
+  signing.
+
+● Read 1 file (ctrl+o to expand)
+
+● Write(lib\core\features\calendar\data\services\calendar_service.dart)
+  ⎿  Added 105 lines, removed 206 lines
+        1 -import 'package:cloudless/core/features/calendar/data/dtos/cal
+          -endar_operation_response_dto.dart';                          
+        2 -import 'package:cloudless/core/features/calendar/data/dtos/cal
+          -endar_post_dto.dart';                                        
+        3 -import 'package:cloudless/core/features/calendar/domain/contra
+          -cts/calendar_service_contract.dart';                         
+        4 -import 'package:cloudless/core/features/storage/data/providers
+          -/signed_url_provider.dart';                                  
+        5 -import 'package:cloudless/core/features/supabase/utilities/sup
+          -abase_buckets.dart';                                         
+        6 -import 'package:dedecube_core/dedecube_core.dart';           
+        7 -import 'package:dedecube_startup/dedecube_startup.dart';     
+        8 -import 'package:supabase_flutter/supabase_flutter.dart';     
+        9 -                                                             
+       10 -class CalendarService implements CalendarServiceContract {   
+       11 -  const CalendarService({required this.supabaseClient, require
+          -d this.ref});                                                
+       12 -                                                             
+       13 -  final SupabaseClient supabaseClient;                       
+       14 -  final Ref ref;                                             
+       15 -                                                             
+       16 -  @override                                                  
+       17 -  Future<List<CalendarPostDto>> getCalendarPosts({           
+       18 -    required String userId,                                  
+       19 -    required int year,                                       
+       20 -    required int month,                                      
+       21 -  }) async {                                                 
+       22 -    final response = await supabaseClient.rpc(               
+       23 -      'get_user_calendar',                                   
+       24 -      params: {                                              
+       25 -        'target_user_id': userId,                            
+       26 -        'p_year': year,                                      
+       27 -        'p_month': month,                                    
+       28 -      },                                                     
+       29 -    );                                                       
+       30 -                                                             
+       31 -    if (response is List) {                                  
+       32 -      final posts = <CalendarPostDto>[];                     
+       33 -                                                             
+       34 -      for (final json in response) {                         
+       35 -        final postJson = json as Map<String, dynamic>;       
+       36 -        final authorId = postJson['author_id'] as String;    
+       37 -                                                             
+       38 -        // Fetch avatar URL from storage                     
+       39 -        String? avatarUrl;                                   
+       40 -        try {                                                
+       41 -          avatarUrl = await ref.read(                        
+       42 -            signedUrlProvider(SupabaseBuckets.avatars, authorI
+          -d).future,                                                   
+       43 -          );                                                 
+       44 -        } on StorageException catch (_) {                    
+       45 -          avatarUrl = null;                                  
+       46 -        }                                                    
+       47 -                                                             
+       48 -        postJson['author_avatar_url'] = avatarUrl;           
+       49 -                                                             
+       50 -        final thumbnailUrl = postJson['thumbnail_url'] as Stri
+          -ng?;                                                         
+       51 -        if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
+          -                                                              
+       52 -          try {                                              
+       53 -            final signedThumbnailUrl = await ref.read(       
+       54 -              signedUrlProvider(SupabaseBuckets.postMedia, thu
+          -mbnailUrl).future,                                           
+       55 -            );                                               
+       56 -            postJson['thumbnail_url'] = signedThumbnailUrl;  
+       57 -          } catch (e) {                                      
+       58 -            logger.error(                                    
+       59 -              'Error getting signed URL for thumbnail: $thumbn
+          -ailUrl',                                                     
+       60 -              exception: e,                                  
+       61 -            );                                               
+       62 -            postJson['thumbnail_url'] = null;                
+       63 -          }                                                  
+       64 -        }                                                    
+       65 -                                                             
+       66 -        final videoUrl = postJson['video_url'] as String?;   
+       67 -        if (videoUrl != null && videoUrl.isNotEmpty) {       
+       68 -          try {                                              
+       69 -            final signedVideoUrl = await ref.read(           
+       70 -              signedUrlProvider(SupabaseBuckets.postMedia, vid
+          -eoUrl).future,                                               
+       71 -            );                                               
+       72 -            postJson['video_url'] = signedVideoUrl;          
+       73 -          } catch (e) {                                      
+       74 -            logger.error(                                    
+       75 -              'Error getting signed URL for video: $videoUrl',
+          -                                                              
+       76 -              exception: e,                                  
+       77 -            );                                               
+       78 -            postJson['video_url'] = null;                    
+       79 -          }                                                  
+       80 -        }                                                    
+       81 -                                                             
+       82 -        posts.add(CalendarPostDto.fromJson(postJson));       
+       83 -      }                                                      
+       84 -                                                             
+       85 -      return posts;                                          
+       86 -    }                                                        
+       87 -                                                             
+       88 -    return [];                                               
+       89 -  }                                                          
+       90 -                                                             
+       91 -  /// Gets a friend's calendar posts for a given month.      
+       92 -  Future<List<CalendarPostDto>> getFriendCalendarPosts({     
+       93 -    required String friendId,                                
+       94 -    required int year,                                       
+       95 -    required int month,                                      
+       96 -  }) async {                                                 
+       97 -    final response = await supabaseClient.rpc(               
+       98 -      'get_user_calendar',                                   
+       99 -      params: {                                              
+      100 -        'target_user_id': friendId,                          
+      101 -        'p_year': year,                                      
+      102 -        'p_month': month,                                    
+      103 -      },                                                     
+      104 -    );                                                       
+      105 -                                                             
+      106 -    if (response is List) {                                  
+      107 -      final posts = <CalendarPostDto>[];                     
+      108 -                                                             
+      109 -      for (final json in response) {                         
+      110 -        final postJson = json as Map<String, dynamic>;       
+      111 -        final authorId = postJson['author_id'] as String;    
+      112 -                                                             
+      113 -        // Avatar URL now comes directly from profile        
+      114 -        String? avatarUrl = postJson['author_avatar_url'] as S
+          -tring?;                                                      
+      115 -        if (avatarUrl == null || avatarUrl.isEmpty) {        
+      116 -          try {                                              
+      117 -            avatarUrl = await ref.read(                      
+      118 -              signedUrlProvider(SupabaseBuckets.avatars, autho
+          -rId).future,                                                 
+      119 -            );                                               
+      120 -          } on StorageException catch (_) {                  
+      121 -            avatarUrl = null;                                
+      122 -          }                                                  
+      123 -          postJson['author_avatar_url'] = avatarUrl;         
+      124 -        }                                                    
+      125 -                                                             
+      126 -        final thumbnailUrl = postJson['thumbnail_url'] as Stri
+          -ng?;                                                         
+      127 -        if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
+          -                                                              
+      128 -          try {                                              
+      129 -            final signedThumbnailUrl = await ref.read(       
+      130 -              signedUrlProvider(SupabaseBuckets.postMedia, thu
+          -mbnailUrl).future,                                           
+      131 -            );                                               
+      132 -            postJson['thumbnail_url'] = signedThumbnailUrl;  
+      133 -          } catch (e) {                                      
+      134 -            logger.error(                                    
+      135 -              'Error getting signed URL for thumbnail: $thumbn
+          -ailUrl',                                                     
+      136 -              exception: e,                                  
+      137 -            );                                               
+      138 -            postJson['thumbnail_url'] = null;                
+      139 -          }                                                  
+      140 -        }                                                    
+      141 -                                                             
+      142 -        final videoUrl = postJson['video_url'] as String?;   
+      143 -        if (videoUrl != null && videoUrl.isNotEmpty) {       
+      144 -          try {                                              
+      145 -            final signedVideoUrl = await ref.read(           
+      146 -              signedUrlProvider(SupabaseBuckets.postMedia, vid
+          -eoUrl).future,                                               
+      147 -            );                                               
+      148 -            postJson['video_url'] = signedVideoUrl;          
+      149 -          } catch (e) {                                      
+      150 -            logger.error(                                    
+      151 -              'Error getting signed URL for video: $videoUrl',
+          -                                                              
+      152 -              exception: e,                                  
+      153 -            );                                               
+      154 -            postJson['video_url'] = null;                    
+      155 -          }                                                  
+      156 -        }                                                    
+      157 -                                                             
+      158 -        posts.add(CalendarPostDto.fromJson(postJson));       
+      159 -      }                                                      
+      160 -                                                             
+      161 -      return posts;                                          
+      162 -    }                                                        
+      163 -                                                             
+      164 -    return [];                                               
+      165 -  }                                                          
+      166 -                                                             
+      167 -  @override                                                  
+      168 -  Future<CalendarOperationResponseDto> addPostToCalendar({   
+      169 -    required String postId,                                  
+      170 -  }) async {                                                 
+      171 -    final response = await supabaseClient.rpc(               
+      172 -      'save_post_to_calendar',                               
+      173 -      params: {'p_post_id': postId},                         
+      174 -    );                                                       
+      175 -                                                             
+      176 -    if (response is Map<String, dynamic>) {                  
+      177 -      return CalendarOperationResponseDto.fromJson(response);
+      178 -    }                                                        
+      179 -                                                             
+      180 -    // If response is null or not a map, treat as success (voi
+          -d return from RPC)                                           
+      181 -    return const CalendarOperationResponseDto(success: true);
+      182 -  }                                                          
+      183 -                                                             
+      184 -  @override                                                  
+      185 -  Future<CalendarOperationResponseDto> removePostFromCalendar(
+          -{                                                            
+      186 -    required String postId,                                  
+      187 -  }) async {                                                 
+      188 -    // Clear the calendar_saved_at field                     
+      189 -    try {                                                    
+      190 -      await supabaseClient                                   
+      191 -          .from('posts')                                     
+      192 -          .update({'calendar_saved_at': null})               
+      193 -          .eq('id', postId);                                 
+      194 -                                                             
+      195 -      return const CalendarOperationResponseDto(success: true)
+          -;                                                            
+      196 -    } catch (e) {                                            
+      197 -      logger.error(                                          
+      198 -        'CalendarService.removePostFromCalendar - Error: $e',
+      199 -      );                                                     
+      200 -      return CalendarOperationResponseDto(                   
+      201 -        success: false,                                      
+      202 -        error: e.toString(),                                 
+      203 -      );                                                     
+      204 -    }                                                        
+      205 -  }                                                          
+      206 -}                                                            
+        1 +import 'package:cloudless/core/features/calendar/data/dtos/cal
+          +endar_post_dto.dart';                                         
+        2 +import 'package:cloudless/core/features/calendar/domain/contra
+          +cts/calendar_service_contract.dart';                          
+        3 +import 'package:cloudless/core/features/storage/data/providers
+          +/signed_url_provider.dart';                                   
+        4 +import 'package:cloudless/core/features/supabase/utilities/sup
+          +abase_buckets.dart';                                          
+        5 +import 'package:dedecube_core/dedecube_core.dart';            
+        6 +import 'package:dedecube_startup/dedecube_startup.dart';      
+        7 +import 'package:supabase_flutter/supabase_flutter.dart';      
+        8 +                                                              
+        9 +class CalendarService implements CalendarServiceContract {    
+       10 +  const CalendarService({required this.supabaseClient, require
+          +d this.ref});                                                 
+       11 +                                                              
+       12 +  final SupabaseClient supabaseClient;                        
+       13 +  final Ref ref;                                              
+       14 +                                                              
+       15 +  @override                                                   
+       16 +  Future<List<CalendarPostDto>> getCalendarPosts({            
+       17 +    required String userId,                                   
+       18 +    required int year,                                        
+       19 +    required int month,                                       
+       20 +  }) async {                                                  
+       21 +    final response = await supabaseClient.rpc(                
+       22 +      'get_user_lockout_calendar',                            
+       23 +      params: {                                               
+       24 +        'p_target_user_id': userId,                           
+       25 +        'p_year': year,                                       
+       26 +        'p_month': month,                                     
+       27 +      },                                                      
+       28 +    );                                                        
+       29 +                                                              
+       30 +    if (response is! List || response.isEmpty) {              
+       31 +      return [];                                              
+       32 +    }                                                         
+       33 +                                                              
+       34 +    // Process all posts in parallel for better performance   
+       35 +    final postFutures = response.map((json) async {           
+       36 +      final postJson = Map<String, dynamic>.from(json as Map<S
+          +tring, dynamic>);                                             
+       37 +      await _enrichPostWithSignedUrls(postJson);              
+       38 +      return CalendarPostDto.fromJson(postJson);              
+       39 +    });                                                       
+       40 +                                                              
+       41 +    return Future.wait(postFutures);                          
+       42 +  }                                                           
+       43 +                                                              
+       44 +  /// Gets a friend's calendar posts for a given month.       
+       45 +  Future<List<CalendarPostDto>> getFriendCalendarPosts({      
+       46 +    required String friendId,                                 
+       47 +    required int year,                                        
+       48 +    required int month,                                       
+       49 +  }) async {                                                  
+       50 +    // Use the same RPC - it handles friendship check internal
+          +ly                                                            
+       51 +    return getCalendarPosts(userId: friendId, year: year, mont
+          +h: month);                                                    
+       52 +  }                                                           
+       53 +                                                              
+       54 +  /// Enriches a post JSON with signed URLs for avatar, thumbn
+          +ail, and video.                                               
+       55 +  Future<void> _enrichPostWithSignedUrls(Map<String, dynamic> 
+          +postJson) async {                                             
+       56 +    final authorId = postJson['author_id'] as String;         
+       57 +    final thumbnailUrl = postJson['thumbnail_url'] as String?;
+       58 +    final videoUrl = postJson['video_url'] as String?;        
+       59 +                                                              
+       60 +    // Start all URL fetches in parallel                      
+       61 +    final futures = <Future<void>>[];                         
+       62 +                                                              
+       63 +    // Avatar URL                                             
+       64 +    futures.add(_fetchAvatarUrl(authorId).then((url) {        
+       65 +      postJson['author_avatar_url'] = url;                    
+       66 +    }));                                                      
+       67 +                                                              
+       68 +    // Thumbnail URL                                          
+       69 +    if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {    
+       70 +      futures.add(_fetchMediaUrl(thumbnailUrl).then((url) {   
+       71 +        postJson['thumbnail_url'] = url;                      
+       72 +      }));                                                    
+       73 +    }                                                         
+       74 +                                                              
+       75 +    // Video URL                                              
+       76 +    if (videoUrl != null && videoUrl.isNotEmpty) {            
+       77 +      futures.add(_fetchMediaUrl(videoUrl).then((url) {       
+       78 +        postJson['video_url'] = url;                          
+       79 +      }));                                                    
+       80 +    }                                                         
+       81 +                                                              
+       82 +    await Future.wait(futures);                               
+       83 +  }                                                           
+       84 +                                                              
+       85 +  Future<String?> _fetchAvatarUrl(String authorId) async {    
+       86 +    try {                                                     
+       87 +      return await ref.read(                                  
+       88 +        signedUrlProvider(SupabaseBuckets.avatars, authorId).f
+          +uture,                                                        
+       89 +      );                                                      
+       90 +    } on StorageException catch (_) {                         
+       91 +      return null;                                            
+       92 +    }                                                         
+       93 +  }                                                           
+       94 +                                                              
+       95 +  Future<String?> _fetchMediaUrl(String path) async {         
+       96 +    try {                                                     
+       97 +      return await ref.read(                                  
+       98 +        signedUrlProvider(SupabaseBuckets.postMedia, path).fut
+          +ure,                                                          
+       99 +      );                                                      
+      100 +    } catch (e) {                                             
+      101 +      logger.error('Error getting signed URL for media: $path'
+          +, exception: e);                                              
+      102 +      return null;                                            
+      103 +    }                                                         
+      104 +  }                                                           
+      105 +}                                                             
+
+● Read 1 file (ctrl+o to expand)
+
+● Write(lib\core\features\calendar\domain\contracts\calendar_service_contract.da
+       rt)
+  ⎿  Added 29 lines, removed 45 lines
+       1 -import 'package:cloudless/core/features/calendar/data/dtos/cale
+         -ndar_operation_response_dto.dart';                            
+       2 -import 'package:cloudless/core/features/calendar/data/dtos/cale
+         -ndar_post_dto.dart';                                          
+       3 -                                                              
+       4 -abstract class CalendarServiceContract {                      
+       5 -  /// Retrieves calendar posts for a specific user for a given 
+         -month.                                                        
+       6 -  ///                                                         
+       7 -  /// [userId] - The ID of the user whose calendar to query.  
+       8 -  /// [year] - The year to query.                             
+       9 -  /// [month] - The month to query (1-12).                    
+      10 -  ///                                                         
+      11 -  /// Returns a list of posts saved to calendar for that month.
+         -                                                               
+      12 -  Future<List<CalendarPostDto>> getCalendarPosts({            
+      13 -    required String userId,                                   
+      14 -    required int year,                                        
+      15 -    required int month,                                       
+      16 -  });                                                         
+      17 -                                                              
+      18 -  /// Retrieves calendar posts for a friend for a given month.
+      19 -  ///                                                         
+      20 -  /// [friendId] - The ID of the friend whose calendar to view.
+         -                                                               
+      21 -  /// [year] - The year to query.                             
+      22 -  /// [month] - The month to query (1-12).                    
+      23 -  ///                                                         
+      24 -  /// Returns a list of posts saved to calendar for that month.
+         -                                                               
+      25 -  Future<List<CalendarPostDto>> getFriendCalendarPosts({      
+      26 -    required String friendId,                                 
+      27 -    required int year,                                        
+      28 -    required int month,                                       
+      29 -  });                                                         
+      30 -                                                              
+      31 -  /// Saves a post to the user's calendar.                    
+      32 -  ///                                                         
+      33 -  /// Sets the calendar_saved_at timestamp on the post.       
+      34 -  /// Only the post author can save their own posts.          
+      35 -  Future<CalendarOperationResponseDto> addPostToCalendar({    
+      36 -    required String postId,                                   
+      37 -  });                                                         
+      38 -                                                              
+      39 -  /// Removes a post from the user's calendar.                
+      40 -  ///                                                         
+      41 -  /// Clears the calendar_saved_at timestamp on the post.     
+      42 -  Future<CalendarOperationResponseDto> removePostFromCalendar({
+         -                                                               
+      43 -    required String postId,                                   
+      44 -  });                                                         
+      45 -}                                                             
+       1 +import 'package:cloudless/core/features/calendar/data/dtos/cale
+         +ndar_post_dto.dart';                                           
+       2 +                                                               
+       3 +abstract class CalendarServiceContract {                       
+       4 +  /// Retrieves lockout calendar posts for a specific user for 
+         +a given month.                                                 
+       5 +  ///                                                          
+       6 +  /// [userId] - The ID of the user whose calendar to query.   
+       7 +  /// [year] - The year to query.                              
+       8 +  /// [month] - The month to query (1-12).                     
+       9 +  ///                                                          
+      10 +  /// Returns a list of lockout posts for that month.          
+      11 +  Future<List<CalendarPostDto>> getCalendarPosts({             
+      12 +    required String userId,                                    
+      13 +    required int year,                                         
+      14 +    required int month,                                        
+      15 +  });                                                          
+      16 +                                                               
+      17 +  /// Retrieves lockout calendar posts for a friend for a given
+         + month.                                                        
+      18 +  ///                                                          
+      19 +  /// [friendId] - The ID of the friend whose calendar to view.
+      20 +  /// [year] - The year to query.                              
+      21 +  /// [month] - The month to query (1-12).                     
+      22 +  ///                                                          
+      23 +  /// Returns a list of lockout posts for that month.          
+      24 +  Future<List<CalendarPostDto>> getFriendCalendarPosts({       
+      25 +    required String friendId,                                  
+      26 +    required int year,                                         
+      27 +    required int month,                                        
+      28 +  });                                                          
+      29 +}                                                              
+
+● Now let me update the calendar cache provider to use publishedAt instead of
+  calendarSavedAt.
+
+● Read 1 file (ctrl+o to expand)
+
+● Write(lib\core\features\calendar\domain\providers\calendar_posts_cache_provide
+       r.dart)
+  ⎿  Added 226 lines, removed 226 lines
+        1 -import 'package:cloudless/core/features/calendar/domain/models
+          -/calendar_post_model.dart';                                  
+        2 -import 'package:riverpod_annotation/riverpod_annotation.dart';
+          -                                                              
+        3 -                                                             
+        4 -part 'calendar_posts_cache_provider.g.dart';                 
+        5 -                                                             
+        6 -/// Cache provider for calendar posts to avoid redundant datab
+          -ase calls.                                                   
+        7 -/// Maintains a list of all calendar posts for the current use
+          -r's selected month.                                          
+        8 -/// This cache is shared across the app (calendar view, post d
+          -etail, etc.).                                                
+        9 -@Riverpod(keepAlive: true)                                   
+       10 -class CalendarPostsCache extends _$CalendarPostsCache {      
+       11 -  String? _currentUserId;                                    
+       12 -                                                             
+       13 -  @override                                                  
+       14 -  List<CalendarPostModel> build() => [];                     
+       15 -                                                             
+       16 -  /// Updates the cache with a new list of calendar posts for 
+          -a specific user.                                             
+       17 -  /// If the userId changes, the cache is automatically cleare
+          -d first.                                                     
+       18 -  void updateCache(List<CalendarPostModel> posts, {required St
+          -ring userId}) {                                              
+       19 -    // Clear cache if user changed                           
+       20 -    if (_currentUserId != null && _currentUserId != userId) {
+       21 -      state = [];                                            
+       22 -      _currentUserId = userId;                               
+       23 -    }                                                        
+       24 -                                                             
+       25 -    // Update current user if not set                        
+       26 -    _currentUserId ??= userId;                               
+       27 -                                                             
+       28 -    // Update the state with new posts                       
+       29 -    state = posts;                                           
+       30 -  }                                                          
+       31 -                                                             
+       32 -  /// Appends posts to the cache without clearing existing pos
+          -ts.                                                          
+       33 -  /// Useful for incremental loading (e.g., loading 10 more po
+          -sts).                                                        
+       34 -  /// Duplicates are automatically removed based on post ID. 
+       35 -  void appendPosts(List<CalendarPostModel> newPosts) {       
+       36 -    final existingIds = state.map((p) => p.postId).toSet();  
+       37 -    final uniqueNewPosts = newPosts                          
+       38 -        .where((p) => !existingIds.contains(p.postId))       
+       39 -        .toList();                                           
+       40 -                                                             
+       41 -    state = [...state, ...uniqueNewPosts];                   
+       42 -  }                                                          
+       43 -                                                             
+       44 -  /// Gets the calendar date for a specific post if it exists 
+          -in the calendar.                                             
+       45 -  /// Returns null if the post is not in the calendar.       
+       46 -  DateTime? getPostCalendarDate(String postId) {             
+       47 -    try {                                                    
+       48 -      return state.firstWhere((post) => post.postId == postId)
+          -.calendarSavedAt;                                            
+       49 -    } catch (e) {                                            
+       50 -      return null;                                           
+       51 -    }                                                        
+       52 -  }                                                          
+       53 -                                                             
+       54 -  /// Adds a single post to the cache optimistically (without 
+          -DB reload).                                                  
+       55 -  /// If a post already exists for the same date, it will be r
+          -eplaced.                                                     
+       56 -  /// This is useful for optimistic UI updates after adding a 
+          -post to calendar.                                            
+       57 -  void addPostOptimistically(CalendarPostModel post) {       
+       58 -    // Remove any existing post for the same date (max 1 post 
+          -per day)                                                     
+       59 -    final postDate = DateTime(                               
+       60 -      post.calendarSavedAt.year,                             
+       61 -      post.calendarSavedAt.month,                            
+       62 -      post.calendarSavedAt.day,                              
+       63 -    );                                                       
+       64 -                                                             
+       65 -    final filtered = state.where((p) {                       
+       66 -      final pDate = DateTime(                                
+       67 -        p.calendarSavedAt.year,                              
+       68 -        p.calendarSavedAt.month,                             
+       69 -        p.calendarSavedAt.day,                               
+       70 -      );                                                     
+       71 -      return !pDate.isAtSameMomentAs(postDate);              
+       72 -    }).toList();                                             
+       73 -                                                             
+       74 -    // Add the new post                                      
+       75 -    state = [...filtered, post];                             
+       76 -  }                                                          
+       77 -                                                             
+       78 -  /// Removes a single post from the cache optimistically (wit
+          -hout DB reload).                                             
+       79 -  /// This is useful for optimistic UI updates after removing 
+          -a post from calendar.                                        
+       80 -  void removePostOptimistically(String postId) {             
+       81 -    state = state.where((post) => post.postId != postId).toLis
+          -t();                                                         
+       82 -  }                                                          
+       83 -                                                             
+       84 -  /// Clears the cache.                                      
+       85 -  /// Useful when switching between months or users.         
+       86 -  void clearCache() {                                        
+       87 -    _currentUserId = null;                                   
+       88 -    state = [];                                              
+       89 -  }                                                          
+       90 -                                                             
+       91 -  /// Gets the current cached user ID.                       
+       92 -  String? get currentUserId => _currentUserId;               
+       93 -                                                             
+       94 -  /// Gets all posts sorted by calendar date in ascending orde
+          -r.                                                           
+       95 -  List<CalendarPostModel> getSortedPosts() {                 
+       96 -    final sorted = List<CalendarPostModel>.from(state)       
+       97 -      ..sort((a, b) => a.calendarSavedAt.compareTo(b.calendarS
+          -avedAt));                                                    
+       98 -    return sorted;                                           
+       99 -  }                                                          
+      100 -                                                             
+      101 -  /// Gets all posts sorted by calendar date for a specific au
+          -thor.                                                        
+      102 -  List<CalendarPostModel> getSortedPostsByAuthor(String author
+          -Id) {                                                        
+      103 -    final filtered = state.where((post) => post.authorId == au
+          -thorId).toList()                                             
+      104 -      ..sort((a, b) => a.calendarSavedAt.compareTo(b.calendarS
+          -avedAt));                                                    
+      105 -    return filtered;                                         
+      106 -  }                                                          
+      107 -                                                             
+      108 -  /// Finds the next post after the given date.              
+      109 -  /// Returns null if there's no next post.                  
+      110 -  CalendarPostModel? getNextPost(DateTime currentDate, {String
+          -? authorId}) {                                               
+      111 -    final sorted = authorId != null                          
+      112 -        ? getSortedPostsByAuthor(authorId)                   
+      113 -        : getSortedPosts();                                  
+      114 -    final normalizedDate = DateTime(                         
+      115 -      currentDate.year,                                      
+      116 -      currentDate.month,                                     
+      117 -      currentDate.day,                                       
+      118 -    );                                                       
+      119 -                                                             
+      120 -    for (final post in sorted) {                             
+      121 -      final postDate = DateTime(                             
+      122 -        post.calendarSavedAt.year,                           
+      123 -        post.calendarSavedAt.month,                          
+      124 -        post.calendarSavedAt.day,                            
+      125 -      );                                                     
+      126 -      if (postDate.isAfter(normalizedDate)) {                
+      127 -        return post;                                         
+      128 -      }                                                      
+      129 -    }                                                        
+      130 -    return null;                                             
+      131 -  }                                                          
+      132 -                                                             
+      133 -  /// Finds the previous post before the given date.         
+      134 -  /// Returns null if there's no previous post.              
+      135 -  CalendarPostModel? getPreviousPost(DateTime currentDate, {St
+          -ring? authorId}) {                                           
+      136 -    final sorted = authorId != null                          
+      137 -        ? getSortedPostsByAuthor(authorId)                   
+      138 -        : getSortedPosts();                                  
+      139 -    final normalizedDate = DateTime(                         
+      140 -      currentDate.year,                                      
+      141 -      currentDate.month,                                     
+      142 -      currentDate.day,                                       
+      143 -    );                                                       
+      144 -                                                             
+      145 -    for (var i = sorted.length - 1; i >= 0; i--) {           
+      146 -      final post = sorted[i];                                
+      147 -      final postDate = DateTime(                             
+      148 -        post.calendarSavedAt.year,                           
+      149 -        post.calendarSavedAt.month,                          
+      150 -        post.calendarSavedAt.day,                            
+      151 -      );                                                     
+      152 -      if (postDate.isBefore(normalizedDate)) {               
+      153 -        return post;                                         
+      154 -      }                                                      
+      155 -    }                                                        
+      156 -    return null;                                             
+      157 -  }                                                          
+      158 -                                                             
+      159 -  /// Checks if the current post is near the end of the cached
+          - posts for navigation.                                       
+      160 -  /// Returns true if the post is within the last [threshold] 
+          -posts (default: 3).                                          
+      161 -  bool isNearEnd(DateTime currentDate, {String? authorId, int 
+          -threshold = 3}) {                                            
+      162 -    final sorted = authorId != null                          
+      163 -        ? getSortedPostsByAuthor(authorId)                   
+      164 -        : getSortedPosts();                                  
+      165 -    if (sorted.isEmpty || sorted.length <= threshold) {      
+      166 -      return false;                                          
+      167 -    }                                                        
+      168 -                                                             
+      169 -    final normalizedDate = DateTime(                         
+      170 -      currentDate.year,                                      
+      171 -      currentDate.month,                                     
+      172 -      currentDate.day,                                       
+      173 -    );                                                       
+      174 -                                                             
+      175 -    final currentIndex = sorted.indexWhere((post) {          
+      176 -      final postDate = DateTime(                             
+      177 -        post.calendarSavedAt.year,                           
+      178 -        post.calendarSavedAt.month,                          
+      179 -        post.calendarSavedAt.day,                            
+      180 -      );                                                     
+      181 -      return postDate.isAtSameMomentAs(normalizedDate);      
+      182 -    });                                                      
+      183 -                                                             
+      184 -    if (currentIndex == -1) {                                
+      185 -      return false;                                          
+      186 -    }                                                        
+      187 -                                                             
+      188 -    return currentIndex >= sorted.length - threshold;        
+      189 -  }                                                          
+      190 -                                                             
+      191 -  /// Checks if the current post is near the beginning of the 
+          -cached posts for navigation.                                 
+      192 -  /// Returns true if the post is within the first [threshold]
+          - posts (default: 3).                                         
+      193 -  bool isNearBeginning(                                      
+      194 -    DateTime currentDate, {                                  
+      195 -    String? authorId,                                        
+      196 -    int threshold = 3,                                       
+      197 -  }) {                                                       
+      198 -    final sorted = authorId != null                          
+      199 -        ? getSortedPostsByAuthor(authorId)                   
+      200 -        : getSortedPosts();                                  
+      201 -    if (sorted.isEmpty || sorted.length <= threshold) {      
+      202 -      return false;                                          
+      203 -    }                                                        
+      204 -                                                             
+      205 -    final normalizedDate = DateTime(                         
+      206 -      currentDate.year,                                      
+      207 -      currentDate.month,                                     
+      208 -      currentDate.day,                                       
+      209 -    );                                                       
+      210 -                                                             
+      211 -    final currentIndex = sorted.indexWhere((post) {          
+      212 -      final postDate = DateTime(                             
+      213 -        post.calendarSavedAt.year,                           
+      214 -        post.calendarSavedAt.month,                          
+      215 -        post.calendarSavedAt.day,                            
+      216 -      );                                                     
+      217 -      return postDate.isAtSameMomentAs(normalizedDate);      
+      218 -    });                                                      
+      219 -                                                             
+      220 -    if (currentIndex == -1) {                                
+      221 -      return false;                                          
+      222 -    }                                                        
+      223 -                                                             
+      224 -    return currentIndex < threshold;                         
+      225 -  }                                                          
+      226 -}                                                            
+        1 +import 'package:cloudless/core/features/calendar/domain/models
+          +/calendar_post_model.dart';                                   
+        2 +import 'package:riverpod_annotation/riverpod_annotation.dart';
+        3 +                                                              
+        4 +part 'calendar_posts_cache_provider.g.dart';                  
+        5 +                                                              
+        6 +/// Cache provider for calendar posts to avoid redundant datab
+          +ase calls.                                                    
+        7 +/// Maintains a list of all lockout posts for the current user
+          +'s selected month.                                            
+        8 +/// This cache is shared across the app (calendar view, post d
+          +etail, etc.).                                                 
+        9 +@Riverpod(keepAlive: true)                                    
+       10 +class CalendarPostsCache extends _$CalendarPostsCache {       
+       11 +  String? _currentUserId;                                     
+       12 +                                                              
+       13 +  @override                                                   
+       14 +  List<CalendarPostModel> build() => [];                      
+       15 +                                                              
+       16 +  /// Updates the cache with a new list of calendar posts for 
+          +a specific user.                                              
+       17 +  /// If the userId changes, the cache is automatically cleare
+          +d first.                                                      
+       18 +  void updateCache(List<CalendarPostModel> posts, {required St
+          +ring userId}) {                                               
+       19 +    // Clear cache if user changed                            
+       20 +    if (_currentUserId != null && _currentUserId != userId) { 
+       21 +      state = [];                                             
+       22 +      _currentUserId = userId;                                
+       23 +    }                                                         
+       24 +                                                              
+       25 +    // Update current user if not set                         
+       26 +    _currentUserId ??= userId;                                
+       27 +                                                              
+       28 +    // Update the state with new posts                        
+       29 +    state = posts;                                            
+       30 +  }                                                           
+       31 +                                                              
+       32 +  /// Appends posts to the cache without clearing existing pos
+          +ts.                                                           
+       33 +  /// Useful for incremental loading (e.g., loading 10 more po
+          +sts).                                                         
+       34 +  /// Duplicates are automatically removed based on post ID.  
+       35 +  void appendPosts(List<CalendarPostModel> newPosts) {        
+       36 +    final existingIds = state.map((p) => p.postId).toSet();   
+       37 +    final uniqueNewPosts = newPosts                           
+       38 +        .where((p) => !existingIds.contains(p.postId))        
+       39 +        .toList();                                            
+       40 +                                                              
+       41 +    state = [...state, ...uniqueNewPosts];                    
+       42 +  }                                                           
+       43 +                                                              
+       44 +  /// Gets the published date for a specific post if it exists
+          + in the calendar.                                             
+       45 +  /// Returns null if the post is not in the calendar.        
+       46 +  DateTime? getPostCalendarDate(String postId) {              
+       47 +    try {                                                     
+       48 +      return state.firstWhere((post) => post.postId == postId)
+          +.publishedAt;                                                 
+       49 +    } catch (e) {                                             
+       50 +      return null;                                            
+       51 +    }                                                         
+       52 +  }                                                           
+       53 +                                                              
+       54 +  /// Adds a single post to the cache optimistically (without 
+          +DB reload).                                                   
+       55 +  /// If a post already exists for the same date, it will be r
+          +eplaced.                                                      
+       56 +  /// This is useful for optimistic UI updates after creating 
+          +a lockout post.                                               
+       57 +  void addPostOptimistically(CalendarPostModel post) {        
+       58 +    // Remove any existing post for the same date (max 1 post 
+          +per day)                                                      
+       59 +    final postDate = DateTime(                                
+       60 +      post.publishedAt.year,                                  
+       61 +      post.publishedAt.month,                                 
+       62 +      post.publishedAt.day,                                   
+       63 +    );                                                        
+       64 +                                                              
+       65 +    final filtered = state.where((p) {                        
+       66 +      final pDate = DateTime(                                 
+       67 +        p.publishedAt.year,                                   
+       68 +        p.publishedAt.month,                                  
+       69 +        p.publishedAt.day,                                    
+       70 +      );                                                      
+       71 +      return !pDate.isAtSameMomentAs(postDate);               
+       72 +    }).toList();                                              
+       73 +                                                              
+       74 +    // Add the new post                                       
+       75 +    state = [...filtered, post];                              
+       76 +  }                                                           
+       77 +                                                              
+       78 +  /// Removes a single post from the cache optimistically (wit
+          +hout DB reload).                                              
+       79 +  /// This is useful for optimistic UI updates after removing 
+          +a post.                                                       
+       80 +  void removePostOptimistically(String postId) {              
+       81 +    state = state.where((post) => post.postId != postId).toLis
+          +t();                                                          
+       82 +  }                                                           
+       83 +                                                              
+       84 +  /// Clears the cache.                                       
+       85 +  /// Useful when switching between months or users.          
+       86 +  void clearCache() {                                         
+       87 +    _currentUserId = null;                                    
+       88 +    state = [];                                               
+       89 +  }                                                           
+       90 +                                                              
+       91 +  /// Gets the current cached user ID.                        
+       92 +  String? get currentUserId => _currentUserId;                
+       93 +                                                              
+       94 +  /// Gets all posts sorted by published date in ascending ord
+          +er.                                                           
+       95 +  List<CalendarPostModel> getSortedPosts() {                  
+       96 +    final sorted = List<CalendarPostModel>.from(state)        
+       97 +      ..sort((a, b) => a.publishedAt.compareTo(b.publishedAt))
+          +;                                                             
+       98 +    return sorted;                                            
+       99 +  }                                                           
+      100 +                                                              
+      101 +  /// Gets all posts sorted by published date for a specific a
+          +uthor.                                                        
+      102 +  List<CalendarPostModel> getSortedPostsByAuthor(String author
+          +Id) {                                                         
+      103 +    final filtered = state.where((post) => post.authorId == au
+          +thorId).toList()                                              
+      104 +      ..sort((a, b) => a.publishedAt.compareTo(b.publishedAt))
+          +;                                                             
+      105 +    return filtered;                                          
+      106 +  }                                                           
+      107 +                                                              
+      108 +  /// Finds the next post after the given date.               
+      109 +  /// Returns null if there's no next post.                   
+      110 +  CalendarPostModel? getNextPost(DateTime currentDate, {String
+          +? authorId}) {                                                
+      111 +    final sorted = authorId != null                           
+      112 +        ? getSortedPostsByAuthor(authorId)                    
+      113 +        : getSortedPosts();                                   
+      114 +    final normalizedDate = DateTime(                          
+      115 +      currentDate.year,                                       
+      116 +      currentDate.month,                                      
+      117 +      currentDate.day,                                        
+      118 +    );                                                        
+      119 +                                                              
+      120 +    for (final post in sorted) {                              
+      121 +      final postDate = DateTime(                              
+      122 +        post.publishedAt.year,                                
+      123 +        post.publishedAt.month,                               
+      124 +        post.publishedAt.day,                                 
+      125 +      );                                                      
+      126 +      if (postDate.isAfter(normalizedDate)) {                 
+      127 +        return post;                                          
+      128 +      }                                                       
+      129 +    }                                                         
+      130 +    return null;                                              
+      131 +  }                                                           
+      132 +                                                              
+      133 +  /// Finds the previous post before the given date.          
+      134 +  /// Returns null if there's no previous post.               
+      135 +  CalendarPostModel? getPreviousPost(DateTime currentDate, {St
+          +ring? authorId}) {                                            
+      136 +    final sorted = authorId != null                           
+      137 +        ? getSortedPostsByAuthor(authorId)                    
+      138 +        : getSortedPosts();                                   
+      139 +    final normalizedDate = DateTime(                          
+      140 +      currentDate.year,                                       
+      141 +      currentDate.month,                                      
+      142 +      currentDate.day,                                        
+      143 +    );                                                        
+      144 +                                                              
+      145 +    for (var i = sorted.length - 1; i >= 0; i--) {            
+      146 +      final post = sorted[i];                                 
+      147 +      final postDate = DateTime(                              
+      148 +        post.publishedAt.year,                                
+      149 +        post.publishedAt.month,                               
+      150 +        post.publishedAt.day,                                 
+      151 +      );                                                      
+      152 +      if (postDate.isBefore(normalizedDate)) {                
+      153 +        return post;                                          
+      154 +      }                                                       
+      155 +    }                                                         
+      156 +    return null;                                              
+      157 +  }                                                           
+      158 +                                                              
+      159 +  /// Checks if the current post is near the end of the cached
+          + posts for navigation.                                        
+      160 +  /// Returns true if the post is within the last [threshold] 
+          +posts (default: 3).                                           
+      161 +  bool isNearEnd(DateTime currentDate, {String? authorId, int 
+          +threshold = 3}) {                                             
+      162 +    final sorted = authorId != null                           
+      163 +        ? getSortedPostsByAuthor(authorId)                    
+      164 +        : getSortedPosts();                                   
+      165 +    if (sorted.isEmpty || sorted.length <= threshold) {       
+      166 +      return false;                                           
+      167 +    }                                                         
+      168 +                                                              
+      169 +    final normalizedDate = DateTime(                          
+      170 +      currentDate.year,                                       
+      171 +      currentDate.month,                                      
+      172 +      currentDate.day,                                        
+      173 +    );                                                        
+      174 +                                                              
+      175 +    final currentIndex = sorted.indexWhere((post) {           
+      176 +      final postDate = DateTime(                              
+      177 +        post.publishedAt.year,                                
+      178 +        post.publishedAt.month,                               
+      179 +        post.publishedAt.day,                                 
+      180 +      );                                                      
+      181 +      return postDate.isAtSameMomentAs(normalizedDate);       
+      182 +    });                                                       
+      183 +                                                              
+      184 +    if (currentIndex == -1) {                                 
+      185 +      return false;                                           
+      186 +    }                                                         
+      187 +                                                              
+      188 +    return currentIndex >= sorted.length - threshold;         
+      189 +  }                                                           
+      190 +                                                              
+      191 +  /// Checks if the current post is near the beginning of the 
+          +cached posts for navigation.                                  
+      192 +  /// Returns true if the post is within the first [threshold]
+          + posts (default: 3).                                          
+      193 +  bool isNearBeginning(                                       
+      194 +    DateTime currentDate, {                                   
+      195 +    String? authorId,                                         
+      196 +    int threshold = 3,                                        
+      197 +  }) {                                                        
+      198 +    final sorted = authorId != null                           
+      199 +        ? getSortedPostsByAuthor(authorId)                    
+      200 +        : getSortedPosts();                                   
+      201 +    if (sorted.isEmpty || sorted.length <= threshold) {       
+      202 +      return false;                                           
+      203 +    }                                                         
+      204 +                                                              
+      205 +    final normalizedDate = DateTime(                          
+      206 +      currentDate.year,                                       
+      207 +      currentDate.month,                                      
+      208 +      currentDate.day,                                        
+      209 +    );                                                        
+      210 +                                                              
+      211 +    final currentIndex = sorted.indexWhere((post) {           
+      212 +      final postDate = DateTime(                              
+      213 +        post.publishedAt.year,                                
+      214 +        post.publishedAt.month,                               
+      215 +        post.publishedAt.day,                                 
+      216 +      );                                                      
+      217 +      return postDate.isAtSameMomentAs(normalizedDate);       
+      218 +    });                                                       
+      219 +                                                              
+      220 +    if (currentIndex == -1) {                                 
+      221 +      return false;                                           
+      222 +    }                                                         
+      223 +                                                              
+      224 +    return currentIndex < threshold;                          
+      225 +  }                                                           
+      226 +}                                                             
+
+● Now let me check what files exist in the calendar use_cases and providers
+  directories to delete the save/unsave ones.
+
+● Searched for 2 patterns (ctrl+o to expand)
+
+● I need to delete these files. Let me use bash commands to delete them.
+
+● Bash(rm "C:\Users\nicho\Documents\GitHub\main\goback-app\lib\core\features\cal
+      endar\domain\use_cases\add_post_to_calendar_use_case.dart")
+  ⎿  (No content)
+
+● Bash(rm "C:\Users\nicho\Documents\GitHub\main\goback-app\lib\core\features\cal
+      endar\domain\use_cases\remove_post_from_calendar_use_case.dart")
+  ⎿  (No content)
+
+● Bash(rm "C:\Users\nicho\Documents\GitHub\main\goback-app\lib\core\features\cal
+      endar\domain\providers\add_post_to_calendar_provider.dart")
+  ⎿  (No content)
+
+● Bash(rm "C:\Users\nicho\Documents\GitHub\main\goback-app\lib\core\features\cal
+      endar\domain\providers\add_post_to_calendar_provider.g.dart")
+  ⎿  (No content)
+
+● Bash(rm "C:\Users\nicho\Documents\GitHub\main\goback-app\lib\core\features\cal
+      endar\domain\providers\remove_post_from_calendar_provider.dart")
+  ⎿  (No content)
+
+● Bash(rm "C:\Users\nicho\Documents\GitHub\main\goback-app\lib\core\features\cal
+      endar\domain\providers\remove_post_from_calendar_provider.g.dart")
+  ⎿  (No content)
+
+● Now let me remove the call feature files and update the circle_profile_view.
+
+● Bash(rm "C:\Users\nicho\Documents\GitHub\main\goback-app\lib\presentation\page
+      s\circle_profile\components\call_friend_button.dart")
+  ⎿  (No content)
+
+● Bash(rm "C:\Users\nicho\Documents\GitHub\main\goback-app\lib\presentation\page
+      s\circle_profile\hooks\use_call_launch.dart")
+  ⎿  (No content)
+
+● Read 1 file (ctrl+o to expand)
+
+● Update(lib\presentation\pages\circle_profile\views\circle_profile_view.dart)
+  ⎿  Removed 1 line
+       5  import 'package:cloudless/presentation/components/profile_image
+          /profile_image.dart';
+       6  import 'package:cloudless/presentation/components/username_fiel
+          d.dart';
+       7  import 'package:cloudless/presentation/pages/circle_profile/cir
+          cle_profile_layout.dart';
+       8 -import 'package:cloudless/presentation/pages/circle_profile/com
+         -ponents/call_friend_button.dart';                              
+       8  import 'package:cloudless/presentation/pages/profile/components
+          /calendar_section/profile_calendar.dart';
+       9  import 'package:cloudless/presentation/utilities/main_layout.da
+          rt';
+      10  import 'package:dedecube_core/dedecube_core.dart';
+
+● Update(lib\presentation\pages\circle_profile\views\circle_profile_view.dart)
+  ⎿  Removed 2 lines
+      71                  ),
+      72                  child: ProfileDescription(profileId: userId),
+      73                ),
+      74 -              SizedBox(height: verticalSpacing),               
+      75 -              CallFriendButton(phoneNumber: profileToUse.phoneN
+         -umber),                                                        
+      74                SizedBox(height: buttonToCalendar),
+      75              ],
+      76            );
+
+● Now I need to check if there are any other files that import the deleted
+  providers or use cases, and also check if there's a
+  CalendarOperationResponseDto that needs to be removed since it's no longer
+  used.
+
+● Searched for 4 patterns (ctrl+o to expand)
+
+● There's a file using the calendar save/unsave providers. Let me check it.
+
+● Read 1 file (ctrl+o to expand)
+
+● This file contains the calendar add/remove functionality. Since we're removing
+   the ability to manually save/unsave posts (the calendar now shows lockout
+  posts automatically), I need to remove this utility file and any references to
+   it. Let me check if it's used anywhere.
+
+● Searched for 2 patterns (ctrl+o to expand)
+
+● Let me check the post_detail_view.dart and post_detail_page.dart to understand
+   how the calendar functionality is used and what changes are needed.
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● The post_detail_view.dart is using both handleCalendarToggle (for add/remove
+  functionality) and reloadCalendarCache. Since we're removing save/unsave
+  functionality:
+
+  1. handleCalendarToggle should be removed (it's used for the calendar icon
+  button to toggle save state)
+  2. reloadCalendarCache can remain - it just reloads the cache
+
+  Let me refactor the PostDetailCalendar class to only keep the
+  reloadCalendarCache method and update the files that use the removed method.
+
+● Write(lib\presentation\pages\post_detail\utilities\post_detail_calendar.dart)
+  ⎿  Added 45 lines, removed 170 lines
+        1 -import 'package:cloudless/core/features/auth/domain/providers/
+          -get_current_user_provider.dart';                             
+        2 -import 'package:cloudless/core/features/calendar/domain/enums/
+          -calendar_load_direction.dart';                               
+        3 -import 'package:cloudless/core/features/calendar/domain/provid
+          -ers/add_post_to_calendar_provider.dart';                     
+        4 -import 'package:cloudless/core/features/calendar/domain/provid
+          -ers/calendar_posts_cache_provider.dart';                     
+        5 -import 'package:cloudless/core/features/calendar/domain/provid
+          -ers/get_calendar_posts_provider.dart';                       
+        6 -import 'package:cloudless/core/features/calendar/domain/provid
+          -ers/remove_post_from_calendar_provider.dart';                
+        7 -import 'package:cloudless/core/features/post/domain/models/fee
+          -d_post_model.dart';                                          
+        8 -import 'package:cloudless/presentation/components/alerts/main_
+          -alert.dart';                                                 
+        9 -import 'package:dedecube_core/dedecube_core.dart';           
+       10 -import 'package:dedecube_startup/dedecube_startup.dart';     
+       11 -import 'package:flutter/material.dart';                      
+       12 -                                                             
+       13 -/// Helper class for handling calendar operations in post deta
+          -il view.                                                     
+       14 -class PostDetailCalendar {                                   
+       15 -  /// Toggles a post's presence in the calendar (add or remove
+          -).                                                           
+       16 -  static Future<void> handleCalendarToggle(                  
+       17 -    BuildContext context,                                    
+       18 -    WidgetRef ref,                                           
+       19 -    FeedPostModel post,                                      
+       20 -    isCurrentlyInCalendar,                                   
+       21 -  ) async {                                                  
+       22 -    final currentUserAsync = ref.read(getCurrentUserProvider);
+          -                                                              
+       23 -    final userId = currentUserAsync.whenOrNull(              
+       24 -      data: (userResult) => userResult.fold((user) => user.id,
+          - (error) => null),                                           
+       25 -    );                                                       
+       26 -                                                             
+       27 -    if (userId == null) {                                    
+       28 -      if (context.mounted) {                                 
+       29 -        await MainAlert.showError(                           
+       30 -          context: context,                                  
+       31 -          title: translator.translate(                       
+       32 -            'components.alert.calendar_error.error_title',   
+       33 -          ),                                                 
+       34 -          content: translator.translate(                     
+       35 -            'components.alert.calendar_error.error_content', 
+       36 -          ),                                                 
+       37 -        );                                                   
+       38 -      }                                                      
+       39 -      return;                                                
+       40 -    }                                                        
+       41 -                                                             
+       42 -    final cacheNotifier = ref.read(calendarPostsCacheProvider.
+          -notifier);                                                   
+       43 -                                                             
+       44 -    if (isCurrentlyInCalendar) {                             
+       45 -      await _removeFromCalendar(context, ref, post, userId, ca
+          -cheNotifier);                                                
+       46 -    } else {                                                 
+       47 -      await _addToCalendar(context, ref, post, userId, cacheNo
+          -tifier);                                                     
+       48 -    }                                                        
+       49 -  }                                                          
+       50 -                                                             
+       51 -  /// Removes a post from the calendar.                      
+       52 -  static Future<void> _removeFromCalendar(                   
+       53 -    BuildContext context,                                    
+       54 -    WidgetRef ref,                                           
+       55 -    FeedPostModel post,                                      
+       56 -    String userId,                                           
+       57 -    CalendarPostsCache cacheNotifier,                        
+       58 -  ) async {                                                  
+       59 -    cacheNotifier.removePostOptimistically(post.id);         
+       60 -                                                             
+       61 -    final result = await ref.read(                           
+       62 -      removePostFromCalendarProvider(postId: post.id).future,
+       63 -    );                                                       
+       64 -                                                             
+       65 -    result.fold(                                             
+       66 -      (_) {                                                  
+       67 -        // Success - cache already updated                   
+       68 -      },                                                     
+       69 -      (error) async {                                        
+       70 -        // Rollback: reload cache from database on error     
+       71 -        if (context.mounted) {                               
+       72 -          await reloadCalendarCache(                         
+       73 -            ref,                                             
+       74 -            userId,                                          
+       75 -            isMounted: () => context.mounted,                
+       76 -          );                                                 
+       77 -        }                                                    
+       78 -                                                             
+       79 -        if (context.mounted) {                               
+       80 -          await MainAlert.showError(                         
+       81 -            context: context,                                
+       82 -            title: translator.translate(                     
+       83 -              'components.alert.calendar_error.error_title', 
+       84 -            ),                                               
+       85 -            content: translator.translate(                   
+       86 -              'components.alert.calendar_error.remove_error_co
+          -ntent',                                                      
+       87 -            ),                                               
+       88 -          );                                                 
+       89 -        }                                                    
+       90 -      },                                                     
+       91 -    );                                                       
+       92 -  }                                                          
+       93 -                                                             
+       94 -  /// Adds a post to the calendar.                           
+       95 -  static Future<void> _addToCalendar(                        
+       96 -    BuildContext context,                                    
+       97 -    WidgetRef ref,                                           
+       98 -    FeedPostModel post,                                      
+       99 -    String userId,                                           
+      100 -    CalendarPostsCache cacheNotifier,                        
+      101 -  ) async {                                                  
+      102 -    final result = await ref.read(                           
+      103 -      addPostToCalendarProvider(postId: post.id).future,     
+      104 -    );                                                       
+      105 -                                                             
+      106 -    result.fold(                                             
+      107 -      (_) async {                                            
+      108 -        // Success - reload cache with fresh data from server
+      109 -        if (context.mounted) {                               
+      110 -          await reloadCalendarCache(                         
+      111 -            ref,                                             
+      112 -            userId,                                          
+      113 -            isMounted: () => context.mounted,                
+      114 -          );                                                 
+      115 -        }                                                    
+      116 -      },                                                     
+      117 -      (error) async {                                        
+      118 -        if (context.mounted) {                               
+      119 -          await MainAlert.showError(                         
+      120 -            context: context,                                
+      121 -            title: translator.translate(                     
+      122 -              'components.alert.calendar_error.error_title', 
+      123 -            ),                                               
+      124 -            content: translator.translate(                   
+      125 -              'components.alert.calendar_error.add_error_conte
+          -nt',                                                         
+      126 -            ),                                               
+      127 -          );                                                 
+      128 -        }                                                    
+      129 -      },                                                     
+      130 -    );                                                       
+      131 -  }                                                          
+      132 -                                                             
+      133 -  /// Reloads the calendar cache from the server.            
+      134 -  static Future<void> reloadCalendarCache(                   
+      135 -    WidgetRef ref,                                           
+      136 -    String userId, {                                         
+      137 -    bool Function()? isMounted,                              
+      138 -  }) async {                                                 
+      139 -    final now = DateTime.now();                              
+      140 -                                                             
+      141 -    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0
+          -);                                                           
+      142 -    final endOffset = 7 - lastDayOfMonth.weekday;            
+      143 -    final lastVisibleDay = DateTime(now.year, now.month + 1, e
+          -ndOffset);                                                   
+      144 -                                                             
+      145 -    final result = await ref.read(                           
+      146 -      getCalendarPostsProvider(                              
+      147 -        userId: userId,                                      
+      148 -        referenceDate: lastVisibleDay,                       
+      149 -        direction: CalendarLoadDirection.before,             
+      150 -        limit: 42,                                           
+      151 -      ).future,                                              
+      152 -    );                                                       
+      153 -                                                             
+      154 -    // Check if widget is still mounted before using ref     
+      155 -    if (isMounted != null && !isMounted()) {                 
+      156 -      return;                                                
+      157 -    }                                                        
+      158 -                                                             
+      159 -    result.fold(                                             
+      160 -      (posts) {                                              
+      161 -        ref                                                  
+      162 -            .read(calendarPostsCacheProvider.notifier)       
+      163 -            .updateCache(posts, userId: userId);             
+      164 -      },                                                     
+      165 -      (error) {                                              
+      166 -        ref.read(calendarPostsCacheProvider.notifier).clearCac
+          -he();                                                        
+      167 -      },                                                     
+      168 -    );                                                       
+      169 -  }                                                          
+      170 -}                                                            
+        1 +import 'package:cloudless/core/features/calendar/domain/enums/
+          +calendar_load_direction.dart';                                
+        2 +import 'package:cloudless/core/features/calendar/domain/provid
+          +ers/calendar_posts_cache_provider.dart';                      
+        3 +import 'package:cloudless/core/features/calendar/domain/provid
+          +ers/get_calendar_posts_provider.dart';                        
+        4 +import 'package:dedecube_core/dedecube_core.dart';            
+        5 +                                                              
+        6 +/// Helper class for handling calendar operations in post deta
+          +il view.                                                      
+        7 +class PostDetailCalendar {                                    
+        8 +  /// Reloads the calendar cache from the server.             
+        9 +  static Future<void> reloadCalendarCache(                    
+       10 +    WidgetRef ref,                                            
+       11 +    String userId, {                                          
+       12 +    bool Function()? isMounted,                               
+       13 +  }) async {                                                  
+       14 +    final now = DateTime.now();                               
+       15 +                                                              
+       16 +    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0
+          +);                                                            
+       17 +    final endOffset = 7 - lastDayOfMonth.weekday;             
+       18 +    final lastVisibleDay = DateTime(now.year, now.month + 1, e
+          +ndOffset);                                                    
+       19 +                                                              
+       20 +    final result = await ref.read(                            
+       21 +      getCalendarPostsProvider(                               
+       22 +        userId: userId,                                       
+       23 +        referenceDate: lastVisibleDay,                        
+       24 +        direction: CalendarLoadDirection.before,              
+       25 +        limit: 42,                                            
+       26 +      ).future,                                               
+       27 +    );                                                        
+       28 +                                                              
+       29 +    // Check if widget is still mounted before using ref      
+       30 +    if (isMounted != null && !isMounted()) {                  
+       31 +      return;                                                 
+       32 +    }                                                         
+       33 +                                                              
+       34 +    result.fold(                                              
+       35 +      (posts) {                                               
+       36 +        ref                                                   
+       37 +            .read(calendarPostsCacheProvider.notifier)        
+       38 +            .updateCache(posts, userId: userId);              
+       39 +      },                                                      
+       40 +      (error) {                                               
+       41 +        ref.read(calendarPostsCacheProvider.notifier).clearCac
+          +he();                                                         
+       42 +      },                                                      
+       43 +    );                                                        
+       44 +  }                                                           
+       45 +}                                                             
+
+● Now I need to update the post_detail_view.dart to remove the reference to
+  handleCalendarToggle. Let me check that file to understand how it's used.
+
+● Read 1 file (ctrl+o to expand)
+
+● I see that the isPostInCalendar logic uses calendarSavedAt (line 127-133)
+  which needs to be updated to publishedAt. Also, the handleCalendarToggle call
+  needs to be removed since calendar save/unsave is no longer supported.
+
+  The calendar icon was used to toggle adding/removing posts from the calendar.
+  Since we're removing that functionality (calendar now automatically shows
+  lockout posts), we should:
+  1. Remove the calendar icon tap functionality
+  2. Update the date comparison logic to use publishedAt
+
+  Let me update this file.
+
+● Update(lib\presentation\pages\post_detail\views\post_detail_view.dart)
+  ⎿  Removed 1 line
+      12  import 'package:cloudless/presentation/pages/post_detail/compon
+          ents/post_detail_reactions.dart';
+      13  import 'package:cloudless/presentation/pages/post_detail/compon
+          ents/post_detail_tags.dart';
+      14  import 'package:cloudless/presentation/pages/post_detail/post_d
+          etail_layout.dart';
+      15 -import 'package:cloudless/presentation/pages/post_detail/utilit
+         -ies/post_detail_calendar.dart';                                
+      15  import 'package:cloudless/presentation/pages/post_detail/utilit
+          ies/post_detail_navigation.dart';
+      16  import 'package:cloudless/presentation/utilities/main_layout.da
+          rt';
+      17  import 'package:dedecube_core/dedecube_core.dart';
+
+● Update(lib\presentation\pages\post_detail\views\post_detail_view.dart)
+  ⎿  Added 26 lines, removed 4 lines
+       82  
+       83                if (cacheUserId != user.id ||
+       84                    (isCurrentUserPost && isFromCalendar)) {
+       85 -                await PostDetailCalendar.reloadCalendarCache( 
+       86 -                  ref,                                        
+       87 -                  user.id,                                    
+       88 -                  isMounted: () => isMounted,                 
+       85 +                // Reload calendar cache for current user     
+       86 +                final now = DateTime.now();                   
+       87 +                final lastDayOfMonth = DateTime(now.year, now.
+          +month + 1, 0);                                                
+       88 +                final endOffset = 7 - lastDayOfMonth.weekday; 
+       89 +                final lastVisibleDay = DateTime(now.year, now.
+          +month + 1, endOffset);                                        
+       90 +                                                              
+       91 +                final result = await ref.read(                
+       92 +                  getCalendarPostsProvider(                   
+       93 +                    userId: user.id,                          
+       94 +                    referenceDate: lastVisibleDay,            
+       95 +                    direction: CalendarLoadDirection.before,  
+       96 +                    limit: 42,                                
+       97 +                  ).future,                                   
+       98                  );
+       99 +                                                              
+      100 +                if (!isMounted) return;                       
+      101 +                                                              
+      102 +                result.fold(                                  
+      103 +                  (posts) {                                   
+      104 +                    ref                                       
+      105 +                        .read(calendarPostsCacheProvider.notif
+          +ier)                                                          
+      106 +                        .updateCache(posts, userId: user.id); 
+      107 +                  },                                          
+      108 +                  (error) {                                   
+      109 +                    ref.read(calendarPostsCacheProvider.notifi
+          +er).clearCache();                                             
+      110 +                  },                                          
+      111 +                );                                            
+      112                }
+      113              },
+      114              (error) async {
+
+● Update(lib\presentation\pages\post_detail\views\post_detail_view.dart)
+  ⎿  Added 2 lines
+      1  import 'package:cloudless/core/features/auth/domain/providers/ge
+         t_current_user_provider.dart';
+      2 +import 'package:cloudless/core/features/calendar/domain/enums/ca
+        +lendar_load_direction.dart';                                    
+      3  import 'package:cloudless/core/features/calendar/domain/provider
+         s/calendar_posts_cache_provider.dart';
+      4 +import 'package:cloudless/core/features/calendar/domain/provider
+        +s/get_calendar_posts_provider.dart';                            
+      5  import 'package:cloudless/core/features/post/domain/enums/conten
+         t_type.dart';
+      6  import 'package:cloudless/core/features/post/domain/hooks/use_po
+         st_detail.dart';
+      7  import 'package:cloudless/core/features/post/domain/models/feed_
+         post_model.dart';
+
+● Now let me update the isPostInCalendar logic to use publishedAt instead of
+  calendarSavedAt.
+
+● Update(lib\presentation\pages\post_detail\views\post_detail_view.dart)
+  ⎿  Added 5 lines, removed 5 lines
+      147          );
+      148  
+      149          return posts.any((p) {
+      150 -          final postCalendarDate = DateTime(                  
+      151 -            p.calendarSavedAt.year,                           
+      152 -            p.calendarSavedAt.month,                          
+      153 -            p.calendarSavedAt.day,                            
+      150 +          final postPublishedDate = DateTime(                 
+      151 +            p.publishedAt.year,                               
+      152 +            p.publishedAt.month,                              
+      153 +            p.publishedAt.day,                                
+      154            );
+      155            return p.postId == postId &&
+      156 -              postCalendarDate.isAtSameMomentAs(normalizedHead
+          -erDate);                                                      
+      156 +              postPublishedDate.isAtSameMomentAs(normalizedHea
+          +derDate);                                                     
+      157          });
+      158        },
+      159        [
+
+● Now let me remove the onCalendarTap callback since the calendar icon tap
+  functionality is no longer needed. First, let me check the PostDetailActions
+  component to understand its structure.
+
+● Read 1 file (ctrl+o to expand)
+
+● The calendar icon is part of the post actions. Since lockout posts are
+  automatically in the calendar (no manual save/unsave), I should:
+  1. Remove the onCalendarTap callback from PostDetailActions
+  2. Make the calendar icon non-interactive (just display)
+
+  Let me update both files.
+
+● Write(lib\presentation\pages\post_detail\components\post_detail_actions.dart)
+  ⎿  Added 65 lines, removed 70 lines
+       1 -import 'package:cloudless/presentation/assets/assets.dart';   
+       2 -import 'package:cloudless/presentation/pages/post_detail/post_d
+         -etail_layout.dart';                                           
+       3 -import 'package:cloudless/presentation/utilities/main_layout.da
+         -rt';                                                          
+       4 -import 'package:dedecube_presentation/dedecube_presentation.dar
+         -t';                                                           
+       5 -import 'package:flutter/material.dart';                       
+       6 -                                                              
+       7 -class PostDetailActions extends StatelessWidget               
+       8 -    with MainLayout, PostDetailLayout {                       
+       9 -  const PostDetailActions({                                   
+      10 -    required this.isCurrentUserPost,                          
+      11 -    required this.isPostInCalendar,                           
+      12 -    required this.onCalendarTap,                              
+      13 -    required this.onMenuTap,                                  
+      14 -    this.showMenu = true,                                     
+      15 -    this.showCalendarIcon = true,                             
+      16 -    super.key,                                                
+      17 -  });                                                         
+      18 -                                                              
+      19 -  final bool isCurrentUserPost;                               
+      20 -  final bool isPostInCalendar;                                
+      21 -  final bool showMenu;                                        
+      22 -  final bool showCalendarIcon;                                
+      23 -  final VoidCallback onCalendarTap;                           
+      24 -  final VoidCallback onMenuTap;                               
+      25 -                                                              
+      26 -  @override                                                   
+      27 -  Widget build(BuildContext context) {                        
+      28 -    final theme = Theme.of(context);                          
+      29 -    final colorScheme = theme.colorScheme;                    
+      30 -                                                              
+      31 -    return Row(                                               
+      32 -      mainAxisAlignment: MainAxisAlignment.end,               
+      33 -      children: [                                             
+      34 -        if (isCurrentUserPost && showCalendarIcon)            
+      35 -          GestureDetector(                                    
+      36 -            onTap: onCalendarTap,                             
+      37 -            child: Container(                                 
+      38 -              decoration: BoxDecoration(                      
+      39 -                shape: BoxShape.circle,                       
+      40 -                color: isPostInCalendar                       
+      41 -                    ? colorScheme.primaryContainer            
+      42 -                    : colorScheme.primaryContainer.withValues(a
+         -lpha: 0.1),                                                   
+      43 -              ),                                              
+      44 -              child: Padding(                                 
+      45 -                padding: EdgeInsets.all(iconPadding),         
+      46 -                child: Assets.svg.addToCalendar.render(       
+      47 -                  colorFilter: isPostInCalendar               
+      48 -                      ? colorScheme.surface.asSrcIn           
+      49 -                      : colorScheme.primaryContainer.asSrcIn, 
+      50 -                ),                                            
+      51 -              ),                                              
+      52 -            ),                                                
+      53 -          ),                                                  
+      54 -        if (showMenu) ...[                                    
+      55 -          if (isCurrentUserPost && showCalendarIcon)          
+      56 -            SizedBox(width: actionSpacing),                   
+      57 -          GestureDetector(                                    
+      58 -            behavior: HitTestBehavior.translucent,            
+      59 -            onTap: onMenuTap,                                 
+      60 -            child: SizedBox(                                  
+      61 -              height: iconHeight,                             
+      62 -              width: iconWidth,                               
+      63 -              child: Center(child: Assets.svg.menu.render()), 
+      64 -            ),                                                
+      65 -          ),                                                  
+      66 -        ],                                                    
+      67 -      ],                                                      
+      68 -    );                                                        
+      69 -  }                                                           
+      70 -}                                                             
+       1 +import 'package:cloudless/presentation/assets/assets.dart';    
+       2 +import 'package:cloudless/presentation/pages/post_detail/post_d
+         +etail_layout.dart';                                            
+       3 +import 'package:cloudless/presentation/utilities/main_layout.da
+         +rt';                                                           
+       4 +import 'package:dedecube_presentation/dedecube_presentation.dar
+         +t';                                                            
+       5 +import 'package:flutter/material.dart';                        
+       6 +                                                               
+       7 +class PostDetailActions extends StatelessWidget                
+       8 +    with MainLayout, PostDetailLayout {                        
+       9 +  const PostDetailActions({                                    
+      10 +    required this.isCurrentUserPost,                           
+      11 +    required this.isPostInCalendar,                            
+      12 +    required this.onMenuTap,                                   
+      13 +    this.showMenu = true,                                      
+      14 +    this.showCalendarIcon = true,                              
+      15 +    super.key,                                                 
+      16 +  });                                                          
+      17 +                                                               
+      18 +  final bool isCurrentUserPost;                                
+      19 +  final bool isPostInCalendar;                                 
+      20 +  final bool showMenu;                                         
+      21 +  final bool showCalendarIcon;                                 
+      22 +  final VoidCallback onMenuTap;                                
+      23 +                                                               
+      24 +  @override                                                    
+      25 +  Widget build(BuildContext context) {                         
+      26 +    final theme = Theme.of(context);                           
+      27 +    final colorScheme = theme.colorScheme;                     
+      28 +                                                               
+      29 +    return Row(                                                
+      30 +      mainAxisAlignment: MainAxisAlignment.end,                
+      31 +      children: [                                              
+      32 +        if (isCurrentUserPost && showCalendarIcon)             
+      33 +          Container(                                           
+      34 +            decoration: BoxDecoration(                         
+      35 +              shape: BoxShape.circle,                          
+      36 +              color: isPostInCalendar                          
+      37 +                  ? colorScheme.primaryContainer               
+      38 +                  : colorScheme.primaryContainer.withValues(alp
+         +ha: 0.1),                                                      
+      39 +            ),                                                 
+      40 +            child: Padding(                                    
+      41 +              padding: EdgeInsets.all(iconPadding),            
+      42 +              child: Assets.svg.addToCalendar.render(          
+      43 +                colorFilter: isPostInCalendar                  
+      44 +                    ? colorScheme.surface.asSrcIn              
+      45 +                    : colorScheme.primaryContainer.asSrcIn,    
+      46 +              ),                                               
+      47 +            ),                                                 
+      48 +          ),                                                   
+      49 +        if (showMenu) ...[                                     
+      50 +          if (isCurrentUserPost && showCalendarIcon)           
+      51 +            SizedBox(width: actionSpacing),                    
+      52 +          GestureDetector(                                     
+      53 +            behavior: HitTestBehavior.translucent,             
+      54 +            onTap: onMenuTap,                                  
+      55 +            child: SizedBox(                                   
+      56 +              height: iconHeight,                              
+      57 +              width: iconWidth,                                
+      58 +              child: Center(child: Assets.svg.menu.render()),  
+      59 +            ),                                                 
+      60 +          ),                                                   
+      61 +        ],                                                     
+      62 +      ],                                                       
+      63 +    );                                                         
+      64 +  }                                                            
+      65 +}                                                              
+
+● Now let me update the post_detail_view.dart to remove the onCalendarTap call.
+
+● Update(lib\presentation\pages\post_detail\views\post_detail_view.dart)
+  ⎿  Removed 7 lines
+      308                          isPostInCalendar: isPostInCalendar,
+      309                          showMenu: canShowMenu,
+      310                          showCalendarIcon: canShowCalendarIcon,
+      311 -                        onCalendarTap: () =>                  
+      312 -                            PostDetailCalendar.handleCalendarT
+          -oggle(                                                        
+      313 -                              context,                        
+      314 -                              ref,                            
+      315 -                              post,                           
+      316 -                              isPostInCalendar,               
+      317 -                            ),                                
+      311                          onMenuTap: () => _handleShowMenu(isMen
+           uVisible),
+      312                        ),
+      313                      ],
+
+● Now let me delete the post_detail_calendar.dart file since we no longer need
+  it (all its functionality has been inlined or removed).
+
+● Bash(rm "C:\Users\nicho\Documents\GitHub\main\goback-app\lib\presentation\page
+      s\post_detail\utilities\post_detail_calendar.dart")
+  ⎿  (No content)
+
+● Let me now check if there's a CalendarOperationResponseDto that needs to be
+  cleaned up since it's no longer used.
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● Good, it's only defined in one place and not used elsewhere. Let me delete it
+  and its generated file.
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● Bash(rm "C:\Users\nicho\Documents\GitHub\main\goback-app\lib\core\features\cal
+      endar\data\dtos\calendar_operation_response_dto.dart" && rm
+      "C:\Users\nicho\Documents\G…)
+  ⎿  (No content)
+
+● Let me also check if there are any other imports or uses of the removed files.
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● Good. Now let me check the get_calendar_posts_provider.dart to see if it needs
+   updates.
+
+● Read 1 file (ctrl+o to expand)
+
+● Let me check the repository and use case to see if they need updates.
+
+● Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● I need to update the repository to remove the add/remove methods. Let me also
+  check the repository contract.
+
+● Read 1 file (ctrl+o to expand)
+
+● Write(lib\core\features\calendar\domain\contracts\calendar_repository_contract
+       .dart)
+  ⎿  Added 18 lines, removed 30 lines
+       1 -import 'package:cloudless/core/features/calendar/domain/enums/c
+         -alendar_load_direction.dart';                                 
+       2 -import 'package:cloudless/core/features/calendar/domain/models/
+         -calendar_post_model.dart';                                    
+       3 -import 'package:dedecube_core/dedecube_core.dart';            
+       4 -                                                              
+       5 -abstract class CalendarRepositoryContract {                   
+       6 -  /// Retrieves calendar posts for a specific user relative to 
+         -a reference date.                                             
+       7 -  ///                                                         
+       8 -  /// [userId] - The ID of the user whose calendar to query.  
+       9 -  /// [referenceDate] - The date to use as reference point.   
+      10 -  /// [direction] - Whether to load posts before or after the r
+         -eference date.                                                
+      11 -  /// [limit] - Maximum number of posts to return.            
+      12 -  FutureResult<List<CalendarPostModel>> getCalendarPosts({    
+      13 -    required String userId,                                   
+      14 -    required DateTime referenceDate,                          
+      15 -    required CalendarLoadDirection direction,                 
+      16 -    int limit = 42,                                           
+      17 -  });                                                         
+      18 -                                                              
+      19 -  /// Saves a post to the user's calendar.                    
+      20 -  ///                                                         
+      21 -  /// Sets the calendar_saved_at timestamp on the post.       
+      22 -  /// Returns true if the operation was successful, false other
+         -wise.                                                         
+      23 -  FutureResult<bool> addPostToCalendar({required String postId}
+         -);                                                            
+      24 -                                                              
+      25 -  /// Removes a post from the user's calendar.                
+      26 -  ///                                                         
+      27 -  /// Clears the calendar_saved_at timestamp on the post.     
+      28 -  /// Returns true if the operation was successful, false other
+         -wise.                                                         
+      29 -  FutureResult<bool> removePostFromCalendar({required String po
+         -stId});                                                       
+      30 -}                                                             
+       1 +import 'package:cloudless/core/features/calendar/domain/enums/c
+         +alendar_load_direction.dart';                                  
+       2 +import 'package:cloudless/core/features/calendar/domain/models/
+         +calendar_post_model.dart';                                     
+       3 +import 'package:dedecube_core/dedecube_core.dart';             
+       4 +                                                               
+       5 +abstract class CalendarRepositoryContract {                    
+       6 +  /// Retrieves lockout calendar posts for a specific user rela
+         +tive to a reference date.                                      
+       7 +  ///                                                          
+       8 +  /// [userId] - The ID of the user whose calendar to query.   
+       9 +  /// [referenceDate] - The date to use as reference point.    
+      10 +  /// [direction] - Whether to load posts before or after the r
+         +eference date.                                                 
+      11 +  /// [limit] - Maximum number of posts to return.             
+      12 +  FutureResult<List<CalendarPostModel>> getCalendarPosts({     
+      13 +    required String userId,                                    
+      14 +    required DateTime referenceDate,                           
+      15 +    required CalendarLoadDirection direction,                  
+      16 +    int limit = 42,                                            
+      17 +  });                                                          
+      18 +}                                                              
+
+● Write(lib\core\features\calendar\data\repositories\calendar_repository.dart)
+  ⎿  Added 43 lines, removed 97 lines
+       1 -import 'package:cloudless/core/features/calendar/data/exception
+         -s/calendar_operation_exception.dart';                         
+       2 -import 'package:cloudless/core/features/calendar/data/mappers/c
+         -alendar_exception_mapper.dart';                               
+       3 -import 'package:cloudless/core/features/calendar/data/mappers/c
+         -alendar_post_dto_to_model_mapper.dart';                       
+       4 -import 'package:cloudless/core/features/calendar/domain/contrac
+         -ts/calendar_repository_contract.dart';                        
+       5 -import 'package:cloudless/core/features/calendar/domain/contrac
+         -ts/calendar_service_contract.dart';                           
+       6 -import 'package:cloudless/core/features/calendar/domain/enums/c
+         -alendar_load_direction.dart';                                 
+       7 -import 'package:cloudless/core/features/calendar/domain/models/
+         -calendar_post_model.dart';                                    
+       8 -import 'package:dedecube_core/dedecube_core.dart';            
+       9 -import 'package:dedecube_startup/dedecube_startup.dart';      
+      10 -                                                              
+      11 -class CalendarRepository implements CalendarRepositoryContract 
+         -{                                                             
+      12 -  const CalendarRepository({                                  
+      13 -    required this.calendarService,                            
+      14 -    required this.calendarPostMapper,                         
+      15 -  });                                                         
+      16 -                                                              
+      17 -  final CalendarServiceContract calendarService;              
+      18 -  final CalendarPostDtoToModelMapper calendarPostMapper;      
+      19 -                                                              
+      20 -  @override                                                   
+      21 -  FutureResult<List<CalendarPostModel>> getCalendarPosts({    
+      22 -    required String userId,                                   
+      23 -    required DateTime referenceDate,                          
+      24 -    required CalendarLoadDirection direction,                 
+      25 -    int limit = 42,                                           
+      26 -  }) async {                                                  
+      27 -    try {                                                     
+      28 -      // Convert referenceDate to year/month for the service  
+      29 -      final dtos = await calendarService.getCalendarPosts(    
+      30 -        userId: userId,                                       
+      31 -        year: referenceDate.year,                             
+      32 -        month: referenceDate.month,                           
+      33 -      );                                                      
+      34 -                                                              
+      35 -      final models = calendarPostMapper.mapDtoList(dtos);     
+      36 -      return Result.success(models);                          
+      37 -    } catch (e) {                                             
+      38 -      return Result.failure(                                  
+      39 -        CalendarExceptionMapper.fromSupabaseException(        
+      40 -          e is Exception ? e : Exception(e.toString()),       
+      41 -        ),                                                    
+      42 -      );                                                      
+      43 -    }                                                         
+      44 -  }                                                           
+      45 -                                                              
+      46 -  @override                                                   
+      47 -  FutureResult<bool> addPostToCalendar({required String postId}
+         -) async {                                                     
+      48 -    try {                                                     
+      49 -      final response = await calendarService.addPostToCalendar(
+         -postId: postId);                                              
+      50 -                                                              
+      51 -      if (!response.success) {                                
+      52 -        return Result.failure(                                
+      53 -          CalendarOperationException(response.error, 'OPERATION
+         -_FAILED'),                                                    
+      54 -        );                                                    
+      55 -      }                                                       
+      56 -                                                              
+      57 -      return Result.success(response.success);                
+      58 -    } catch (e) {                                             
+      59 -      logger.error(                                           
+      60 -        'CalendarRepository.addPostToCalendar - Exception caugh
+         -t',                                                           
+      61 -        exception: e,                                         
+      62 -      );                                                      
+      63 -      return Result.failure(                                  
+      64 -        CalendarExceptionMapper.fromSupabaseException(        
+      65 -          e is Exception ? e : Exception(e.toString()),       
+      66 -        ),                                                    
+      67 -      );                                                      
+      68 -    }                                                         
+      69 -  }                                                           
+      70 -                                                              
+      71 -  @override                                                   
+      72 -  FutureResult<bool> removePostFromCalendar({required String po
+         -stId}) async {                                                
+      73 -    try {                                                     
+      74 -      final response = await calendarService.removePostFromCale
+         -ndar(                                                         
+      75 -        postId: postId,                                       
+      76 -      );                                                      
+      77 -                                                              
+      78 -      if (!response.success) {                                
+      79 -        return Result.failure(                                
+      80 -          CalendarOperationException(response.error, 'OPERATION
+         -_FAILED'),                                                    
+      81 -        );                                                    
+      82 -      }                                                       
+      83 -                                                              
+      84 -      return Result.success(response.success);                
+      85 -    } catch (e) {                                             
+      86 -      logger.error(                                           
+      87 -        'CalendarRepository.removePostFromCalendar - Exception 
+         -caught',                                                      
+      88 -        exception: e,                                         
+      89 -      );                                                      
+      90 -      return Result.failure(                                  
+      91 -        CalendarExceptionMapper.fromSupabaseException(        
+      92 -          e is Exception ? e : Exception(e.toString()),       
+      93 -        ),                                                    
+      94 -      );                                                      
+      95 -    }                                                         
+      96 -  }                                                           
+      97 -}                                                             
+       1 +import 'package:cloudless/core/features/calendar/data/mappers/c
+         +alendar_exception_mapper.dart';                                
+       2 +import 'package:cloudless/core/features/calendar/data/mappers/c
+         +alendar_post_dto_to_model_mapper.dart';                        
+       3 +import 'package:cloudless/core/features/calendar/domain/contrac
+         +ts/calendar_repository_contract.dart';                         
+       4 +import 'package:cloudless/core/features/calendar/domain/contrac
+         +ts/calendar_service_contract.dart';                            
+       5 +import 'package:cloudless/core/features/calendar/domain/enums/c
+         +alendar_load_direction.dart';                                  
+       6 +import 'package:cloudless/core/features/calendar/domain/models/
+         +calendar_post_model.dart';                                     
+       7 +import 'package:dedecube_core/dedecube_core.dart';             
+       8 +                                                               
+       9 +class CalendarRepository implements CalendarRepositoryContract 
+         +{                                                              
+      10 +  const CalendarRepository({                                   
+      11 +    required this.calendarService,                             
+      12 +    required this.calendarPostMapper,                          
+      13 +  });                                                          
+      14 +                                                               
+      15 +  final CalendarServiceContract calendarService;               
+      16 +  final CalendarPostDtoToModelMapper calendarPostMapper;       
+      17 +                                                               
+      18 +  @override                                                    
+      19 +  FutureResult<List<CalendarPostModel>> getCalendarPosts({     
+      20 +    required String userId,                                    
+      21 +    required DateTime referenceDate,                           
+      22 +    required CalendarLoadDirection direction,                  
+      23 +    int limit = 42,                                            
+      24 +  }) async {                                                   
+      25 +    try {                                                      
+      26 +      // Convert referenceDate to year/month for the service   
+      27 +      final dtos = await calendarService.getCalendarPosts(     
+      28 +        userId: userId,                                        
+      29 +        year: referenceDate.year,                              
+      30 +        month: referenceDate.month,                            
+      31 +      );                                                       
+      32 +                                                               
+      33 +      final models = calendarPostMapper.mapDtoList(dtos);      
+      34 +      return Result.success(models);                           
+      35 +    } catch (e) {                                              
+      36 +      return Result.failure(                                   
+      37 +        CalendarExceptionMapper.fromSupabaseException(         
+      38 +          e is Exception ? e : Exception(e.toString()),        
+      39 +        ),                                                     
+      40 +      );                                                       
+      41 +    }                                                          
+      42 +  }                                                            
+      43 +}                                                              
+
+● Now let me check if the CalendarOperationException is still used.
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● It's still referenced in the mapper. Let me check it.
+
+● Read 1 file (ctrl+o to expand)
+
+● The exception mapper is still used by the repository's getCalendarPosts
+  method, so I should keep both CalendarOperationException and
+  CalendarExceptionMapper. They're general purpose for the calendar feature.
+
+  Now let me verify there are no remaining references to the deleted files.
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● Let me check the post_detail_page.dart for the reference.
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● That's post_detail_calendar_navigation.dart, not post_detail_calendar.dart.
+  That file handles navigation between calendar posts and is still needed. Let
+  me verify it exists.
+
+● Read 1 file (ctrl+o to expand)
+
+● Good, that's a different file that handles calendar navigation and is still
+  needed.
+
+  Now let me check if there are any remaining issues with the code. Let me also
+  check that the profile calendar component is working correctly.
+
+● Read 1 file (ctrl+o to expand)
+
+● I can see that this file still uses calendarSavedAt in several places. This is
+   a UI file and the plan says UI changes are for Phase 6. However, the changes
+  I made to the model make calendarSavedAt optional (DateTime?), so this code
+  will break.
+
+  Since the model changes make this necessary, I should update the profile
+  calendar to use publishedAt instead. This is a required change due to the data
+   layer changes - the UI needs to adapt to the new data structure.
+
+● Update(lib\presentation\pages\profile\components\calendar_section\profile_cale
+        ndar.dart)
+  ⎿  Added 4 lines, removed 4 lines
+      193  
+      194      final postsByDay = <String, CalendarPostModel>{};
+      195      for (final post in calendarCache) {
+      196 -      final postDate = post.calendarSavedAt;                  
+      196 +      final postDate = post.publishedAt;                      
+      197        if ((postDate.isAfter(firstVisibleDay) ||
+      198                postDate.isAtSameMomentAs(firstVisibleDay)) &&
+      199            (postDate.isBefore(lastVisibleDay) ||
+     ...
+      265            final postsByDay = <String, CalendarPostModel>{};
+      266            for (final post in posts) {
+      267              final dateKey =
+      268 -                '${post.calendarSavedAt.year}-${post.calendarS
+          -avedAt.month.toString().padLeft(2, '0')}-${post.calendarSavedA
+          -t.day.toString().padLeft(2, '0')}';                           
+      268 +                '${post.publishedAt.year}-${post.publishedAt.m
+          +onth.toString().padLeft(2, '0')}-${post.publishedAt.day.toStri
+          +ng().padLeft(2, '0')}';                                       
+      269              postsByDay[dateKey] = post;
+      270            }
+      271            calendarPostsByDay.value = postsByDay;
+     ...
+      320        isAuthorConnected: post.isAuthorConnected,
+      321        publishedAt: post.publishedAt,
+      322        publishedTimezone: post.publishedTimezone,
+      323 -      calendarSavedAt: post.calendarSavedAt,                  
+      323 +      calendarSavedAt: post.publishedAt,                      
+      324      );
+      325  
+      326      await PostDetailPage.showFromCalendar(
+      327        context,
+      328        post: feedPost,
+      329 -      headerDate: post.calendarSavedAt,                       
+      329 +      headerDate: post.publishedAt,                           
+      330        calendarUserId: userId,
+      331      );
+      332  
+
+● Now let me also check the FeedPostModel creation on line 323 - it passes
+  calendarSavedAt: post.calendarSavedAt which now needs to be updated as well.
+  Let me re-read the file to verify.
+
+● Read 1 file (ctrl+o to expand)
+
+● I see that the calendarSavedAt field on FeedPostModel is being set with
+  post.publishedAt. Since FeedPostModel.calendarSavedAt is used elsewhere, I
+  need to check what it's for. But looking at line 323, it correctly sets
+  calendarSavedAt: post.publishedAt now, which makes sense since we're using
+  publishedAt for calendar display dates.
+
+  Let me now check if there are other files that use calendarSavedAt from
+  CalendarPostModel that need updating.
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● Let me check the post_detail_calendar_navigation.dart - it might still
+  reference calendarSavedAt on the CalendarPostModel.
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● These need to be updated to use publishedAt.
+
+● Update(lib\presentation\pages\post_detail\utilities\post_detail_calendar_navig
+        ation.dart)
+  ⎿  Added 2 lines, removed 2 lines
+      58      }
+      59  
+      60      currentPostId.value = previousPost.postId;
+      61 -    currentPostDate.value = previousPost.calendarSavedAt;      
+      61 +    currentPostDate.value = previousPost.publishedAt;          
+      62      currentPostAuthorId.value = previousPost.authorId;
+      63      noMorePreviousPosts.value = false;
+      64    }
+     ...
+      112      }
+      113  
+      114      currentPostId.value = nextPost.postId;
+      115 -    currentPostDate.value = nextPost.calendarSavedAt;         
+      115 +    currentPostDate.value = nextPost.publishedAt;             
+      116      currentPostAuthorId.value = nextPost.authorId;
+      117      noMoreNextPosts.value = false;
+      118    }
+
+● Now let me verify the mapper references are for the DTO/Model mapping and not
+  navigation logic.
+
+● Read 1 file (ctrl+o to expand)
+
+● Good, that's the mapper I already updated - it correctly handles the nullable
+  calendarSavedAt.
+
+  Let me check the feed_post_dto_to_model_mapper and post_dto_to_model_mapper -
+  they likely reference calendarSavedAt on FeedPostModel which is a different
+  model (not CalendarPostModel).
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● These are for FeedPostModel, not CalendarPostModel. The FeedPostModel still
+  has a calendarSavedAt field as part of the post data, which is fine - that's a
+   different model. The git status shows the feed post files are already
+  modified as part of this branch, likely from prior work.
+
+  Let me verify the current state of everything by checking the TaskList.
+
+● The tasks have been cleaned up. Let me now verify that there are no broken
+  imports or references to deleted files.
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● All references to deleted files have been cleaned up. Let me provide a summary
+   of the completed work.
+
+  Summary
+
+  Phase 5 implementation is complete. Here's what was done:
+
+  New Files (1)
+
+  - db/migrations/005_lockout_calendar.sql - New RPC function
+  get_user_lockout_calendar that queries posts by lockout_id IS NOT NULL
+
+  Modified Files (13)
+  File: lib/core/features/calendar/data/dtos/calendar_post_dto.dart
+  Changes: Added lockoutId, made calendarSavedAt optional
+  ────────────────────────────────────────
+  File: lib/core/features/calendar/domain/models/calendar_post_model.dart
+  Changes: Added lockoutId, made calendarSavedAt optional
+  ────────────────────────────────────────
+  File:
+  lib/core/features/calendar/data/mappers/calendar_post_dto_to_model_mapper.dart
+  Changes: Map new fields, handle nullable calendarSavedAt
+  ────────────────────────────────────────
+  File: lib/core/features/calendar/data/services/calendar_service.dart
+  Changes: New RPC call, parallel URL signing, removed save/unsave
+  ────────────────────────────────────────
+  File:
+  lib/core/features/calendar/domain/contracts/calendar_service_contract.dart
+  Changes: Removed save/unsave method signatures
+  ────────────────────────────────────────
+  File:
+  lib/core/features/calendar/domain/contracts/calendar_repository_contract.dart
+  Changes: Removed save/unsave method signatures
+  ────────────────────────────────────────
+  File: lib/core/features/calendar/data/repositories/calendar_repository.dart
+  Changes: Removed save/unsave methods
+  ────────────────────────────────────────
+  File:
+  lib/core/features/calendar/domain/providers/calendar_posts_cache_provider.dart
+  Changes: Use publishedAt for date operations
+  ────────────────────────────────────────
+  File: lib/presentation/pages/circle_profile/views/circle_profile_view.dart
+  Changes: Removed CallFriendButton import and usage
+  ────────────────────────────────────────
+  File: lib/presentation/pages/post_detail/views/post_detail_view.dart
+  Changes: Removed calendar toggle, use publishedAt for dates
+  ────────────────────────────────────────
+  File: lib/presentation/pages/post_detail/components/post_detail_actions.dart
+  Changes: Removed onCalendarTap parameter
+  ────────────────────────────────────────
+  File: lib/presentation/pages/profile/components/calendar_section/profile_calen
+  dar.dart
+  Changes: Use publishedAt instead of calendarSavedAt
+  ────────────────────────────────────────
+  File: lib/presentation/pages/post_detail/utilities/post_detail_calendar_naviga
+  tion.dart
+  Changes: Use publishedAt for navigation
+  Deleted Files (12)
+
+  - Calendar save/unsave use cases, providers, and generated files (6 files)
+  - Call feature component and hook (2 files)
+  - Calendar operation response DTO and generated files (3 files)
+  - Post detail calendar utility (1 file)
+
+  Key Changes
+
+  1. Calendar now shows lockout posts automatically - No more manual save/unsave
+  2. Batch URL signing - Parallel processing instead of sequential N+1 queries
+  3. Date grouping uses publishedAt - Instead of legacy calendarSavedAt
+  4. Call button removed - From circle profile view
+
+  Commands to Run
+
+  After implementation, you need to run build_runner to regenerate
+  freezed/json_serializable files:
+  fvm dart run build_runner build --delete-conflicting-outputs
+
+✻ Churned for 1h 55m 1s
+
+❯ Be as specific as possible, what tests will now pass that would have      
+  failed earlier?                                                           
+
+● I need to be honest: I don't know what automated tests exist in this codebase,
+   and I haven't run any tests. The changes I made are data layer changes that
+  require:
+
+  1. Database migration applied - The get_user_lockout_calendar RPC must exist
+  in Supabase
+  2. Build runner executed - To regenerate .freezed.dart and .g.dart files for
+  the modified models
+
+  What I can verify without running the app:
+
+  Compile-time correctness (after build_runner):
+  - No broken imports to deleted files
+  - Model field types match (nullable calendarSavedAt, new lockoutId)
+  - Contract implementations match interfaces
+
+  What requires manual/runtime verification:
+  Verification: Calendar shows lockout posts only
+  How to test: Create a post during lockout, verify it appears in calendar.
+    Create a post outside lockout, verify it does NOT appear.
+  ────────────────────────────────────────
+  Verification: Batch URL signing is faster
+  How to test: Compare calendar load time before/after. Previous: ~337s for 12
+    months. Expected: <5s.
+  ────────────────────────────────────────
+  Verification: Call button removed
+  How to test: Open a friend's profile, verify no "Call" button appears
+  ────────────────────────────────────────
+  Verification: Calendar uses publishedAt for dates
+  How to test: Post on Jan 15, verify it shows on Jan 15 in calendar (not on
+  save
+     date)
+  What I don't know:
+
+  - Whether this project has unit tests for the calendar feature
+  - Whether integration tests exist
+  - What the existing test coverage is
+
+  To properly answer your question, I'd need to explore the test/ directory:
+
+  fvm flutter test
+
+  Would you like me to explore the test directory to understand what tests exist
+   and whether my changes would break any of them?
+
+❯ We are now going to move on to the UI changes necessary for the calendar  
+  to work. The changes involved here are found under                        
+  @prompts/006-ui-layer-updates.md - explore this file to get a feel for    
+  the prompt's goals, then generate a copy-pastable introduction that I can 
+  give to you after having cleared your context in order for you to build   
+  out this feature in a way that is consistent with the goals we set out    
+  above, and your calendar implemntation                                    
+  ⎿  Read prompts\006-ui-layer-updates.md (204 lines)
+  ⎿  ⧉ Selected 103 lines from db\migrations\005_lockout_calendar.sql in Cursor
+
+● Here's the handoff document for Phase 6:
+
+  ---
+  Context Handoff: Phase 6 UI Layer Updates for Goback Calendar
+
+  Project Overview
+
+  Goback is a Flutter mobile app for private social circles with 24h ephemeral
+  content, invite-only access, and daily usage limits. It's designed to align
+  with human neurochemistry (max 150 connections, conscious interactions).
+
+  What Phase 5 Completed (Data Layer)
+
+  The calendar feature was refactored from "saved posts" to "lockout posts":
+
+  Key changes:
+  1. New RPC: get_user_lockout_calendar queries posts where lockout_id IS NOT
+  NULL (not calendar_saved_at)
+  2. Models updated: CalendarPostModel now has optional lockoutId, optional
+  calendarSavedAt, uses publishedAt for date grouping
+  3. Batch URL signing: Calendar service processes signed URLs in parallel (was
+  sequential N+1)
+  4. Removed save/unsave: No more manual calendar add/remove - lockout posts
+  appear automatically
+  5. Call button removed: From circle profile view
+
+  Critical file states after Phase 5:
+  File: lib/core/features/calendar/domain/models/calendar_post_model.dart
+  State: calendarSavedAt is now DateTime? (optional), lockoutId added,
+    publishedAt used for date display
+  ────────────────────────────────────────
+  File:
+  lib/core/features/calendar/domain/providers/calendar_posts_cache_provider.dart
+  State: All date operations use publishedAt instead of calendarSavedAt
+  ────────────────────────────────────────
+  File: lib/presentation/pages/profile/components/calendar_section/profile_calen
+  dar.dart
+  State: Uses post.publishedAt for date keys
+  ────────────────────────────────────────
+  File: lib/presentation/pages/post_detail/components/post_detail_actions.dart
+  State: onCalendarTap removed (no more toggle)
+  ────────────────────────────────────────
+  File: lib/presentation/pages/circle_profile/views/circle_profile_view.dart
+  State: CallFriendButton removed
+  Database migration created: db/migrations/005_lockout_calendar.sql
+
+  ---
+  Phase 6 Requirements (UI Layer)
+
+  From prompts/006-ui-layer-updates.md, the calendar-related UI tasks are:
+
+  Profile Page Updates:
+  - Weekly lockout hours stat (prominent placement) - already has
+  profile_weekly_stats.dart
+  - Calendar shows days with lockout posts (dot indicators)
+  - Tap day → show that day's lockout post(s)
+  - Call button already removed in Phase 5
+
+  Critical Scalability Fixes:
+  1. Consolidate home_view useEffects - 7 hooks → 3 focused hooks
+  2. Set global image cache limit - 100 images / 50MB in main.dart
+  3. Move image flip to compute() - full_screen_image.dart freezes UI
+  4. Remove ALL debug print statements - Replace with logger
+
+  Large file cleanup:
+  - full_screen_image.dart (934 lines) - split into components
+  - home_feed_post_card.dart (477 lines) - refactor if beneficial
+  - Target: all files under 500 lines
+
+  ---
+  Constraints (from CLAUDE.md)
+
+  - Widgets: UI only, no Supabase calls, pure build()
+  - Use hooks for local UI state
+  - Use Riverpod providers for data
+  - Match existing theming and spacing
+  - max_lines_for_file: 500
+  - avoid_print - use logger instead
+  - No business logic in widgets
+
+  ---
+  Verification Checklist
+
+  1. Calendar shows lockout posts by publishedAt date
+  2. Tapping a calendar day opens that day's lockout post
+  3. Weekly stats display works
+  4. No files over 500 lines
+  5. No print statements
+  6. fvm dart run build_runner build --delete-conflicting-outputs succeeds
+
+  ---
+  Starting Point
+
+  Read these files first:
+  1. prompts/006-ui-layer-updates.md - full requirements
+  2. CLAUDE.md - development guidelines
+  3. lib/presentation/pages/profile/components/calendar_section/profile_calendar
+  .dart - current calendar UI
+  4. lib/presentation/pages/home/views/home_view.dart - for useEffect 
+  consolidation
+
+✻ Sautéed for 39s

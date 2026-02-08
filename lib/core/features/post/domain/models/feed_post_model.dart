@@ -44,6 +44,8 @@ sealed class FeedPostModel with _$FeedPostModel {
     /// When this post was saved to calendar (null if not saved)
     DateTime? calendarSavedAt,
     @Default([]) List<LinkPreviewModel> linkPreviews,
+    @Default(0) int reactionCount,
+    @Default(0) int commentCount,
   }) = _FeedPostModel;
 
   /// Returns true if this is a lockout post (has a lockout session reference)

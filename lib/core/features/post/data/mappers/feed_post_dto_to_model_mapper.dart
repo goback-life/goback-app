@@ -45,6 +45,8 @@ class FeedPostDtoToModelMapper {
           ? DateTime.tryParse(dto.calendarSavedAt!)
           : null,
       linkPreviews: [], // TODO: Parse linkPreviews JSON when implemented
+      reactionCount: dto.reactionCount ?? 0,
+      commentCount: dto.commentCount ?? 0,
     );
   }
 

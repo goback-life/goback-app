@@ -21,11 +21,13 @@ sealed class CalendarPostModel with _$CalendarPostModel {
     required bool isOwnPost,
     required DateTime publishedAt,
     required String publishedTimezone,
-    /// When this post was saved to calendar
-    required DateTime calendarSavedAt,
     String? authorAvatarUrl,
     String? thumbnailUrl,
     String? description,
     String? videoUrl,
+    /// The lockout session ID this post was created from
+    String? lockoutId,
+    /// When this post was saved to calendar (legacy, now optional)
+    DateTime? calendarSavedAt,
   }) = _CalendarPostModel;
 }

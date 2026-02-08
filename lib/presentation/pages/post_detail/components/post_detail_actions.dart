@@ -9,7 +9,6 @@ class PostDetailActions extends StatelessWidget
   const PostDetailActions({
     required this.isCurrentUserPost,
     required this.isPostInCalendar,
-    required this.onCalendarTap,
     required this.onMenuTap,
     this.showMenu = true,
     this.showCalendarIcon = true,
@@ -20,7 +19,6 @@ class PostDetailActions extends StatelessWidget
   final bool isPostInCalendar;
   final bool showMenu;
   final bool showCalendarIcon;
-  final VoidCallback onCalendarTap;
   final VoidCallback onMenuTap;
 
   @override
@@ -32,22 +30,19 @@ class PostDetailActions extends StatelessWidget
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         if (isCurrentUserPost && showCalendarIcon)
-          GestureDetector(
-            onTap: onCalendarTap,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isPostInCalendar
-                    ? colorScheme.primaryContainer
-                    : colorScheme.primaryContainer.withValues(alpha: 0.1),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(iconPadding),
-                child: Assets.svg.addToCalendar.render(
-                  colorFilter: isPostInCalendar
-                      ? colorScheme.surface.asSrcIn
-                      : colorScheme.primaryContainer.asSrcIn,
-                ),
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isPostInCalendar
+                  ? colorScheme.primaryContainer
+                  : colorScheme.primaryContainer.withValues(alpha: 0.1),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(iconPadding),
+              child: Assets.svg.addToCalendar.render(
+                colorFilter: isPostInCalendar
+                    ? colorScheme.surface.asSrcIn
+                    : colorScheme.primaryContainer.asSrcIn,
               ),
             ),
           ),

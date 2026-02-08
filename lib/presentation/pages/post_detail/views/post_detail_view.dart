@@ -1,5 +1,7 @@
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
+import 'package:cloudless/core/features/calendar/domain/enums/calendar_load_direction.dart';
 import 'package:cloudless/core/features/calendar/domain/providers/calendar_posts_cache_provider.dart';
+import 'package:cloudless/core/features/calendar/domain/providers/get_calendar_posts_provider.dart';
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_detail.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
@@ -8,10 +10,10 @@ import 'package:cloudless/presentation/pages/post_detail/components/post_detail_
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_description.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_header.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_media.dart';
+import 'package:cloudless/presentation/pages/post_detail/components/post_detail_comments.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_reactions.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_tags.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
-import 'package:cloudless/presentation/pages/post_detail/utilities/post_detail_calendar.dart';
 import 'package:cloudless/presentation/pages/post_detail/utilities/post_detail_navigation.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -82,10 +84,32 @@ class PostDetailView extends HookConsumerWidget
 
               if (cacheUserId != user.id ||
                   (isCurrentUserPost && isFromCalendar)) {
-                await PostDetailCalendar.reloadCalendarCache(
-                  ref,
-                  user.id,
-                  isMounted: () => isMounted,
+                // Reload calendar cache for current user
+                final now = DateTime.now();
+                final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+                final endOffset = 7 - lastDayOfMonth.weekday;
+                final lastVisibleDay = DateTime(now.year, now.month + 1, endOffset);
+
+                final result = await ref.read(
+                  getCalendarPostsProvider(
+                    userId: user.id,
+                    referenceDate: lastVisibleDay,
+                    direction: CalendarLoadDirection.before,
+                    limit: 42,
+                  ).future,
+                );
+
+                if (!isMounted) return;
+
+                result.fold(
+                  (posts) {
+                    ref
+                        .read(calendarPostsCacheProvider.notifier)
+                        .updateCache(posts, userId: user.id);
+                  },
+                  (error) {
+                    ref.read(calendarPostsCacheProvider.notifier).clearCache();
+                  },
                 );
               }
             },
@@ -123,13 +147,13 @@ class PostDetailView extends HookConsumerWidget
         );
 
         return posts.any((p) {
-          final postCalendarDate = DateTime(
-            p.calendarSavedAt.year,
-            p.calendarSavedAt.month,
-            p.calendarSavedAt.day,
+          final postPublishedDate = DateTime(
+            p.publishedAt.year,
+            p.publishedAt.month,
+            p.publishedAt.day,
           );
           return p.postId == postId &&
-              postCalendarDate.isAtSameMomentAs(normalizedHeaderDate);
+              postPublishedDate.isAtSameMomentAs(normalizedHeaderDate);
         });
       },
       [
@@ -284,13 +308,6 @@ class PostDetailView extends HookConsumerWidget
                         isPostInCalendar: isPostInCalendar,
                         showMenu: canShowMenu,
                         showCalendarIcon: canShowCalendarIcon,
-                        onCalendarTap: () =>
-                            PostDetailCalendar.handleCalendarToggle(
-                              context,
-                              ref,
-                              post,
-                              isPostInCalendar,
-                            ),
                         onMenuTap: () => _handleShowMenu(isMenuVisible),
                       ),
                     ],
@@ -319,10 +336,19 @@ class PostDetailView extends HookConsumerWidget
                       ),
                       SizedBox(height: sectionSpacing),
                     ],
-                    PostDetailReactions(
-                      post: post,
-                      isCurrentUserPost: isCurrentUserPost,
-                      isFromCalendar: isFromCalendar,
+                    Row(
+                      children: [
+                        PostDetailReactions(
+                          post: post,
+                          isCurrentUserPost: isCurrentUserPost,
+                          isFromCalendar: isFromCalendar,
+                        ),
+                        SizedBox(width: sectionSpacing),
+                        PostDetailComments(
+                          post: post,
+                          isCurrentUserPost: isCurrentUserPost,
+                        ),
+                      ],
                     ),
                     SizedBox(height: sectionSpacing),
                     if (post.taggedUsernames.isNotEmpty) ...[

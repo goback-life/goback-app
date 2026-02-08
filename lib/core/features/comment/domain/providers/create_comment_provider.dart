@@ -37,10 +37,11 @@ class CreateComment extends _$CreateComment {
 
     state = AsyncData(mappedResult);
 
-    // Refresh the comments list for this post
-    if (mappedResult.isSuccess) {
-      ref.invalidate(getPostCommentsProvider(postId));
-    }
+    // Refresh the comments list for this post on success
+    mappedResult.fold(
+      (_) => ref.invalidate(getPostCommentsProvider(postId)),
+      (_) {},
+    );
 
     return mappedResult;
   }

@@ -58,7 +58,7 @@ class PostDetailCalendarNavigation {
     }
 
     currentPostId.value = previousPost.postId;
-    currentPostDate.value = previousPost.calendarSavedAt;
+    currentPostDate.value = previousPost.publishedAt;
     currentPostAuthorId.value = previousPost.authorId;
     noMorePreviousPosts.value = false;
   }
@@ -112,7 +112,7 @@ class PostDetailCalendarNavigation {
     }
 
     currentPostId.value = nextPost.postId;
-    currentPostDate.value = nextPost.calendarSavedAt;
+    currentPostDate.value = nextPost.publishedAt;
     currentPostAuthorId.value = nextPost.authorId;
     noMoreNextPosts.value = false;
   }
