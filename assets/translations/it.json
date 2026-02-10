@@ -470,12 +470,29 @@
             "title": "Notifiche",
             "markAllAsRead": "Segna tutto come letto",
             "empty": "Nessuna notifica ancora",
+            "emptyQuiet": "Niente di nuovo \u2014 goditi la quiete.",
             "reactionSingle": "@{username} ha reagito al tuo post",
             "reactionMultiple": "@{username} e altri {count} hanno reagito al tuo post",
             "tag": "@{username} ti ha taggato in un post",
             "replySingle": "@{username} ha risposto al tuo post",
             "replyMultiple": "@{username} e altri {count} hanno risposto al tuo post",
             "circleJoin": "@{username} si è unito alla tua cerchia"
+        },
+        "friends_locked_out": {
+            "title": "Amici Offline",
+            "empty": "Nessun amico è attualmente offline",
+            "error": "Impossibile caricare gli amici",
+            "join": "Unisciti",
+            "ending_soon": "Sta finendo",
+            "joined": "Ti sei unito al lockout con successo",
+            "join_error": "Impossibile unirsi al lockout"
+        },
+        "memorable_selection": {
+            "title": "Salva nel Calendario",
+            "description": "Scegli un post di ieri da salvare nel tuo calendario",
+            "no_posts": "Nessun post disponibile da salvare",
+            "save": "Salva nel Calendario",
+            "skip": "Salta per oggi"
         }
     },
     "permission": {

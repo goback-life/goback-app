@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
 import 'package:cloudless/core/features/connection/domain/providers/is_user_connected_provider.dart';
 import 'package:cloudless/core/features/notification/data/providers/notification_repository_provider.dart';
@@ -7,11 +9,9 @@ import 'package:cloudless/core/features/notification/domain/models/aggregated_no
 import 'package:cloudless/core/features/notification/domain/providers/aggregated_notifications_provider.dart';
 import 'package:cloudless/core/features/notification/domain/providers/unread_notification_count_provider.dart';
 import 'package:cloudless/core/features/notification/domain/use_cases/mark_all_notifications_as_read_use_case.dart';
-import 'package:cloudless/core/features/notification/domain/use_cases/mark_notifications_as_read_use_case.dart';
 import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
 import 'package:cloudless/presentation/pages/external_profile/external_profile_routable.dart';
 import 'package:cloudless/presentation/pages/notifications/components/notification_empty_state.dart';
-import 'package:cloudless/presentation/pages/notifications/components/notification_header.dart';
 import 'package:cloudless/presentation/pages/notifications/components/notification_item.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_page.dart';
 import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
@@ -39,53 +39,66 @@ class NotificationsView extends HookConsumerWidget {
               pageSize: 20,
             );
 
+            // Auto-mark all as read after 1.5s delay
+            useEffect(() {
+              final timer = Timer(
+                const Duration(milliseconds: 1500),
+                () => _markAllAsReadSilently(ref, user.id),
+              );
+              return timer.cancel;
+            }, []);
+
             return notificationsHook.notifications.when(
               data: (notificationsResult) {
                 return notificationsResult.fold(
                   (notifications) {
-                    if (notifications.isEmpty) {
+                    final lockoutCount = notifications
+                        .where(
+                          (n) =>
+                              n.type == NotificationType.lockoutStarted ||
+                              n.type == NotificationType.lockoutJoined,
+                        )
+                        .length;
+                    // ignore: avoid_print
+                    print('[NotificationsView] total=${notifications.length}, lockout=$lockoutCount, visible=${notifications.length - lockoutCount}');
+                    for (final n in notifications) {
+                      // ignore: avoid_print
+                      print('[NotificationsView]   type=${n.type.value}, ref=${n.referenceId}');
+                    }
+
+                    final filtered = notifications
+                        .where(
+                          (n) =>
+                              n.type != NotificationType.lockoutStarted &&
+                              n.type != NotificationType.lockoutJoined,
+                        )
+                        .toList();
+
+                    if (filtered.isEmpty) {
                       return const NotificationEmptyState();
                     }
 
                     return RefreshIndicator(
                       onRefresh: () async {
                         await notificationsHook.refresh();
-                        // Also refresh unread count when pulling to refresh
-                        ref.invalidate(
-                          unreadNotificationCountProvider(userId: user.id),
-                        );
                       },
                       child: ListView.builder(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16.0,
                           vertical: 8.0,
                         ),
-                        itemCount: notifications.length + 1,
+                        itemCount: filtered.length,
                         itemBuilder: (context, index) {
-                          if (index == 0) {
-                            return NotificationHeader(
-                              onMarkAllAsRead: () async {
-                                await _handleMarkAllAsRead(ref, user.id);
-                              },
-                            );
-                          }
-                          final notification = notifications[index - 1];
+                          final notification = filtered[index];
                           return NotificationItem(
-                            key: ValueKey('notification_${notification.type.value}_${notification.referenceId ?? 'null'}_${notification.updatedAt.millisecondsSinceEpoch}'),
-                            itemKey: 'notification_${notification.type.value}_${notification.referenceId ?? 'null'}_${notification.updatedAt.millisecondsSinceEpoch}',
+                            key: ValueKey(
+                              'notification_${notification.type.value}_${notification.referenceId ?? 'null'}_${notification.updatedAt.millisecondsSinceEpoch}',
+                            ),
                             notification: notification,
                             onTap: () async {
-                              await _handleNotificationTap(
+                              await _navigateFromNotification(
                                 context,
                                 ref,
-                                user.id,
-                                notification,
-                              );
-                            },
-                            onSwipeToMarkRead: () async {
-                              await _handleSwipeToMarkRead(
-                                ref,
-                                user.id,
                                 notification,
                               );
                             },
@@ -131,59 +144,36 @@ class NotificationsView extends HookConsumerWidget {
     );
   }
 
-  Future<void> _handleNotificationTap(
-    BuildContext context,
-    WidgetRef ref,
-    String userId,
-    AggregatedNotificationModel notification,
-  ) async {
-    // Mark notification as read if unread
-    if (!notification.isRead) {
-      await _handleSwipeToMarkRead(ref, userId, notification);
-    }
+  /// Silently mark all notifications as read and clear the badge.
+  void _markAllAsReadSilently(WidgetRef ref, String userId) {
+    // Optimistically clear the badge immediately
+    ref.invalidate(unreadNotificationCountProvider(userId: userId));
 
-    // Navigate to related post/profile based on notification type
-    await _navigateFromNotification(context, ref, notification);
-  }
-
-  Future<void> _handleSwipeToMarkRead(
-    WidgetRef ref,
-    String userId,
-    AggregatedNotificationModel notification,
-  ) async {
-    // Mark notification as read
-    final useCase = MarkNotificationsAsReadUseCase(
+    // Fire-and-forget the API call
+    final useCase = MarkAllNotificationsAsReadUseCase(
       repository: ref.read(notificationRepositoryProvider),
       userId: userId,
-      notificationType: notification.type.value,
-      referenceId: notification.referenceId,
     );
 
-    final result = await useCase.execute();
-
-    result.fold(
-      (_) {
-        // Invalidate providers to refresh UI
-        ref.invalidate(
-          aggregatedNotificationsProvider(
-            userId: userId,
-            pageSize: 20,
-                      ),
-        );
-        ref.invalidate(
-          unreadNotificationCountProvider(userId: userId),
-        );
-        logger.info(
-          'Notification marked as read: ${notification.type.value}, postId: ${notification.referenceId}',
-        );
-      },
-      (error) {
-        logger.error(
-          'Failed to mark notification as read',
-          exception: error,
-        );
-      },
-    );
+    useCase.execute().then((result) {
+      result.fold(
+        (_) {
+          // Refresh notifications so read_at updates in UI
+          ref.invalidate(
+            aggregatedNotificationsProvider(
+              userId: userId,
+              pageSize: 20,
+            ),
+          );
+        },
+        (error) {
+          logger.error(
+            'Failed to mark notifications as read',
+            exception: error,
+          );
+        },
+      );
+    });
   }
 
   Future<void> _navigateFromNotification(
@@ -194,45 +184,12 @@ class NotificationsView extends HookConsumerWidget {
     if (!context.mounted) return;
 
     switch (notification.type) {
+      case NotificationType.lockoutStarted:
+      case NotificationType.lockoutJoined:
+        break;
       case NotificationType.reaction:
       case NotificationType.tag:
       case NotificationType.comment:
-        // Navigate to the related post
-        if (notification.referenceId != null) {
-          await showModalBottomSheet<void>(
-            context: context,
-            backgroundColor: Colors.transparent,
-            barrierColor: Colors.transparent,
-            isScrollControlled: true,
-            isDismissible: true,
-            enableDrag: true,
-            builder: (sheetContext) => GestureDetector(
-              onTap: () => Navigator.of(sheetContext).pop(),
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: Colors.transparent,
-                child: GestureDetector(
-                  onTap: () {},
-                  child: Container(
-                    margin: const EdgeInsets.only(
-                      left: 12.0,
-                      right: 12.0,
-                      top: 150.0,
-                      bottom: 20.0,
-                    ),
-                    child: PostDetailPage.byId(
-                      postId: notification.referenceId!,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        }
-      case NotificationType.lockoutStarted:
-      case NotificationType.lockoutJoined:
-        // Lockout notifications - navigate to the lockout post if available
         if (notification.referenceId != null) {
           await showModalBottomSheet<void>(
             context: context,
@@ -266,7 +223,6 @@ class NotificationsView extends HookConsumerWidget {
           );
         }
       case NotificationType.friendJoined:
-        // Navigate to the actor's profile (first actor who joined)
         if (notification.actorIds.isNotEmpty) {
           final actorId = notification.actorIds.first;
 
@@ -285,13 +241,7 @@ class NotificationsView extends HookConsumerWidget {
               );
               final isConnected = connectionResult.fold(
                 (isConnected) => isConnected,
-                (error) {
-                  logger.error(
-                    'Failed to check user connection',
-                    exception: error,
-                  );
-                  return false;
-                },
+                (error) => false,
               );
 
               if (isConnected) {
@@ -304,39 +254,4 @@ class NotificationsView extends HookConsumerWidget {
         }
     }
   }
-
-  Future<void> _handleMarkAllAsRead(
-    WidgetRef ref,
-    String userId,
-  ) async {
-    final useCase = MarkAllNotificationsAsReadUseCase(
-      repository: ref.read(notificationRepositoryProvider),
-      userId: userId,
-    );
-
-    final result = await useCase.execute();
-
-    result.fold(
-      (_) {
-        // Invalidate providers to refresh UI
-        ref.invalidate(
-          aggregatedNotificationsProvider(
-            userId: userId,
-            pageSize: 20,
-                      ),
-        );
-        ref.invalidate(
-          unreadNotificationCountProvider(userId: userId),
-        );
-        logger.info('All notifications marked as read for user: $userId');
-      },
-      (error) {
-        logger.error(
-          'Failed to mark all notifications as read',
-          exception: error,
-        );
-      },
-    );
-  }
 }
-

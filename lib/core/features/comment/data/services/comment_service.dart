@@ -64,6 +64,7 @@ class CommentService implements CommentServiceContract {
   FutureResult<PostCommentDto> createComment({
     required String postId,
     required String content,
+    List<String>? mentionedUserIds,
   }) async {
     try {
       final userId = supabase.auth.currentUser!.id;
@@ -85,6 +86,13 @@ class CommentService implements CommentServiceContract {
           ''')
           .single();
 
+      final commentId = response['id'] as String;
+
+      // Create mention records if any @mentions were detected
+      if (mentionedUserIds != null && mentionedUserIds.isNotEmpty) {
+        await _createCommentMentions(commentId, mentionedUserIds);
+      }
+
       final profile = response['profiles'] as Map<String, dynamic>?;
 
       return Result.success(PostCommentDto.fromJson({
@@ -102,6 +110,25 @@ class CommentService implements CommentServiceContract {
       return Result.failure(
         e is Exception ? e : Exception('Failed to create comment: $e'),
       );
+    }
+  }
+
+  /// Creates comment_mentions records via RPC.
+  Future<void> _createCommentMentions(
+    String commentId,
+    List<String> mentionedUserIds,
+  ) async {
+    try {
+      await supabase.rpc(
+        'add_comment_mentions',
+        params: {
+          'p_comment_id': commentId,
+          'p_mentioned_user_ids': mentionedUserIds,
+        },
+      );
+    } catch (e) {
+      // Log but don't fail the comment creation
+      logger.error('Failed to create comment mentions', exception: e);
     }
   }
 

@@ -13,14 +13,10 @@ class NotificationItem extends HookConsumerWidget
     super.key,
     required this.notification,
     required this.onTap,
-    required this.onSwipeToMarkRead,
-    required this.itemKey,
   });
 
   final AggregatedNotificationModel notification;
   final VoidCallback onTap;
-  final VoidCallback onSwipeToMarkRead;
-  final String itemKey;
 
   Widget _buildPostPreview(
     BuildContext context,
@@ -29,7 +25,6 @@ class NotificationItem extends HookConsumerWidget
     ColorScheme colorScheme,
     NotificationType notificationType,
   ) {
-    // For friend_joined notifications (no related post), show person icon
     if (notificationType == NotificationType.friendJoined) {
       return Icon(
         Icons.person_outline,
@@ -38,7 +33,6 @@ class NotificationItem extends HookConsumerWidget
       );
     }
 
-    // Show "T" for text posts
     if (postContentType == 'text') {
       return Center(
         child: Text(
@@ -51,7 +45,6 @@ class NotificationItem extends HookConsumerWidget
       );
     }
 
-    // Show thumbnail for posts with media
     if (postThumbnailUrl != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
@@ -67,7 +60,6 @@ class NotificationItem extends HookConsumerWidget
       );
     }
 
-    // Default icon for posts without thumbnail (fallback)
     return Icon(
       Icons.image_outlined,
       color: colorScheme.onSurface.withOpacity(0.5),
@@ -145,70 +137,48 @@ class NotificationItem extends HookConsumerWidget
     }
   }
 
+  String _formatRelativeTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final local = dateTime.toLocal();
+    final diff = now.difference(local);
+
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inHours < 48) return 'Yesterday';
+    return DateFormat.MMMd().format(local);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isUnread = !notification.isRead;
 
-    // Only allow swipe if notification is unread
-    if (!notification.isRead) {
-      return Dismissible(
-        key: Key(itemKey),
-        direction: DismissDirection.endToStart,
-        background: Container(
-          margin: const EdgeInsets.only(bottom: 12.0),
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(notificationItemBorderRadius),
-          ),
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20.0),
-          child: Icon(
-            Icons.check_circle_outline,
-            color: colorScheme.primary,
-            size: 24,
-          ),
-        ),
-        confirmDismiss: (direction) async {
-          // Mark as read but don't actually dismiss the item
-          // The item will update to read state after refresh
-          onSwipeToMarkRead();
-          return false; // Prevent automatic removal
-        },
-        child: _buildNotificationContent(context, theme, colorScheme),
-      );
-    }
-
-    return _buildNotificationContent(context, theme, colorScheme);
-  }
-
-  Widget _buildNotificationContent(
-    BuildContext context,
-    ThemeData theme,
-    ColorScheme colorScheme,
-  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(notificationItemBorderRadius),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
         margin: const EdgeInsets.only(bottom: 12.0),
         padding: EdgeInsets.all(notificationItemPadding),
         decoration: BoxDecoration(
-          color: notification.isRead
-              ? colorScheme.surface
-              : colorScheme.primaryContainer.withOpacity(0.1),
+          color: isUnread
+              ? const Color(0xFFFFF8F2)
+              : colorScheme.surface,
           borderRadius: BorderRadius.circular(notificationItemBorderRadius),
-          border: Border.all(
-            color: notification.isRead
-                ? colorScheme.outline.withOpacity(0.1)
-                : colorScheme.primary.withOpacity(0.2),
-            width: 1,
+          border: Border(
+            left: BorderSide(
+              color: isUnread
+                  ? const Color(0xFFE8913A)
+                  : Colors.transparent,
+              width: notificationUnreadBorderWidth,
+            ),
           ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Post thumbnail or text indicator
             Container(
               width: 48,
               height: 48,
@@ -225,7 +195,6 @@ class NotificationItem extends HookConsumerWidget
               ),
             ),
             const SizedBox(width: 12),
-            // Notification content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,15 +202,16 @@ class NotificationItem extends HookConsumerWidget
                 children: [
                   Text(
                     _getNotificationText(context, notification),
-                    style: theme.textTheme.bodyMedium,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight:
+                          isUnread ? FontWeight.w600 : FontWeight.normal,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat.yMMMd().add_jm().format(
-                          notification.updatedAt,
-                        ),
+                    _formatRelativeTime(notification.updatedAt),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurface.withOpacity(0.6),
                     ),
@@ -249,23 +219,9 @@ class NotificationItem extends HookConsumerWidget
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            if (!notification.isRead)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: colorScheme.error,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
           ],
         ),
       ),
     );
   }
 }
-

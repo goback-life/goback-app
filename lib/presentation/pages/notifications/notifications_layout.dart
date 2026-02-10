@@ -18,6 +18,9 @@ mixin NotificationsLayout on MainLayout {
   double get notificationItemBorderRadius => 12.0;
   double get notificationItemSpacing => 12.0;
 
+  // Notification Unread
+  double get notificationUnreadBorderWidth => 3.0;
+
   // Notification Header
   double get notificationHeaderHeight => 60.0;
 }

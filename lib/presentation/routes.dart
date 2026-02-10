@@ -3,6 +3,7 @@ import 'package:cloudless/presentation/pages/content_editor/content_editor_routa
 import 'package:cloudless/presentation/pages/create_profile/create_profile_routable.dart';
 import 'package:cloudless/presentation/pages/edit_profile/edit_profile_routable.dart';
 import 'package:cloudless/presentation/pages/external_profile/external_profile_routable.dart';
+import 'package:cloudless/presentation/pages/friends_locked_out/friends_locked_out_routable.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/invite_to_circle_routable.dart';
 import 'package:cloudless/presentation/pages/join_circle/join_circle_routable.dart';
@@ -41,4 +42,5 @@ final List<BaseRoutable> routes = [
   const ManualLockoutRoutable(),
   const LockoutCompleteRoutable(lockoutSessionId: ''),
   const NotificationsRoutable(),
+  const FriendsLockedOutRoutable(),
 ];

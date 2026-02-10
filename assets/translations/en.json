@@ -470,12 +470,29 @@
             "title": "Notifications",
             "markAllAsRead": "Mark all as read",
             "empty": "No notifications yet",
+            "emptyQuiet": "Nothing new \u2014 enjoy the quiet.",
             "reactionSingle": "@{username} reacted to your post",
             "reactionMultiple": "@{username} and {count} others reacted to your post",
             "tag": "@{username} tagged you in a post",
             "replySingle": "@{username} replied to your post",
             "replyMultiple": "@{username} and {count} others replied to your post",
             "circleJoin": "@{username} joined your circle"
+        },
+        "friends_locked_out": {
+            "title": "Friends Offline",
+            "empty": "No friends are currently offline",
+            "error": "Failed to load friends",
+            "join": "Join",
+            "ending_soon": "Ending soon",
+            "joined": "Joined lockout successfully",
+            "join_error": "Failed to join lockout"
+        },
+        "memorable_selection": {
+            "title": "Save to Calendar",
+            "description": "Choose one post from yesterday to save to your calendar",
+            "no_posts": "No posts available to save",
+            "save": "Save to Calendar",
+            "skip": "Skip for today"
         }
     },
     "permission": {

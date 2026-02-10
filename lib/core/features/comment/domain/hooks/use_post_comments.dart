@@ -16,7 +16,7 @@ typedef PostCommentsResult = ({
   bool canAddMore,
   bool isLoading,
   bool isSubmitting,
-  Future<void> Function(String content) addComment,
+  Future<void> Function(String content, {List<String>? mentionedUserIds}) addComment,
   Future<void> Function(String commentId) deleteComment,
   bool Function(PostCommentModel comment) isOwnComment,
   VoidCallback refresh,
@@ -49,7 +49,7 @@ PostCommentsResult usePostComments(WidgetRef ref, String postId) {
 
   final canAddMore = userCommentCount < kMaxCommentsPerUserPerPost;
 
-  Future<void> addComment(String content) async {
+  Future<void> addComment(String content, {List<String>? mentionedUserIds}) async {
     if (isSubmitting.value || content.trim().isEmpty) return;
     isSubmitting.value = true;
 
@@ -58,6 +58,7 @@ PostCommentsResult usePostComments(WidgetRef ref, String postId) {
     final result = await ref.read(createCommentProvider.notifier).create(
       postId: postId,
       content: content.trim(),
+      mentionedUserIds: mentionedUserIds,
     );
 
     result.fold(

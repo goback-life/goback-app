@@ -13,9 +13,12 @@ abstract class CommentServiceContract {
   });
 
   /// Creates a new comment on a post.
+  ///
+  /// If [mentionedUserIds] is provided, creates mention records for those users.
   FutureResult<PostCommentDto> createComment({
     required String postId,
     required String content,
+    List<String>? mentionedUserIds,
   });
 
   /// Deletes a comment (soft delete).

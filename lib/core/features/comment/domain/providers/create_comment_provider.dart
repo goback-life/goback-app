@@ -18,9 +18,12 @@ class CreateComment extends _$CreateComment {
   }
 
   /// Creates a new comment on a post.
+  ///
+  /// If [mentionedUserIds] is provided, creates mention records for those users.
   Future<Result<PostCommentModel>> create({
     required String postId,
     required String content,
+    List<String>? mentionedUserIds,
   }) async {
     state = const AsyncLoading();
 
@@ -28,6 +31,7 @@ class CreateComment extends _$CreateComment {
     final result = await service.createComment(
       postId: postId,
       content: content,
+      mentionedUserIds: mentionedUserIds,
     );
 
     final mappedResult = result.fold(

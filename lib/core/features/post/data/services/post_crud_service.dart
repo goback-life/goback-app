@@ -91,14 +91,22 @@ class PostCrudService {
   }
 
   /// Adds tags to a post.
+  ///
+  /// [tagType] defaults to 'mention' for manual @mentions.
+  /// Use 'participant' for auto-tags from lockout participants.
   Future<List<PostTagDto>> addPostTags({
     required String postId,
     required List<String> taggedUserIds,
+    String tagType = 'mention',
   }) async {
     final List<Map<String, dynamic>> tagDataList = [];
 
     for (final tagId in taggedUserIds) {
-      tagDataList.add({'post_id': postId, 'tagged_user_id': tagId});
+      tagDataList.add({
+        'post_id': postId,
+        'tagged_user_id': tagId,
+        'tag_type': tagType,
+      });
     }
 
     final response = await _supabaseClient
@@ -107,6 +115,18 @@ class PostCrudService {
         .select();
 
     return response.map((json) => PostTagDto.fromJson(json)).toList();
+  }
+
+  /// Adds participant tags from lockout session.
+  Future<List<PostTagDto>> addParticipantTags({
+    required String postId,
+    required List<String> participantUserIds,
+  }) async {
+    return addPostTags(
+      postId: postId,
+      taggedUserIds: participantUserIds,
+      tagType: 'participant',
+    );
   }
 
   /// Sets exclusions (privacy settings) on a post.

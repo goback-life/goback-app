@@ -8,39 +8,36 @@ part 'get_friends_locked_out_provider.g.dart';
 
 /// Provider that fetches the list of friends currently in lockout sessions.
 ///
-/// Uses cache with 2-minute TTL (lockouts change slowly, median ~30min).
+/// Watches the cache state so it rebuilds when background fetches complete.
 /// Returns a list of LockoutSessionModel with user profile data.
 /// Auto-disposes when no longer watched.
 @riverpod
 class GetFriendsLockedOut extends _$GetFriendsLockedOut {
   @override
   Future<Result<List<LockoutSessionModel>>> build() async {
-    final cacheNotifier = ref.watch(friendsLockedOutCacheProvider.notifier);
+    // Watch cache state - rebuilds when background fetch completes
+    final cacheState = ref.watch(friendsLockedOutCacheProvider);
+    final cacheNotifier = ref.read(friendsLockedOutCacheProvider.notifier);
 
-    try {
-      final lockouts = await cacheNotifier.getCachedOrFetch();
-      return Result.success(lockouts);
-    } catch (e) {
-      return Result.failure(
-        e is Exception ? e : Exception('Failed to get friends locked out: $e'),
-      );
+    // Trigger background fetch if cache is stale (deferred to avoid
+    // modifying another provider's state during this provider's build)
+    Future.microtask(cacheNotifier.ensureFresh);
+
+    // ignore: avoid_print
+    print('[GetFriendsLockedOut] build: returning ${cacheState.activeLockouts.length} lockouts from cache');
+    for (final l in cacheState.activeLockouts) {
+      // ignore: avoid_print
+      print('[GetFriendsLockedOut]   lockout: id=${l.id}, user=${l.username}, endsAt=${l.endsAt}');
     }
+
+    return Result.success(cacheState.activeLockouts);
   }
 
-  /// Force refresh the list of friends locked out, bypassing cache.
-  /// Keeps showing old data during refresh to prevent UI flickering.
-  Future<void> refresh() async {
+  /// Force refresh, keeps showing old data during fetch.
+  void refresh() {
     logger.info('[GetFriendsLockedOut] refresh() called');
-    // Don't set AsyncLoading - keep showing old data during refresh
     final cacheNotifier = ref.read(friendsLockedOutCacheProvider.notifier);
-    try {
-      final lockouts = await cacheNotifier.refresh();
-      logger.info('[GetFriendsLockedOut] Got ${lockouts.length} lockouts');
-      state = AsyncData(Result.success(lockouts));
-    } catch (e) {
-      logger.error('[GetFriendsLockedOut] Error: $e');
-      // On error, keep old data rather than showing error state
-      // state = AsyncData(Result.failure(...));
-    }
+    cacheNotifier.refresh();
+    // Cache state update will trigger a rebuild of this provider automatically
   }
 }

@@ -42,6 +42,7 @@ class CalendarService implements CalendarServiceContract {
   }
 
   /// Gets a friend's calendar posts for a given month.
+  @override
   Future<List<CalendarPostDto>> getFriendCalendarPosts({
     required String friendId,
     required int year,
@@ -49,6 +50,96 @@ class CalendarService implements CalendarServiceContract {
   }) async {
     // Use the same RPC - it handles friendship check internally
     return getCalendarPosts(userId: friendId, year: year, month: month);
+  }
+
+  @override
+  FutureResult<void> savePostToCalendar(String postId) async {
+    try {
+      final response = await supabaseClient.rpc(
+        'save_post_to_calendar',
+        params: {'p_post_id': postId},
+      );
+
+      final result = response as Map<String, dynamic>;
+      if (result['success'] == true) {
+        return Result.success(null);
+      } else {
+        return Result.failure(Exception(result['error'] ?? 'Failed to save post'));
+      }
+    } catch (e) {
+      logger.error('Failed to save post to calendar', exception: e);
+      return Result.failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  @override
+  FutureResult<void> unsavePostFromCalendar(String postId) async {
+    try {
+      final response = await supabaseClient.rpc(
+        'unsave_post_from_calendar',
+        params: {'p_post_id': postId},
+      );
+
+      final result = response as Map<String, dynamic>;
+      if (result['success'] == true) {
+        return Result.success(null);
+      } else {
+        return Result.failure(Exception(result['error'] ?? 'Failed to unsave post'));
+      }
+    } catch (e) {
+      logger.error('Failed to unsave post from calendar', exception: e);
+      return Result.failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<List<CalendarPostDto>> getPendingSelectionPosts({DateTime? date}) async {
+    try {
+      final params = <String, dynamic>{};
+      if (date != null) {
+        params['p_date'] = date.toIso8601String().split('T')[0];
+      }
+
+      final response = await supabaseClient.rpc(
+        'get_pending_selection_posts',
+        params: params.isNotEmpty ? params : null,
+      );
+
+      if (response is! List || response.isEmpty) {
+        return [];
+      }
+
+      final postFutures = response.map((json) async {
+        final postJson = Map<String, dynamic>.from(json as Map<String, dynamic>);
+        await _enrichPostWithSignedUrls(postJson);
+        return CalendarPostDto.fromJson(postJson);
+      });
+
+      return Future.wait(postFutures);
+    } catch (e) {
+      logger.error('Failed to get pending selection posts', exception: e);
+      return [];
+    }
+  }
+
+  @override
+  Future<bool> hasPendingSelection({DateTime? date}) async {
+    try {
+      final params = <String, dynamic>{};
+      if (date != null) {
+        params['p_date'] = date.toIso8601String().split('T')[0];
+      }
+
+      final response = await supabaseClient.rpc(
+        'has_pending_selection',
+        params: params.isNotEmpty ? params : null,
+      );
+
+      return response == true;
+    } catch (e) {
+      logger.error('Failed to check pending selection', exception: e);
+      return false;
+    }
   }
 
   /// Enriches a post JSON with signed URLs for avatar, thumbnail, and video.

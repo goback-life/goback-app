@@ -66,8 +66,7 @@ class NotificationService implements NotificationServiceContract {
     }
   }
 
-  /// Marks a notification group as read.
-  /// This marks all notifications with the same type and reference_id as read.
+  /// Marks a notification group as read by type and reference.
   @override
   Future<void> markNotificationsAsRead({
     required String userId,
@@ -79,21 +78,15 @@ class NotificationService implements NotificationServiceContract {
           .from('notifications')
           .update({'read_at': DateTime.now().toIso8601String()})
           .eq('user_id', userId)
-          .eq('notification_type', notificationType);
+          .eq('type', notificationType);
 
       if (referenceId != null) {
         updateQuery = updateQuery.eq('reference_id', referenceId);
       } else {
-        // For notifications without reference_id (e.g., friend_joined)
         updateQuery = updateQuery.isFilter('reference_id', null);
       }
 
-      // Execute the update query - await ensures it completes
       await updateQuery;
-
-      logger.info(
-        'Notifications marked as read for user $userId, type: $notificationType, referenceId: $referenceId',
-      );
     } catch (e, stackTrace) {
       logger.error(
         'Failed to mark notifications as read',
@@ -104,17 +97,11 @@ class NotificationService implements NotificationServiceContract {
     }
   }
 
-  /// Marks all notifications as read for a user.
+  /// Marks all notifications as read via RPC (SECURITY DEFINER).
   @override
   Future<void> markAllNotificationsAsRead({required String userId}) async {
     try {
-      await supabaseClient
-          .from('notifications')
-          .update({'read_at': DateTime.now().toIso8601String()})
-          .eq('user_id', userId)
-          .isFilter('read_at', null);
-
-      logger.info('All notifications marked as read for user $userId');
+      await supabaseClient.rpc('mark_notifications_read');
     } catch (e, stackTrace) {
       logger.error(
         'Failed to mark all notifications as read',
@@ -125,18 +112,12 @@ class NotificationService implements NotificationServiceContract {
     }
   }
 
-  /// Gets the count of unread notifications for a user.
+  /// Gets unread notification count via RPC (SECURITY DEFINER).
   @override
   Future<int> getUnreadCount({required String userId}) async {
     try {
-      final response = await supabaseClient
-          .from('notifications')
-          .select('id')
-          .eq('user_id', userId)
-          .isFilter('read_at', null)
-          .count();
-
-      return response.count;
+      final count = await supabaseClient.rpc('get_unread_notification_count');
+      return (count as int?) ?? 0;
     } catch (e, stackTrace) {
       logger.error(
         'Failed to get unread notification count',

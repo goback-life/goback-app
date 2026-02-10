@@ -1,26 +1,30 @@
+import 'package:cloudless/core/features/post/domain/hooks/use_mention_autocomplete.dart';
+import 'package:cloudless/presentation/components/mention_text_field/mention_text_field.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 
-class PostDetailCommentInput extends HookWidget with MainLayout, PostDetailLayout {
+class PostDetailCommentInput extends HookConsumerWidget with MainLayout, PostDetailLayout {
   const PostDetailCommentInput({
     required this.onSubmit,
     required this.isSubmitting,
     super.key,
   });
 
-  final Future<void> Function(String content) onSubmit;
+  final Future<void> Function(String content, {List<String>? mentionedUserIds}) onSubmit;
   final bool isSubmitting;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
     final controller = useTextEditingController();
     final isEmpty = useState(true);
+    final mentionState = useMentionAutocomplete(ref);
+    final collectedMentions = useState<List<String>>([]);
 
     useEffect(() {
       void listener() {
@@ -34,8 +38,13 @@ class PostDetailCommentInput extends HookWidget with MainLayout, PostDetailLayou
       final text = controller.text.trim();
       if (text.isEmpty || isSubmitting) return;
 
-      await onSubmit(text);
+      // Parse mentions from the text and combine with manually selected mentions
+      final parsedMentions = mentionState.parseMentions(text);
+      final allMentions = <String>{...collectedMentions.value, ...parsedMentions}.toList();
+
+      await onSubmit(text, mentionedUserIds: allMentions.isNotEmpty ? allMentions : null);
       controller.clear();
+      collectedMentions.value = [];
     }
 
     return Container(
@@ -58,11 +67,16 @@ class PostDetailCommentInput extends HookWidget with MainLayout, PostDetailLayou
                 constraints: BoxConstraints(
                   maxHeight: commentInputMaxHeight,
                 ),
-                child: TextField(
+                child: MentionTextField(
                   controller: controller,
+                  allUsers: mentionState.allUsers,
+                  onMentionsChanged: (mentions) {
+                    collectedMentions.value = mentions;
+                  },
                   maxLines: null,
                   maxLength: commentMaxLength.toInt(),
                   textInputAction: TextInputAction.newline,
+                  hintText: 'Add a comment...',
                   decoration: InputDecoration(
                     hintText: 'Add a comment...',
                     hintStyle: textTheme.bodyMedium?.copyWith(

@@ -4,6 +4,7 @@ import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/profile_image/profile_image.dart';
 import 'package:cloudless/presentation/pages/home/components/home_time_limit_toggle.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
+import 'package:cloudless/presentation/pages/friends_locked_out/friends_locked_out_routable.dart';
 import 'package:cloudless/presentation/pages/notifications/notifications_routable.dart';
 import 'package:cloudless/presentation/pages/objective/objective_routable.dart';
 import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
@@ -42,6 +43,18 @@ class HomeNavigationBar extends HookConsumerWidget
           const Spacer(),
           Row(
             children: [
+              // Friends offline icon
+              GestureDetector(
+                onTap: () => router.push(const FriendsLockedOutRoutable()),
+                child: SizedBox(
+                  width: navCircleButtonSize,
+                  height: navCircleButtonSize,
+                  child: const Center(
+                    child: Icon(Icons.people_outline, size: 24),
+                  ),
+                ),
+              ),
+              SizedBox(width: navButtonSpacing),
               // Notification icon with badge
               currentUserAsync.when(
                 data: (userResult) {
@@ -79,8 +92,8 @@ class HomeNavigationBar extends HookConsumerWidget
                                       child: Container(
                                         width: 8,
                                         height: 8,
-                                        decoration: BoxDecoration(
-                                          color: colorScheme.error,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFE8913A),
                                           shape: BoxShape.circle,
                                         ),
                                       ),
