@@ -1,33 +1,33 @@
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 
 mixin YourCircleLayout on MainLayout {
-  @override
-  double get horizontalPadding => 16.0;
+  // Friend tile
+  double get friendTileHeight => 59.0;
+  double get friendTileLeftIndent => 57.0;
+  double get friendAvatarSize => 39.0;
+  double get friendAvatarToText => 10.0;
+  double get friendTextSize => 24.0;
+  double get friendLetterSpacing => -1.44;
+  double get friendChevronRightPad => 74.0;
 
-  @override
-  double get topMargin => 56.0;
+  // Bottom bar
+  double get bottomBarLeftPadding => 42.0;
+  double get bottomBarRightPadding => 24.0;
+  double get bottomBarBottomPadding => 16.0;
 
-  double get titleToImage => 20.0;
+  // Search pill
+  double get searchPillWidth => 231.0;
+  double get searchPillHeight => 51.0;
+  double get searchPillRadius => 47.0;
 
-  double get actionsContainerVerticalPadding => 20.0;
-  double get actionsContainerHorizontalPadding => 16.0;
-  double get actionsContainerOpacity => 0.1;
-  double get actionsContainerBorderRadius => 20.0;
-  double get actionsTitleToDescription => 20.0;
-  double get actionsDescriptionToButtons => 36.0;
-  double get actionsBetweenButtons => 13.0;
+  // Add button
+  double get addButtonSize => 51.0;
 
-  double get memberItemVerticalPadding => 12.0;
-  double get memberItemImageSize => 32.0;
-  double get memberItemImageToText => 10.0;
+  // Arrow buttons
+  double get arrowWidth => 48.0;
+  double get arrowHeight => 57.486;
+  double get arrowSpacing => 8.0;
 
-  double get membersListSearchToList => 32.0;
-  double get membersListNoResultsVerticalPadding => 48.0;
-  double get membersListGroupHeaderTopPadding => 16.0;
-
-  double get viewVerticalPadding => 20.0;
-  double get viewMinHeightOffset => 220.0;
-  double get viewMinHeightOffsetWithMembers => 240.0;
-  double get emptyStateActionsToEmpty => 48.0;
-  double get withMembersActionsToList => 24.0;
+  // Swipe
+  double get swipeDeleteThreshold => 0.3;
 }
