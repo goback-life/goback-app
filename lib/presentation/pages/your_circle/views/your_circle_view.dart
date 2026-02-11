@@ -26,6 +26,7 @@ class YourCircleView extends HookConsumerWidget
     final asyncValue = ref.watch(getCircleMembersProvider);
     final searchController = useTextEditingController();
     final bottomPad = MediaQuery.of(context).padding.bottom;
+    final topPad = MediaQuery.of(context).padding.top;
 
     return MainDataLoader(
       provider: asyncValue,
@@ -47,7 +48,7 @@ class YourCircleView extends HookConsumerWidget
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: EdgeInsets.only(
                   bottom: searchPillHeight + bottomBarBottomPadding + bottomPad + 24,
-                  top: 16,
+                  top: topPad + 16,
                 ),
                 itemCount: members.length,
                 itemBuilder: (context, index) {

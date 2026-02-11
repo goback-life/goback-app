@@ -3,16 +3,16 @@ import 'package:cloudless/presentation/utilities/main_layout.dart';
 mixin YourCircleLayout on MainLayout {
   // Friend tile
   double get friendTileHeight => 59.0;
-  double get friendTileLeftIndent => 57.0;
+  double get friendTileLeftIndent => 16.0;
   double get friendAvatarSize => 39.0;
   double get friendAvatarToText => 10.0;
   double get friendTextSize => 24.0;
   double get friendLetterSpacing => -1.44;
-  double get friendChevronRightPad => 74.0;
+  double get friendChevronRightPad => 16.0;
 
-  // Bottom bar
-  double get bottomBarLeftPadding => 42.0;
-  double get bottomBarRightPadding => 24.0;
+  // Bottom bar — matches feed page horizontalPadding (16px each side)
+  double get bottomBarLeftPadding => 16.0;
+  double get bottomBarRightPadding => 16.0;
   double get bottomBarBottomPadding => 16.0;
 
   // Search pill

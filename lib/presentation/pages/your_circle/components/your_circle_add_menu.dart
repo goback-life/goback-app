@@ -10,7 +10,7 @@ import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
-/// Path data for the rounded plus/cross button (viewBox 59x51, offset -4 in X).
+/// Path data for the rounded plus/cross button (viewBox 51x51).
 const _kPlusPathData = GlassPathData(
   viewBoxWidth: 51,
   viewBoxHeight: 51,
@@ -60,6 +60,56 @@ const _kArrowDownPathData = GlassPathData(
   ],
 );
 
+/// Rotates all points in [data] by [angle] radians around the viewBox centre.
+///
+/// This ensures the glass overlay's NW lighting interacts differently with the
+/// shape at each rotation angle (the gradient stays screen-fixed while the path
+/// rotates within it).
+GlassPathData _rotatePath(GlassPathData data, double angle) {
+  if (angle == 0) return data;
+  final cx = data.viewBoxWidth / 2;
+  final cy = data.viewBoxHeight / 2;
+  final cosA = math.cos(angle);
+  final sinA = math.sin(angle);
+
+  double rx(double x, double y) => cx + (x - cx) * cosA - (y - cy) * sinA;
+  double ry(double x, double y) => cy + (x - cx) * sinA + (y - cy) * cosA;
+
+  final rotated = <List<dynamic>>[];
+  for (final cmd in data.commands) {
+    switch (cmd[0] as String) {
+      case 'M':
+        final x = (cmd[1] as num).toDouble();
+        final y = (cmd[2] as num).toDouble();
+        rotated.add(['M', rx(x, y), ry(x, y)]);
+      case 'L':
+        final x = (cmd[1] as num).toDouble();
+        final y = (cmd[2] as num).toDouble();
+        rotated.add(['L', rx(x, y), ry(x, y)]);
+      case 'C':
+        final x1 = (cmd[1] as num).toDouble();
+        final y1 = (cmd[2] as num).toDouble();
+        final x2 = (cmd[3] as num).toDouble();
+        final y2 = (cmd[4] as num).toDouble();
+        final x3 = (cmd[5] as num).toDouble();
+        final y3 = (cmd[6] as num).toDouble();
+        rotated.add([
+          'C',
+          rx(x1, y1), ry(x1, y1),
+          rx(x2, y2), ry(x2, y2),
+          rx(x3, y3), ry(x3, y3),
+        ]);
+      case 'Z':
+        rotated.add(['Z']);
+    }
+  }
+  return GlassPathData(
+    commands: rotated,
+    viewBoxWidth: data.viewBoxWidth,
+    viewBoxHeight: data.viewBoxHeight,
+  );
+}
+
 class YourCircleAddMenu extends StatefulWidget {
   const YourCircleAddMenu({super.key});
 
@@ -71,8 +121,8 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
     with SingleTickerProviderStateMixin, MainLayout, YourCircleLayout {
   late final AnimationController _controller;
   late final Animation<double> _rotationAnim;
-  late final Animation<double> _upArrowAnim;
-  late final Animation<double> _downArrowAnim;
+  late final Animation<double> _firstArrowAnim;
+  late final Animation<double> _secondArrowAnim;
   bool _expanded = false;
 
   @override
@@ -85,13 +135,14 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
     _rotationAnim = Tween<double>(begin: 0, end: math.pi / 4).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
-    _upArrowAnim = Tween<double>(begin: 0, end: 1).animate(
+    // Both arrows slide ABOVE the plus. First arrow (up/invite) is furthest.
+    _firstArrowAnim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
       ),
     );
-    _downArrowAnim = Tween<double>(begin: 0, end: 1).animate(
+    _secondArrowAnim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.15, 1.0, curve: Curves.easeOut),
@@ -126,29 +177,36 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
 
   @override
   Widget build(BuildContext context) {
-    final totalUpOffset = arrowHeight + arrowSpacing;
-    final totalDownOffset = addButtonSize + arrowSpacing;
+    // Offsets: both arrows stack above the plus button.
+    // Slot 1 (closest to plus) = down arrow (join).
+    // Slot 2 (furthest from plus) = up arrow (invite).
+    final slot1Offset = addButtonSize + arrowSpacing;
+    final slot2Offset = slot1Offset + arrowHeight + arrowSpacing;
 
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
+        final rotatedPlusPath = _rotatePath(
+          _kPlusPathData,
+          _rotationAnim.value,
+        );
+
         return SizedBox(
           width: addButtonSize,
           child: Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
-              // Up arrow (invite) - slides up from the plus button
+              // Up arrow (invite) — furthest above the plus
               Positioned(
-                bottom: totalDownOffset +
-                    _upArrowAnim.value * totalUpOffset,
+                bottom: _firstArrowAnim.value * slot2Offset,
                 child: Opacity(
-                  opacity: _upArrowAnim.value,
+                  opacity: _firstArrowAnim.value,
                   child: GestureDetector(
                     onTap: _onUpTap,
                     child: Transform(
                       alignment: Alignment.center,
-                      transform: Matrix4.identity()..scale(1.0, -1.0),
+                      transform: Matrix4.diagonal3Values(1.0, -1.0, 1.0),
                       child: SizedBox(
                         width: arrowWidth,
                         height: arrowHeight,
@@ -164,12 +222,11 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
                   ),
                 ),
               ),
-              // Down arrow (join) - slides down from the plus button
+              // Down arrow (join) — directly above the plus
               Positioned(
-                top: addButtonSize +
-                    _downArrowAnim.value * (arrowHeight + arrowSpacing),
+                bottom: _secondArrowAnim.value * slot1Offset,
                 child: Opacity(
-                  opacity: _downArrowAnim.value,
+                  opacity: _secondArrowAnim.value,
                   child: GestureDetector(
                     onTap: _onDownTap,
                     child: SizedBox(
@@ -186,21 +243,18 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
                   ),
                 ),
               ),
-              // Plus / X button
+              // Plus / X button — path rotates so glass lighting shifts
               GestureDetector(
                 onTap: _toggle,
-                child: Transform.rotate(
-                  angle: _rotationAnim.value,
-                  child: SizedBox(
-                    width: addButtonSize,
-                    height: addButtonSize,
-                    child: AppGlassContainer(
-                      config: const GlassConfig(
-                        tint: MainColors.accent,
-                        pathData: _kPlusPathData,
-                      ),
-                      child: const SizedBox.expand(),
+                child: SizedBox(
+                  width: addButtonSize,
+                  height: addButtonSize,
+                  child: AppGlassContainer(
+                    config: GlassConfig(
+                      tint: MainColors.accent,
+                      pathData: rotatedPlusPath,
                     ),
+                    child: const SizedBox.expand(),
                   ),
                 ),
               ),

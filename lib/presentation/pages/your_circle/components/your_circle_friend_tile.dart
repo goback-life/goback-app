@@ -1,5 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/models/profile_model.dart';
-import 'package:cloudless/presentation/components/profile_image/profile_image.dart';
 import 'package:cloudless/presentation/pages/your_circle/your_circle_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
@@ -51,8 +51,8 @@ class YourCircleFriendTile extends StatelessWidget
           child: Row(
             children: [
               SizedBox(width: friendTileLeftIndent),
-              ProfileImage(
-                imageUrl: profile.avatarUrl,
+              _Avatar(
+                url: profile.avatarUrl,
                 username: profile.username,
                 size: friendAvatarSize,
               ),
@@ -84,6 +84,61 @@ class YourCircleFriendTile extends StatelessWidget
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Borderless circle avatar — no white ring.
+class _Avatar extends StatelessWidget {
+  const _Avatar({
+    required this.url,
+    required this.username,
+    required this.size,
+  });
+
+  final String? url;
+  final String username;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    if (url != null && url!.isNotEmpty) {
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: url!,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          fadeInDuration: const Duration(milliseconds: 200),
+          memCacheWidth: (size * 2).toInt(),
+          memCacheHeight: (size * 2).toInt(),
+          placeholder: (_, __) => _fallback(context),
+          errorWidget: (_, __, ___) => _fallback(context),
+        ),
+      );
+    }
+    return _fallback(context);
+  }
+
+  Widget _fallback(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: MainColors.accent,
+      ),
+      child: Center(
+        child: Text(
+          username.isNotEmpty ? username[0].toUpperCase() : '?',
+          style: TextStyle(
+            fontFamily: MainFontFamilies.quicksand,
+            fontWeight: FontWeight.w500,
+            fontSize: size * 0.4,
+            color: MainColors.white,
           ),
         ),
       ),
