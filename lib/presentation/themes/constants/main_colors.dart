@@ -29,4 +29,8 @@ class MainColors {
 
   static const Color black = Color(0xFF000000);
   static const Color black100 = Color(0xFF0A0A0A);
+
+  // V1 Design System palette
+  static const Color dark = Color(0xFF1A1A1A);
+  static const Color accent = Color(0xFF598EB5);
 }

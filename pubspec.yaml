@@ -42,6 +42,8 @@ dependencies:
   timezone: ^0.10.1
   top_snackbar_flutter: ^3.3.0
   url_launcher: ^6.3.2
+  liquid_glass_renderer: ^0.2.0-dev.4
+  liquid_glass_widgets: ^0.3.0-dev.1
   vector_math: ^2.1.4
   video_player: ^2.10.0
   video_thumbnail: ^0.5.6
@@ -116,6 +118,14 @@ flutter:
         # 900: Black, the most thick
         - asset: assets/fonts/geist/Geist-Black.ttf
           weight: 900
+    - family: Quicksand
+      fonts:
+        - asset: assets/fonts/quicksand/Quicksand-Medium.ttf
+          weight: 500
+    - family: LilitaOne
+      fonts:
+        - asset: assets/fonts/lilita_one/LilitaOne-Regular.ttf
+          weight: 400
 
 flutter_launcher_icons:
   android: true
