@@ -8,6 +8,13 @@ import UIKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+
+    let registrar = self.registrar(forPlugin: "LiquidGlassPlugin")!
+    registrar.register(
+      LiquidGlassViewFactory(),
+      withId: "app_liquid_glass"
+    )
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }

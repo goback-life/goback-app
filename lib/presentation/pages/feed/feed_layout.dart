@@ -25,12 +25,12 @@ mixin FeedLayout {
 
   // -- Vertical spacing --
   static const double squircleToAuthorGap = 15.0;
-  static const double authorToNextPostGap = 18.0;
+  static const double authorToNextPostGap = 30.0;
 
   // -- Typography at Figma scale --
-  static const double usernameFontSize = 24.0;
-  static const double usernameLetterSpacing = -1.44;
-  static const double dateFontSize = 22.8; // 5% smaller than username
+  static const double usernameFontSize = 21.5;
+  static const double usernameLetterSpacing = -1.29; // -6% of fontSize
+  static const double dateFontSize = 20.4; // 5% smaller than username
 
   // -- Lockout button --
   static const double lockoutBottomDistance = 96.0;

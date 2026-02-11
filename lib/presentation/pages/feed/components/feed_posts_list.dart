@@ -2,6 +2,7 @@ import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart'
 import 'package:cloudless/presentation/pages/feed/components/feed_post_card.dart';
 import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
+import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 /// Reversed ListView for the V1 feed.
@@ -20,6 +21,7 @@ class FeedPostsList extends HookConsumerWidget {
     required this.scrollController,
     this.onPostTap,
     this.onTopPostDateChanged,
+    this.onRefreshStateChanged,
     super.key,
   });
 
@@ -32,6 +34,7 @@ class FeedPostsList extends HookConsumerWidget {
   final ScrollController scrollController;
   final void Function(FeedPostModel post)? onPostTap;
   final void Function(DateTime? date)? onTopPostDateChanged;
+  final void Function(bool isRefreshing)? onRefreshStateChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -116,24 +119,40 @@ class FeedPostsList extends HookConsumerWidget {
 
     final interPostGap = FeedLayout.authorToNextPostGap * s;
 
-    return NotificationListener<OverscrollNotification>(
+    return NotificationListener<ScrollUpdateNotification>(
       onNotification: (notification) {
-        // Pull-to-refresh at bottom (offset 0 in reversed list)
-        if (scrollController.hasClients && !isRefreshingRef.value) {
-          final pos = scrollController.position;
-          final atBottom = pos.pixels <= pos.minScrollExtent + 20;
-          if (atBottom && notification.overscroll < -5) {
-            isRefreshingRef.value = true;
-            onRefresh().then((_) {
-              Future.delayed(const Duration(milliseconds: 50), () {
-                if (mountedRef.value) isRefreshingRef.value = false;
-              });
-            }).catchError((_) {
-              Future.delayed(const Duration(milliseconds: 50), () {
-                if (mountedRef.value) isRefreshingRef.value = false;
-              });
+        // Pull-to-refresh: BouncingScrollPhysics absorbs overscroll,
+        // so we detect it via outOfRange + pixels past minScrollExtent.
+        if (!scrollController.hasClients || isRefreshingRef.value) {
+          return false;
+        }
+        final metrics = notification.metrics;
+        if (!metrics.outOfRange) return false;
+        final overscroll = metrics.minScrollExtent - metrics.pixels;
+        logger.log(
+          'Bounce overscroll: ${overscroll.toStringAsFixed(1)}, '
+          'pixels: ${metrics.pixels.toStringAsFixed(1)}',
+        );
+        if (overscroll > 40) {
+          logger.info('Pull-to-refresh triggered');
+          isRefreshingRef.value = true;
+          onRefreshStateChanged?.call(true);
+          onRefresh().then((_) {
+            logger.info('Pull-to-refresh complete');
+            Future.delayed(const Duration(milliseconds: 50), () {
+              if (mountedRef.value) {
+                isRefreshingRef.value = false;
+                onRefreshStateChanged?.call(false);
+              }
             });
-          }
+          }).catchError((_) {
+            Future.delayed(const Duration(milliseconds: 50), () {
+              if (mountedRef.value) {
+                isRefreshingRef.value = false;
+                onRefreshStateChanged?.call(false);
+              }
+            });
+          });
         }
         return false;
       },

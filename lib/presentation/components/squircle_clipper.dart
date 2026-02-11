@@ -1,62 +1,65 @@
-import 'dart:math' as math;
-
 import 'package:flutter/widgets.dart';
 
-/// Clips to a superellipse (squircle) matching iOS/Figma smooth corners.
+/// Clips to a squircle matching the Figma V1 design (node 72-590).
 ///
-/// Uses the formula |x/a|^n + |y/b|^n = 1 where n defaults to 5,
-/// closely matching Apple's continuous corner curve.
+/// Uses the exact cubic-bezier corner curves exported from Figma rather
+/// than a superellipse approximation.  Corner radius is 15% of the
+/// shorter side, with Figma-style smoothing (control point at 2.6475%).
 class SquircleClipper extends CustomClipper<Path> {
-  const SquircleClipper({this.exponent = 5.0});
-
-  /// The superellipse exponent. Higher values = squarer corners.
-  /// 2.0 = ellipse, 5.0 = iOS smooth corners, infinity = rectangle.
-  final double exponent;
+  const SquircleClipper();
 
   @override
-  Path getClip(Size size) => _superellipsePath(size, exponent);
+  Path getClip(Size size) => squirclePath(size);
 
   @override
-  bool shouldReclip(SquircleClipper oldClipper) =>
-      oldClipper.exponent != exponent;
+  bool shouldReclip(SquircleClipper oldClipper) => false;
 
-  /// Generates a superellipse path centered in [size].
-  static Path _superellipsePath(Size size, double n) {
-    final a = size.width / 2;
-    final b = size.height / 2;
-    const steps = 200;
-    final points = <Offset>[];
+  /// Generates a squircle path scaled to [size] using Figma's cubic
+  /// bezier corners.  Proportions taken from Figma SVG (250×250 viewBox,
+  /// corner radius 37.5, control offset 6.61875).
+  static Path squirclePath(Size size) {
+    final w = size.width;
+    final h = size.height;
 
-    for (var i = 0; i <= steps; i++) {
-      final t = (i / steps) * 2 * math.pi;
-      final cosT = math.cos(t);
-      final sinT = math.sin(t);
+    // Corner radius & control-point offset as fractions of each axis.
+    // From Figma: r = 37.5/250 = 0.15, cp = 6.61875/250 ≈ 0.026475
+    final rx = w * 0.15;
+    final cx = w * 0.026475;
+    final ry = h * 0.15;
+    final cy = h * 0.026475;
 
-      final x = a * math.pow(cosT.abs(), 2 / n) * cosT.sign + a;
-      final y = b * math.pow(sinT.abs(), 2 / n) * sinT.sign + b;
-      points.add(Offset(x, y));
-    }
-
-    final path = Path()..addPolygon(points, true);
-    return path;
+    return Path()
+      // Start at left edge, below top-left corner
+      ..moveTo(0, ry)
+      // Top-left corner
+      ..cubicTo(0, cy, cx, 0, rx, 0)
+      // Top edge
+      ..lineTo(w - rx, 0)
+      // Top-right corner
+      ..cubicTo(w - cx, 0, w, cy, w, ry)
+      // Right edge
+      ..lineTo(w, h - ry)
+      // Bottom-right corner
+      ..cubicTo(w, h - cy, w - cx, h, w - rx, h)
+      // Bottom edge
+      ..lineTo(rx, h)
+      // Bottom-left corner
+      ..cubicTo(cx, h, 0, h - cy, 0, h - ry)
+      // Left edge back to start
+      ..close();
   }
 }
 
-/// Convenience widget that clips its child to a superellipse (squircle).
+/// Convenience widget that clips its child to the Figma squircle.
 class ClipSquircle extends StatelessWidget {
-  const ClipSquircle({
-    super.key,
-    required this.child,
-    this.exponent = 5.0,
-  });
+  const ClipSquircle({super.key, required this.child});
 
   final Widget child;
-  final double exponent;
 
   @override
   Widget build(BuildContext context) {
     return ClipPath(
-      clipper: SquircleClipper(exponent: exponent),
+      clipper: const SquircleClipper(),
       child: child,
     );
   }

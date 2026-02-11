@@ -1,7 +1,7 @@
+import 'package:cloudless/presentation/pages/feed/feed_page.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
-import 'package:cloudless/presentation/pages/home/home_page.dart';
 
 part 'home_routable.freezed.dart';
 part 'home_routable.g.dart';
@@ -28,6 +28,6 @@ sealed class HomeRoutable extends Routable<HomeRoutable>
 
   @override
   Widget buildPage(BuildContext context, HomeRoutable routeData) {
-    return const HomePage();
+    return const FeedPage();
   }
 }

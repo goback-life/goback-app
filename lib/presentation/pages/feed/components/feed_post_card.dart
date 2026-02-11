@@ -56,9 +56,7 @@ class FeedPostCard extends HookConsumerWidget {
         child: SizedBox(
           width: squircleSize,
           child: Column(
-            crossAxisAlignment: isCurrentUser
-                ? CrossAxisAlignment.end
-                : CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               // Squircle image
@@ -136,7 +134,7 @@ class FeedPostCard extends HookConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontFamily: MainFontFamilies.quicksand,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w400,
                             fontSize: fontSize,
                             color: MainColors.white,
                             letterSpacing: letterSpacing,

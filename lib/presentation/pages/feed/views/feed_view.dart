@@ -36,7 +36,9 @@ class FeedView extends HookConsumerWidget {
 
     final isAtBottom = useState(true);
     final hasUserScrolled = useState(false);
+    final isFarFromBottom = useState(false); // true after scrolling ~4 posts
     final topPostDate = useState<DateTime?>(null);
+    final isRefreshing = useState(false);
 
     final userId = useMemoized(() {
       return currentUserAsync.whenOrNull(
@@ -130,7 +132,15 @@ class FeedView extends HookConsumerWidget {
       void onScroll() {
         try {
           if (!scrollController.hasClients) return;
-          final atBottom = scrollController.offset < 10;
+          final offset = scrollController.offset;
+          final atBottom = offset < 10;
+
+          // ~4 posts worth of scroll distance (squircle + gaps, scaled)
+          final fourPostThreshold = 4 * (250 + 15 + 39 + 18) * (screenWidth / 402.0);
+          final farEnough = offset > fourPostThreshold;
+          if (isFarFromBottom.value != farEnough) {
+            isFarFromBottom.value = farEnough;
+          }
 
           if (!atBottom && !hasUserScrolled.value) {
             hasUserScrolled.value = true;
@@ -255,6 +265,8 @@ class FeedView extends HookConsumerWidget {
           user.id,
           scrollController,
           isAtBottom.value,
+          isFarFromBottom.value,
+          isRefreshing,
           topPostDate,
           onBannerTap,
           onScrollToBottom,
@@ -271,6 +283,8 @@ class FeedView extends HookConsumerWidget {
     String currentUserId,
     ScrollController scrollController,
     bool isAtBottom,
+    bool isFarFromBottom,
+    ValueNotifier<bool> isRefreshing,
     ValueNotifier<DateTime?> topPostDate,
     VoidCallback onBannerTap,
     VoidCallback onScrollToBottom,
@@ -299,6 +313,7 @@ class FeedView extends HookConsumerWidget {
             scrollController: scrollController,
             onPostTap: (post) => PostDetailPage.show(context, post: post),
             onTopPostDateChanged: (date) => topPostDate.value = date,
+            onRefreshStateChanged: (v) => isRefreshing.value = v,
           ),
 
         // Date overlay
@@ -320,8 +335,8 @@ class FeedView extends HookConsumerWidget {
           ),
         ),
 
-        // New posts banner / scroll-to-bottom
-        if (!isAtBottom)
+        // New posts banner / scroll-to-bottom — only after 4+ posts scrolled
+        if (!isAtBottom && (isFarFromBottom || feedPosts.newPostsCount > 0))
           Positioned(
             bottom: lockoutCenterFromBottom +
                 FeedLayout.bannerAboveLockout * s +
@@ -341,14 +356,15 @@ class FeedView extends HookConsumerWidget {
         // Lockout button — centered at 96px (scaled) from bottom
         Builder(
           builder: (context) {
-            final btnSize = 60 * s;
-            final bottomOffset = lockoutCenterFromBottom - btnSize / 2;
+            final btnW = 86 * s;
+            final btnH = 102 * s;
+            final bottomOffset = lockoutCenterFromBottom - btnH / 2;
             final leftOffset =
-                screenWidth / 2 + FeedLayout.lockoutCenterOffsetX * s - btnSize / 2;
+                screenWidth / 2 + FeedLayout.lockoutCenterOffsetX * s - btnW / 2;
             return Positioned(
               bottom: bottomOffset,
               left: leftOffset,
-              child: const FeedLockoutButton(),
+              child: FeedLockoutButton(isRefreshing: isRefreshing.value),
             );
           },
         ),
