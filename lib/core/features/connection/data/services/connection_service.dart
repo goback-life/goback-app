@@ -118,8 +118,8 @@ class ConnectionService implements ConnectionServiceContract {
       final existingFriendship = await supabase
         .from('friendships')
         .select('id')
-        .eq('user_id_1', orderedIds.$1)
-        .eq('user_id_2', orderedIds.$2)
+        .eq('user_a_id', orderedIds.$1)
+        .eq('user_b_id', orderedIds.$2)
         .limit(1)
         .maybeSingle();
 
@@ -342,7 +342,7 @@ class ConnectionService implements ConnectionServiceContract {
     return result.count;
   }
 
-  /// Orders two user IDs to match the friendships table constraint (user_id_1 < user_id_2).
+  /// Orders two user IDs to match the friendships table constraint (user_a_id < user_b_id).
   (String, String) _orderUserIds(String userIdA, String userIdB) {
     return userIdA.compareTo(userIdB) < 0
         ? (userIdA, userIdB)
@@ -358,8 +358,8 @@ class ConnectionService implements ConnectionServiceContract {
       final response = await supabase
           .from('friendships')
           .select('id')
-          .eq('user_id_1', orderedIds.$1)
-          .eq('user_id_2', orderedIds.$2)
+          .eq('user_a_id', orderedIds.$1)
+          .eq('user_b_id', orderedIds.$2)
           .limit(1);
 
       return Result.success(response.isNotEmpty);

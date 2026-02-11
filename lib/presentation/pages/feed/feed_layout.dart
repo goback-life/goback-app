@@ -30,16 +30,16 @@ mixin FeedLayout {
   // -- Typography at Figma scale --
   static const double usernameFontSize = 21.5;
   static const double usernameLetterSpacing = -1.29; // -6% of fontSize
-  static const double dateFontSize = 20.4; // 5% smaller than username
+  static const double dateFontSize = 15.0;
 
   // -- Lockout button --
   static const double lockoutBottomDistance = 96.0;
   static const double lockoutCenterOffsetX = -6.0;
 
   // -- Date overlay --
-  static const double dateOverlayCornerRadius = 30.0;
-  static const double dateOverlayHPadding = 16.0;
-  static const double dateOverlayVPadding = 6.0;
+  static const double dateOverlayCornerRadius = 24.0;
+  static const double dateOverlayHPadding = 14.0;
+  static const double dateOverlayVPadding = 5.0;
 
   // -- New posts banner --
   static const double bannerWidth = 102.0;

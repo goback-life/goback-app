@@ -59,31 +59,35 @@ class FeedPostCard extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Squircle image
+              // Squircle image with Hero for post detail transition
               GestureDetector(
                 onTap: onTap,
-                child: SizedBox(
-                  width: squircleSize,
-                  height: squircleSize,
-                  child: ClipSquircle(
-                    child: displayImageUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: displayImageUrl,
-                            fit: BoxFit.cover,
-                            width: squircleSize,
-                            height: squircleSize,
-                            memCacheWidth: (squircleSize * 2).toInt(),
-                            memCacheHeight: (squircleSize * 2).toInt(),
-                            fadeInDuration: const Duration(milliseconds: 200),
-                            fadeOutDuration: const Duration(milliseconds: 100),
-                            placeholder: (_, __) => Container(
-                              color: MainColors.grey400,
-                            ),
-                            errorWidget: (_, __, ___) => Container(
-                              color: MainColors.grey400,
-                            ),
-                          )
-                        : Container(color: MainColors.grey400),
+                child: Hero(
+                  tag: 'post_${post.id}',
+                  child: SizedBox(
+                    width: squircleSize,
+                    height: squircleSize,
+                    child: ClipSquircle(
+                      child: displayImageUrl.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: displayImageUrl,
+                              fit: BoxFit.cover,
+                              width: squircleSize,
+                              height: squircleSize,
+                              memCacheWidth: (squircleSize * 2).toInt(),
+                              memCacheHeight: (squircleSize * 2).toInt(),
+                              fadeInDuration: const Duration(milliseconds: 200),
+                              fadeOutDuration:
+                                  const Duration(milliseconds: 100),
+                              placeholder: (_, __) => Container(
+                                color: MainColors.grey400,
+                              ),
+                              errorWidget: (_, __, ___) => Container(
+                                color: MainColors.grey400,
+                              ),
+                            )
+                          : Container(color: MainColors.grey400),
+                    ),
                   ),
                 ),
               ),

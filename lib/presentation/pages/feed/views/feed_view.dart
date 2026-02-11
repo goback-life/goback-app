@@ -335,12 +335,10 @@ class FeedView extends HookConsumerWidget {
           ),
         ),
 
-        // New posts banner / scroll-to-bottom — only after 4+ posts scrolled
+        // New posts banner / scroll-to-bottom — below date overlay
         if (!isAtBottom && (isFarFromBottom || feedPosts.newPostsCount > 0))
           Positioned(
-            bottom: lockoutCenterFromBottom +
-                FeedLayout.bannerAboveLockout * s +
-                FeedLayout.bannerHeight * s,
+            top: safeTop + 8 * s + 36 * s + 12 * s,
             left: 0,
             right: 0,
             child: Center(

@@ -38,7 +38,7 @@ class FeedDateOverlay extends StatelessWidget {
           formatted,
           style: TextStyle(
             fontFamily: MainFontFamilies.quicksand,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w400,
             fontSize: fontSize,
             color: MainColors.white,
           ),
@@ -52,8 +52,8 @@ class FeedDateOverlay extends StatelessWidget {
     final today = DateTime(now.year, now.month, now.day);
     final dateOnly = DateTime(date.year, date.month, date.day);
 
-    if (dateOnly == today) return 'Today';
-    if (dateOnly == today.subtract(const Duration(days: 1))) return 'Yesterday';
-    return DateFormat('d MMM yyyy').format(date);
+    if (dateOnly == today) return 'today';
+    if (dateOnly == today.subtract(const Duration(days: 1))) return 'yesterday';
+    return DateFormat('d MMM yyyy').format(date).toLowerCase();
   }
 }

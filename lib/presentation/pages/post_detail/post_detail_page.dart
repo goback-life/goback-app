@@ -4,6 +4,7 @@ import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart'
 import 'package:cloudless/presentation/pages/post_detail/components/post_navigation_header.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
 import 'package:cloudless/presentation/pages/post_detail/utilities/post_detail_calendar_navigation.dart';
+import 'package:cloudless/presentation/pages/post_detail/views/post_detail_overlay.dart';
 import 'package:cloudless/presentation/pages/post_detail/views/post_detail_view.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -37,21 +38,29 @@ class PostDetailPage extends HookConsumerWidget
   final DateTime? headerDate;
   final String? calendarUserId;
 
-  /// Shows the post detail as an overlay without dimming the background.
+  /// Shows the post detail as a glass overlay with Hero transition.
   ///
+  /// Uses [Navigator.push] with a transparent [PageRouteBuilder] so that the
+  /// squircle image can animate from the feed card to the overlay position.
   /// Returns a [Future] that completes when the overlay is dismissed.
   static Future<void> show(
     BuildContext context, {
     required FeedPostModel post,
   }) {
-    return showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.transparent,
-      isScrollControlled: true,
-      isDismissible: true,
-      enableDrag: true,
-      builder: (context) => PostDetailPage(post: post),
+    return Navigator.of(context).push<void>(
+      PageRouteBuilder<void>(
+        opaque: false,
+        barrierColor: Colors.transparent,
+        barrierDismissible: true,
+        transitionDuration: const Duration(milliseconds: 350),
+        reverseTransitionDuration: const Duration(milliseconds: 250),
+        pageBuilder: (_, animation, __) {
+          return FadeTransition(
+            opacity: animation,
+            child: PostDetailOverlay(post: post),
+          );
+        },
+      ),
     );
   }
 

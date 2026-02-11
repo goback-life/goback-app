@@ -1,9 +1,10 @@
 import 'dart:io';
 
+import 'dart:ui' as ui;
+
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 
 /// Whether the device supports native Apple Liquid Glass (iOS 26+).
 final bool kNativeGlassAvailable = _checkNativeGlass();
@@ -22,21 +23,15 @@ bool _checkNativeGlass() {
 
 /// Wraps a subtree that contains [AppGlassContainer] widgets.
 ///
-/// On Android / iOS < 26: provides a [LiquidGlassLayer] for shader compositing.
 /// On iOS 26+: passthrough (native compositing is automatic).
-///
-/// Place one per page or per scrollable section — all [AppGlassContainer]
-/// descendants will blend within the same compositing layer.
+/// On Android / iOS < 26: passthrough (BackdropFilter handles glass inline).
 class AppGlassLayer extends StatelessWidget {
   const AppGlassLayer({super.key, required this.child});
 
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    if (kNativeGlassAvailable) return child;
-    return LiquidGlassLayer(child: child);
-  }
+  Widget build(BuildContext context) => child;
 }
 
 /// A platform-adaptive liquid glass surface.
@@ -143,7 +138,7 @@ class _GlassPathClipper extends CustomClipper<Path> {
   bool shouldReclip(covariant _GlassPathClipper oldClipper) => false;
 }
 
-/// Android / iOS fallback using liquid_glass_renderer shaders.
+/// Android / iOS < 26 fallback: magnification + glass overlay.
 class _ShaderGlass extends StatelessWidget {
   const _ShaderGlass({required this.config, required this.child});
 
@@ -152,11 +147,130 @@ class _ShaderGlass extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Tune LiquidGlassSettings per-frame to match Figma visuals.
-    // Default values provide a reasonable starting point.
-    return LiquidGlass(
-      shape: LiquidRoundedSuperellipse(borderRadius: config.cornerRadius),
-      child: child,
+    final radius = config.cornerRadius;
+    final sigma = config.variant == GlassVariant.regular ? 15.0 : 1.0;
+    final hasCustomPath = config.pathData != null;
+
+    final backdrop = BackdropFilter(
+      filter: ui.ImageFilter.compose(
+        outer: ui.ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
+        inner: ui.ImageFilter.matrix(
+          (Matrix4.identity()..scale(1.0026)).storage,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _RoundedGlassOverlay(cornerRadius: radius),
+            ),
+          ),
+          child,
+        ],
+      ),
+    );
+
+    final clipped = hasCustomPath
+        ? ClipPath(
+            clipper: _GlassPathClipper(config.pathData!),
+            child: backdrop,
+          )
+        : ClipRRect(
+            borderRadius: BorderRadius.circular(radius),
+            child: backdrop,
+          );
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius:
+            hasCustomPath ? null : BorderRadius.circular(radius),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x40191919),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: clipped,
     );
   }
+}
+
+/// Glass overlay for rounded rectangles: tint, gradient, inner shadow,
+/// and NW directional edge highlights.
+class _RoundedGlassOverlay extends CustomPainter {
+  _RoundedGlassOverlay({required this.cornerRadius});
+
+  final double cornerRadius;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(cornerRadius),
+    );
+    final bounds = Offset.zero & size;
+
+    // 1. Light tint — bright and clear like water
+    canvas.drawRRect(
+      rrect,
+      Paint()..color = Colors.white.withValues(alpha: 0.10),
+    );
+
+    // -- Clipped interior --
+    canvas.save();
+    canvas.clipRRect(rrect);
+
+    // 2. Body gradient: NW bright -> SE slightly less bright
+    canvas.drawPaint(
+      Paint()
+        ..shader = ui.Gradient.linear(
+          bounds.topLeft,
+          bounds.bottomRight,
+          [
+            Colors.white.withValues(alpha: 0.10),
+            Colors.white.withValues(alpha: 0.03),
+          ],
+        ),
+    );
+
+    // 3. Inner highlight — soft bright glow on lower-right edges
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2)
+        ..shader = ui.Gradient.linear(
+          bounds.topLeft,
+          bounds.bottomRight,
+          [Colors.transparent, Colors.white.withValues(alpha: 0.08)],
+        ),
+    );
+
+    canvas.restore();
+
+    // 4. Edge highlight — NW directional light
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0
+        ..shader = ui.Gradient.linear(
+          bounds.topLeft,
+          bounds.bottomRight,
+          [
+            Colors.white.withValues(alpha: 0.70),
+            Colors.white.withValues(alpha: 0.15),
+            Colors.transparent,
+          ],
+          [0.0, 0.45, 0.75],
+        ),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _RoundedGlassOverlay old) =>
+      old.cornerRadius != cornerRadius;
 }

@@ -1,3 +1,5 @@
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
@@ -27,45 +29,44 @@ class FeedNewPostsBanner extends StatelessWidget {
     final s = screenWidth / 402.0;
 
     final hasNew = newPostsCount > 0;
-    final iconSize = FeedLayout.bannerIconSize * s;
-    final fontSize = FeedLayout.usernameFontSize * s;
-    final letterSpacing = FeedLayout.usernameLetterSpacing * s;
+    final iconSize = 14.0 * s;
+    final fontSize = 13.0 * s;
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: hasNew ? 12 * s : 8 * s,
-          vertical: 4 * s,
+      child: AppGlassContainer(
+        config: GlassConfig(
+          variant: GlassVariant.clear,
+          cornerRadius: FeedLayout.bannerCornerRadius * s,
         ),
-        decoration: BoxDecoration(
-          color: const Color(0xFFE6E6E6).withValues(alpha: 0.2),
-          borderRadius:
-              BorderRadius.circular(FeedLayout.bannerCornerRadius * s),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SvgPicture.asset(
-              'assets/images/svgs/feed_arrow_down.svg',
-              width: iconSize,
-              height: iconSize,
-              colorFilter: MainColors.white.asSrcIn,
-            ),
-            if (hasNew) ...[
-              SizedBox(width: 4 * s),
-              Text(
-                'new',
-                style: TextStyle(
-                  fontFamily: MainFontFamilies.quicksand,
-                  fontWeight: FontWeight.w500,
-                  fontSize: fontSize,
-                  color: MainColors.white,
-                  letterSpacing: letterSpacing,
-                ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: hasNew ? 10 * s : 8 * s,
+            vertical: 5 * s,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SvgPicture.asset(
+                'assets/images/svgs/feed_arrow_down.svg',
+                width: iconSize,
+                height: iconSize,
+                colorFilter: MainColors.white.asSrcIn,
               ),
+              if (hasNew) ...[
+                SizedBox(width: 4 * s),
+                Text(
+                  'new',
+                  style: TextStyle(
+                    fontFamily: MainFontFamilies.quicksand,
+                    fontWeight: FontWeight.w400,
+                    fontSize: fontSize,
+                    color: MainColors.white,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
