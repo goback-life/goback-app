@@ -17,6 +17,7 @@ class LiquidGlassView: NSObject, FlutterPlatformView {
         let pathCommands = args?["pathCommands"] as? [[Any]]
         let viewBoxWidth = (args?["viewBoxWidth"] as? NSNumber)?.doubleValue
         let viewBoxHeight = (args?["viewBoxHeight"] as? NSNumber)?.doubleValue
+        let opacity = (args?["opacity"] as? NSNumber)?.doubleValue ?? 1.0
 
         if #available(iOS 26.0, *) {
             let surface = LiquidGlassSurface(
@@ -26,7 +27,8 @@ class LiquidGlassView: NSObject, FlutterPlatformView {
                 interactive: interactive,
                 pathCommands: pathCommands,
                 viewBoxWidth: viewBoxWidth,
-                viewBoxHeight: viewBoxHeight
+                viewBoxHeight: viewBoxHeight,
+                glassOpacity: opacity
             )
             let controller = UIHostingController(rootView: surface)
             controller.view.backgroundColor = .clear
@@ -94,6 +96,7 @@ struct LiquidGlassSurface: View {
     let pathCommands: [[Any]]?
     let viewBoxWidth: Double?
     let viewBoxHeight: Double?
+    let glassOpacity: Double
 
     var body: some View {
         glassSurface
@@ -154,7 +157,7 @@ struct LiquidGlassSurface: View {
         let r = Double((value >> 16) & 0xFF) / 255.0
         let g = Double((value >> 8) & 0xFF) / 255.0
         let b = Double(value & 0xFF) / 255.0
-        let a = Double((value >> 24) & 0xFF) / 255.0
+        let a = Double((value >> 24) & 0xFF) / 255.0 * glassOpacity
         return Color(.sRGB, red: r, green: g, blue: b, opacity: a)
     }
 }

@@ -118,16 +118,15 @@ class FeedLockoutButton extends HookConsumerWidget {
             ],
             if (kNativeGlassAvailable)
               Positioned.fill(
-                child: ClipPath(
-                  clipper: _TriangleClipper(),
-                  child: UiKitView(
-                    viewType: 'app_liquid_glass',
-                    creationParams: GlassConfig(
-                      tint: MainColors.accent,
-                      pathData: _kTrianglePathData,
-                    ).toCreationParams(),
-                    creationParamsCodec: const StandardMessageCodec(),
-                  ),
+                child: UiKitView(
+                  viewType: 'app_liquid_glass',
+                  creationParams: GlassConfig(
+                    variant: GlassVariant.clear,
+                    tint: MainColors.accent,
+                    pathData: _kTrianglePathData,
+                    opacity: 0.3,
+                  ).toCreationParams(),
+                  creationParamsCodec: const StandardMessageCodec(),
                 ),
               ),
             // Overlay: full effects (fallback) or highlights-only (native)

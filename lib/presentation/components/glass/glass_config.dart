@@ -34,6 +34,7 @@ class GlassConfig {
     this.cornerRadius = 24,
     this.interactive = false,
     this.pathData,
+    this.opacity = 1.0,
   });
 
   final GlassVariant variant;
@@ -41,6 +42,7 @@ class GlassConfig {
   final double cornerRadius;
   final bool interactive;
   final GlassPathData? pathData;
+  final double opacity;
 
   /// Serialise to creation params for the iOS platform view.
   Map<String, dynamic> toCreationParams() {
@@ -51,6 +53,7 @@ class GlassConfig {
       if (t != null) 'tint': _colorToArgbInt(t),
       'cornerRadius': cornerRadius,
       'interactive': interactive,
+      if (opacity != 1.0) 'opacity': opacity,
       if (pd != null) ...{
         'pathCommands': pd.commands,
         'viewBoxWidth': pd.viewBoxWidth,
