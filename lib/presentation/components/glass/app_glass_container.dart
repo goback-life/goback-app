@@ -73,22 +73,74 @@ class _NativeGlass extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final stack = Stack(
+      children: [
+        Positioned.fill(
+          child: UiKitView(
+            viewType: 'app_liquid_glass',
+            creationParams: config.toCreationParams(),
+            creationParamsCodec: const StandardMessageCodec(),
+          ),
+        ),
+        child,
+      ],
+    );
+    if (config.pathData != null) {
+      return ClipPath(
+        clipper: _GlassPathClipper(config.pathData!),
+        child: stack,
+      );
+    }
     return ClipRRect(
       borderRadius: BorderRadius.circular(config.cornerRadius),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: UiKitView(
-              viewType: 'app_liquid_glass',
-              creationParams: config.toCreationParams(),
-              creationParamsCodec: const StandardMessageCodec(),
-            ),
-          ),
-          child,
-        ],
-      ),
+      child: stack,
     );
   }
+}
+
+/// Clips to a custom path defined by [GlassPathData].
+class _GlassPathClipper extends CustomClipper<Path> {
+  _GlassPathClipper(this.pathData);
+
+  final GlassPathData pathData;
+
+  @override
+  Path getClip(Size size) {
+    final sx = size.width / pathData.viewBoxWidth;
+    final sy = size.height / pathData.viewBoxHeight;
+    final path = Path();
+    for (final cmd in pathData.commands) {
+      if (cmd.isEmpty) continue;
+      final op = cmd[0] as String;
+      switch (op) {
+        case 'M':
+          path.moveTo(
+            (cmd[1] as num).toDouble() * sx,
+            (cmd[2] as num).toDouble() * sy,
+          );
+        case 'L':
+          path.lineTo(
+            (cmd[1] as num).toDouble() * sx,
+            (cmd[2] as num).toDouble() * sy,
+          );
+        case 'C':
+          path.cubicTo(
+            (cmd[1] as num).toDouble() * sx,
+            (cmd[2] as num).toDouble() * sy,
+            (cmd[3] as num).toDouble() * sx,
+            (cmd[4] as num).toDouble() * sy,
+            (cmd[5] as num).toDouble() * sx,
+            (cmd[6] as num).toDouble() * sy,
+          );
+        case 'Z':
+          path.close();
+      }
+    }
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant _GlassPathClipper oldClipper) => false;
 }
 
 /// Android / iOS fallback using liquid_glass_renderer shaders.
