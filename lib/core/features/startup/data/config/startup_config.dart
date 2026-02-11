@@ -1,5 +1,6 @@
 import 'package:cloudless/core/features/auth/domain/middlewares/auth_navigation_flow_middleware.dart';
 import 'package:cloudless/core/features/time_limit/domain/middlewares/time_limit_middleware.dart';
+import 'package:cloudless/presentation/components/nav_overlay/nav_overlay_wrapper.dart';
 import 'package:cloudless/presentation/components/time_limit_listener_widget.dart';
 import 'package:cloudless/presentation/routes.dart';
 import 'package:cloudless/presentation/themes/main_theme.dart';
@@ -16,6 +17,8 @@ StartupConfig get startupConfig {
     middlewares: [AuthNavigationFlowMiddleware(), TimeLimitMiddleware()],
     errorPage: Container(color: Colors.white),
     loadingPage: Container(color: Colors.white),
-    appBuilder: (context, child) => TimeLimitListenerWidget(child: child),
+    appBuilder: (context, child) => NavOverlayWrapper(
+      child: TimeLimitListenerWidget(child: child),
+    ),
   );
 }
