@@ -12,7 +12,7 @@ bool _checkNativeGlass() {
   if (!Platform.isIOS) return false;
   try {
     final version = Platform.operatingSystemVersion;
-    final match = RegExp(r'^(\d+)\.').firstMatch(version);
+    final match = RegExp(r'(\d+)\.').firstMatch(version);
     if (match == null) return false;
     return int.parse(match.group(1)!) >= 26;
   } catch (_) {
