@@ -1,282 +1,283 @@
-import 'package:cloudless/core/features/lockout/domain/providers/get_friends_locked_out_provider.dart';
+import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
+import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
-import 'package:cloudless/presentation/components/profile_image/profile_image.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
+import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
-class FriendsLockedOutView extends HookConsumerWidget with MainLayout {
+/// Friends locked out view — matches the structure of [LockoutFriendsOverlay].
+/// Uses the same cache provider, item layout, polling and lifecycle refresh.
+class FriendsLockedOutView extends HookConsumerWidget {
   const FriendsLockedOutView({super.key});
+
+  static const _pollInterval = Duration(minutes: 1);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
+    final cacheState = ref.watch(friendsLockedOutCacheProvider);
+    final cacheNotifier = ref.read(friendsLockedOutCacheProvider.notifier);
 
-    final friendsLockedOutAsync = ref.watch(getFriendsLockedOutProvider);
+    // Refresh on open (deferred to avoid modifying provider during build).
+    useEffect(() {
+      Future.microtask(() => cacheNotifier.refresh());
+      return null;
+    }, const []);
 
-    return friendsLockedOutAsync.when(
-      data: (result) {
-        return result.fold(
-          (lockouts) {
-            // ignore: avoid_print
-            print('[FriendsLockedOutView] received ${lockouts.length} lockouts');
-            for (final l in lockouts) {
-              // ignore: avoid_print
-              print('[FriendsLockedOutView]   ${l.username} (${l.id}), endsAt=${l.endsAt}');
-            }
-            if (lockouts.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.phone_locked_outlined,
-                        size: 64,
-                        color: colorScheme.onSurface.withValues(alpha: 0.3),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        translator.translate('pages.friends_locked_out.empty'),
-                        style: textTheme.bodyLarge?.copyWith(
-                          color: colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
+    // Poll every minute.
+    useEffect(() {
+      final timer = Timer.periodic(_pollInterval, (_) {
+        cacheNotifier.refresh();
+      });
+      return timer.cancel;
+    }, const []);
 
-            return NotificationListener<OverscrollNotification>(
-              onNotification: (notification) {
-                // Pull-up: positive overscroll at bottom of list
-                if (notification.overscroll > 10) {
-                  ref.invalidate(getFriendsLockedOutProvider);
-                }
-                return false;
-              },
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(
-                  parent: BouncingScrollPhysics(),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                itemCount: lockouts.length,
-                itemBuilder: (context, index) {
-                  final lockout = lockouts[index];
-                  final minutesRemaining = lockout.endsAt
-                      .difference(DateTime.now())
-                      .inMinutes;
-                  final isJoinable = minutesRemaining > 30;
+    // Refresh on app resume.
+    useEffect(() {
+      final observer = _LifecycleObserver((state) {
+        if (state == AppLifecycleState.resumed) {
+          cacheNotifier.refresh();
+        }
+      });
+      WidgetsBinding.instance.addObserver(observer);
+      return () => WidgetsBinding.instance.removeObserver(observer);
+    }, const []);
 
-                  Future<void> joinLockout() async {
-                    try {
-                      await ref
-                          .read(manualLockoutNotifierProvider.notifier)
-                          .joinLockout(lockout.id);
-                      if (context.mounted) {
-                        router.go(const ManualLockoutRoutable());
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        MainSnackbar.showError(
-                          context,
-                          translator.translate(
-                            'pages.friends_locked_out.join_error',
-                          ),
-                        );
-                      }
-                    }
-                  }
+    // Remove expired lockouts periodically.
+    useEffect(() {
+      final timer = Timer.periodic(const Duration(seconds: 30), (_) {
+        cacheNotifier.removeExpiredLockouts();
+      });
+      return timer.cancel;
+    }, const []);
 
-                  return _FriendLockoutItem(
-                    username: lockout.username ?? 'Unknown',
-                    avatarUrl: lockout.avatarUrl,
-                    actionText: lockout.actionText,
-                    locationName: lockout.locationName,
-                    minutesRemaining: minutesRemaining,
-                    isJoinable: isJoinable,
-                    onTap: isJoinable ? joinLockout : null,
-                    onJoin: isJoinable ? joinLockout : null,
-                  );
-                },
-              ),
-            );
-          },
-          (error) => Center(
-            child: Text(
-              translator.translate('pages.friends_locked_out.error'),
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.error,
-              ),
-            ),
-          ),
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => Center(
+    // Sort newest first.
+    final friends = [...cacheState.activeLockouts]
+      ..sort((a, b) {
+        final aTime = a.createdAt ?? a.startedAt;
+        final bTime = b.createdAt ?? b.startedAt;
+        return bTime.compareTo(aTime);
+      });
+
+    if (friends.isEmpty) {
+      return Center(
         child: Text(
-          translator.translate('pages.friends_locked_out.error'),
-          style: textTheme.bodyMedium?.copyWith(
-            color: colorScheme.error,
+          'No friends locked out',
+          style: TextStyle(
+            fontFamily: MainFontFamilies.quicksand,
+            fontWeight: FontWeight.w500,
+            fontSize: 20,
+            color: MainColors.white.withValues(alpha: 0.6),
           ),
         ),
+      );
+    }
+
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ListView.builder(
+        reverse: true,
+        shrinkWrap: true,
+        padding: const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 64),
+        itemCount: friends.length,
+        itemBuilder: (context, index) {
+          final session = friends[index];
+          return _FriendItem(session: session);
+        },
       ),
     );
   }
 }
 
-class _FriendLockoutItem extends StatelessWidget with MainLayout {
-  const _FriendLockoutItem({
-    required this.username,
-    required this.minutesRemaining,
-    required this.isJoinable,
-    this.avatarUrl,
-    this.actionText,
-    this.locationName,
-    this.onTap,
-    this.onJoin,
-  });
+class _FriendItem extends HookConsumerWidget with MainLayout {
+  const _FriendItem({required this.session});
 
-  final String username;
-  final String? avatarUrl;
-  final String? actionText;
-  final String? locationName;
-  final int minutesRemaining;
-  final bool isJoinable;
-  final VoidCallback? onTap;
-  final VoidCallback? onJoin;
+  final LockoutSessionModel session;
+
+  static const double _avatarSize = 39.0;
+  static const int _minJoinableMinutes = 30;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final timeRemaining = _formatTimeRemaining(session.endsAt);
+    final hasActivity =
+        session.actionText != null && session.actionText!.isNotEmpty;
+    final minutesRemaining =
+        session.endsAt.difference(DateTime.now()).inMinutes;
+    final isJoinable = minutesRemaining > _minJoinableMinutes;
+    final isJoining = useState(false);
 
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.1),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          SizedBox(
-            width: 48,
-            height: 48,
-            child: ProfileImage(
-              imageUrl: avatarUrl,
-              isEditable: false,
-            ),
-          ),
+          _buildAvatar(),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  username,
-                  style: textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
+                  session.username ?? '',
+                  style: const TextStyle(
+                    fontFamily: MainFontFamilies.quicksand,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 24,
+                    color: MainColors.white,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                if (actionText != null) ...[
-                  const SizedBox(height: 2),
+                if (hasActivity)
                   Text(
-                    actionText!,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.7),
+                    session.actionText!,
+                    style: const TextStyle(
+                      fontFamily: MainFontFamilies.quicksand,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 20,
+                      color: MainColors.white,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ],
-                const SizedBox(height: 4),
-                Text(
-                  _formatTimeRemaining(minutesRemaining),
-                  style: textTheme.bodySmall?.copyWith(
-                    color: isJoinable
-                        ? colorScheme.primary
-                        : colorScheme.onSurface.withValues(alpha: 0.5),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          if (isJoinable)
-            ElevatedButton(
-              onPressed: onJoin,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: MainColors.accent,
-                foregroundColor: MainColors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+          const SizedBox(width: 8),
+          Text(
+            timeRemaining,
+            style: const TextStyle(
+              fontFamily: MainFontFamilies.quicksand,
+              fontWeight: FontWeight.w500,
+              fontSize: 24,
+              color: MainColors.white,
+            ),
+          ),
+          if (isJoinable) ...[
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: isJoining.value
+                  ? null
+                  : () => _handleJoin(context, ref, isJoining),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: MainColors.accent,
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: Text(
-                translator.translate('pages.friends_locked_out.join'),
-              ),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                translator.translate('pages.friends_locked_out.ending_soon'),
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
+                child: isJoining.value
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: MainColors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Join',
+                        style: TextStyle(
+                          fontFamily: MainFontFamilies.quicksand,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          color: MainColors.white,
+                        ),
+                      ),
               ),
             ),
+          ],
         ],
       ),
-    ),
     );
   }
 
-  String _formatTimeRemaining(int minutes) {
-    if (minutes < 60) {
-      return '$minutes min remaining';
+  Future<void> _handleJoin(
+    BuildContext context,
+    WidgetRef ref,
+    ValueNotifier<bool> isJoining,
+  ) async {
+    isJoining.value = true;
+    try {
+      await ref
+          .read(manualLockoutNotifierProvider.notifier)
+          .joinLockout(session.id);
+      if (context.mounted) {
+        router.go(const ManualLockoutRoutable());
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      final message = e.toString().contains('already')
+          ? 'Already in an active lockout'
+          : 'Failed to join lockout';
+      MainSnackbar.showError(context, message);
+    } finally {
+      if (context.mounted) isJoining.value = false;
     }
-    final hours = minutes ~/ 60;
-    final remainingMins = minutes % 60;
-    if (remainingMins == 0) {
-      return '$hours ${hours == 1 ? 'hour' : 'hours'} remaining';
+  }
+
+  Widget _buildAvatar() {
+    if (session.avatarUrl != null && session.avatarUrl!.isNotEmpty) {
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: session.avatarUrl!,
+          width: _avatarSize,
+          height: _avatarSize,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => _fallbackAvatar(),
+          errorWidget: (_, __, ___) => _fallbackAvatar(),
+        ),
+      );
     }
-    return '${hours}h ${remainingMins}m remaining';
+    return _fallbackAvatar();
+  }
+
+  Widget _fallbackAvatar() {
+    return Container(
+      width: _avatarSize,
+      height: _avatarSize,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: MainColors.accent.withValues(alpha: 0.2),
+      ),
+      child: Center(
+        child: Text(
+          (session.username ?? '?')[0].toUpperCase(),
+          style: const TextStyle(
+            fontFamily: MainFontFamilies.quicksand,
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            color: MainColors.accent,
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatTimeRemaining(DateTime endsAt) {
+    final remaining = endsAt.difference(DateTime.now());
+    if (remaining.isNegative) return '0:00';
+    final hours = remaining.inHours;
+    final minutes = remaining.inMinutes.remainder(60);
+    return '$hours:${minutes.toString().padLeft(2, '0')}';
+  }
+}
+
+class _LifecycleObserver extends WidgetsBindingObserver {
+  _LifecycleObserver(this.onStateChange);
+
+  final void Function(AppLifecycleState) onStateChange;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    onStateChange(state);
   }
 }

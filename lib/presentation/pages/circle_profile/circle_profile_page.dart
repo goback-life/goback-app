@@ -1,41 +1,34 @@
 import 'package:cloudless/core/features/connection/domain/hooks/use_remove_connection.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
-import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/alerts/main_alert.dart';
-import 'package:cloudless/presentation/components/main_app_bar/main_app_bar.dart';
-import 'package:cloudless/presentation/pages/circle_profile/circle_profile_layout.dart';
 import 'package:cloudless/presentation/pages/circle_profile/views/circle_profile_view.dart';
+import 'package:cloudless/presentation/pages/profile/components/profile_hamburger_menu.dart';
+import 'package:cloudless/presentation/pages/profile/profile_layout.dart';
 import 'package:cloudless/presentation/pages/profile_shared/components/profile_actions_menu.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
-import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:flutter/material.dart';
 
 class CircleProfilePage extends HookConsumerWidget
-    with MainLayout, CircleProfileLayout {
+    with MainLayout, ProfileLayout {
   const CircleProfilePage({required this.userId, super.key});
 
   final String userId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final s = screenWidth / designWidth;
     final removeConnection = useRemoveConnection(ref);
     final isRemoving = useState(false);
     final isMenuVisible = useState(false);
 
     Future<void> handleRemoveConnection() async {
-      if (isRemoving.value) {
-        return;
-      }
-
+      if (isRemoving.value) return;
       isRemoving.value = true;
-
       final result = await removeConnection(userId);
-
       result.fold(
         (success) {
           ref.invalidate(getCircleMembersProvider);
@@ -66,7 +59,6 @@ class CircleProfilePage extends HookConsumerWidget
         primaryButtonText: translator.translate(
           'components.alert.remove_confirmation.confirm',
         ),
-        textButtonStyle: textTheme.bodyMedium,
         secondaryButtonText: translator.translate(
           'components.alert.remove_confirmation.cancel',
         ),
@@ -79,24 +71,22 @@ class CircleProfilePage extends HookConsumerWidget
     }
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: MainColors.dark,
       body: Stack(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(height: topMargin),
-              MainAppBar(
-                title: translator.translate('pages.circle_profile.title'),
-                rightWidget: MainAppBar.customAction(
-                  icon: Assets.svg.menu.render(colorFilter: colorScheme.onSurface.asSrcIn),
-                  onTap: () => isMenuVisible.value = !isMenuVisible.value,
-                ),
-              ),
-              SizedBox(height: titleToImage),
-              CircleProfileView(userId: userId),
-            ],
+          CircleProfileView(userId: userId, scale: s),
+
+          // Hamburger menu button (top-right)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + hamburgerTopOffset * s,
+            right: hamburgerRightOffset * s,
+            child: ProfileHamburgerMenu(
+              scale: s,
+              onTap: () => isMenuVisible.value = !isMenuVisible.value,
+            ),
           ),
+
+          // Dismiss scrim
           if (isMenuVisible.value)
             Positioned.fill(
               child: GestureDetector(
@@ -104,10 +94,14 @@ class CircleProfilePage extends HookConsumerWidget
                 child: Container(color: Colors.transparent),
               ),
             ),
+
+          // Actions dropdown
           if (isMenuVisible.value)
             Positioned(
-              top: topMargin + 40,
-              right: horizontalPadding,
+              top: MediaQuery.of(context).padding.top +
+                  hamburgerTopOffset * s +
+                  40,
+              right: hamburgerRightOffset * s,
               child: Material(
                 color: Colors.transparent,
                 child: ProfileActionsMenu(

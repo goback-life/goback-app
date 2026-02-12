@@ -27,7 +27,7 @@ class ManualLockoutView extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final surface = Theme.of(context).colorScheme.surface;
     final bgColor =
-        surface.computeLuminance() < 0.5 ? MainColors.dark : MainColors.white;
+        surface.computeLuminance() < 0.5 ? MainColors.white : MainColors.dark;
 
     final lockoutStateAsync = ref.watch(manualLockoutNotifierProvider);
     final countdown = useState('');

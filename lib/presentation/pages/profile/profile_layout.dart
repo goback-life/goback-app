@@ -1,60 +1,46 @@
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 
 mixin ProfileLayout on MainLayout {
-  @override
-  double get horizontalPadding => 20.0;
+  // Design reference width from Figma (402px frame).
+  double get designWidth => 402.0;
 
-  @override
-  double get topMargin => 66.0;
+  // Avatar
+  double get avatarSize => 132.0;
+  double get avatarTopOffset => 55.0;
 
-  @override
-  double get verticalSpacing => 20.0;
+  // Username
+  double get usernameFontSize => 40.0;
+  double get usernameTracking => -2.4; // -6% of 40
+  double get usernameTopGap => 11.0;
 
-  @override
-  double get horizontalMargin => 100.0;
+  // Bio
+  double get bioFontSize => 24.0;
+  double get bioTracking => -1.44; // -6% of 24
+  double get bioTopGap => 11.0;
+  double get bioMaxWidth => 288.0;
 
-  @override
-  double get verticalMargin => 14.0;
+  // Calendar grid
+  double get dayCellWidth => 39.0;
+  double get dayCellHeight => 48.0;
+  double get calendarGridTop => 404.0;
+  double get calendarGridWidth => 340.0;
+  double get calendarRowSpacing => 59.0;
+  double get dayFontSize => 24.0;
+  double get dayTracking => -1.44; // -6% of 24
+  double get dayCellRadius => 10.0;
 
-  @override
-  double get verticalPadding => 20.0;
+  // Month navigation
+  double get monthFontSize => 40.0;
+  double get monthTracking => -2.4;
+  double get monthNavTop => 714.0;
+  double get arrowWidth => 41.0;
+  double get arrowHeight => 34.0;
 
-  @override
-  double get bottomPadding => 8.0;
-
-  @override
-  double get bottomMargin => 10.0;
-
-  @override
-  double get horizontalSpacing => 16.0;
-
-  @override
-  double get height => 45.0;
-
-  @override
-  double get width => 42.0;
-
-  @override
-  double get allMargin => 4.0;
-
-  @override
-  double get topPadding => 24.0;
-
-  double get imageSize => 120.0;
-
-  double get iconSize => 24.0;
-
-  double get buttonHeight => 32.0;
-
-  double get borderRadius => 12.0;
-
-  double get calendarBorderRadius => 20.0;
-
-  double get titleToImage => 26.0;
-
-  double get buttonToCalendar => 30.0;
-
-  double get horizontalMarginBetweenDays => 5.0;
-
-  double get calendarBottomSpacing => 80.0;
+  // Hamburger menu
+  double get hamburgerBarWidth => 31.0;
+  double get hamburgerBarHeight => 5.0;
+  double get hamburgerBarRadius => 47.0;
+  double get hamburgerBarSpacing => 4.0;
+  double get hamburgerTopOffset => 55.0;
+  double get hamburgerRightOffset => 20.0;
 }

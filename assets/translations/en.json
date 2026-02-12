@@ -446,7 +446,8 @@
                 "description": "Select how long you want to goback for (minimum 1 hour)",
                 "cancel": "Cancel",
                 "confirm": "Confirm",
-                "error": "Duration must be greater than 1 hour"
+                "error": "Duration must be greater than 1 hour",
+                "activity_hint": "What are you doing?"
             },
             "friends_locked_out": {
                 "title": "Friends offline",

@@ -30,9 +30,14 @@ class AuthNavigationFlowMiddleware extends Middleware {
   static AuthNavigationFlowMiddleware? _instance;
   bool _isListenerSetup = false;
   DateTime? _lastSessionCheck;
+  Timer? _logoutDebounce;
 
   // Cache duration to avoid repeated session checks
   static const Duration _checkCooldown = Duration(seconds: 30);
+
+  // Debounce to avoid reacting to transient auth state blips (e.g. during
+  // OTP verification where Supabase may emit a momentary false).
+  static const Duration _logoutDebounceDuration = Duration(seconds: 2);
 
   void _setupReactiveAuth() {
     if (_isListenerSetup) {
@@ -45,17 +50,30 @@ class AuthNavigationFlowMiddleware extends Middleware {
       try {
         final container = riverpodContainer();
 
-        // Listen to auth changes and trigger immediate navigation when user loses auth
+        // Listen to auth changes and trigger navigation when user loses auth.
+        // Uses a debounce to avoid reacting to transient false states during
+        // sign-in/OTP verification.
         container.listen(isAuthenticatedStreamProvider, (previous, next) {
           next.whenData((isAuth) {
             if (!isAuth && (previous?.value == true)) {
-              // Clean up state immediately
-              container.read(calendarPostsCacheProvider.notifier).clearCache();
-              container.invalidate(getProfileProvider);
-              final _ = ProfileCompletedStorable()..set(false);
+              _logoutDebounce?.cancel();
+              _logoutDebounce = Timer(_logoutDebounceDuration, () {
+                // Re-check auth state after debounce — if it recovered, skip.
+                final stillUnauthenticated =
+                    !container.read(isAuthenticatedProvider);
+                if (!stillUnauthenticated) return;
 
-              // Navigate immediately to sign in - this is more reactive than waiting for handle()
-              router.go(const SignInRoutable());
+                container
+                    .read(calendarPostsCacheProvider.notifier)
+                    .clearCache();
+                container.invalidate(getProfileProvider);
+                final _ = ProfileCompletedStorable()..set(false);
+
+                router.go(const SignInRoutable());
+              });
+            } else if (isAuth) {
+              // Auth recovered — cancel any pending logout redirect.
+              _logoutDebounce?.cancel();
             }
           });
         });

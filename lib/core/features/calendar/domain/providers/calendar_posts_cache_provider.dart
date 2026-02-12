@@ -29,6 +29,39 @@ class CalendarPostsCache extends _$CalendarPostsCache {
     state = posts;
   }
 
+  /// Merges fresh posts into the cache for a visible date range.
+  ///
+  /// Removes any existing cached posts within [rangeStart]..[rangeEnd]
+  /// and replaces them with [newPosts]. Posts outside the range are kept,
+  /// so the cache accumulates data across months.
+  void mergePosts(
+    List<CalendarPostModel> newPosts, {
+    required String userId,
+    required DateTime rangeStart,
+    required DateTime rangeEnd,
+  }) {
+    if (_currentUserId != null && _currentUserId != userId) {
+      state = [];
+      _currentUserId = userId;
+    }
+    _currentUserId ??= userId;
+
+    final start = DateTime(rangeStart.year, rangeStart.month, rangeStart.day);
+    final end = DateTime(rangeEnd.year, rangeEnd.month, rangeEnd.day);
+
+    // Keep posts outside the fetched range, replace those inside
+    final kept = state.where((p) {
+      final d = DateTime(
+        p.publishedAt.year,
+        p.publishedAt.month,
+        p.publishedAt.day,
+      );
+      return d.isBefore(start) || d.isAfter(end);
+    }).toList();
+
+    state = [...kept, ...newPosts];
+  }
+
   /// Appends posts to the cache without clearing existing posts.
   /// Useful for incremental loading (e.g., loading 10 more posts).
   /// Duplicates are automatically removed based on post ID.

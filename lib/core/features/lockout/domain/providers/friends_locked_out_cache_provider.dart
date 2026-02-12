@@ -102,6 +102,17 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
 
   /// Force refresh, bypassing cache TTL. Non-blocking.
   void refresh() {
+    // Reset stuck fetch flag after timeout
+    final fetchStuck = state.isFetching &&
+        _fetchStartedAt != null &&
+        DateTime.now().difference(_fetchStartedAt!) > _fetchTimeout;
+    if (fetchStuck) {
+      // ignore: avoid_print
+      print('[CACHE] refresh: fetch stuck — resetting');
+      state = state.copyWith(isFetching: false);
+      _fetchStartedAt = null;
+    }
+
     if (!state.isFetching) {
       _fetchInBackground();
     }

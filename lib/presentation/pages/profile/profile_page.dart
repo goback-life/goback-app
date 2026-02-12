@@ -1,12 +1,13 @@
-import 'package:cloudless/presentation/assets/assets.dart';
-import 'package:cloudless/presentation/components/main_app_bar/main_app_bar.dart';
+import 'package:cloudless/presentation/pages/edit_profile/edit_profile_routable.dart';
+import 'package:cloudless/presentation/pages/profile/components/profile_hamburger_menu.dart';
 import 'package:cloudless/presentation/pages/profile/profile_layout.dart';
 import 'package:cloudless/presentation/pages/profile/views/profile_view.dart';
 import 'package:cloudless/presentation/pages/settings/settings_routable.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
+import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
-import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends HookConsumerWidget with MainLayout, ProfileLayout {
@@ -14,25 +15,119 @@ class ProfilePage extends HookConsumerWidget with MainLayout, ProfileLayout {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final s = screenWidth / designWidth;
+    final isMenuVisible = useState(false);
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      backgroundColor: MainColors.dark,
+      body: Stack(
         children: [
-          SizedBox(height: topMargin),
-          MainAppBar(
-            title: translator.translate('pages.profile.title'),
-            rightWidget: MainAppBar.customAction(
-              icon: Assets.svg.settings.render(colorFilter: colorScheme.onSurface.asSrcIn),
-              onTap: () => router.push(const SettingsRoutable()),
+          ProfileView(scale: s),
+
+          // Hamburger menu button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + hamburgerTopOffset * s,
+            right: hamburgerRightOffset * s,
+            child: ProfileHamburgerMenu(
+              scale: s,
+              onTap: () => isMenuVisible.value = !isMenuVisible.value,
             ),
           ),
-          SizedBox(height: titleToImage),
-          const ProfileView(),
+
+          // Dismiss scrim
+          if (isMenuVisible.value)
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () => isMenuVisible.value = false,
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+
+          // Dropdown menu
+          if (isMenuVisible.value)
+            Positioned(
+              top: MediaQuery.of(context).padding.top +
+                  hamburgerTopOffset * s +
+                  40,
+              right: hamburgerRightOffset * s,
+              child: _ProfileDropdownMenu(
+                scale: s,
+                onEditProfile: () {
+                  isMenuVisible.value = false;
+                  router.push(const EditProfileRoutable());
+                },
+                onSettings: () {
+                  isMenuVisible.value = false;
+                  router.push(const SettingsRoutable());
+                },
+              ),
+            ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfileDropdownMenu extends StatelessWidget {
+  const _ProfileDropdownMenu({
+    required this.scale,
+    required this.onEditProfile,
+    required this.onSettings,
+  });
+
+  final double scale;
+  final VoidCallback onEditProfile;
+  final VoidCallback onSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    final itemStyle = TextStyle(
+      fontFamily: MainFontFamilies.quicksand,
+      fontWeight: FontWeight.w500,
+      fontSize: 16 * scale,
+      color: MainColors.white,
+    );
+    final padH = 20.0 * scale;
+    final padV = 12.0 * scale;
+    final radius = 16.0 * scale;
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF2A2A2A),
+          borderRadius: BorderRadius.circular(radius),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x40000000),
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onEditProfile,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(padH, padV, padH * 2, padV / 2),
+                child: Text('Edit Profile', style: itemStyle),
+              ),
+            ),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onSettings,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(padH, padV / 2, padH * 2, padV),
+                child: Text('Settings', style: itemStyle),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

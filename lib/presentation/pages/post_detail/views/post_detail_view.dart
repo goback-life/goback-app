@@ -85,15 +85,12 @@ class PostDetailView extends HookConsumerWidget
               if (cacheUserId != user.id ||
                   (isCurrentUserPost && isFromCalendar)) {
                 // Reload calendar cache for current user
+                // Repository extracts .year/.month from referenceDate.
                 final now = DateTime.now();
-                final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
-                final endOffset = 7 - lastDayOfMonth.weekday;
-                final lastVisibleDay = DateTime(now.year, now.month + 1, endOffset);
-
                 final result = await ref.read(
                   getCalendarPostsProvider(
                     userId: user.id,
-                    referenceDate: lastVisibleDay,
+                    referenceDate: now,
                     direction: CalendarLoadDirection.before,
                     limit: 42,
                   ).future,

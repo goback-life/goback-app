@@ -52,11 +52,13 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
   const PostDetailOverlayReactions({
     required this.postId,
     required this.scale,
+    this.readOnly = false,
     super.key,
   });
 
   final String postId;
   final double scale;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -111,7 +113,7 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
     final addW = 32.0 * scale;
 
     Widget addButton() => GestureDetector(
-          onTap: () => _showPicker(context, result),
+          onTap: readOnly ? null : () => _showPicker(context, result),
           child: Container(
             width: addW,
             height: pillH,
@@ -144,8 +146,10 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
       return GestureDetector(
         onTap: () {
           if (isOwn) {
+            // Always allow removing own reaction
             result.removeReaction();
-          } else {
+          } else if (!readOnly) {
+            // Only allow adding new reactions when not read-only
             result.addReaction(emoji);
           }
         },
@@ -194,7 +198,7 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
       child: SizedBox(
         height: pillH,
         child: arranged.isEmpty
-            ? Center(child: addButton())
+            ? (readOnly ? const SizedBox.shrink() : Center(child: addButton()))
             : LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(
@@ -211,8 +215,10 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
                             if (i > 0) SizedBox(width: gap),
                             buildPill(arranged[i]),
                           ],
-                          SizedBox(width: gap),
-                          addButton(),
+                          if (!readOnly) ...[
+                            SizedBox(width: gap),
+                            addButton(),
+                          ],
                         ],
                       ),
                     ),

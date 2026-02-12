@@ -446,7 +446,8 @@
                 "description": "Seleziona per quanto tempo vuoi tornare alla vita (minimo 1 ora)",
                 "cancel": "Annulla",
                 "confirm": "Conferma",
-                "error": "La durata deve essere maggiore di 1 ora"
+                "error": "La durata deve essere maggiore di 1 ora",
+                "activity_hint": "Cosa stai facendo?"
             },
             "friends_locked_out": {
                 "title": "Amici offline",

@@ -101,6 +101,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     required this.contentHPad,
     required this.contentWidth,
     this.bottomInset = 0,
+    this.readOnly = false,
     super.key,
   });
 
@@ -112,6 +113,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
   final double contentHPad;
   final double contentWidth;
   final double bottomInset;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -199,16 +201,18 @@ class PostDetailOverlayContent extends HookConsumerWidget {
               authorAvatarUrl: resolveAvatar(post.authorId),
             ),
             SizedBox(height: inputGap),
-            if (commentsResult.canAddMore)
-              PostDetailOverlayInput(
-                scale: scale,
-                textController: textController,
-                allUsers: allUsers,
-                onMentionsChanged: (ids) => mentionedIds.value = ids,
-                onSubmit: handleSubmit,
-              )
-            else
-              _buildLimitMessage(),
+            if (!readOnly) ...[
+              if (commentsResult.canAddMore)
+                PostDetailOverlayInput(
+                  scale: scale,
+                  textController: textController,
+                  allUsers: allUsers,
+                  onMentionsChanged: (ids) => mentionedIds.value = ids,
+                  onSubmit: handleSubmit,
+                )
+              else
+                _buildLimitMessage(),
+            ],
             SizedBox(height: 16 * scale),
             _buildThoughtsHeader(),
             if (comments.isNotEmpty) SizedBox(height: 16 * scale),

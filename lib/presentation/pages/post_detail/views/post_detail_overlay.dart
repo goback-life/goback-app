@@ -37,9 +37,14 @@ void _showFullScreenImage(BuildContext context, String? imageUrl) {
 /// comments/content, a glass scroll indicator, and dismiss gestures
 /// (swipe-down or tap-outside).
 class PostDetailOverlay extends HookConsumerWidget {
-  const PostDetailOverlay({required this.post, super.key});
+  const PostDetailOverlay({
+    required this.post,
+    this.readOnly = false,
+    super.key,
+  });
 
   final FeedPostModel post;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -123,6 +128,7 @@ class PostDetailOverlay extends HookConsumerWidget {
                   post: currentPost,
                   scrollController: scrollController,
                   scrollFraction: scrollFraction.value,
+                  readOnly: readOnly,
                 ),
               ),
             ),
@@ -148,6 +154,7 @@ class _GlassCard extends StatelessWidget {
     required this.post,
     required this.scrollController,
     required this.scrollFraction,
+    this.readOnly = false,
   });
 
   final double cardRadius;
@@ -161,6 +168,7 @@ class _GlassCard extends StatelessWidget {
   final FeedPostModel post;
   final ScrollController scrollController;
   final double scrollFraction;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -218,6 +226,7 @@ class _GlassCard extends StatelessWidget {
                   contentHPad: contentHPad,
                   contentWidth: contentWidth,
                   bottomInset: contentBottom,
+                  readOnly: readOnly,
                 ),
               ),
             ),
@@ -284,6 +293,7 @@ class _GlassCard extends StatelessWidget {
               child: PostDetailOverlayReactions(
                 postId: post.id,
                 scale: scale,
+                readOnly: readOnly,
               ),
             ),
           ],

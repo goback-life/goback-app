@@ -46,7 +46,16 @@ class HomeNavigationBar extends HookConsumerWidget
           const Spacer(),
           Row(
             children: [
-              // Friends offline icon
+              // Profile
+              GestureDetector(
+                onTap: () => router.push(const ProfileRoutable()),
+                child: ProfileImage(
+                  showFromProfile: true,
+                  size: navProfileImageSize,
+                ),
+              ),
+              SizedBox(width: navButtonSpacing),
+              // Lockouts
               GestureDetector(
                 onTap: () => router.push(const FriendsLockedOutRoutable()),
                 child: SizedBox(
@@ -58,7 +67,17 @@ class HomeNavigationBar extends HookConsumerWidget
                 ),
               ),
               SizedBox(width: navButtonSpacing),
-              // Notification icon with badge
+              // Circle
+              GestureDetector(
+                onTap: () => router.push(const YourCircleRoutable()),
+                child: SizedBox(
+                  width: navCircleButtonSize,
+                  height: navCircleButtonSize,
+                  child: Assets.svg.yourCircle.render(),
+                ),
+              ),
+              SizedBox(width: navButtonSpacing),
+              // Notifications
               currentUserAsync.when(
                 data: (userResult) {
                   return userResult.fold(
@@ -133,23 +152,6 @@ class HomeNavigationBar extends HookConsumerWidget
                 },
                 loading: () => const SizedBox.shrink(),
                 error: (_, __) => const SizedBox.shrink(),
-              ),
-              SizedBox(width: navButtonSpacing),
-              GestureDetector(
-                onTap: () => router.push(const ProfileRoutable()),
-                child: ProfileImage(
-                  showFromProfile: true,
-                  size: navProfileImageSize,
-                ),
-              ),
-              SizedBox(width: navButtonSpacing),
-              GestureDetector(
-                onTap: () => router.push(const YourCircleRoutable()),
-                child: SizedBox(
-                  width: navCircleButtonSize,
-                  height: navCircleButtonSize,
-                  child: Assets.svg.yourCircle.render(),
-                ),
               ),
             ],
           ),

@@ -46,6 +46,7 @@ class PostDetailPage extends HookConsumerWidget
   static Future<void> show(
     BuildContext context, {
     required FeedPostModel post,
+    bool readOnly = false,
   }) {
     return Navigator.of(context).push<void>(
       PageRouteBuilder<void>(
@@ -57,7 +58,7 @@ class PostDetailPage extends HookConsumerWidget
         pageBuilder: (_, animation, __) {
           return FadeTransition(
             opacity: animation,
-            child: PostDetailOverlay(post: post),
+            child: PostDetailOverlay(post: post, readOnly: readOnly),
           );
         },
       ),

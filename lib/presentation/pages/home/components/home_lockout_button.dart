@@ -39,15 +39,18 @@ class HomeLockoutButton extends HookConsumerWidget
         ref.read(friendsLockedOutCacheProvider.notifier).ensureFresh();
 
         // Show time selection dialog
-        final duration = await ManualLockoutDialog.show(context);
-        if (duration == null || !context.mounted) {
+        final result = await ManualLockoutDialog.show(context);
+        if (result == null || !context.mounted) {
           return;
         }
 
         try {
           // Set lockout (post will be created after lockout ends)
           final lockoutNotifier = ref.read(manualLockoutNotifierProvider.notifier);
-          await lockoutNotifier.setLockout(duration);
+          await lockoutNotifier.setLockout(
+            result.duration,
+            actionText: result.actionText,
+          );
 
           // Stop time tracking (will be checked on next build)
           ref.invalidate(timeLimitTrackerNotifierProvider);

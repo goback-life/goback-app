@@ -146,12 +146,15 @@ class FeedLockoutButton extends HookConsumerWidget {
   Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     ref.read(friendsLockedOutCacheProvider.notifier).ensureFresh();
 
-    final duration = await ManualLockoutDialog.show(context);
-    if (duration == null || !context.mounted) return;
+    final result = await ManualLockoutDialog.show(context);
+    if (result == null || !context.mounted) return;
 
     try {
       final notifier = ref.read(manualLockoutNotifierProvider.notifier);
-      await notifier.setLockout(duration);
+      await notifier.setLockout(
+        result.duration,
+        actionText: result.actionText,
+      );
       ref.invalidate(timeLimitTrackerNotifierProvider);
       if (context.mounted) {
         router.go(const ManualLockoutRoutable());

@@ -13,30 +13,107 @@ import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 
+/// Number of months to preload into cache (current + N-1 previous).
+const _kPreloadMonths = 3;
+
+/// First visible day of the calendar grid (Monday-first weeks).
+DateTime _gridStart(DateTime month) {
+  final first = DateTime(month.year, month.month, 1);
+  return DateTime(month.year, month.month, 1 - (first.weekday - 1));
+}
+
+/// Last visible day of the calendar grid (6-week max = 42 cells).
+DateTime _gridEnd(DateTime month) {
+  return _gridStart(month).add(const Duration(days: 41));
+}
+
+/// Fetches calendar posts for multiple months in parallel.
+Future<List<CalendarPostModel>?> _fetchMonths(
+  WidgetRef ref,
+  String userId,
+  List<DateTime> months,
+) async {
+  final futures = months.map((m) {
+    final p = getCalendarPostsProvider(
+      userId: userId,
+      referenceDate: m,
+      direction: CalendarLoadDirection.before,
+      limit: 42,
+    );
+    ref.invalidate(p);
+    return ref.read(p.future);
+  }).toList();
+
+  try {
+    final results = await Future.wait(futures);
+    final allPosts = <CalendarPostModel>[];
+    for (final result in results) {
+      result.fold(
+        (posts) => allPosts.addAll(posts),
+        (error) {
+          // ignore: avoid_print
+          print('[Calendar] fetch error: $error');
+        },
+      );
+    }
+    return allPosts;
+  } catch (e) {
+    // ignore: avoid_print
+    print('[Calendar] fetch exception: $e');
+    return null;
+  }
+}
+
+/// Preloads calendar data for the current user into the cache.
+/// Call once from an authenticated widget (e.g. HomePage) for instant display.
+Future<void> preloadCalendarCache(WidgetRef ref) async {
+  final currentUserAsync = ref.read(getCurrentUserProvider);
+  final userId = currentUserAsync.whenOrNull(
+    data: (result) => result.fold((user) => user.id, (_) => null),
+  );
+  if (userId == null) return;
+
+  final cache = ref.read(calendarPostsCacheProvider);
+  final cacheNotifier = ref.read(calendarPostsCacheProvider.notifier);
+  if (cacheNotifier.currentUserId == userId && cache.isNotEmpty) return;
+
+  final now = DateTime.now();
+  final months = [
+    for (var i = 0; i < _kPreloadMonths; i++)
+      DateTime(now.year, now.month - i),
+  ];
+
+  final allPosts = await _fetchMonths(ref, userId, months);
+  if (allPosts == null) return;
+
+  // ignore: avoid_print
+  print('[Calendar] preload: ${allPosts.length} posts cached');
+
+  cacheNotifier.mergePosts(
+    allPosts,
+    userId: userId,
+    rangeStart: _gridStart(months.last),
+    rangeEnd: _gridEnd(months.first),
+  );
+}
+
 class ProfileCalendar extends HookConsumerWidget
     with MainLayout, ProfileLayout {
-  const ProfileCalendar({this.userId, super.key});
+  const ProfileCalendar({this.userId, this.scale = 1.0, super.key});
 
   final String? userId;
+  final double scale;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     final currentDate = DateTime.now();
-
     final selectedMonth = ref.watch(calendarMonthNotifierProvider);
-
     final currentUserAsync = ref.watch(getCurrentUserProvider);
-
     final calendarPostsByDay = useState(<String, CalendarPostModel>{});
-
     final calendarCache = ref.watch(calendarPostsCacheProvider);
 
+    // Display effect: show cache instantly whenever cache or month changes.
     useEffect(() {
-      calendarPostsByDay.value = {};
-
       final targetUserId =
           userId ??
           currentUserAsync.whenOrNull(
@@ -45,164 +122,200 @@ class ProfileCalendar extends HookConsumerWidget
           );
 
       if (targetUserId == null) {
+        calendarPostsByDay.value = {};
         return null;
       }
 
       final isCurrentUser = userId == null;
-      final cacheUserId = ref
-          .read(calendarPostsCacheProvider.notifier)
-          .currentUserId;
-
-      final useCachedData =
+      final cacheNotifier = ref.read(calendarPostsCacheProvider.notifier);
+      final hasCachedData =
           isCurrentUser &&
-          cacheUserId == targetUserId &&
+          cacheNotifier.currentUserId == targetUserId &&
           calendarCache.isNotEmpty;
 
-      if (useCachedData) {
+      // ignore: avoid_print
+      print('[Calendar] display effect: hasCachedData=$hasCachedData, '
+          'cacheSize=${calendarCache.length}, month=${selectedMonth.month}/${selectedMonth.year}');
+
+      if (hasCachedData) {
         _filterCachedPosts(calendarCache, selectedMonth, calendarPostsByDay);
-      } else {
-        _loadCalendarForUser(
-          ref,
-          targetUserId,
-          selectedMonth,
-          calendarPostsByDay,
-          () => context.mounted,
-        );
       }
 
       return null;
     }, [currentUserAsync, selectedMonth, userId, calendarCache]);
 
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(calendarBorderRadius),
-          topRight: Radius.circular(calendarBorderRadius),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(top: topPadding),
-            child: CalendarHeader(
-              selectedMonth: selectedMonth,
-              onPreviousMonth: () {
-                final prevMonth = DateTime(
-                  selectedMonth.year,
-                  selectedMonth.month - 1,
-                );
-                ref
-                    .read(calendarMonthNotifierProvider.notifier)
-                    .setMonth(prevMonth);
-              },
-              onNextMonth:
-                  selectedMonth.month >= currentDate.month &&
-                      selectedMonth.year >= currentDate.year
-                  ? null
-                  : () {
-                      final nextMonth = DateTime(
-                        selectedMonth.year,
-                        selectedMonth.month + 1,
-                      );
-                      ref
-                          .read(calendarMonthNotifierProvider.notifier)
-                          .setMonth(nextMonth);
-                    },
-            ),
-          ),
-          SizedBox(height: verticalPadding),
+    // Fetch effect: refresh from network on month/user change.
+    // For own user, preloads last 3 months on first fetch.
+    useEffect(() {
+      final targetUserId =
+          userId ??
+          currentUserAsync.whenOrNull(
+            data: (userResult) =>
+                userResult.fold((user) => user.id, (_) => null),
+          );
 
+      if (targetUserId == null) return null;
+
+      final isCurrentUser = userId == null;
+
+      if (!isCurrentUser) {
+        calendarPostsByDay.value = {};
+      }
+
+      // ignore: avoid_print
+      print('[Calendar] fetch effect: userId=$targetUserId, '
+          'isOwn=$isCurrentUser, month=${selectedMonth.month}/${selectedMonth.year}');
+
+      _loadCalendarForUser(
+        ref,
+        targetUserId,
+        selectedMonth,
+        calendarPostsByDay,
+        () => context.mounted,
+        isCurrentUser: isCurrentUser,
+      );
+
+      return null;
+    }, [currentUserAsync, selectedMonth, userId]);
+
+    final canGoNext =
+        !(selectedMonth.month >= currentDate.month &&
+            selectedMonth.year >= currentDate.year);
+
+    return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        if (details.primaryVelocity == null) {
+          return;
+        }
+        if (details.primaryVelocity! > 0) {
+          ref
+              .read(calendarMonthNotifierProvider.notifier)
+              .setMonth(
+                DateTime(selectedMonth.year, selectedMonth.month - 1),
+              );
+        } else if (details.primaryVelocity! < 0 && canGoNext) {
+          ref
+              .read(calendarMonthNotifierProvider.notifier)
+              .setMonth(
+                DateTime(selectedMonth.year, selectedMonth.month + 1),
+              );
+        }
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        children: [
           CalendarGrid(
             selectedMonth: selectedMonth,
             currentDate: currentDate,
+            scale: scale,
             calendarThumbnails: calendarPostsByDay.value.map(
               (day, post) => MapEntry(day, post.thumbnailUrl ?? ''),
             ),
             onDayTap: (DateTime tappedDate) {
-              final dateKey =
-                  '${tappedDate.year}-${tappedDate.month.toString().padLeft(2, '0')}-${tappedDate.day.toString().padLeft(2, '0')}';
-              final post = calendarPostsByDay.value[dateKey];
-
-              final isDifferentMonth =
-                  tappedDate.month != selectedMonth.month ||
-                  tappedDate.year != selectedMonth.year;
-
-              if (isDifferentMonth) {
-                final currentMonthStart = DateTime(
-                  currentDate.year,
-                  currentDate.month,
-                );
-                final tappedMonthStart = DateTime(
-                  tappedDate.year,
-                  tappedDate.month,
-                );
-                if (tappedMonthStart.isBefore(currentMonthStart) ||
-                    tappedMonthStart.isAtSameMomentAs(currentMonthStart)) {
-                  ref
-                      .read(calendarMonthNotifierProvider.notifier)
-                      .setMonth(DateTime(tappedDate.year, tappedDate.month));
-                }
-              } else if (post != null) {
-                _handleDayTapWithContent(
-                  context,
-                  ref,
-                  post,
-                  selectedMonth,
-                  calendarPostsByDay,
-                );
-              }
+              _handleDayTap(
+                context,
+                ref,
+                tappedDate,
+                selectedMonth,
+                currentDate,
+                calendarPostsByDay,
+              );
             },
           ),
-          SizedBox(height: bottomMargin),
+          const Spacer(),
+          CalendarHeader(
+            selectedMonth: selectedMonth,
+            scale: scale,
+            onPreviousMonth: () {
+              ref
+                  .read(calendarMonthNotifierProvider.notifier)
+                  .setMonth(
+                    DateTime(selectedMonth.year, selectedMonth.month - 1),
+                  );
+            },
+            onNextMonth: canGoNext
+                ? () {
+                    ref
+                        .read(calendarMonthNotifierProvider.notifier)
+                        .setMonth(
+                          DateTime(
+                            selectedMonth.year,
+                            selectedMonth.month + 1,
+                          ),
+                        );
+                  }
+                : null,
+          ),
+          const Spacer(flex: 3),
         ],
       ),
     );
   }
 
+  void _handleDayTap(
+    BuildContext context,
+    WidgetRef ref,
+    DateTime tappedDate,
+    DateTime selectedMonth,
+    DateTime currentDate,
+    ValueNotifier<Map<String, CalendarPostModel>> calendarPostsByDay,
+  ) {
+    final dateKey =
+        '${tappedDate.year}-${tappedDate.month.toString().padLeft(2, '0')}-${tappedDate.day.toString().padLeft(2, '0')}';
+    final post = calendarPostsByDay.value[dateKey];
+
+    final isDifferentMonth =
+        tappedDate.month != selectedMonth.month ||
+        tappedDate.year != selectedMonth.year;
+
+    if (isDifferentMonth) {
+      final currentMonthStart = DateTime(currentDate.year, currentDate.month);
+      final tappedMonthStart = DateTime(tappedDate.year, tappedDate.month);
+      if (tappedMonthStart.isBefore(currentMonthStart) ||
+          tappedMonthStart.isAtSameMomentAs(currentMonthStart)) {
+        ref
+            .read(calendarMonthNotifierProvider.notifier)
+            .setMonth(DateTime(tappedDate.year, tappedDate.month));
+      }
+    } else if (post != null) {
+      _handleDayTapWithContent(
+        context,
+        ref,
+        post,
+        selectedMonth,
+        calendarPostsByDay,
+      );
+    }
+  }
+
   void _filterCachedPosts(
-    List<CalendarPostModel> calendarCache,
+    List<CalendarPostModel> cache,
     DateTime selectedMonth,
     ValueNotifier<Map<String, CalendarPostModel>> calendarPostsByDay,
   ) {
-    final firstDayOfMonth = DateTime(
-      selectedMonth.year,
-      selectedMonth.month,
-      1,
-    );
-    final startOffset = firstDayOfMonth.weekday % 7;
-    final firstVisibleDay = DateTime(
-      selectedMonth.year,
-      selectedMonth.month,
-      1 - startOffset,
-    );
-
-    final lastDayOfMonth = DateTime(
-      selectedMonth.year,
-      selectedMonth.month + 1,
-      0,
-    );
-    final endOffset = 7 - lastDayOfMonth.weekday;
-    final lastVisibleDay = DateTime(
-      selectedMonth.year,
-      selectedMonth.month + 1,
-      endOffset,
-    );
+    final start = _gridStart(selectedMonth);
+    final end = _gridEnd(selectedMonth);
 
     final postsByDay = <String, CalendarPostModel>{};
-    for (final post in calendarCache) {
-      final postDate = post.publishedAt;
-      if ((postDate.isAfter(firstVisibleDay) ||
-              postDate.isAtSameMomentAs(firstVisibleDay)) &&
-          (postDate.isBefore(lastVisibleDay) ||
-              postDate.isAtSameMomentAs(lastVisibleDay))) {
+    for (final post in cache) {
+      // Normalize to date-only for comparison (ignore time component).
+      final d = DateTime(
+        post.publishedAt.year,
+        post.publishedAt.month,
+        post.publishedAt.day,
+      );
+      if (!d.isBefore(start) && !d.isAfter(end)) {
         final dateKey =
-            '${postDate.year}-${postDate.month.toString().padLeft(2, '0')}-${postDate.day.toString().padLeft(2, '0')}';
+            '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
         postsByDay[dateKey] = post;
       }
     }
+
+    // ignore: avoid_print
+    print('[Calendar] filter: ${cache.length} cached -> '
+        '${postsByDay.length} visible for '
+        '${selectedMonth.month}/${selectedMonth.year} '
+        '(range ${start.month}/${start.day} - ${end.month}/${end.day})');
 
     calendarPostsByDay.value = postsByDay;
   }
@@ -212,85 +325,52 @@ class ProfileCalendar extends HookConsumerWidget
     String targetUserId,
     DateTime selectedMonth,
     ValueNotifier<Map<String, CalendarPostModel>> calendarPostsByDay,
-    bool Function() isMounted,
-  ) async {
-    final lastDayOfMonth = DateTime(
-      selectedMonth.year,
-      selectedMonth.month + 1,
-      0,
-    );
-
-    final endOffset = 7 - lastDayOfMonth.weekday;
-
-    final lastVisibleDay = DateTime(
-      selectedMonth.year,
-      selectedMonth.month + 1,
-      endOffset,
-    );
-
-    final calendarPostsProvider = getCalendarPostsProvider(
-      userId: targetUserId,
-      referenceDate: lastVisibleDay,
-      direction: CalendarLoadDirection.before,
-      limit: 42,
-    );
-
-    ref.invalidate(calendarPostsProvider);
-
-    try {
-      final calendarPostsAsync = await ref.read(calendarPostsProvider.future);
-
-      if (!isMounted()) {
-        return;
+    bool Function() isMounted, {
+    bool isCurrentUser = false,
+  }) async {
+    // API fetches by year/month, so fetch each month separately.
+    // Own user: current + 2 previous months. Others: current month only.
+    final monthsToFetch = <DateTime>[];
+    if (isCurrentUser) {
+      for (var i = 0; i < _kPreloadMonths; i++) {
+        monthsToFetch.add(
+          DateTime(selectedMonth.year, selectedMonth.month - i),
+        );
       }
+    } else {
+      monthsToFetch.add(selectedMonth);
+    }
 
-      calendarPostsAsync.fold(
-        (posts) {
-          final currentUserAsync = ref.read(getCurrentUserProvider);
-          final isCurrentUser =
-              currentUserAsync.whenOrNull(
-                data: (userResult) => userResult.fold(
-                  (user) => user.id == targetUserId,
-                  (_) => false,
-                ),
-              ) ??
-              false;
+    final allPosts = await _fetchMonths(ref, targetUserId, monthsToFetch);
+    if (allPosts == null || !isMounted()) return;
 
-          if (isCurrentUser) {
-            ref
-                .read(calendarPostsCacheProvider.notifier)
-                .updateCache(posts, userId: targetUserId);
-          }
+    // ignore: avoid_print
+    print('[Calendar] fetch OK: ${allPosts.length} posts for '
+        '$targetUserId (${monthsToFetch.length} months)');
 
-          final postsByDay = <String, CalendarPostModel>{};
-          for (final post in posts) {
-            final dateKey =
-                '${post.publishedAt.year}-${post.publishedAt.month.toString().padLeft(2, '0')}-${post.publishedAt.day.toString().padLeft(2, '0')}';
-            postsByDay[dateKey] = post;
-          }
-          calendarPostsByDay.value = postsByDay;
-        },
-        (error) {
-          final currentUserAsync = ref.read(getCurrentUserProvider);
-          final isCurrentUser =
-              currentUserAsync.whenOrNull(
-                data: (userResult) => userResult.fold(
-                  (user) => user.id == targetUserId,
-                  (_) => false,
-                ),
-              ) ??
-              false;
-
-          if (isCurrentUser) {
-            ref.read(calendarPostsCacheProvider.notifier).clearCache();
-          }
-          calendarPostsByDay.value = {};
-        },
-      );
-    } catch (e) {
-      if (isMounted()) {
-        calendarPostsByDay.value = {};
+    if (isCurrentUser) {
+      ref
+          .read(calendarPostsCacheProvider.notifier)
+          .mergePosts(
+            allPosts,
+            userId: targetUserId,
+            rangeStart: _gridStart(monthsToFetch.last),
+            rangeEnd: _gridEnd(monthsToFetch.first),
+          );
+      // Display is updated by the display effect reacting to cache change.
+    } else {
+      final postsByDay = <String, CalendarPostModel>{};
+      for (final post in allPosts) {
+        final d = DateTime(
+          post.publishedAt.year,
+          post.publishedAt.month,
+          post.publishedAt.day,
+        );
+        final dateKey =
+            '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+        postsByDay[dateKey] = post;
       }
+      calendarPostsByDay.value = postsByDay;
     }
   }
 
@@ -323,19 +403,15 @@ class ProfileCalendar extends HookConsumerWidget
       calendarSavedAt: post.publishedAt,
     );
 
-    await PostDetailPage.showFromCalendar(
+    await PostDetailPage.show(
       context,
       post: feedPost,
-      headerDate: post.publishedAt,
-      calendarUserId: userId,
+      readOnly: userId != null,
     );
 
-    if (!context.mounted) {
-      return;
-    }
+    if (!context.mounted) return;
 
     String? targetUserId = userId;
-
     if (targetUserId == null) {
       final currentUserAsync = ref.read(getCurrentUserProvider);
       targetUserId = currentUserAsync.whenOrNull(
@@ -350,6 +426,7 @@ class ProfileCalendar extends HookConsumerWidget
         selectedMonth,
         calendarPostsByDay,
         () => context.mounted,
+        isCurrentUser: userId == null,
       );
     }
   }

@@ -191,14 +191,12 @@ class PostDetailCalendarNavigation {
       return;
     }
 
-    final lastDayOfMonth = DateTime(month.year, month.month + 1, 0);
-    final endOffset = 7 - lastDayOfMonth.weekday;
-    final lastVisibleDay = DateTime(month.year, month.month + 1, endOffset);
-
+    // Repository extracts .year/.month from referenceDate, so pass the month
+    // directly (no need to compute grid boundaries).
     final result = await ref.read(
       getCalendarPostsProvider(
         userId: userId,
-        referenceDate: lastVisibleDay,
+        referenceDate: month,
         direction: CalendarLoadDirection.before,
         limit: 42,
       ).future,

@@ -8,8 +8,10 @@ import 'package:flutter/material.dart';
 class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
   const ManualLockoutDialog({super.key});
 
-  static Future<Duration?> show(BuildContext context) {
-    return showDialog<Duration>(
+  static Future<({Duration duration, String? actionText})?> show(
+    BuildContext context,
+  ) {
+    return showDialog<({Duration duration, String? actionText})>(
       context: context,
       barrierDismissible: true,
       builder: (context) => const ManualLockoutDialog(),
@@ -24,6 +26,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
 
     final selectedHours = useState<int>(0);
     final selectedMinutes = useState<int>(2);
+    final activityController = useTextEditingController();
 
     // Calculate total duration
     final totalDuration = Duration(
@@ -119,7 +122,48 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+            // Activity text field
+            TextField(
+              controller: activityController,
+              maxLength: 20,
+              textAlign: TextAlign.center,
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface,
+              ),
+              decoration: InputDecoration(
+                hintText: translator.translate(
+                  'pages.manual_lockout.dialog.activity_hint',
+                ),
+                hintStyle: textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.4),
+                ),
+                counterStyle: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.4),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.onSurface.withValues(alpha: 0.2),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.onSurface.withValues(alpha: 0.2),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: colorScheme.primary),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             if (!isValid)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -139,7 +183,11 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                         hours: selectedHours.value,
                         minutes: selectedMinutes.value,
                       );
-                      Navigator.of(context).pop(duration);
+                      final text = activityController.text.trim();
+                      Navigator.of(context).pop((
+                        duration: duration,
+                        actionText: text.isEmpty ? null : text,
+                      ));
                     }
                   : null,
               label: Text(
