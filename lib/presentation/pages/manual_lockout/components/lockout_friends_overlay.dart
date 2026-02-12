@@ -24,10 +24,10 @@ class LockoutFriendsOverlay extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final brightness = Theme.of(context).brightness;
-    // Inverted text color (same as lockout bg inversion)
+    final surface = Theme.of(context).colorScheme.surface;
+    // Text should contrast with lockout bg (which is the inverted surface)
     final textColor =
-        brightness == Brightness.dark ? MainColors.dark : MainColors.white;
+        surface.computeLuminance() < 0.5 ? MainColors.white : MainColors.dark;
 
     final cacheState = ref.watch(friendsLockedOutCacheProvider);
     final cacheNotifier = ref.read(friendsLockedOutCacheProvider.notifier);
@@ -90,7 +90,7 @@ class LockoutFriendsOverlay extends HookConsumerWidget {
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
         child: Container(
-          color: MainColors.dark.withValues(alpha: 0.4),
+          color: Colors.transparent,
           child: SafeArea(
             child: _FriendsList(
               friends: friends,

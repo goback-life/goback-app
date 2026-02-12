@@ -17,7 +17,7 @@ import 'package:cloudless/presentation/pages/feed/components/feed_lockout_button
 import 'package:cloudless/presentation/pages/feed/components/feed_new_posts_banner.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_posts_list.dart';
 import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
-import 'package:cloudless/presentation/pages/lockout_complete/lockout_complete_routable.dart';
+import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_page.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -75,7 +75,7 @@ class FeedView extends HookConsumerWidget {
         final locked = await s.isLockedOut();
         if (end != null && !locked) {
           final sid = await s.getLockoutSessionId();
-          router.go(LockoutCompleteRoutable(lockoutSessionId: sid ?? ''));
+          router.go(const ManualLockoutRoutable());
         }
       }
       check();

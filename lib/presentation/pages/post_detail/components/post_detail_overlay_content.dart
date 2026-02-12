@@ -10,7 +10,7 @@ import 'package:cloudless/core/features/supabase/utilities/supabase_buckets.dart
 import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
 import 'package:cloudless/presentation/pages/external_profile/external_profile_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_overlay_input.dart';
-import 'package:cloudless/presentation/pages/post_detail/components/post_detail_overlay_tags.dart';
+
 import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
@@ -143,12 +143,14 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     final squircleBottom = squircleTop + squircleSize;
     final authorGap = 15.0 * scale;
     final avatarH = 39.0 * scale;
+    // Gap before input pill must push it above squircle's corner curve
+    final cornerR = squircleSize * 0.15;
+    final inputGap = authorGap + cornerR;
 
     // Only author + description for initial rest position
     var visibleH = avatarH;
     final hasDesc =
         post.description != null && post.description!.isNotEmpty;
-    final hasTags = post.taggedUsernames.isNotEmpty;
     if (hasDesc) visibleH += 12 * scale + 25 * scale;
 
     void handleSubmit() {
@@ -185,17 +187,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
               onMentionTap: navigateToMention,
               authorAvatarUrl: resolveAvatar(post.authorId),
             ),
-            if (hasTags) ...[
-              SizedBox(height: 12 * scale),
-              PostDetailOverlayTags(
-                usernames: post.taggedUsernames,
-                userIds: post.taggedUserIds,
-                scale: scale,
-                onTagTap: (username, userId) =>
-                    _navigateToTaggedUser(ref, userId),
-              ),
-            ],
-            SizedBox(height: 16 * scale),
+            SizedBox(height: inputGap),
             if (commentsResult.canAddMore)
               PostDetailOverlayInput(
                 scale: scale,

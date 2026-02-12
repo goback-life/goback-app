@@ -23,7 +23,7 @@ import 'package:cloudless/presentation/pages/home/components/home_lockout_button
 import 'package:cloudless/presentation/pages/home/components/home_new_posts_banner.dart';
 import 'package:cloudless/presentation/pages/home/components/home_scroll_indicator.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
-import 'package:cloudless/presentation/pages/lockout_complete/lockout_complete_routable.dart';
+import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_page.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -108,7 +108,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
         // This handles both cases: with and without sessionId
         if (lockoutEnd != null && !isLockedOut) {
           final sessionId = await storable.getLockoutSessionId();
-          router.go(LockoutCompleteRoutable(lockoutSessionId: sessionId ?? ''));
+          router.go(const ManualLockoutRoutable());
         }
       }
       checkPendingLockout();

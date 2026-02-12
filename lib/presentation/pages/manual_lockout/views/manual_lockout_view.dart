@@ -25,9 +25,9 @@ class ManualLockoutView extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final brightness = Theme.of(context).brightness;
+    final surface = Theme.of(context).colorScheme.surface;
     final bgColor =
-        brightness == Brightness.dark ? MainColors.white : MainColors.dark;
+        surface.computeLuminance() < 0.5 ? MainColors.dark : MainColors.white;
 
     final lockoutStateAsync = ref.watch(manualLockoutNotifierProvider);
     final countdown = useState('');
@@ -209,11 +209,9 @@ class _CompletionTapTargets extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    // Must match _CutoutPainter layout exactly
-    final timerFontSize = screenSize.width * 0.58;
-    final timerY = screenSize.height * 0.35;
-    final shareY = timerY + timerFontSize + 24;
-    final skipY = shareY + 60 + 16;
+    // Must match _CutoutPainter fixed screen fractions
+    final shareY = screenSize.height * 0.78;
+    final skipY = screenSize.height * 0.87;
 
     return Stack(
       children: [
@@ -264,18 +262,25 @@ class _CutoutPainter extends CustomPainter {
   final double completionTextOpacity;
   final bool isComplete;
 
+  /// Creates a foreground paint that punches holes via dstOut.
+  /// Where text/shape is drawn (alpha > 0), the solid bg becomes transparent,
+  /// revealing the sky image beneath.
+  Paint _holePaint([double opacity = 1.0]) => Paint()
+    ..blendMode = BlendMode.dstOut
+    ..color = Colors.white.withValues(alpha: opacity);
+
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
-    final clearPaint = Paint()..blendMode = BlendMode.clear;
 
-    // saveLayer so BlendMode.clear works within this compositing group
+    // Compositing group: everything inside is blended together,
+    // then composited as a unit onto the widget tree.
     canvas.saveLayer(rect, Paint());
 
     // 1. Solid background fill
     canvas.drawRect(rect, Paint()..color = bgColor);
 
-    // 2. Cut out timer text
+    // 2. Punch timer text hole using dstOut foreground paint
     if (countdown.isNotEmpty) {
       final timerFontSize = size.width * 0.58;
       final tp = TextPainter(
@@ -285,21 +290,26 @@ class _CutoutPainter extends CustomPainter {
             fontFamily: MainFontFamilies.lilitaOne,
             fontSize: timerFontSize,
             height: 1.0,
+            foreground: _holePaint(),
           ),
         ),
         textDirection: TextDirection.ltr,
-        textAlign: TextAlign.center,
-      )..layout(maxWidth: size.width);
+      )..layout();
 
+      // Scale down if text exceeds 95% of screen width
+      final maxW = size.width * 0.95;
+      final scale = tp.width > maxW ? maxW / tp.width : 1.0;
       final timerY = size.height * 0.35;
-      final timerX = (size.width - tp.width) / 2;
+      final timerX = (size.width - tp.width * scale) / 2;
 
-      canvas.saveLayer(rect, clearPaint);
-      tp.paint(canvas, Offset(timerX, timerY));
+      canvas.save();
+      canvas.translate(timerX, timerY);
+      canvas.scale(scale);
+      tp.paint(canvas, Offset.zero);
       canvas.restore();
     }
 
-    // 3. Cut out triangle (decorative, fading out on completion)
+    // 3. Punch triangle hole (fades out on completion)
     if (triangleOpacity > 0) {
       final triangleH = size.width * 0.35;
       final triangleW = triangleH * 86 / 102;
@@ -309,30 +319,15 @@ class _CutoutPainter extends CustomPainter {
 
       canvas.save();
       canvas.translate(triangleX, triangleY);
-
-      // Cut the triangle shape fully
-      canvas.saveLayer(
-        Offset.zero & Size(triangleW, triangleH),
-        clearPaint,
-      );
-      canvas.drawPath(path, Paint()..color = Colors.white);
-      canvas.restore();
-
-      // During fade-out, paint bgColor back over the hole to partially
-      // restore the solid background (inverse opacity).
-      if (triangleOpacity < 1.0) {
-        canvas.drawPath(
-          path,
-          Paint()..color = bgColor.withValues(alpha: 1.0 - triangleOpacity),
-        );
-      }
+      canvas.drawPath(path, _holePaint(triangleOpacity));
       canvas.restore();
     }
 
-    // 4. Cut out completion text ("Share your goback" + "Skip")
+    // 4. Punch completion text holes ("Share your goback" + "Skip")
+    // Positioned at fixed screen fractions matching Figma (157:50).
     if (isComplete && completionTextOpacity > 0) {
-      final timerFontSize = size.width * 0.58;
-      final baseY = size.height * 0.35 + timerFontSize + 24;
+      final shareY = size.height * 0.78;
+      final skipY = size.height * 0.87;
 
       final shareTp = TextPainter(
         text: TextSpan(
@@ -340,11 +335,11 @@ class _CutoutPainter extends CustomPainter {
           style: TextStyle(
             fontFamily: MainFontFamilies.lilitaOne,
             fontSize: 48,
+            foreground: _holePaint(completionTextOpacity),
           ),
         ),
         textDirection: TextDirection.ltr,
-        textAlign: TextAlign.center,
-      )..layout(maxWidth: size.width);
+      )..layout();
 
       final skipTp = TextPainter(
         text: TextSpan(
@@ -353,64 +348,23 @@ class _CutoutPainter extends CustomPainter {
             fontFamily: MainFontFamilies.quicksand,
             fontWeight: FontWeight.w500,
             fontSize: 24,
+            foreground: _holePaint(completionTextOpacity),
           ),
         ),
         textDirection: TextDirection.ltr,
-        textAlign: TextAlign.center,
-      )..layout(maxWidth: size.width);
+      )..layout();
 
-      // Cut out text shapes fully
-      final shareOffset =
-          Offset((size.width - shareTp.width) / 2, baseY);
-      canvas.saveLayer(rect, clearPaint);
-      shareTp.paint(canvas, shareOffset);
-      canvas.restore();
-
-      final skipY = baseY + 60 + 16;
-      final skipOffset =
-          Offset((size.width - skipTp.width) / 2, skipY);
-      canvas.saveLayer(rect, clearPaint);
-      skipTp.paint(canvas, skipOffset);
-      canvas.restore();
-
-      // During fade-in, paint bgColor back over text areas to partially
-      // restore solid background (inverse of completion text opacity).
-      if (completionTextOpacity < 1.0) {
-        final fillAlpha = 1.0 - completionTextOpacity;
-        // We need to re-layout to draw back; simplest: paint bg-colored
-        // text over the cleared areas.
-        final shareFillTp = TextPainter(
-          text: TextSpan(
-            text: 'Share your goback',
-            style: TextStyle(
-              fontFamily: MainFontFamilies.lilitaOne,
-              fontSize: 48,
-              color: bgColor.withValues(alpha: fillAlpha),
-            ),
-          ),
-          textDirection: TextDirection.ltr,
-          textAlign: TextAlign.center,
-        )..layout(maxWidth: size.width);
-        shareFillTp.paint(canvas, shareOffset);
-
-        final skipFillTp = TextPainter(
-          text: TextSpan(
-            text: 'Skip',
-            style: TextStyle(
-              fontFamily: MainFontFamilies.quicksand,
-              fontWeight: FontWeight.w500,
-              fontSize: 24,
-              color: bgColor.withValues(alpha: fillAlpha),
-            ),
-          ),
-          textDirection: TextDirection.ltr,
-          textAlign: TextAlign.center,
-        )..layout(maxWidth: size.width);
-        skipFillTp.paint(canvas, skipOffset);
-      }
+      shareTp.paint(
+        canvas,
+        Offset((size.width - shareTp.width) / 2, shareY),
+      );
+      skipTp.paint(
+        canvas,
+        Offset((size.width - skipTp.width) / 2, skipY),
+      );
     }
 
-    canvas.restore(); // restore outer saveLayer
+    canvas.restore();
   }
 
   @override
