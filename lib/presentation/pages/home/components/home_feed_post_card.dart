@@ -5,11 +5,14 @@ import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/profile_image/profile_image_layout.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/text/linkable_text.dart';
 import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
 import 'package:cloudless/presentation/pages/external_profile/external_profile_routable.dart';
 import 'package:cloudless/presentation/pages/home/components/home_lockout_join_button.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -41,6 +44,7 @@ class HomeFeedPostCard extends HookConsumerWidget
     final displayImageUrl = post.imageUrl ?? '';
 
     final textTheme = theme.textTheme;
+    final isTextExpanded = useState(false);
 
     return Padding(
       padding: EdgeInsets.only(top: feedPostTopPadding),
@@ -60,7 +64,15 @@ class HomeFeedPostCard extends HookConsumerWidget
                 ),
                 width: feedPostWidth,
                 child: GestureDetector(
-                  onTap: onTap,
+                  onTap: () {
+                    if (isText &&
+                        !isTextExpanded.value &&
+                        _isTextLong(post.description ?? '', textTheme)) {
+                      isTextExpanded.value = true;
+                    } else {
+                      onTap?.call();
+                    }
+                  },
                   behavior: HitTestBehavior.translucent,
                   child: Column(
                     crossAxisAlignment: isCurrentUser
@@ -69,7 +81,8 @@ class HomeFeedPostCard extends HookConsumerWidget
                     children: [
                       isText
                           ? _buildTextPost(
-                              context, theme, colorScheme, textTheme)
+                              context, theme, colorScheme, textTheme,
+                              isTextExpanded.value)
                           : AspectRatio(
                               aspectRatio: aspectRatio,
                               child: ClipRRect(
@@ -162,27 +175,27 @@ class HomeFeedPostCard extends HookConsumerWidget
   }
 
   double _calculateTextPostHeight(String text, TextTheme textTheme) {
-    // For preview, use up to 200 characters
-    final previewText = text.length > 200 ? '${text.substring(0, 200)}...' : text;
-    
-    // Calculate height based on actual text layout
-    // Use TextPainter to get accurate height measurement
-    final textStyle = textTheme.bodyMedium?.copyWith(color: Colors.black) ??
-        const TextStyle(color: Colors.black);
+    final textStyle = textTheme.bodyMedium?.copyWith(color: MainColors.dark) ??
+        const TextStyle(color: MainColors.dark);
     final textPainter = TextPainter(
-      text: TextSpan(text: previewText, style: textStyle),
+      text: TextSpan(text: text, style: textStyle),
       textDirection: TextDirection.ltr,
-      maxLines: null,
+      maxLines: 5,
     );
-    
-    // Layout with available width (feedPostWidth - padding)
-    final availableWidth = feedPostWidth - 32.0; // 16px padding on each side
-    textPainter.layout(maxWidth: availableWidth);
-    
-    // Calculate height: text height + padding (16px top + 16px bottom)
-    final minHeight = 100.0;
-    final maxHeight = 400.0;
-    return (textPainter.size.height + 32.0).clamp(minHeight, maxHeight);
+    textPainter.layout(maxWidth: feedPostWidth - 32.0);
+    return (textPainter.size.height + 32.0).clamp(100.0, 400.0);
+  }
+
+  bool _isTextLong(String text, TextTheme textTheme) {
+    final textStyle = textTheme.bodyMedium?.copyWith(color: MainColors.dark) ??
+        const TextStyle(color: MainColors.dark);
+    final textPainter = TextPainter(
+      text: TextSpan(text: text, style: textStyle),
+      maxLines: 5,
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout(maxWidth: feedPostWidth - 32.0);
+    return textPainter.didExceedMaxLines;
   }
 
   Widget _buildTextPost(
@@ -190,36 +203,33 @@ class HomeFeedPostCard extends HookConsumerWidget
     ThemeData theme,
     ColorScheme colorScheme,
     TextTheme textTheme,
+    bool isExpanded,
   ) {
     final text = post.description ?? '';
-    
-    // For preview, use up to 200 characters
-    final previewText = text.length > 200 ? '${text.substring(0, 200)}...' : text;
-    
-    // Calculate height
-    final calculatedHeight = _calculateTextPostHeight(text, textTheme);
-    
-    final textStyle = textTheme.bodyMedium?.copyWith(color: Colors.black) ??
-        const TextStyle(color: Colors.black);
-    final minHeight = 100.0;
-    final maxHeight = 400.0;
+    final textStyle = textTheme.bodyMedium?.copyWith(color: MainColors.dark) ??
+        const TextStyle(color: MainColors.dark);
 
-    return Container(
-      width: feedPostWidth,
-      constraints: BoxConstraints(
-        minHeight: minHeight,
-        maxHeight: maxHeight,
-      ),
-      height: calculatedHeight,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(feedPostImageRadius),
-      ),
-      padding: const EdgeInsets.all(16.0),
-      child: LinkableText(
-        text: previewText,
-        style: textStyle,
-        maxLines: null,
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        width: feedPostWidth,
+        child: AppGlassContainer(
+          config: GlassConfig(
+            variant: GlassVariant.regular,
+            cornerRadius: feedPostImageRadius,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: LinkableText(
+              text: text,
+              style: textStyle,
+              maxLines: isExpanded ? null : 5,
+              overflow: isExpanded ? null : TextOverflow.ellipsis,
+            ),
+          ),
+        ),
       ),
     );
   }

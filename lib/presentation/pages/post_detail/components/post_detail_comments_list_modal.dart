@@ -1,7 +1,10 @@
 import 'package:cloudless/core/features/comment/domain/hooks/use_post_comments.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_comment_input.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_comment_item.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
@@ -25,18 +28,17 @@ class PostDetailCommentsListModal extends HookConsumerWidget
 
     final commentsResult = usePostComments(ref, postId);
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight:
-            MediaQuery.of(context).size.height * commentsListMaxHeightRatio,
+    return AppGlassContainer(
+      config: GlassConfig(
+        variant: GlassVariant.regular,
+        cornerRadius: commentsListBorderRadius,
       ),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(commentsListBorderRadius),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight:
+              MediaQuery.of(context).size.height * commentsListMaxHeightRatio,
         ),
-      ),
-      child: Column(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
@@ -45,7 +47,7 @@ class PostDetailCommentsListModal extends HookConsumerWidget
               width: commentsListHandleWidth,
               height: commentsListHandleHeight,
               decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
+                color: MainColors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(commentsListHandleRadius),
               ),
             ),
@@ -66,7 +68,7 @@ class PostDetailCommentsListModal extends HookConsumerWidget
                         child: Text(
                           'No comments yet',
                           style: textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurface.withValues(alpha: 0.5),
+                            color: MainColors.white.withValues(alpha: 0.5),
                           ),
                         ),
                       );
@@ -137,7 +139,7 @@ class PostDetailCommentsListModal extends HookConsumerWidget
                 child: Text(
                   'You have reached the limit of ${kMaxCommentsPerUserPerPost} comments on this post',
                   style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurface.withValues(alpha: 0.5),
+                    color: MainColors.white.withValues(alpha: 0.5),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -146,6 +148,7 @@ class PostDetailCommentsListModal extends HookConsumerWidget
           else
             SizedBox(height: commentsListBottomPadding),
         ],
+      ),
       ),
     );
   }

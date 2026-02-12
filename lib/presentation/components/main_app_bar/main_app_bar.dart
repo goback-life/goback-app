@@ -33,7 +33,11 @@ class MainAppBar extends HookConsumerWidget with MainLayout, MainAppBarLayout {
           width: iconSize + 10,
           height: iconSize + 10,
           child: Center(
-            child: Assets.svg.back.render(height: iconSize, width: iconSize),
+            child: Assets.svg.back.render(
+              height: iconSize,
+              width: iconSize,
+              colorFilter: ColorFilter.mode(colorScheme.onSurface, BlendMode.srcIn),
+            ),
           ),
         ),
       );
@@ -52,16 +56,6 @@ class MainAppBar extends HookConsumerWidget with MainLayout, MainAppBarLayout {
                   Positioned(left: 0, top: 0, bottom: 0, child: backButton),
                 ConstrainedBox(
                   constraints: BoxConstraints(minHeight: appBarHeight),
-                  child: Center(
-                    child: Text(
-                      title,
-                      style:
-                          titleStyle ??
-                          textTheme.titleSmall?.copyWith(
-                            color: colorScheme.onSurface,
-                          ),
-                    ),
-                  ),
                 ),
                 if (rightWidget != null)
                   Positioned(right: 0, top: 0, bottom: 0, child: rightWidget!),

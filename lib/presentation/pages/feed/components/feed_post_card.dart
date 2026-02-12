@@ -80,13 +80,13 @@ class FeedPostCard extends HookConsumerWidget {
                               fadeOutDuration:
                                   const Duration(milliseconds: 100),
                               placeholder: (_, __) => Container(
-                                color: MainColors.grey400,
+                                color: MainColors.dark,
                               ),
                               errorWidget: (_, __, ___) => Container(
-                                color: MainColors.grey400,
+                                color: MainColors.dark,
                               ),
                             )
-                          : Container(color: MainColors.grey400),
+                          : Container(color: MainColors.dark),
                     ),
                   ),
                 ),
@@ -121,11 +121,11 @@ class FeedPostCard extends HookConsumerWidget {
                                   memCacheWidth: (avatarSize * 2).toInt(),
                                   memCacheHeight: (avatarSize * 2).toInt(),
                                   placeholder: (_, __) =>
-                                      Container(color: MainColors.grey400),
+                                      Container(color: MainColors.dark),
                                   errorWidget: (_, __, ___) =>
-                                      Container(color: MainColors.grey400),
+                                      Container(color: MainColors.dark),
                                 )
-                              : Container(color: MainColors.grey400),
+                              : Container(color: MainColors.dark),
                         ),
                       ),
                       SizedBox(width: avatarToName),

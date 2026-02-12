@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:flutter/material.dart';
@@ -83,80 +85,102 @@ class CallToAction extends StatelessWidget {
         ? theme.getInactiveColors(context, themeData, mode)
         : theme.getActiveColors(context, themeData, mode);
 
-    return AnimatedContainer(
-      duration: duration,
-      curve: curve,
-      margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
-      clipBehavior: Clip.antiAlias,
-      decoration: decoration(
-        colors: colors,
-        mode: mode,
+    final isDisabled = action == null;
+    final hasBorder = mode == CallToActionMode.outlined ||
+        mode == CallToActionMode.filledOutlined;
+    final isTransparent = mode == CallToActionMode.empty;
+    final radius = borderRadius.topLeft.x;
+
+    final glassConfig = GlassConfig(
+      variant: isTransparent ? GlassVariant.clear : GlassVariant.regular,
+      cornerRadius: radius,
+      tint: colors.background,
+      opacity: isDisabled ? 0.5 : 1.0,
+    );
+
+    Widget content = Material(
+      type: MaterialType.transparency,
+      child: InkWell(
         borderRadius: borderRadius,
-      ),
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          borderRadius: borderRadius,
-          onTap: () {
-            FocusManager.instance.primaryFocus?.unfocus();
-            action?.call();
-          },
-          onLongPress: onLongPress,
-          child: SizedBox(
-            height: height,
-            width: double.infinity,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Center(
-                    child: _CallToActionStyledChild(
-                      foreground: colors.foreground,
-                      child: switch ((spaced, icon)) {
-                        (false, final Widget icon) => Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children:
-                              [Opacity(opacity: 0, child: icon), label, icon]
-                                  .separateWith(const CustomSpace.horizontal(8))
-                                  .reversedList(!iconOnTheRight),
-                        ),
-                        _ => label,
-                      },
-                    ),
+        onTap: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          action?.call();
+        },
+        onLongPress: onLongPress,
+        child: SizedBox(
+          height: height,
+          width: double.infinity,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Center(
+                  child: _CallToActionStyledChild(
+                    foreground: colors.foreground,
+                    child: switch ((spaced, icon)) {
+                      (false, final Widget icon) => Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children:
+                            [Opacity(opacity: 0, child: icon), label, icon]
+                                .separateWith(const CustomSpace.horizontal(8))
+                                .reversedList(!iconOnTheRight),
+                      ),
+                      _ => label,
+                    },
                   ),
                 ),
-                if (spaced)
-                  if (icon case final Widget icon)
-                    Positioned(
-                      right: iconOnTheRight ? 0 : null,
-                      left: !iconOnTheRight ? 0 : null,
-                      width: kToolbarHeight,
-                      top: 0,
-                      bottom: 0,
-                      child: Center(
-                        child: _CallToActionStyledChild(
-                          foreground: colors.foreground,
-                          child: icon,
-                        ),
-                      ),
-                    ),
-                if (secondaryIcon case final Widget secondary)
+              ),
+              if (spaced)
+                if (icon case final Widget icon)
                   Positioned(
-                    right: !iconOnTheRight ? 0 : null,
-                    left: iconOnTheRight ? 0 : null,
+                    right: iconOnTheRight ? 0 : null,
+                    left: !iconOnTheRight ? 0 : null,
                     width: kToolbarHeight,
                     top: 0,
                     bottom: 0,
                     child: Center(
                       child: _CallToActionStyledChild(
                         foreground: colors.foreground,
-                        child: secondary,
+                        child: icon,
                       ),
                     ),
                   ),
-              ],
-            ),
+              if (secondaryIcon case final Widget secondary)
+                Positioned(
+                  right: !iconOnTheRight ? 0 : null,
+                  left: iconOnTheRight ? 0 : null,
+                  width: kToolbarHeight,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: _CallToActionStyledChild(
+                      foreground: colors.foreground,
+                      child: secondary,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
+      ),
+    );
+
+    if (hasBorder) {
+      content = DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          border: Border.all(color: colors.outline),
+        ),
+        child: content,
+      );
+    }
+
+    return AnimatedContainer(
+      duration: duration,
+      curve: curve,
+      margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
+      child: AppGlassContainer(
+        config: glassConfig,
+        child: content,
       ),
     );
   }

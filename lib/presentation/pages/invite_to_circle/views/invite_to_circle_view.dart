@@ -8,6 +8,8 @@ import 'package:cloudless/core/features/connection/domain/hooks/use_phone_contac
 import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
 import 'package:cloudless/presentation/components/form_field/custom_text_selection_controls.dart';
 import 'package:cloudless/presentation/components/form_field/input_decoration.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/main_search_bar.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/components/invite_to_circle_contact_list.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/hooks/use_sms_launch.dart';
@@ -272,51 +274,59 @@ class InviteToCircleView extends HookConsumerWidget
                     'pages.invite_to_circle.phone_number_label',
                   ),
                   style: textTheme.labelSmall?.copyWith(
-                    color: colorScheme.outline,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 SizedBox(height: 4),
-                Theme(
-                  data: theme.copyWith(
-                    textTheme: theme.textTheme,
-                    appBarTheme: const AppBarTheme(
-                      backgroundColor: MainColors.white,
-                    ),
+                AppGlassContainer(
+                  config: const GlassConfig(
+                    variant: GlassVariant.regular,
+                    cornerRadius: 47,
+                    tint: MainColors.accent,
                   ),
-                  child: PhoneFormField(
-                    selectionControls: CustomTextSelectionControls(),
-                    countrySelectorNavigator:
-                        const CountrySelectorNavigator.page(),
-                    onTapOutside: (event) =>
-                        FocusManager.instance.primaryFocus?.unfocus(),
-                    controller: phoneController,
-                    cursorColor: colorScheme.tertiary,
-                    decoration: inputDecoration(context, ''),
-                    validator: PhoneValidator.compose([
-                      PhoneValidator.required(
-                        context,
-                        errorText: translator.translate(
-                          'pages.invite_to_circle.error.phone_required',
-                        ),
-                      ),
-                      PhoneValidator.validMobile(
-                        context,
-                        errorText: translator.translate(
-                          'pages.invite_to_circle.error.phone_invalid',
-                        ),
-                      ),
-                    ]),
-                    isCountrySelectionEnabled: true,
-                    isCountryButtonPersistent: true,
-                    countryButtonStyle: CountryButtonStyle(
-                      showDialCode: true,
-                      showIsoCode: false,
-                      showFlag: true,
-                      textStyle: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurface,
+                  child: Theme(
+                    data: theme.copyWith(
+                      textTheme: theme.textTheme,
+                      appBarTheme: const AppBarTheme(
+                        backgroundColor: MainColors.dark,
+                        foregroundColor: MainColors.white,
                       ),
                     ),
-                    onChanged: handlePhoneNumberChange,
+                    child: PhoneFormField(
+                      selectionControls: CustomTextSelectionControls(),
+                      countrySelectorNavigator:
+                          const CountrySelectorNavigator.page(),
+                      onTapOutside: (event) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
+                      controller: phoneController,
+                      cursorColor: colorScheme.tertiary,
+                      decoration: inputDecoration(context, ''),
+                      validator: PhoneValidator.compose([
+                        PhoneValidator.required(
+                          context,
+                          errorText: translator.translate(
+                            'pages.invite_to_circle.error.phone_required',
+                          ),
+                        ),
+                        PhoneValidator.validMobile(
+                          context,
+                          errorText: translator.translate(
+                            'pages.invite_to_circle.error.phone_invalid',
+                          ),
+                        ),
+                      ]),
+                      isCountrySelectionEnabled: true,
+                      isCountryButtonPersistent: true,
+                      countryButtonStyle: CountryButtonStyle(
+                        showDialCode: true,
+                        showIsoCode: false,
+                        showFlag: true,
+                        textStyle: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      onChanged: handlePhoneNumberChange,
+                    ),
                   ),
                 ),
                 if (phoneValidationError.value != null) ...[
@@ -338,7 +348,9 @@ class InviteToCircleView extends HookConsumerWidget
                         width: 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: typedPhoneHasAccount ? Colors.green : Colors.red,
+                          color: typedPhoneHasAccount
+                              ? MainColors.accent
+                              : MainColors.white.withValues(alpha: 0.5),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -350,7 +362,9 @@ class InviteToCircleView extends HookConsumerWidget
                               : 'pages.invite_to_circle.phone_no_account',
                         ),
                         style: textTheme.bodySmall?.copyWith(
-                          color: typedPhoneHasAccount ? Colors.green : Colors.red,
+                          color: typedPhoneHasAccount
+                              ? MainColors.accent
+                              : MainColors.white.withValues(alpha: 0.5),
                         ),
                       ),
                     ],

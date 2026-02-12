@@ -77,7 +77,7 @@ class PostDetailDescription extends HookWidget
                     : (isLongText.value
                         ? descriptionMaxLines.toInt()
                         : null),
-                overflow: showFullText.value ? null : TextOverflow.clip,
+                overflow: showFullText.value ? null : TextOverflow.ellipsis,
               ),
             ),
             if (isLongText.value) ...[

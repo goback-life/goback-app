@@ -15,6 +15,7 @@ import 'package:cloudless/presentation/components/parent_post_preview/parent_pos
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
 import 'package:cloudless/presentation/pages/publish_content/components/publish_content_button.dart';
 import 'package:cloudless/presentation/pages/publish_content/publish_content_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/hooks/use_loading_overlay.dart';
@@ -146,7 +147,7 @@ class PublishContentView extends HookConsumerWidget
                   color: colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: MainColors.dark.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, -2),
                     ),

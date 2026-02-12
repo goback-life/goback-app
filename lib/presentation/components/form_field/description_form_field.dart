@@ -1,6 +1,9 @@
 import 'package:cloudless/core/features/profile/domain/enums/profile_form_item.dart';
 import 'package:cloudless/presentation/components/form_field/custom_text_selection_controls.dart';
 import 'package:cloudless/presentation/components/form_field/input_decoration.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_form/dedecube_form.dart';
 import 'package:dedecube_presentation/dedecube_presentation.dart';
@@ -32,13 +35,19 @@ class DescriptionFormField extends HookConsumerWidget {
               style: textTheme.bodyMedium,
             ),
             const SizedBox(height: 4),
-            Focus(
-              onFocusChange: (hasFocus) {
-                if (hasFocus && !hasEverFocused.value) {
-                  hasEverFocused.value = true;
-                }
-              },
-              child: FormerFormTextfield<String>(
+            AppGlassContainer(
+              config: const GlassConfig(
+                variant: GlassVariant.regular,
+                cornerRadius: 16,
+                tint: MainColors.accent,
+              ),
+              child: Focus(
+                onFocusChange: (hasFocus) {
+                  if (hasFocus && !hasEverFocused.value) {
+                    hasEverFocused.value = true;
+                  }
+                },
+                child: FormerFormTextfield<String>(
                 textCapitalization: TextCapitalization.sentences,
                 selectionControls: CustomTextSelectionControls(),
                 onTapOutside: (event) => context.unfocus(),
@@ -65,6 +74,7 @@ class DescriptionFormField extends HookConsumerWidget {
                   }
                 },
               ),
+            ),
             ),
           ],
         );

@@ -67,7 +67,7 @@ class LogoutButton extends HookConsumerWidget with MainLayout, SettingsLayout {
       action: isLoading.value ? null : handleLogout,
       label: Text(
         translator.translate('pages.settings.logout'),
-        style: textTheme.titleLarge?.copyWith(color: colorScheme.primary),
+        style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
       ),
     );
   }

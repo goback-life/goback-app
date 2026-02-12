@@ -1,9 +1,9 @@
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:cloudless/core/features/post/domain/models/parent_post_reference_model.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/parent_post_preview/parent_post_preview_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -21,7 +21,6 @@ class ParentPostPreview extends HookConsumerWidget
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
     final isVideo = parentPost.contentType == ContentType.video;
     final isDeleted = parentPost.isDeleted;
@@ -44,16 +43,12 @@ class ParentPostPreview extends HookConsumerWidget
                     fit: BoxFit.cover,
                   ),
                   if (isDeleted)
-                    BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: parentPostPreviewBlurSigma,
-                        sigmaY: parentPostPreviewBlurSigma,
+                    AppGlassContainer(
+                      config: GlassConfig(
+                        variant: GlassVariant.clear,
+                        cornerRadius: parentPostPreviewBorderRadius,
                       ),
-                      child: Container(
-                        color: colorScheme.secondary.withValues(
-                          alpha: parentPostPreviewBlurOpacity,
-                        ),
-                      ),
+                      child: const SizedBox.expand(),
                     ),
                   if (isVideo && !isDeleted)
                     Center(

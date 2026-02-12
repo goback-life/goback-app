@@ -1,5 +1,7 @@
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
 import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
@@ -26,10 +28,15 @@ class JoinLockoutDialog extends StatelessWidget with MainLayout {
     final timeRemaining = _formatTimeRemaining(session.endsAt);
 
     return Dialog(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+      child: AppGlassContainer(
+        config: const GlassConfig(
+          variant: GlassVariant.regular,
+          cornerRadius: 16,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -87,6 +94,7 @@ class JoinLockoutDialog extends StatelessWidget with MainLayout {
               ],
             ),
           ],
+        ),
         ),
       ),
     );

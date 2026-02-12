@@ -9,7 +9,6 @@ import 'package:cloudless/presentation/utilities/phone_number_formatter.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_form/dedecube_form.dart';
 import 'package:dedecube_presentation/hooks/use_loading_overlay.dart';
-import 'package:dedecube_presentation/widgets/layout/bottomed_list_view.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
@@ -31,45 +30,56 @@ class OtpView extends HookConsumerWidget with MainLayout, OtpLayout {
       form: otpFormResult.form,
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-        child: BottomedListView(
-          useSafeArea: true,
-          bottom: Padding(
-            padding: EdgeInsets.only(bottom: bottomMargin),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Center(
-                  child: OtpResendCode(onResendCode: otpFormResult.resendCode),
-                ),
-                SizedBox(height: resendCodeToButton),
-                ValueListenableBuilder<bool>(
-                  valueListenable: otpFormResult.isSubmitting,
-                  builder: (context, isSubmitting, child) {
-                    return OtpButton(
-                      onSubmit: otpFormResult.submit,
-                      isEnabled: !isSubmitting,
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
+        child: Column(
           children: [
-            Text(
-              translator.translate('pages.otp.title'),
-              style: textTheme.headlineSmall,
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        translator.translate('pages.otp.title'),
+                        style: textTheme.headlineSmall,
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: titleToText),
+                      OtpDescription(
+                        number: PhoneNumberFormatter.format(phoneNumber),
+                        text: translator.translate('pages.otp.description'),
+                      ),
+                      SizedBox(height: descriptionToFormField),
+                      const OtpFormField(),
+                    ],
+                  ),
+                ),
+              ),
             ),
-            SizedBox(height: titleToText),
-            OtpDescription(
-              number: PhoneNumberFormatter.format(phoneNumber),
-              text: translator.translate('pages.otp.description'),
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: bottomMargin),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Center(
+                      child: OtpResendCode(
+                        onResendCode: otpFormResult.resendCode,
+                      ),
+                    ),
+                    SizedBox(height: resendCodeToButton),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: otpFormResult.isSubmitting,
+                      builder: (context, isSubmitting, child) {
+                        return OtpButton(
+                          onSubmit: otpFormResult.submit,
+                          isEnabled: !isSubmitting,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
-            SizedBox(height: descriptionToFormField),
-            Padding(
-              padding: EdgeInsets.only(right: rightPadding),
-              child: const OtpFormField(),
-            ),
-            SizedBox(height: bottomMargin),
           ],
         ),
       ),

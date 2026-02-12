@@ -4,9 +4,11 @@ import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout
 import 'package:cloudless/core/features/post/domain/hooks/use_post_creation_initialization.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/background_image.dart';
+import 'package:cloudless/presentation/components/goback_logo.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
 import 'package:cloudless/presentation/pages/lockout_complete/lockout_complete_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -69,7 +71,7 @@ class LockoutCompleteView extends HookConsumerWidget
                     textAlign: TextAlign.center,
                   ),
                   const Spacer(flex: 2),
-                  Assets.svg.logoApp.render(width: logoSize, height: logoSize),
+                  GobackLogo(fontSize: logoSize * 0.6),
                   const Spacer(flex: 3),
                   // Share button
                   SizedBox(
@@ -90,11 +92,11 @@ class LockoutCompleteView extends HookConsumerWidget
                         postCreationInit.selectMainImage();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: colorScheme.surface,
-                        foregroundColor: colorScheme.onSurface,
+                        backgroundColor: MainColors.accent,
+                        foregroundColor: MainColors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                       child: Text(

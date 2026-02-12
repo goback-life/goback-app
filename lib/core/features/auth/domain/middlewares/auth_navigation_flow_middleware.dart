@@ -106,11 +106,13 @@ class AuthNavigationFlowMiddleware extends Middleware {
       return const SignInRoutable();
     }
 
-    // Additional check: Verify user still exists in database on every navigation
+    // Validate session periodically to catch deleted users or expired sessions.
+    // Skip the very first check — right after OTP verification the session
+    // object may not be fully synchronised yet, and the isAuthenticated guard
+    // above already confirmed currentUser != null.
     final now = DateTime.now();
-    final needsCheck =
-        _lastSessionCheck == null ||
-        now.difference(_lastSessionCheck!) > _checkCooldown;
+    _lastSessionCheck ??= now;
+    final needsCheck = now.difference(_lastSessionCheck!) > _checkCooldown;
 
     if (needsCheck) {
       _lastSessionCheck = now;

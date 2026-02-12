@@ -1,10 +1,11 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -87,16 +88,16 @@ class LockoutFriendsOverlay extends HookConsumerWidget {
     return GestureDetector(
       onTap: onDismiss,
       behavior: HitTestBehavior.opaque,
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-        child: Container(
-          color: Colors.transparent,
-          child: SafeArea(
-            child: _FriendsList(
-              friends: friends,
-              textColor: textColor,
-              currentSessionId: currentSessionId.value,
-            ),
+      child: AppGlassContainer(
+        config: const GlassConfig(
+          variant: GlassVariant.regular,
+          cornerRadius: 0,
+        ),
+        child: SafeArea(
+          child: _FriendsList(
+            friends: friends,
+            textColor: textColor,
+            currentSessionId: currentSessionId.value,
           ),
         ),
       ),

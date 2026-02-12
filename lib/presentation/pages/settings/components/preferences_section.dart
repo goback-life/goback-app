@@ -6,6 +6,7 @@ import 'package:cloudless/presentation/pages/settings/settings_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
+import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:flutter/material.dart';
 
 class PreferencesSection extends HookConsumerWidget
@@ -24,13 +25,13 @@ class PreferencesSection extends HookConsumerWidget
         Text(
           translator.translate('pages.settings.preferences'),
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: colorScheme.surfaceContainerHigh,
+            color: colorScheme.onSurface,
           ),
         ),
         SizedBox(height: titleSectionToElement),
 
         SettingsMenuItem(
-          icon: Assets.svg.objective.render(),
+          icon: Assets.svg.objective.render(colorFilter: colorScheme.onSurface.asSrcIn),
           title: translator.translate('pages.settings.objective'),
           onTap: () {
             router.push(

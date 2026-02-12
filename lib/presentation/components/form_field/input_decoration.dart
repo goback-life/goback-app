@@ -6,8 +6,8 @@ InputDecoration inputDecoration(BuildContext context, String? key) {
   final textTheme = theme.textTheme;
 
   return InputDecoration(
-    contentPadding: const EdgeInsets.only(top: 12, left: 10),
-    labelStyle: textTheme.titleSmall?.copyWith(color: colorScheme.secondary),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    labelStyle: textTheme.titleSmall?.copyWith(color: colorScheme.onSurfaceVariant),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
       borderSide: const BorderSide(color: Colors.transparent),
@@ -21,6 +21,6 @@ InputDecoration inputDecoration(BuildContext context, String? key) {
       borderSide: const BorderSide(color: Colors.transparent),
     ),
     filled: true,
-    fillColor: colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
+    fillColor: Colors.transparent,
   );
 }

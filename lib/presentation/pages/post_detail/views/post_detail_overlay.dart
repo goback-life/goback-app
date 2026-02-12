@@ -16,7 +16,7 @@ void _showFullScreenImage(BuildContext context, String? imageUrl) {
   Navigator.of(context).push(
     PageRouteBuilder(
       opaque: false,
-      barrierColor: Colors.black87,
+      barrierColor: Colors.transparent,
       barrierDismissible: true,
       pageBuilder: (_, __, ___) => GestureDetector(
         onTap: () => Navigator.pop(context),
@@ -304,11 +304,11 @@ class _GlassCard extends StatelessWidget {
         memCacheHeight: (squircleSize * 2).toInt(),
         fadeInDuration: const Duration(milliseconds: 200),
         fadeOutDuration: const Duration(milliseconds: 100),
-        placeholder: (_, __) => Container(color: MainColors.grey400),
-        errorWidget: (_, __, ___) => Container(color: MainColors.grey400),
+        placeholder: (_, __) => Container(color: MainColors.dark),
+        errorWidget: (_, __, ___) => Container(color: MainColors.dark),
       );
     }
-    return Container(color: MainColors.grey400);
+    return Container(color: MainColors.dark);
   }
 }
 

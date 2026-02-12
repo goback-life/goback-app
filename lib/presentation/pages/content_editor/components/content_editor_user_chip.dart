@@ -1,4 +1,6 @@
 import 'package:cloudless/presentation/assets/assets.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/content_editor/content_editor_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -23,24 +25,30 @@ class ContentEditorUserChip extends StatelessWidget
 
     return Container(
       margin: EdgeInsets.only(right: tagChipMarginRight),
-      child: Chip(
-        label: Text(
-          translator.translate(
-            'pages.content_editor.user',
-            arguments: {'username': username},
-          ),
-          style: textTheme.bodyMedium?.copyWith(
-            color: colorScheme.outlineVariant,
-          ),
+      child: AppGlassContainer(
+        config: const GlassConfig(
+          variant: GlassVariant.regular,
+          cornerRadius: 8,
         ),
-        deleteIcon: Assets.svg.deleteTag.render(),
-        onDeleted: onRemove,
-        backgroundColor: colorScheme.surfaceContainerLowest,
-        deleteIconColor: colorScheme.onPrimaryContainer,
-        side: BorderSide.none,
-        padding: EdgeInsets.symmetric(
-          horizontal: tagChipPaddingHorizontal,
-          vertical: tagChipPaddingVertical,
+        child: Chip(
+          label: Text(
+            translator.translate(
+              'pages.content_editor.user',
+              arguments: {'username': username},
+            ),
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.outlineVariant,
+            ),
+          ),
+          deleteIcon: Assets.svg.deleteTag.render(),
+          onDeleted: onRemove,
+          backgroundColor: Colors.transparent,
+          deleteIconColor: colorScheme.onPrimaryContainer,
+          side: BorderSide.none,
+          padding: EdgeInsets.symmetric(
+            horizontal: tagChipPaddingHorizontal,
+            vertical: tagChipPaddingVertical,
+          ),
         ),
       ),
     );

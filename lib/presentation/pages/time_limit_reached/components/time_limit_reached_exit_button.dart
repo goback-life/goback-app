@@ -25,7 +25,7 @@ class TimeLimitReachedExitButton extends StatelessWidget
             },
       label: Text(
         translator.translate('pages.time_limit_reached.button'),
-        style: textTheme.titleLarge?.copyWith(color: colorScheme.primary),
+        style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
       ),
     );
 

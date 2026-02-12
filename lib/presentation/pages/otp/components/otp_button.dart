@@ -27,7 +27,7 @@ class OtpButton extends StatelessWidget with MainLayout, OtpLayout {
           label: Text(
             translator.translate('pages.otp.button'),
             style: textTheme.titleLarge?.copyWith(
-              color: isEnabled ? colorScheme.primary : colorScheme.outline,
+              color: isEnabled ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
             ),
           ),
         );

@@ -9,6 +9,7 @@ import 'package:cloudless/presentation/pages/post_detail/components/post_detail_
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_reaction_picker_modal.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_reactions_list_modal.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -245,7 +246,7 @@ class PostDetailReactions extends HookConsumerWidget
       builder: (context) {
         return Container(
           decoration: BoxDecoration(
-            color: colorScheme.onTertiaryFixedVariant,
+            color: MainColors.dark,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           child: Column(
@@ -258,7 +259,7 @@ class PostDetailReactions extends HookConsumerWidget
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
+                    color: MainColors.white.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),

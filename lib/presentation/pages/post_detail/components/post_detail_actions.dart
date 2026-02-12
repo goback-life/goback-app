@@ -55,7 +55,7 @@ class PostDetailActions extends StatelessWidget
             child: SizedBox(
               height: iconHeight,
               width: iconWidth,
-              child: Center(child: Assets.svg.menu.render()),
+              child: Center(child: Assets.svg.menu.render(colorFilter: colorScheme.onSurface.asSrcIn)),
             ),
           ),
         ],

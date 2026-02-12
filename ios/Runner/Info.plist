@@ -22,17 +22,17 @@
 		<string>????</string>
 		<key>CFBundleVersion</key>
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>goback . usa la fotocamera per catturare i tuoi momenti speciali da condividere con la tua cerchia. Potrai scattare foto e registrare video direttamente dall'app.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>goback . usa il microfono per registrare l'audio dei tuoi video, rendendo i tuoi ricordi ancora più vividi e autentici.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>goback . accede alla tua libreria foto per permetterti di scegliere e condividere i tuoi ricordi preferiti con i tuoi amici più stretti.</string>
-	<key>NSContactsUsageDescription</key>
-	<string>goback . usa i tuoi contatti per aiutarti a trovare e invitare facilmente i tuoi amici più stretti nella tua cerchia. Non condivideremo mai i tuoi contatti senza il tuo consenso.</string>
-	<key>UILaunchStoryboardName</key>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<key>NSCameraUsageDescription</key>
+		<string>goback . usa la fotocamera per catturare i tuoi momenti speciali da condividere con la tua cerchia. Potrai scattare foto e registrare video direttamente dall'app.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>goback . usa il microfono per registrare l'audio dei tuoi video, rendendo i tuoi ricordi ancora più vividi e autentici.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>goback . accede alla tua libreria foto per permetterti di scegliere e condividere i tuoi ricordi preferiti con i tuoi amici più stretti.</string>
+		<key>NSContactsUsageDescription</key>
+		<string>goback . usa i tuoi contatti per aiutarti a trovare e invitare facilmente i tuoi amici più stretti nella tua cerchia. Non condivideremo mai i tuoi contatti senza il tuo consenso.</string>
+		<key>UILaunchStoryboardName</key>
 		<string>LaunchScreen</string>
 		<key>UIMainStoryboardFile</key>
 		<string>Main</string>

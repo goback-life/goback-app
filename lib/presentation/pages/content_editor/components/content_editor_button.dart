@@ -25,7 +25,7 @@ class ContentEditorButton extends HookConsumerWidget
       },
       label: Text(
         buttonText,
-        style: textTheme.titleLarge?.copyWith(color: colorScheme.primary),
+        style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
       ),
     );
   }

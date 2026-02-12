@@ -9,6 +9,7 @@ import 'package:cloudless/presentation/pages/profile_shared/components/profile_a
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
+import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:flutter/material.dart';
 
 class CircleProfilePage extends HookConsumerWidget
@@ -88,7 +89,7 @@ class CircleProfilePage extends HookConsumerWidget
               MainAppBar(
                 title: translator.translate('pages.circle_profile.title'),
                 rightWidget: MainAppBar.customAction(
-                  icon: Assets.svg.menu.render(),
+                  icon: Assets.svg.menu.render(colorFilter: colorScheme.onSurface.asSrcIn),
                   onTap: () => isMenuVisible.value = !isMenuVisible.value,
                 ),
               ),

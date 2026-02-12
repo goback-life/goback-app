@@ -1,6 +1,8 @@
 import 'package:cloudless/core/features/auth/domain/hooks/use_sign_in_form.dart';
 import 'package:cloudless/presentation/components/form_field/custom_text_selection_controls.dart';
 import 'package:cloudless/presentation/components/form_field/input_decoration.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/sign_in/sign_in_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
@@ -74,21 +76,21 @@ class PhoneNumberFormField extends HookConsumerWidget
           }
         }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              translator.translate('pages.sign_in.label'),
-              style: textTheme.labelSmall?.copyWith(color: colorScheme.outline),
-            ),
-            Theme(
-              data: theme.copyWith(
-                textTheme: theme.textTheme,
-                appBarTheme: const AppBarTheme(
-                  backgroundColor: MainColors.white,
-                ),
+        return AppGlassContainer(
+              config: const GlassConfig(
+                variant: GlassVariant.regular,
+                cornerRadius: 47,
+                tint: MainColors.accent,
               ),
-              child: PhoneFormField(
+              child: Theme(
+                data: theme.copyWith(
+                  textTheme: theme.textTheme,
+                  appBarTheme: const AppBarTheme(
+                    backgroundColor: MainColors.dark,
+                    foregroundColor: MainColors.white,
+                  ),
+                ),
+                child: PhoneFormField(
                 selectionControls: CustomTextSelectionControls(),
                 countrySelectorNavigator: const CountrySelectorNavigator.page(),
                 focusNode: focusNode,
@@ -163,9 +165,8 @@ class PhoneNumberFormField extends HookConsumerWidget
                   ),
                 ),
               ),
-            ),
-          ],
-        );
+              ),
+            );
       },
     );
   }

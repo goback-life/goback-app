@@ -11,52 +11,47 @@ class MainTheme implements Themable {
   @override
   ColorScheme get colorScheme {
     return const ColorScheme(
-      brightness: Brightness.light,
+      brightness: Brightness.dark,
       // primaries
-      primary: MainColors.white,
-      onPrimary: MainColors.white, // used by DefaultLoadingOverlay
-      primaryContainer: MainColors.green500,
-      onPrimaryContainer: MainColors.green500,
+      primary: MainColors.accent,
+      onPrimary: MainColors.white,
+      primaryContainer: MainColors.accent,
+      onPrimaryContainer: MainColors.white,
       // secondaries
-      secondary: MainColors.black,
+      secondary: MainColors.dark,
       onSecondary: MainColors.white,
-      secondaryContainer: MainColors.white,
-      onSecondaryContainer: MainColors.black,
+      secondaryContainer: MainColors.dark,
+      onSecondaryContainer: MainColors.white,
       // tertiary
-      tertiary: MainColors.blue500,
+      tertiary: MainColors.accent,
       onTertiary: MainColors.white,
-      tertiaryContainer: MainColors.green500,
-      onTertiaryContainer: MainColors.green500,
+      tertiaryContainer: MainColors.accent,
+      onTertiaryContainer: MainColors.white,
       // error
-      error: MainColors.red500,
+      error: MainColors.accent,
       onError: MainColors.white,
-      errorContainer: MainColors.red500,
+      errorContainer: MainColors.accent,
       onErrorContainer: MainColors.white,
       // surface
-      surface: MainColors.white,
-      surfaceDim: MainColors.grey400,
-      onSurface: MainColors.black,
-      onSurfaceVariant: MainColors.grey500,
+      surface: MainColors.dark,
+      surfaceDim: Color(0xFF121212),
+      onSurface: MainColors.white,
+      onSurfaceVariant: Color(0xFFCCCCCC),
       // outline
-      outline: MainColors.grey200,
-      outlineVariant: MainColors.grey400,
+      outline: Color(0xFF333333),
+      outlineVariant: Color(0xFF444444),
       // shadows and scrims
-      shadow: MainColors.grey800,
-      scrim: MainColors.grey900,
+      shadow: MainColors.dark,
+      scrim: MainColors.dark,
       // containers
-      surfaceContainerLowest: MainColors.grey600,
-      // avatar placeholder
-      surfaceContainerLow: MainColors.grey700,
-      // cards and tab bar
-      surfaceContainer: MainColors.green400,
-      // group chat background and chat action bar
-      surfaceContainerHigh: MainColors.grey300,
-      // videos background
-      surfaceContainerHighest: MainColors.grey100,
-      // free banner
-      tertiaryFixedDim: MainColors.black100,
-      onTertiaryFixedVariant: MainColors.white100,
-      // unused
+      surfaceContainerLowest: Color(0xFF0F0F0F),
+      surfaceContainerLow: Color(0xFF1A1A1A),
+      surfaceContainer: Color(0xFF222222),
+      surfaceContainerHigh: Color(0xFF2A2A2A),
+      surfaceContainerHighest: Color(0xFF333333),
+      // banner variants
+      tertiaryFixedDim: MainColors.dark,
+      onTertiaryFixedVariant: MainColors.white,
     );
   }
 

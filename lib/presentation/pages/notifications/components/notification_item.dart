@@ -2,6 +2,7 @@ import 'package:cloudless/core/features/notification/domain/enums/notification_t
 import 'package:cloudless/core/features/notification/domain/models/aggregated_notification_model.dart';
 import 'package:cloudless/presentation/pages/notifications/notifications_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
@@ -164,13 +165,13 @@ class NotificationItem extends HookConsumerWidget
         padding: EdgeInsets.all(notificationItemPadding),
         decoration: BoxDecoration(
           color: isUnread
-              ? const Color(0xFFFFF8F2)
+              ? MainColors.accent.withValues(alpha: 0.08)
               : colorScheme.surface,
           borderRadius: BorderRadius.circular(notificationItemBorderRadius),
           border: Border(
             left: BorderSide(
               color: isUnread
-                  ? const Color(0xFFE8913A)
+                  ? MainColors.accent
                   : Colors.transparent,
               width: notificationUnreadBorderWidth,
             ),

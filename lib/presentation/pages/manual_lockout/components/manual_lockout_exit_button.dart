@@ -25,7 +25,7 @@ class ManualLockoutExitButton extends StatelessWidget
             },
       label: Text(
         translator.translate('pages.manual_lockout.button'),
-        style: textTheme.titleLarge?.copyWith(color: colorScheme.primary),
+        style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
       ),
     );
 

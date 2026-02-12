@@ -1,3 +1,5 @@
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:flutter/material.dart';
@@ -17,16 +19,14 @@ class PostDetailReactionCounter extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.primaryContainer.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(reactionBorderRadius),
+      child: AppGlassContainer(
+        config: GlassConfig(
+          variant: GlassVariant.clear,
+          cornerRadius: reactionBorderRadius,
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(

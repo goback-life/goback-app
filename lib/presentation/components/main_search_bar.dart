@@ -1,3 +1,5 @@
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/search_input_decoration.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -40,21 +42,27 @@ class MainSearchBar extends HookConsumerWidget with MainLayout {
       onSearchChanged('');
     }
 
-    return TextField(
-      textCapitalization: TextCapitalization.sentences,
-      autocorrect: false,
-      controller: controller,
-      onChanged: onSearchChanged,
-      style: textTheme.bodyMedium,
-      cursorColor: colorScheme.tertiary,
-      onTap: onTap,
-      onTapOutside: onTapOutside ?? (event) => context.unfocus(),
-      onSubmitted: onSubmitted,
-      decoration: searchInputDecoration(
-        context,
-        null,
-        searchQuery,
-        clearSearch,
+    return AppGlassContainer(
+      config: const GlassConfig(
+        variant: GlassVariant.regular,
+        cornerRadius: 99,
+      ),
+      child: TextField(
+        textCapitalization: TextCapitalization.sentences,
+        autocorrect: false,
+        controller: controller,
+        onChanged: onSearchChanged,
+        style: textTheme.bodyMedium,
+        cursorColor: colorScheme.tertiary,
+        onTap: onTap,
+        onTapOutside: onTapOutside ?? (event) => context.unfocus(),
+        onSubmitted: onSubmitted,
+        decoration: searchInputDecoration(
+          context,
+          null,
+          searchQuery,
+          clearSearch,
+        ),
       ),
     );
   }

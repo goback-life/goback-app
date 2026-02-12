@@ -7,6 +7,7 @@ import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
+import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:flutter/material.dart';
 
 /// Menu action for editing a post.
@@ -40,7 +41,7 @@ class PostDetailEditAction extends HookConsumerWidget
             SizedBox(
               width: menuIconSize,
               height: menuIconSize,
-              child: Assets.svg.editPost.render(),
+              child: Assets.svg.editPost.render(colorFilter: theme.colorScheme.onSurface.asSrcIn),
             ),
             SizedBox(width: menuIconSpacing),
             Text(

@@ -41,7 +41,7 @@ InputDecoration searchInputDecoration(
           )
         : null,
     filled: true,
-    fillColor: colorScheme.surfaceContainerLowest,
+    fillColor: Colors.transparent,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(99),
       borderSide: BorderSide.none,

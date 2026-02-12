@@ -31,7 +31,7 @@ class SignInButton extends StatelessWidget with MainLayout, SignInLayout {
           label: Text(
             translator.translate('pages.sign_in.button'),
             style: textTheme.titleLarge?.copyWith(
-              color: canSubmit ? colorScheme.primary : colorScheme.outline,
+              color: canSubmit ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
             ),
           ),
         );

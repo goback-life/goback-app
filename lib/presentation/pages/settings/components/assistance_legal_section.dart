@@ -7,6 +7,7 @@ import 'package:cloudless/presentation/pages/settings/settings_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
+import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:flutter/material.dart';
 
 class AssistanceLegalSection extends HookConsumerWidget
@@ -33,13 +34,13 @@ class AssistanceLegalSection extends HookConsumerWidget
         Text(
           translator.translate('pages.settings.assistance_legal'),
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: colorScheme.surfaceContainerHigh,
+            color: colorScheme.onSurface,
           ),
         ),
         SizedBox(height: titleSectionToElement),
 
         SettingsMenuItem(
-          icon: Assets.svg.assistance.render(),
+          icon: Assets.svg.assistance.render(colorFilter: colorScheme.onSurface.asSrcIn),
           title: translator.translate('pages.settings.assistance'),
           onTap: openAssistanceUrl,
         ),
@@ -47,7 +48,7 @@ class AssistanceLegalSection extends HookConsumerWidget
         SizedBox(height: verticalSpacing),
 
         SettingsMenuItem(
-          icon: Assets.svg.privacyPolicy.render(),
+          icon: Assets.svg.privacyPolicy.render(colorFilter: colorScheme.onSurface.asSrcIn),
           title: translator.translate('pages.settings.privacy_policy'),
           onTap: openPrivacyPolicyUrl,
         ),
@@ -55,7 +56,7 @@ class AssistanceLegalSection extends HookConsumerWidget
         SizedBox(height: verticalSpacing),
 
         SettingsMenuItem(
-          icon: Assets.svg.termsConditions.render(),
+          icon: Assets.svg.termsConditions.render(colorFilter: colorScheme.onSurface.asSrcIn),
           title: translator.translate('pages.settings.terms_conditions'),
           onTap: openTermsOfServiceUrl,
         ),

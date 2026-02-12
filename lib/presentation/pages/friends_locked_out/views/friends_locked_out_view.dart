@@ -1,7 +1,9 @@
 import 'package:cloudless/core/features/lockout/domain/providers/get_friends_locked_out_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
+import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
 import 'package:cloudless/presentation/components/profile_image/profile_image.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -85,14 +87,10 @@ class FriendsLockedOutView extends HookConsumerWidget with MainLayout {
                       }
                     } catch (e) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              translator.translate(
-                                'pages.friends_locked_out.join_error',
-                              ),
-                            ),
-                            backgroundColor: colorScheme.error,
+                        MainSnackbar.showError(
+                          context,
+                          translator.translate(
+                            'pages.friends_locked_out.join_error',
                           ),
                         );
                       }
@@ -233,8 +231,8 @@ class _FriendLockoutItem extends StatelessWidget with MainLayout {
             ElevatedButton(
               onPressed: onJoin,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: MainColors.accent,
+                foregroundColor: MainColors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 8,

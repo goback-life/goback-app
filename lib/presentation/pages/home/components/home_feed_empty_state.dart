@@ -32,7 +32,7 @@ class HomeFeedEmptyState extends HookConsumerWidget
               'pages.home.feed_empty_box.no_activity_title',
             ),
             style: textTheme.titleLarge?.copyWith(
-              color: colorScheme.secondary,
+              color: colorScheme.onSurface,
             ),
             textAlign: TextAlign.center,
           ),

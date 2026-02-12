@@ -4,6 +4,7 @@ import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_st
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
+import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/friend_locked_out_item.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/join_lockout_dialog.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -215,13 +216,9 @@ class FriendsLockedOutList extends HookConsumerWidget {
 
     if (isAlreadyLockedOut) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              translator.translate('pages.home.lockout_join_error_already_locked'),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        MainSnackbar.showError(
+          context,
+          translator.translate('pages.home.lockout_join_error_already_locked'),
         );
       }
       return;
@@ -241,12 +238,7 @@ class FriendsLockedOutList extends HookConsumerWidget {
             ? translator.translate('pages.home.lockout_join_error_already_locked')
             : translator.translate('pages.manual_lockout.friends_locked_out.error');
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        MainSnackbar.showError(context, errorMessage);
       }
     }
   }

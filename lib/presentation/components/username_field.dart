@@ -157,7 +157,7 @@ class UsernameField extends HookConsumerWidget with MainLayout, ProfileLayout {
         loadingText ?? translator.translate('pages.profile.username.loading');
 
     final defaultLoadingStyle = textTheme.titleLarge?.copyWith(
-      color: colorScheme.secondary.withValues(alpha: 0.5),
+      color: colorScheme.onSurface.withValues(alpha: 0.5),
     );
 
     return _buildUsernameText(

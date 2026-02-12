@@ -9,6 +9,7 @@ import 'package:cloudless/presentation/pages/sign_in/sign_in_routable.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
+import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:flutter/material.dart';
 
 class AccountSection extends HookConsumerWidget
@@ -28,7 +29,7 @@ class AccountSection extends HookConsumerWidget
         Text(
           translator.translate('pages.settings.account'),
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: colorScheme.surfaceContainerHigh,
+            color: colorScheme.onSurface,
           ),
         ),
         SizedBox(height: titleSectionToElement),
@@ -45,7 +46,7 @@ class AccountSection extends HookConsumerWidget
         SizedBox(height: phoneNumberToDeleteAccount),
 
         SettingsMenuItem(
-          icon: Assets.svg.deleteIcon.render(),
+          icon: Assets.svg.deleteIcon.render(colorFilter: colorScheme.onSurface.asSrcIn),
           title: translator.translate('pages.settings.delete_data'),
           onTap: () => _showDeleteAccountAlert(context, ref, deleteAccount),
         ),

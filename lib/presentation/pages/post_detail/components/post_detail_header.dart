@@ -68,7 +68,7 @@ class PostDetailHeader extends HookConsumerWidget
             height: headerIconSize,
             child: Center(
               child: Assets.svg.close.render(
-                colorFilter: colorScheme.secondary.asSrcIn,
+                colorFilter: colorScheme.onSurface.asSrcIn,
               ),
             ),
           ),

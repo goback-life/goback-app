@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
 import 'package:cloudless/presentation/components/frame_picker/frames_progress_bar.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/video_player/video_player_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -37,7 +39,7 @@ class FramePicker extends HookConsumerWidget
     useSafeArea: false,
     barrierDismissible: false,
     context: context,
-    barrierColor: Colors.black,
+    barrierColor: Colors.transparent,
     builder: (context) =>
         FramePicker(videoUrl: videoUrl, initialPosition: initialPosition),
   );
@@ -181,16 +183,16 @@ class FramePicker extends HookConsumerWidget
                           onTap: useConfirmButton
                               ? () => Navigator.of(context).pop(null)
                               : confirm,
-                          child: Container(
-                            padding: EdgeInsets.all(closeButtonPadding),
-                            decoration: BoxDecoration(
-                              color: colorScheme.secondary.withValues(
-                                alpha: closeButtonBackgroundAlpha,
-                              ),
-                              shape: BoxShape.circle,
+                          child: AppGlassContainer(
+                            config: GlassConfig(
+                              variant: GlassVariant.regular,
+                              cornerRadius: 999,
                             ),
-                            child: Assets.svg.close.render(
-                              colorFilter: colorScheme.primary.asSrcIn,
+                            child: Padding(
+                              padding: EdgeInsets.all(closeButtonPadding),
+                              child: Assets.svg.close.render(
+                                colorFilter: colorScheme.primary.asSrcIn,
+                              ),
                             ),
                           ),
                         ),

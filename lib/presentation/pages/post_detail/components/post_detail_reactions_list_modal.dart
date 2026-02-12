@@ -2,11 +2,14 @@ import 'package:cloudless/core/features/auth/domain/providers/get_current_user_p
 import 'package:cloudless/core/features/connection/domain/providers/is_user_connected_provider.dart';
 import 'package:cloudless/core/features/post/domain/models/post_reaction_model.dart';
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/main_member/main_member_item.dart';
 import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
 import 'package:cloudless/presentation/pages/external_profile/external_profile_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
 import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -23,18 +26,17 @@ class PostDetailReactionsListModal extends HookConsumerWidget
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight:
-            MediaQuery.of(context).size.height * reactionsListMaxHeightRatio,
+    return AppGlassContainer(
+      config: GlassConfig(
+        variant: GlassVariant.regular,
+        cornerRadius: reactionsListBorderRadius,
       ),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(reactionsListBorderRadius),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight:
+              MediaQuery.of(context).size.height * reactionsListMaxHeightRatio,
         ),
-      ),
-      child: Column(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
@@ -43,7 +45,7 @@ class PostDetailReactionsListModal extends HookConsumerWidget
               width: reactionsListHandleWidth,
               height: reactionsListHandleHeight,
               decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
+                color: MainColors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(reactionsListHandleRadius),
               ),
             ),
@@ -91,6 +93,7 @@ class PostDetailReactionsListModal extends HookConsumerWidget
           ),
           SizedBox(height: reactionsListBottomPadding),
         ],
+      ),
       ),
     );
   }

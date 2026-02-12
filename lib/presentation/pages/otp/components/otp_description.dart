@@ -12,28 +12,21 @@ class OtpDescription extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Expanded(
-          child: RichText(
-            textAlign: TextAlign.start,
-            text: TextSpan(
-              text: text,
-              style: textTheme.bodyMedium?.copyWith(color: colorScheme.outline),
-              children: [
-                TextSpan(
-                  text: number,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.outline,
-                  ),
-                ),
-              ],
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        text: text,
+        style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+        children: [
+          TextSpan(
+            text: number,
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
             ),
-            maxLines: 2,
           ),
-        ),
-      ],
+        ],
+      ),
+      maxLines: 2,
     );
   }
 }

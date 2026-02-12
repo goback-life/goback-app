@@ -182,8 +182,8 @@ class _ReceiveCodeCard extends HookConsumerWidget {
     };
 
     final accentColor = switch (cardState.value) {
-      _CardState.error => const Color(0xCCFF4444),
-      _CardState.success => Colors.green,
+      _CardState.error => MainColors.white.withValues(alpha: 0.5),
+      _CardState.success => MainColors.accent,
       _ => MainColors.white,
     };
 

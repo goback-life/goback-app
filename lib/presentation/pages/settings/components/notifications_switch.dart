@@ -1,3 +1,5 @@
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/settings/components/notifications_switch_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -41,36 +43,34 @@ class NotificationSwitch extends HookConsumerWidget
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
-        return Container(
-          width: switchWidth,
-          height: switchHeight,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(switchBorderRadius),
-            color: Color.lerp(
-              colorScheme.surfaceContainerLowest,
-              colorScheme.surfaceContainerLowest,
-              animation.value,
-            ),
+        return AppGlassContainer(
+          config: GlassConfig(
+            variant: GlassVariant.regular,
+            cornerRadius: switchBorderRadius,
           ),
-          child: Stack(
-            children: [
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                left: value ? thumbActiveLeft : thumbInactiveLeft,
-                top: thumbTop,
-                child: Container(
-                  width: thumbSize,
-                  height: thumbSize,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: value
-                        ? colorScheme.primaryContainer
-                        : colorScheme.surfaceContainerLow,
+          child: SizedBox(
+            width: switchWidth,
+            height: switchHeight,
+            child: Stack(
+              children: [
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  left: value ? thumbActiveLeft : thumbInactiveLeft,
+                  top: thumbTop,
+                  child: Container(
+                    width: thumbSize,
+                    height: thumbSize,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: value
+                          ? colorScheme.primaryContainer
+                          : colorScheme.surfaceContainerLow,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

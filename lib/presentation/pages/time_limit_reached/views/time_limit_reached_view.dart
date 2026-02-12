@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/background_image.dart';
+import 'package:cloudless/presentation/components/goback_logo.dart';
 import 'package:cloudless/presentation/pages/time_limit_reached/components/time_limit_reached_exit_button.dart';
 import 'package:cloudless/presentation/pages/time_limit_reached/time_limit_reached_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
@@ -60,7 +61,7 @@ class TimeLimitReachedView extends HookConsumerWidget
                     textAlign: TextAlign.center,
                   ),
                   const Spacer(flex: 2),
-                  Assets.svg.logoApp.render(width: logoSize, height: logoSize),
+                  GobackLogo(fontSize: logoSize * 0.6),
                   const Spacer(flex: 3),
                   const TimeLimitReachedExitButton(),
                   SizedBox(height: buttonBottomPadding),

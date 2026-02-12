@@ -3,6 +3,7 @@ import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/presentation/components/main_member/main_member_item.dart';
 import 'package:cloudless/presentation/components/text/linkable_text.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/markdown_link_formatter.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -234,7 +235,7 @@ class ContentEditorTextPost extends HookWidget {
                         borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: MainColors.dark.withValues(alpha: 0.1),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),

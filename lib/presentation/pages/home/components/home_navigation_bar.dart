@@ -1,6 +1,8 @@
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
 import 'package:cloudless/core/features/notification/domain/hooks/use_unread_notification_count.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
+import 'package:cloudless/presentation/components/goback_logo.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/components/profile_image/profile_image.dart';
 import 'package:cloudless/presentation/pages/home/components/home_time_limit_toggle.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
@@ -12,6 +14,7 @@ import 'package:cloudless/presentation/pages/your_circle/your_circle_routable.da
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
+import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:flutter/material.dart';
 
 class HomeNavigationBar extends HookConsumerWidget
@@ -38,7 +41,7 @@ class HomeNavigationBar extends HookConsumerWidget
                 showBottomButton: false,
               ),
             ),
-            child: Assets.svg.logoApp.render(),
+            child: const GobackLogo(fontSize: 20),
           ),
           const Spacer(),
           Row(
@@ -83,7 +86,7 @@ class HomeNavigationBar extends HookConsumerWidget
                                 clipBehavior: Clip.none,
                                 children: [
                                   Center(
-                                    child: Assets.svg.notifications.render(),
+                                    child: Assets.svg.notifications.render(colorFilter: colorScheme.onSurface.asSrcIn),
                                   ),
                                   if (unreadCount > 0)
                                     Positioned(
@@ -93,7 +96,7 @@ class HomeNavigationBar extends HookConsumerWidget
                                         width: 8,
                                         height: 8,
                                         decoration: const BoxDecoration(
-                                          color: Color(0xFFE8913A),
+                                          color: MainColors.accent,
                                           shape: BoxShape.circle,
                                         ),
                                       ),
@@ -109,7 +112,7 @@ class HomeNavigationBar extends HookConsumerWidget
                             width: navCircleButtonSize,
                             height: navCircleButtonSize,
                             child: Center(
-                              child: Assets.svg.notifications.render(),
+                              child: Assets.svg.notifications.render(colorFilter: colorScheme.onSurface.asSrcIn),
                             ),
                           ),
                         ),
@@ -119,7 +122,7 @@ class HomeNavigationBar extends HookConsumerWidget
                             width: navCircleButtonSize,
                             height: navCircleButtonSize,
                             child: Center(
-                              child: Assets.svg.notifications.render(),
+                              child: Assets.svg.notifications.render(colorFilter: colorScheme.onSurface.asSrcIn),
                             ),
                           ),
                         ),

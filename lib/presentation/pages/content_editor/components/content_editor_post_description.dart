@@ -1,6 +1,6 @@
-import 'package:cloudless/core/features/post/domain/constants/text_post_constants.dart';
 import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/presentation/components/main_member/main_member_item.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -12,7 +12,7 @@ class ContentEditorPostDescription extends HookWidget {
     required this.onChanged,
     required this.allUsers,
     super.key,
-    this.maxLength = TextPostConstants.maxTextPostLength,
+    this.maxLength = 200,
   });
 
   final String initialText;
@@ -159,7 +159,7 @@ class ContentEditorPostDescription extends HookWidget {
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: MainColors.dark.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -179,21 +179,22 @@ class ContentEditorPostDescription extends HookWidget {
                     },
                   ),
                 ),
-              Container(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  translator.translate(
-                    'pages.content_editor.character_count',
-                    arguments: {
-                      'current': currentChars.value.toString(),
-                      'max': maxLength.toString(),
-                    },
-                  ),
-                  style: textTheme.labelMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+              if (currentChars.value >= (maxLength * 0.75).round())
+                Container(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    translator.translate(
+                      'pages.content_editor.character_count',
+                      arguments: {
+                        'current': currentChars.value.toString(),
+                        'max': maxLength.toString(),
+                      },
+                    ),
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

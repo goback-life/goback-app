@@ -19,7 +19,7 @@ class SignInPage extends HookConsumerWidget with MainLayout, SignInLayout {
       body: Column(
         children: [
           SizedBox(height: topMargin),
-          MainAppBar(title: translator.translate('pages.sign_in.title')),
+          const MainAppBar(title: ''),
           SizedBox(height: titleToForm),
           const SignInView(),
         ],

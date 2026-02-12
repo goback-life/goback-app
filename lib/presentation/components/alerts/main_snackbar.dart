@@ -1,6 +1,9 @@
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/alerts/main_snackbar_layout.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
+import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
@@ -56,29 +59,36 @@ class MainSnackbar extends StatelessWidget with MainLayout, MainSnackbarLayout {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
+    const tint = MainColors.accent;
 
-    return Container(
-      padding: EdgeInsets.all(allPadding),
-      decoration: BoxDecoration(
-        color: isError ? MainColors.red100 : MainColors.green100,
-        borderRadius: BorderRadius.circular(borderRadius),
-      ),
-      child: Row(
-        children: [
-          isError ? Assets.svg.error.render() : Assets.svg.success.render(),
-          SizedBox(width: iconToMessage),
-          Expanded(
-            child: Text(
-              message,
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface,
+    return AppGlassContainer(
+      config: GlassConfig(cornerRadius: borderRadius, tint: tint),
+      child: Padding(
+        padding: EdgeInsets.all(allPadding),
+        child: Row(
+          children: [
+            isError
+                ? Assets.svg.error.render()
+                : Assets.svg.success.render(),
+            SizedBox(width: iconToMessage),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  fontFamily: MainFontFamilies.quicksand,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: MainColors.dark,
+                  decoration: TextDecoration.none,
+                ),
               ),
             ),
-          ),
-          GestureDetector(onTap: onDismiss, child: Assets.svg.close.render()),
-        ],
+            GestureDetector(
+              onTap: onDismiss,
+              child: Assets.svg.close.render(),
+            ),
+          ],
+        ),
       ),
     );
   }

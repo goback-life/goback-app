@@ -210,11 +210,11 @@ class _InviteCard extends HookConsumerWidget {
       [input.value, isPhone],
     );
 
-    // Dot colour: grey (search), green (has goback), red (phone).
+    // Dot colour: grey (search), accent (has goback), muted white (phone).
     final dotColor = useMemoized(() {
       if (!isPhone) return const Color(0x66FFFFFF); // grey
-      if (typedHasGoback) return Colors.green;
-      return const Color(0xCCFF4444); // red
+      if (typedHasGoback) return MainColors.accent;
+      return MainColors.white.withValues(alpha: 0.5);
     }, [isPhone, typedHasGoback]);
 
     // Can submit?
@@ -441,8 +441,8 @@ class _ContactRow extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: hasGoback
-                        ? Colors.green
-                        : const Color(0xCCFF4444),
+                        ? MainColors.accent
+                        : MainColors.white.withValues(alpha: 0.5),
                   ),
                 ),
               ],

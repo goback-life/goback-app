@@ -282,13 +282,15 @@ class _CutoutPainter extends CustomPainter {
 
     // 2. Punch timer text hole using dstOut foreground paint
     if (countdown.isNotEmpty) {
-      final timerFontSize = size.width * 0.58;
+      final timerFontSize = size.width * 0.8;
+      final timerLetterSpacing = size.width * -0.04;
       final tp = TextPainter(
         text: TextSpan(
           text: countdown,
           style: TextStyle(
             fontFamily: MainFontFamilies.lilitaOne,
             fontSize: timerFontSize,
+            letterSpacing: timerLetterSpacing,
             height: 1.0,
             foreground: _holePaint(),
           ),
@@ -296,9 +298,9 @@ class _CutoutPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       )..layout();
 
-      // Scale down if text exceeds 95% of screen width
-      final maxW = size.width * 0.95;
-      final scale = tp.width > maxW ? maxW / tp.width : 1.0;
+      // Scale to fill screen width (scale up or down as needed)
+      final targetW = size.width * 0.95;
+      final scale = targetW / tp.width;
       final timerY = size.height * 0.35;
       final timerX = (size.width - tp.width * scale) / 2;
 

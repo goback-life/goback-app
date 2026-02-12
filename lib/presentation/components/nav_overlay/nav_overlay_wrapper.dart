@@ -1,4 +1,6 @@
+import 'package:cloudless/core/features/auth/domain/providers/is_authenticated_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
+import 'package:cloudless/core/features/profile/data/storables/profile_completed_storable.dart';
 import 'package:cloudless/core/features/time_limit/domain/providers/time_limit_tracker_notifier_provider.dart';
 import 'package:cloudless/presentation/components/nav_overlay/nav_overlay.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -13,7 +15,7 @@ import 'package:flutter/services.dart';
 /// precedence. When the overlay long-press wins, it claims the arena so no
 /// residual tap/click reaches the content underneath.
 ///
-/// Disabled when the user is in a lockout or time-limit-reached state.
+/// Disabled when the user is in a lockout, time-limit-reached, or signup state.
 class NavOverlayWrapper extends HookConsumerWidget {
   const NavOverlayWrapper({super.key, required this.child});
 
@@ -23,10 +25,20 @@ class NavOverlayWrapper extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isOverlayVisible = useState(false);
 
+    // Check if the user has completed signup (auth + profile).
+    final isAuthenticated = ref.watch(isAuthenticatedProvider);
+    final profileCompletedFuture = useMemoized(
+      () => ProfileCompletedStorable().get(defaultValue: false),
+    );
+    final profileSnapshot = useFuture(profileCompletedFuture);
+    final hasCompletedSignup =
+        isAuthenticated && (profileSnapshot.data ?? false);
+
     // Check lockout / time-limit state to disable overlay.
     final lockoutAsync = ref.watch(manualLockoutNotifierProvider);
     final timeLimitAsync = ref.watch(timeLimitTrackerNotifierProvider);
-    final isBlocked = lockoutAsync.valueOrNull?.isLockedOut == true ||
+    final isBlocked = !hasCompletedSignup ||
+        lockoutAsync.valueOrNull?.isLockedOut == true ||
         timeLimitAsync.valueOrNull?.isLimitReached == true;
 
     return GestureDetector(

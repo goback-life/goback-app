@@ -32,7 +32,7 @@ class CreateProfileButton extends StatelessWidget
           label: Text(
             translator.translate('pages.create_profile.button'),
             style: textTheme.titleLarge?.copyWith(
-              color: canSubmit ? colorScheme.primary : colorScheme.outline,
+              color: canSubmit ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
             ),
           ),
         );

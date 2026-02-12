@@ -61,7 +61,7 @@ class SignInPrivacyCheckbox extends HookWidget with MainLayout, SignInLayout {
             child: StyledText(
               text: translator.translate('pages.sign_in.privacy_text'),
               style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.secondary,
+                color: colorScheme.onSurface,
               ),
               tags: {
                 'privacy': StyledTextActionTag(
@@ -69,7 +69,7 @@ class SignInPrivacyCheckbox extends HookWidget with MainLayout, SignInLayout {
                     openPrivacyPolicyUrl();
                   },
                   style: textTheme.bodyMedium?.copyWith(
-                    decoration: TextDecoration.underline,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 'terms': StyledTextActionTag(
@@ -77,7 +77,7 @@ class SignInPrivacyCheckbox extends HookWidget with MainLayout, SignInLayout {
                     openTermsOfServiceUrl();
                   },
                   style: textTheme.bodyMedium?.copyWith(
-                    decoration: TextDecoration.underline,
+                    color: colorScheme.onSurface,
                   ),
                 ),
               },

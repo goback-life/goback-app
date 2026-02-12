@@ -1,4 +1,6 @@
 import 'package:cloudless/presentation/assets/assets.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/settings/settings_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -40,13 +42,13 @@ class SettingsMenuItem extends HookConsumerWidget
             ),
           ),
           if (hasIndicator)
-            Container(
-              width: width,
-              height: height,
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                shape: BoxShape.circle,
+            AppGlassContainer(
+              config: GlassConfig(
+                variant: GlassVariant.regular,
+                cornerRadius: width / 2,
+                tint: colorScheme.primaryContainer,
               ),
+              child: SizedBox(width: width, height: height),
             ),
           if (!hasIndicator)
             Assets.svg.next.render(colorFilter: colorScheme.onSurface.asSrcIn),

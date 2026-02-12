@@ -1,7 +1,7 @@
-import 'dart:ui';
-
 import 'package:cloudless/presentation/components/alerts/main_alert_layout.dart';
 import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
@@ -109,78 +109,79 @@ class MainAlert extends StatelessWidget with MainLayout, MainAlertLayout {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
-      child: Container(
-        color: colorScheme.onSurface.withValues(alpha: 0.1),
-        child: Dialog(
-          backgroundColor: colorScheme.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(borderRadius),
+      ),
+      insetPadding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      child: AppGlassContainer(
+        config: GlassConfig(
+          variant: GlassVariant.regular,
+          cornerRadius: borderRadius,
+        ),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            vertical: verticalMargin,
+            horizontal: horizontalPadding,
           ),
-          insetPadding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(
-              vertical: verticalMargin,
-              horizontal: horizontalPadding,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  style: textTheme.titleLarge?.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                  textAlign: TextAlign.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: textTheme.titleLarge?.copyWith(
+                  color: colorScheme.onSurface,
                 ),
-                SizedBox(height: titleToContent),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: titleToContent),
 
-                content,
+              content,
 
-                SizedBox(height: contentToAction),
+              SizedBox(height: contentToAction),
 
-                Column(
-                  children: [
-                    ...switch ((secondaryButtonText, onSecondaryPressed)) {
-                      (final String s, final VoidCallback p) => [
-                        switch (primaryButtonType) {
-                          CallToActionType.primary =>
-                            CallToAction.primary.filled(
-                              action: onPrimaryPressed,
-                              label: Text(primaryButtonText),
-                              horizontalMargin: horizontalMargin,
-                              height: height,
-                            ),
-                          CallToActionType.danger => CallToAction.danger.filled(
+              Column(
+                children: [
+                  ...switch ((secondaryButtonText, onSecondaryPressed)) {
+                    (final String s, final VoidCallback p) => [
+                      switch (primaryButtonType) {
+                        CallToActionType.primary =>
+                          CallToAction.primary.filled(
                             action: onPrimaryPressed,
                             label: Text(primaryButtonText),
                             horizontalMargin: horizontalMargin,
                             height: height,
                           ),
-                        },
-                        SizedBox(height: spaceBetweenButtons),
-                        CallToAction.primary.outlined(
-                          action: p,
-                          label: Text(s),
-                          horizontalMargin: horizontalMargin,
-                          height: height,
-                        ),
-                      ],
-                      _ => [
-                        CallToAction.primary.outlined(
+                        CallToActionType.danger => CallToAction.danger.filled(
                           action: onPrimaryPressed,
                           label: Text(primaryButtonText),
                           horizontalMargin: horizontalMargin,
                           height: height,
                         ),
-                      ],
-                    },
-                  ],
-                ),
-              ],
-            ),
+                      },
+                      SizedBox(height: spaceBetweenButtons),
+                      CallToAction.primary.outlined(
+                        action: p,
+                        label: Text(s),
+                        horizontalMargin: horizontalMargin,
+                        height: height,
+                      ),
+                    ],
+                    _ => [
+                      CallToAction.primary.outlined(
+                        action: onPrimaryPressed,
+                        label: Text(primaryButtonText),
+                        horizontalMargin: horizontalMargin,
+                        height: height,
+                      ),
+                    ],
+                  },
+                ],
+              ),
+            ],
           ),
         ),
       ),

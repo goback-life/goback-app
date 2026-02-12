@@ -121,6 +121,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     final mentionState = useMentionAutocomplete(ref);
     final allUsers = mentionState.allUsers;
     final mentionedIds = useState<List<String>>([]);
+    final descExpanded = useState(false);
 
     void navigateToUser(String userId) => _navigateToTaggedUser(ref, userId);
     void navigateToMention(String username) {
@@ -151,7 +152,16 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     var visibleH = avatarH;
     final hasDesc =
         post.description != null && post.description!.isNotEmpty;
-    if (hasDesc) visibleH += 12 * scale + 25 * scale;
+    if (hasDesc) {
+      final dp = TextPainter(
+        text: TextSpan(text: post.description!, style: TextStyle(
+          fontFamily: MainFontFamilies.quicksand, fontWeight: FontWeight.w400,
+          fontSize: 15.0 * scale, letterSpacing: -0.9 * scale,
+        )),
+        maxLines: descExpanded.value ? null : 5, textDirection: TextDirection.ltr,
+      )..layout(maxWidth: contentWidth);
+      visibleH += 12 * scale + dp.size.height;
+    }
 
     void handleSubmit() {
       final text = textController.text.trim();
@@ -183,6 +193,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
           children: [
             _buildVisibleBlock(
               hasDesc,
+              descExpanded: descExpanded,
               onAuthorTap: () => navigateToUser(post.authorId),
               onMentionTap: navigateToMention,
               authorAvatarUrl: resolveAvatar(post.authorId),
@@ -217,10 +228,16 @@ class PostDetailOverlayContent extends HookConsumerWidget {
 
   Widget _buildVisibleBlock(
     bool hasDesc, {
+    required ValueNotifier<bool> descExpanded,
     VoidCallback? onAuthorTap,
     void Function(String)? onMentionTap,
     String? authorAvatarUrl,
   }) {
+    final descStyle = TextStyle(
+      fontFamily: MainFontFamilies.quicksand, fontWeight: FontWeight.w400,
+      fontSize: 15.0 * scale, color: MainColors.white,
+      letterSpacing: -0.9 * scale,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -231,34 +248,36 @@ class PostDetailOverlayContent extends HookConsumerWidget {
         ),
         if (hasDesc) ...[
           SizedBox(height: 12 * scale),
-          _buildDescription(onMentionTap: onMentionTap),
+          GestureDetector(
+            onTap: () => descExpanded.value = !descExpanded.value,
+            child: RichText(
+              text: _parseMentions(
+                post.description!,
+                descStyle,
+                onMentionTap: onMentionTap,
+              ),
+              maxLines: descExpanded.value ? null : 5,
+              overflow: descExpanded.value
+                  ? TextOverflow.clip
+                  : TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ],
     );
   }
 
   Widget _buildLimitMessage() {
-    final fs = 12.0 * scale;
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: 12 * scale,
-        vertical: 8 * scale,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 12 * scale, vertical: 8 * scale),
       decoration: BoxDecoration(
         color: MainColors.accent.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(15 * scale),
-      ),
+        borderRadius: BorderRadius.circular(15 * scale)),
       child: Text(
-        'Comment limit reached ($kMaxCommentsPerUserPerPost/'
-        '$kMaxCommentsPerUserPerPost). Delete a comment to add more.',
-        style: TextStyle(
-          fontFamily: MainFontFamilies.quicksand,
-          fontWeight: FontWeight.w400,
-          fontSize: fs,
-          color: MainColors.white.withValues(alpha: 0.6),
-        ),
-      ),
-    );
+        'Comment limit reached ($kMaxCommentsPerUserPerPost/$kMaxCommentsPerUserPerPost). Delete a comment to add more.',
+        style: TextStyle(fontFamily: MainFontFamilies.quicksand,
+          fontWeight: FontWeight.w400, fontSize: 12.0 * scale,
+          color: MainColors.white.withValues(alpha: 0.6))));
   }
 
   Widget _buildAuthorRow({String? resolvedAvatarUrl}) {
@@ -292,24 +311,6 @@ class PostDetailOverlayContent extends HookConsumerWidget {
         ),
       ),
     ]);
-  }
-
-  Widget _buildDescription({void Function(String)? onMentionTap}) {
-    final fs = 15.0 * scale;
-    final ls = -0.9 * scale;
-    return RichText(
-      text: _parseMentions(
-        post.description!,
-        TextStyle(
-          fontFamily: MainFontFamilies.quicksand,
-          fontWeight: FontWeight.w400,
-          fontSize: fs,
-          color: MainColors.white,
-          letterSpacing: ls,
-        ),
-        onMentionTap: onMentionTap,
-      ),
-    );
   }
 
   Widget _buildThoughtsHeader() {

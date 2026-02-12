@@ -2,8 +2,12 @@ import 'package:cloudless/core/features/lockout/data/providers/lockout_session_s
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_join_lockout_post.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
+import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -45,26 +49,30 @@ class HomeLockoutJoinButton extends HookConsumerWidget
       onTap: isEnabled
           ? () => _handleJoinLockout(context, ref)
           : null,
-      child: Container(
-        width: 40.0,
-        height: postHeight,
-        margin: const EdgeInsets.only(left: 8.0),
-        decoration: BoxDecoration(
-          color: isEnabled
-              ? colorScheme.primaryContainer
-              : colorScheme.surface.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(feedPostImageRadius),
-        ),
-        child: Center(
-          child: RotatedBox(
-            quarterTurns: 1,
-            child: Text(
-              translator.translate('pages.home.lockout_join_button'),
-              style: textTheme.bodyMedium?.copyWith(
-                color: isEnabled
-                    ? Colors.white
-                    : colorScheme.onSurface.withValues(alpha: 0.5),
-                fontWeight: FontWeight.w900,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 8.0),
+        child: SizedBox(
+          width: 40.0,
+          height: postHeight,
+          child: AppGlassContainer(
+            config: GlassConfig(
+              variant: GlassVariant.regular,
+              cornerRadius: feedPostImageRadius,
+              tint: isEnabled ? MainColors.accent : null,
+              opacity: isEnabled ? 1.0 : 0.5,
+            ),
+            child: Center(
+              child: RotatedBox(
+                quarterTurns: 1,
+                child: Text(
+                  translator.translate('pages.home.lockout_join_button'),
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: isEnabled
+                        ? Colors.white
+                        : colorScheme.onSurface.withValues(alpha: 0.5),
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
             ),
           ),
@@ -149,12 +157,7 @@ class HomeLockoutJoinButton extends HookConsumerWidget
           ? translator.translate('pages.home.lockout_join_error_expired')
           : translator.translate('pages.home.lockout_join_error_already_locked');
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      MainSnackbar.showError(context, errorMessage);
     }
   }
 }

@@ -19,7 +19,7 @@ class HomeContentEditorButton extends StatelessWidget
       action: onTap,
       label: Text(
         translator.translate('pages.home.feed_empty_box.create_content_button'),
-        style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
+        style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary),
       ),
     );
   }

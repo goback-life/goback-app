@@ -1,7 +1,7 @@
-import 'dart:ui' as ui;
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/models/profile_model.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:flutter/material.dart';
@@ -68,21 +68,14 @@ class MentionOverlay extends StatelessWidget {
         offset: const Offset(0, 8),
         followerAnchor: Alignment.topLeft,
         targetAnchor: Alignment.bottomLeft,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-            child: Container(
-              constraints: const BoxConstraints(maxHeight: 200),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  width: 0.5,
-                ),
-              ),
-              child: ListView.builder(
+        child: AppGlassContainer(
+          config: const GlassConfig(
+            variant: GlassVariant.regular,
+            cornerRadius: 16,
+          ),
+          child: Container(
+            constraints: const BoxConstraints(maxHeight: 200),
+            child: ListView.builder(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 shrinkWrap: true,
                 itemCount: users.length,
@@ -125,7 +118,6 @@ class MentionOverlay extends StatelessWidget {
                     ),
                   );
                 },
-              ),
             ),
           ),
         ),

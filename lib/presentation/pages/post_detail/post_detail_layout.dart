@@ -32,7 +32,7 @@ mixin PostDetailLayout on MainLayout {
   double get tagSpacing => 8.0;
 
   // Description
-  double get descriptionMaxLines => 3.0;
+  double get descriptionMaxLines => 5.0;
   double get descriptionTruncatorWidth => 24.0;
   double get descriptionTruncatorHeight => 3.0;
   double get descriptionTruncatorRadius => 2.0;

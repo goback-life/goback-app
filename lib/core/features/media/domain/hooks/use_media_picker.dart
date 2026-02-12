@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloudless/core/features/media/domain/enums/media_type.dart';
+import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cloudless/core/features/media/domain/enums/pick_image_type.dart';
 import 'package:cloudless/core/features/media/domain/hooks/use_image_cropper.dart';
@@ -209,11 +210,9 @@ Future<void> _handleVideoSelection({
     if (duration != null && duration.inSeconds > _maxVideoDurationSeconds) {
       // Show error to user - video too long
       if (ref.context.mounted) {
-        ScaffoldMessenger.of(ref.context).showSnackBar(
-          const SnackBar(
-            content: Text('Videos must be 60 seconds or less'),
-            duration: Duration(seconds: 3),
-          ),
+        MainSnackbar.showError(
+          ref.context,
+          'Videos must be 60 seconds or less',
         );
       }
       return;

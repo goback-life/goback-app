@@ -3,7 +3,7 @@ import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 
 class ShellAwareLoadingWidget extends HookConsumerWidget {
-  const ShellAwareLoadingWidget({super.key, this.color = MainColors.green500});
+  const ShellAwareLoadingWidget({super.key, this.color = MainColors.accent});
 
   final Color color;
 

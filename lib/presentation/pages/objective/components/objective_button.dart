@@ -23,7 +23,7 @@ class ObjectiveButton extends HookConsumerWidget
       },
       label: Text(
         translator.translate('pages.objective.button'),
-        style: textTheme.titleLarge?.copyWith(color: colorScheme.primary),
+        style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
       ),
     );
   }

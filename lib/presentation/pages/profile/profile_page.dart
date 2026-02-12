@@ -6,6 +6,7 @@ import 'package:cloudless/presentation/pages/settings/settings_routable.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
+import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends HookConsumerWidget with MainLayout, ProfileLayout {
@@ -25,7 +26,7 @@ class ProfilePage extends HookConsumerWidget with MainLayout, ProfileLayout {
           MainAppBar(
             title: translator.translate('pages.profile.title'),
             rightWidget: MainAppBar.customAction(
-              icon: Assets.svg.settings.render(),
+              icon: Assets.svg.settings.render(colorFilter: colorScheme.onSurface.asSrcIn),
               onTap: () => router.push(const SettingsRoutable()),
             ),
           ),

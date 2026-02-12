@@ -1,7 +1,7 @@
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:flutter/material.dart';
@@ -28,8 +28,6 @@ class PostDetailParentPreview extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final isVideo = isParentVideo;
 
     return GestureDetector(
@@ -49,16 +47,12 @@ class PostDetailParentPreview extends StatelessWidget
                 children: [
                   CachedNetworkImage(imageUrl: thumbnailUrl, fit: BoxFit.cover),
                   if (isParentDeleted)
-                    BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: parentPreviewBlurSigma,
-                        sigmaY: parentPreviewBlurSigma,
+                    AppGlassContainer(
+                      config: GlassConfig(
+                        variant: GlassVariant.clear,
+                        cornerRadius: parentPreviewBorderRadius,
                       ),
-                      child: Container(
-                        color: colorScheme.secondary.withValues(
-                          alpha: parentPreviewBlurOpacity,
-                        ),
-                      ),
+                      child: const SizedBox.expand(),
                     ),
                   if (isVideo && !isParentDeleted)
                     Center(

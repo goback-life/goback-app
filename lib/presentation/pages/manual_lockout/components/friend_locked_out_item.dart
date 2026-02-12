@@ -1,5 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:flutter/material.dart';
 
 class FriendLockedOutItem extends StatelessWidget {
@@ -27,52 +30,55 @@ class FriendLockedOutItem extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: SizedBox(
         width: 90,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-        decoration: isInSameLockout
-            ? BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.pinkAccent, width: 3),
-              )
-            : null,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildAvatar(colorScheme, textTheme),
-            const SizedBox(height: 6),
-            Text(
-              session.username ?? '',
-              style: textTheme.bodySmall?.copyWith(
-                color: colorScheme.surface,
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              timeRemaining,
-              style: textTheme.labelSmall?.copyWith(
-                color: colorScheme.surface.withValues(alpha: 0.8),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (hasActivity) ...[
-              const SizedBox(height: 2),
-              Text(
-                session.actionText!,
-                style: textTheme.labelSmall?.copyWith(
-                  color: colorScheme.surface.withValues(alpha: 0.6),
-                  fontStyle: FontStyle.italic,
+        child: AppGlassContainer(
+          config: GlassConfig(
+            variant: GlassVariant.regular,
+            cornerRadius: 12,
+            tint: isInSameLockout ? MainColors.accent : null,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildAvatar(colorScheme, textTheme),
+                const SizedBox(height: 6),
+                Text(
+                  session.username ?? '',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.surface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ],
+                const SizedBox(height: 2),
+                Text(
+                  timeRemaining,
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colorScheme.surface.withValues(alpha: 0.8),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (hasActivity) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    session.actionText!,
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.surface.withValues(alpha: 0.6),
+                      fontStyle: FontStyle.italic,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -33,8 +33,8 @@ class OtpResendCode extends HookWidget {
             : translator.translate('pages.otp.resend_code'),
         style: textTheme.bodyMedium?.copyWith(
           color: isResending.value
-              ? colorScheme.secondary.withValues(alpha: 0.5)
-              : colorScheme.secondary,
+              ? colorScheme.onSurface.withValues(alpha: 0.5)
+              : colorScheme.onSurface,
           decoration: isResending.value ? null : TextDecoration.underline,
         ),
       ),

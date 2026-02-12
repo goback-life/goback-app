@@ -8,7 +8,7 @@ class MainTextTheme {
     return DefaultTextTheme.create()
         .broadCustomization(
           color: colorScheme?.onSurface,
-          family: MainFontFamilies.geist,
+          family: MainFontFamilies.quicksand,
           displayWeight: FontWeight.w600, // huge titles
           headlineWeight: FontWeight.w600, // headers
           titleWeight: FontWeight.w600, // sub-headers

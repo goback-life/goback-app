@@ -29,7 +29,7 @@ class VideoPlayerDialog extends HookConsumerWidget
     useSafeArea: false,
     barrierDismissible: false,
     context: context,
-    barrierColor: Colors.black,
+    barrierColor: Colors.transparent,
     builder: (context) =>
         VideoPlayerDialog(videoUrl: videoUrl, onClose: onClose),
   );

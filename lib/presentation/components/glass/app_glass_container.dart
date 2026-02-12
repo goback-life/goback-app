@@ -221,14 +221,14 @@ class _RoundedGlassOverlay extends CustomPainter {
     if (tint != null) {
       canvas.drawRRect(
         rrect,
-        Paint()..color = tint!.withValues(alpha: 0.12),
+        Paint()..color = tint!.withValues(alpha: 0.3),
       );
     }
 
     // 1. Light tint — bright and clear like water
     canvas.drawRRect(
       rrect,
-      Paint()..color = Colors.white.withValues(alpha: 0.15),
+      Paint()..color = Colors.white.withValues(alpha: 0.08),
     );
 
     // -- Clipped interior --
@@ -242,8 +242,8 @@ class _RoundedGlassOverlay extends CustomPainter {
           bounds.topLeft,
           bounds.bottomRight,
           [
-            Colors.white.withValues(alpha: 0.15),
-            Colors.white.withValues(alpha: 0.05),
+            Colors.white.withValues(alpha: 0.08),
+            Colors.white.withValues(alpha: 0.02),
           ],
         ),
     );
@@ -258,7 +258,7 @@ class _RoundedGlassOverlay extends CustomPainter {
         ..shader = ui.Gradient.linear(
           bounds.topLeft,
           bounds.bottomRight,
-          [Colors.transparent, Colors.white.withValues(alpha: 0.15)],
+          [Colors.transparent, Colors.white.withValues(alpha: 0.08)],
         ),
     );
 
@@ -274,8 +274,8 @@ class _RoundedGlassOverlay extends CustomPainter {
           bounds.topLeft,
           bounds.bottomRight,
           [
-            Colors.white.withValues(alpha: 0.85),
-            Colors.white.withValues(alpha: 0.25),
+            Colors.white.withValues(alpha: 0.5),
+            Colors.white.withValues(alpha: 0.15),
             Colors.transparent,
           ],
           [0.0, 0.45, 0.75],

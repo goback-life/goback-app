@@ -20,7 +20,7 @@ class EditProfileButton extends StatelessWidget with MainLayout, ProfileLayout {
       },
       label: Text(
         translator.translate('pages.profile.button'),
-        style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
+        style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary),
       ),
       horizontalMargin: horizontalMargin,
     );

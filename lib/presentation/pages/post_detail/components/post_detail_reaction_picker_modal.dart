@@ -1,4 +1,7 @@
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
@@ -53,23 +56,22 @@ class PostDetailReactionPickerModal extends HookConsumerWidget
       onReactionSelected(selectedEmojiNotifier.value);
     }
 
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: colorScheme.onTertiaryFixedVariant,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(reactionPickerBorderRadius),
-        ),
+    return AppGlassContainer(
+      config: GlassConfig(
+        variant: GlassVariant.regular,
+        cornerRadius: reactionPickerBorderRadius,
       ),
-      padding: EdgeInsets.symmetric(vertical: reactionPickerVerticalPadding),
-      child: Column(
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: reactionPickerVerticalPadding),
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: reactionPickerHandleWidth,
             height: reactionPickerHandleHeight,
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
+              color: MainColors.white.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(reactionPickerHandleRadius),
             ),
           ),
@@ -114,6 +116,7 @@ class PostDetailReactionPickerModal extends HookConsumerWidget
           ),
           SizedBox(height: reactionPickerBottomSpacing),
         ],
+      ),
       ),
     );
   }

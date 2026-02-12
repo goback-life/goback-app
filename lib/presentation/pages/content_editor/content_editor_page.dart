@@ -19,6 +19,7 @@ import 'package:cloudless/presentation/components/main_app_bar/main_app_bar.dart
 import 'package:cloudless/presentation/components/main_data_loader.dart';
 import 'package:cloudless/presentation/pages/content_editor/content_editor_layout.dart';
 import 'package:cloudless/presentation/pages/content_editor/views/content_editor_view.dart';
+import 'package:cloudless/presentation/pages/content_editor/views/lockout_post_editor_view.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/hooks/use_loading_overlay.dart';
@@ -181,6 +182,11 @@ class ContentEditorPage extends HookConsumerWidget
       extractFirstFrameFromExistingVideo();
       return null;
     }, [contentEditorData.existingVideoUrl, contentEditorData.isVideo]);
+
+    // Lockout flow: show glass card editor with direct Share button
+    if (hasLockout && !isEditing) {
+      return LockoutPostEditorView(contentCreation: contentCreation);
+    }
 
     return MainDataLoader(
       provider: asyncValue,

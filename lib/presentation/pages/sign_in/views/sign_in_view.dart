@@ -7,7 +7,6 @@ import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_form/dedecube_form.dart';
 import 'package:dedecube_presentation/hooks/use_loading_overlay.dart';
-import 'package:dedecube_presentation/widgets/layout/bottomed_list_view.dart';
 import 'package:flutter/material.dart';
 
 class SignInView extends HookConsumerWidget with MainLayout, SignInLayout {
@@ -24,42 +23,53 @@ class SignInView extends HookConsumerWidget with MainLayout, SignInLayout {
       child: Expanded(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: BottomedListView(
-            useSafeArea: true,
-            bottom: Padding(
-              padding: EdgeInsets.only(bottom: bottomMargin),
-              child: ValueListenableBuilder<bool>(
-                valueListenable: signInResult.isPrivacyAccepted,
-                builder: (context, isPrivacyAccepted, child) {
-                  return ValueListenableBuilder<bool>(
-                    valueListenable: signInResult.isSubmitting,
-                    builder: (context, isSubmitting, child) {
-                      return SignInButton(
-                        onSubmit: signInResult.submit,
-                        isEnabled: isPrivacyAccepted && !isSubmitting,
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const PhoneNumberFormField(),
+                        SizedBox(height: verticalSpacing),
+                        ValueListenableBuilder<bool>(
+                          valueListenable: signInResult.isPrivacyAccepted,
+                          builder: (context, isAccepted, child) {
+                            return SignInPrivacyCheckbox(
+                              value: isAccepted,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  signInResult.isPrivacyAccepted.value = value;
+                                }
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: bottomMargin),
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: signInResult.isPrivacyAccepted,
+                    builder: (context, isPrivacyAccepted, child) {
+                      return ValueListenableBuilder<bool>(
+                        valueListenable: signInResult.isSubmitting,
+                        builder: (context, isSubmitting, child) {
+                          return SignInButton(
+                            onSubmit: signInResult.submit,
+                            isEnabled: isPrivacyAccepted && !isSubmitting,
+                          );
+                        },
                       );
                     },
-                  );
-                },
+                  ),
+                ),
               ),
-            ),
-            children: [
-              const PhoneNumberFormField(),
-              SizedBox(height: verticalSpacing),
-              ValueListenableBuilder<bool>(
-                valueListenable: signInResult.isPrivacyAccepted,
-                builder: (context, isAccepted, child) {
-                  return SignInPrivacyCheckbox(
-                    value: isAccepted,
-                    onChanged: (value) {
-                      if (value != null) {
-                        signInResult.isPrivacyAccepted.value = value;
-                      }
-                    },
-                  );
-                },
-              ),
-              SizedBox(height: bottomMargin),
             ],
           ),
         ),

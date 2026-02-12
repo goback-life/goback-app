@@ -1,4 +1,6 @@
 import 'package:cloudless/presentation/assets/assets.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:flutter/material.dart';
@@ -54,8 +56,6 @@ class _HomeCreateContentButtonState extends State<HomeCreateContentButton>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     return GestureDetector(
       onTap: widget.onPressed,
       child: AnimatedBuilder(
@@ -63,15 +63,19 @@ class _HomeCreateContentButtonState extends State<HomeCreateContentButton>
         builder: (context, child) {
           return Transform.rotate(
             angle: _rotationController.value * 2 * 3.14159,
-            child: Container(
-              padding: EdgeInsets.all(feedPostImageBorderRadius),
-              width: createContentButtonSize,
-              height: createContentButtonSize,
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                shape: BoxShape.circle,
+            child: AppGlassContainer(
+              config: GlassConfig(
+                variant: GlassVariant.regular,
+                cornerRadius: createContentButtonSize / 2,
               ),
-              child: Assets.svg.plus.render(),
+              child: SizedBox(
+                width: createContentButtonSize,
+                height: createContentButtonSize,
+                child: Padding(
+                  padding: EdgeInsets.all(feedPostImageBorderRadius),
+                  child: Assets.svg.plus.render(),
+                ),
+              ),
             ),
           );
         },
