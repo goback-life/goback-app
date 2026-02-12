@@ -25,8 +25,10 @@ class YourCircleView extends HookConsumerWidget
     final removeConnection = useRemoveConnection(ref);
     final asyncValue = ref.watch(getCircleMembersProvider);
     final searchController = useTextEditingController();
-    final bottomPad = MediaQuery.of(context).padding.bottom;
-    final topPad = MediaQuery.of(context).padding.top;
+    final mq = MediaQuery.of(context);
+    final bottomPad = mq.padding.bottom;
+    final topPad = mq.padding.top;
+    final sidePad = mq.size.width * 0.10;
 
     return MainDataLoader(
       provider: asyncValue,
@@ -71,8 +73,8 @@ class YourCircleView extends HookConsumerWidget
 
             // Layer 1: Fixed bottom bar
             Positioned(
-              left: bottomBarLeftPadding,
-              right: bottomBarRightPadding,
+              left: sidePad,
+              right: sidePad,
               bottom: bottomPad + bottomBarBottomPadding,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,

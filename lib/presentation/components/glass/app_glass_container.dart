@@ -135,7 +135,8 @@ class _GlassPathClipper extends CustomClipper<Path> {
   }
 
   @override
-  bool shouldReclip(covariant _GlassPathClipper oldClipper) => false;
+  bool shouldReclip(covariant _GlassPathClipper oldClipper) =>
+      !identical(oldClipper.pathData, pathData);
 }
 
 /// Android / iOS < 26 fallback: magnification + glass overlay.

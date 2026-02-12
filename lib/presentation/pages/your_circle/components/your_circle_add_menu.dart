@@ -2,8 +2,8 @@ import 'dart:math' as math;
 
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
-import 'package:cloudless/presentation/pages/invite_to_circle/invite_to_circle_routable.dart';
 import 'package:cloudless/presentation/pages/join_circle/join_circle_routable.dart';
+import 'package:cloudless/presentation/pages/your_circle/components/invite_card_popup.dart';
 import 'package:cloudless/presentation/pages/your_circle/your_circle_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
@@ -167,7 +167,7 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
 
   void _onUpTap() {
     _toggle();
-    router.push(const InviteToCircleRoutable());
+    showInviteCardPopup(context);
   }
 
   void _onDownTap() {
@@ -191,22 +191,54 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
           _rotationAnim.value,
         );
 
+        // Full height so arrows stay within Stack bounds for hit testing.
+        final fullHeight = slot2Offset + arrowHeight;
+
         return SizedBox(
           width: addButtonSize,
+          height: fullHeight,
           child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
+            alignment: Alignment.bottomCenter,
             children: [
               // Up arrow (invite) — furthest above the plus
               Positioned(
+                left: (addButtonSize - arrowWidth) / 2,
                 bottom: _firstArrowAnim.value * slot2Offset,
-                child: Opacity(
-                  opacity: _firstArrowAnim.value,
-                  child: GestureDetector(
-                    onTap: _onUpTap,
-                    child: Transform(
-                      alignment: Alignment.center,
-                      transform: Matrix4.diagonal3Values(1.0, -1.0, 1.0),
+                child: IgnorePointer(
+                  ignoring: !_expanded,
+                  child: Opacity(
+                    opacity: _firstArrowAnim.value,
+                    child: GestureDetector(
+                      onTap: _onUpTap,
+                      child: Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.diagonal3Values(1.0, -1.0, 1.0),
+                        child: SizedBox(
+                          width: arrowWidth,
+                          height: arrowHeight,
+                          child: AppGlassContainer(
+                            config: const GlassConfig(
+                              tint: MainColors.accent,
+                              pathData: _kArrowDownPathData,
+                            ),
+                            child: const SizedBox.expand(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Down arrow (join) — directly above the plus
+              Positioned(
+                left: (addButtonSize - arrowWidth) / 2,
+                bottom: _secondArrowAnim.value * slot1Offset,
+                child: IgnorePointer(
+                  ignoring: !_expanded,
+                  child: Opacity(
+                    opacity: _secondArrowAnim.value,
+                    child: GestureDetector(
+                      onTap: _onDownTap,
                       child: SizedBox(
                         width: arrowWidth,
                         height: arrowHeight,
@@ -217,27 +249,6 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
                           ),
                           child: const SizedBox.expand(),
                         ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // Down arrow (join) — directly above the plus
-              Positioned(
-                bottom: _secondArrowAnim.value * slot1Offset,
-                child: Opacity(
-                  opacity: _secondArrowAnim.value,
-                  child: GestureDetector(
-                    onTap: _onDownTap,
-                    child: SizedBox(
-                      width: arrowWidth,
-                      height: arrowHeight,
-                      child: AppGlassContainer(
-                        config: const GlassConfig(
-                          tint: MainColors.accent,
-                          pathData: _kArrowDownPathData,
-                        ),
-                        child: const SizedBox.expand(),
                       ),
                     ),
                   ),

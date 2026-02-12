@@ -50,7 +50,7 @@ class YourCircleFriendTile extends StatelessWidget
           height: friendTileHeight,
           child: Row(
             children: [
-              SizedBox(width: friendTileLeftIndent),
+              SizedBox(width: MediaQuery.of(context).size.width * 0.10),
               _Avatar(
                 url: profile.avatarUrl,
                 username: profile.username,
@@ -71,7 +71,9 @@ class YourCircleFriendTile extends StatelessWidget
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(right: friendChevronRightPad),
+                padding: EdgeInsets.only(
+                  right: MediaQuery.of(context).size.width * 0.10,
+                ),
                 child: Text(
                   '>',
                   style: TextStyle(

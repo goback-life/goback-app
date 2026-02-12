@@ -3,6 +3,7 @@ import 'package:cloudless/core/features/time_limit/domain/providers/time_limit_t
 import 'package:cloudless/presentation/components/nav_overlay/nav_overlay.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Wraps the entire app to detect long-press anywhere and show [NavOverlay].
 ///
@@ -32,7 +33,10 @@ class NavOverlayWrapper extends HookConsumerWidget {
       behavior: HitTestBehavior.translucent,
       onLongPressStart: isBlocked || isOverlayVisible.value
           ? null
-          : (_) => isOverlayVisible.value = true,
+          : (_) {
+              HapticFeedback.heavyImpact();
+              isOverlayVisible.value = true;
+            },
       child: Stack(
         children: [
           child,
