@@ -28,13 +28,6 @@ mixin HomeLayout on MainLayout {
   double get dateBadgeVerticalPadding => 2.0;
   double get dateBadgeBorderRadius => 20.0;
 
-  // Time Limit Toggle
-  double get timeLimitToggleContainerPadding => 2.0;
-  double get timeLimitToggleContainerBorderRadius => 100.0;
-  double get timeLimitToggleItemHorizontalPadding => 6.0;
-  double get timeLimitToggleItemVerticalPadding => 2.0;
-  double get timeLimitToggleItemBorderRadius => 100.0;
-
   // Navigation Bar
   double get navBarHeight => 60.0;
   double get logoWidth => 120.0;

@@ -17,7 +17,6 @@ import 'package:cloudless/presentation/pages/publish_content/publish_content_rou
 import 'package:cloudless/presentation/pages/review_circle/review_circle_routable.dart';
 import 'package:cloudless/presentation/pages/settings/settings_routable.dart';
 import 'package:cloudless/presentation/pages/sign_in/sign_in_routable.dart';
-import 'package:cloudless/presentation/pages/time_limit_reached/time_limit_reached_routable.dart';
 import 'package:cloudless/presentation/pages/your_circle/your_circle_routable.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 
@@ -38,7 +37,6 @@ final List<BaseRoutable> routes = [
   const ReviewCircleRoutable(),
   const ContentEditorRoutable(),
   const PublishContentRoutable(),
-  const TimeLimitReachedRoutable(),
   const ManualLockoutRoutable(),
   const LockoutCompleteRoutable(lockoutSessionId: ''),
   const NotificationsRoutable(),

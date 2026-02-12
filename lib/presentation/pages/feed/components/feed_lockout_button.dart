@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
-import 'package:cloudless/core/features/time_limit/domain/providers/time_limit_tracker_notifier_provider.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/home/components/manual_lockout_dialog.dart';
@@ -42,14 +41,6 @@ class FeedLockoutButton extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final screenWidth = MediaQuery.of(context).size.width;
     final s = screenWidth / 402.0;
-
-    final timeLimitAsync = ref.watch(timeLimitTrackerNotifierProvider);
-    final isDailyLimitReached = timeLimitAsync.whenOrNull(
-          data: (tl) => tl.isLimitReached,
-        ) ??
-        false;
-
-    if (isDailyLimitReached) return const SizedBox.shrink();
 
     // Match SVG viewBox proportions (86x102)
     final btnWidth = 86 * s;
@@ -155,7 +146,6 @@ class FeedLockoutButton extends HookConsumerWidget {
         result.duration,
         actionText: result.actionText,
       );
-      ref.invalidate(timeLimitTrackerNotifierProvider);
       if (context.mounted) {
         router.go(const ManualLockoutRoutable());
       }

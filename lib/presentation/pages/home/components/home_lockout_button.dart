@@ -1,6 +1,5 @@
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
-import 'package:cloudless/core/features/time_limit/domain/providers/time_limit_tracker_notifier_provider.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/pages/home/components/manual_lockout_dialog.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
@@ -19,18 +18,6 @@ class HomeLockoutButton extends HookConsumerWidget
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-
-    // Check if daily time limit is reached - only show button if NOT reached
-    final timeLimitAsync = ref.watch(timeLimitTrackerNotifierProvider);
-    final isDailyLimitReached = timeLimitAsync.whenOrNull(
-          data: (timeLimit) => timeLimit.isLimitReached,
-        ) ??
-        false;
-
-    // Don't show button if daily limit is reached
-    if (isDailyLimitReached) {
-      return const SizedBox.shrink();
-    }
 
     return GestureDetector(
       onTap: () async {
@@ -51,9 +38,6 @@ class HomeLockoutButton extends HookConsumerWidget
             result.duration,
             actionText: result.actionText,
           );
-
-          // Stop time tracking (will be checked on next build)
-          ref.invalidate(timeLimitTrackerNotifierProvider);
 
           // Navigate to lockout screen
           if (context.mounted) {

@@ -1,4 +1,3 @@
-import 'package:cloudless/core/config/time_limit_values.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 import 'package:styled_text/styled_text.dart';
@@ -13,13 +12,7 @@ class ObjectiveDescription extends StatelessWidget {
     final textTheme = theme.textTheme;
 
     return StyledText(
-      text: translator.translate(
-        'pages.objective.description',
-        arguments: {
-          'shortMinutes': TimeLimitValues.getShortMinutes().toString(),
-          'longMinutes': TimeLimitValues.getLongMinutes().toString(),
-        },
-      ),
+      text: translator.translate('pages.objective.description'),
       textAlign: TextAlign.start,
       style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
       tags: {

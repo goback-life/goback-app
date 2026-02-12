@@ -1,8 +1,7 @@
 import 'package:cloudless/core/features/auth/domain/middlewares/auth_navigation_flow_middleware.dart';
-import 'package:cloudless/core/features/time_limit/domain/middlewares/time_limit_middleware.dart';
 import 'package:cloudless/presentation/components/goback_logo.dart';
 import 'package:cloudless/presentation/components/nav_overlay/nav_overlay_wrapper.dart';
-import 'package:cloudless/presentation/components/time_limit_listener_widget.dart';
+import 'package:cloudless/presentation/components/lockout_listener_widget.dart';
 import 'package:cloudless/presentation/routes.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/main_theme.dart';
@@ -16,7 +15,7 @@ StartupConfig get startupConfig {
     initialTheme: MainTheme(),
     routes: routes,
     localizationsDelegates: [...PhoneFieldLocalization.delegates],
-    middlewares: [AuthNavigationFlowMiddleware(), TimeLimitMiddleware()],
+    middlewares: [AuthNavigationFlowMiddleware()],
     errorPage: const ColoredBox(color: MainColors.dark),
     loadingPage: MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -35,7 +34,7 @@ StartupConfig get startupConfig {
       ),
     ),
     appBuilder: (context, child) => NavOverlayWrapper(
-      child: TimeLimitListenerWidget(child: child),
+      child: LockoutListenerWidget(child: child),
     ),
   );
 }

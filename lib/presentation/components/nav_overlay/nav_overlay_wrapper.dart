@@ -1,7 +1,6 @@
 import 'package:cloudless/core/features/auth/domain/providers/is_authenticated_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/profile/data/storables/profile_completed_storable.dart';
-import 'package:cloudless/core/features/time_limit/domain/providers/time_limit_tracker_notifier_provider.dart';
 import 'package:cloudless/presentation/components/nav_overlay/nav_overlay.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
@@ -34,12 +33,10 @@ class NavOverlayWrapper extends HookConsumerWidget {
     final hasCompletedSignup =
         isAuthenticated && (profileSnapshot.data ?? false);
 
-    // Check lockout / time-limit state to disable overlay.
+    // Check lockout state to disable overlay.
     final lockoutAsync = ref.watch(manualLockoutNotifierProvider);
-    final timeLimitAsync = ref.watch(timeLimitTrackerNotifierProvider);
     final isBlocked = !hasCompletedSignup ||
-        lockoutAsync.valueOrNull?.isLockedOut == true ||
-        timeLimitAsync.valueOrNull?.isLimitReached == true;
+        lockoutAsync.valueOrNull?.isLockedOut == true;
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,

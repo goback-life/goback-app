@@ -4,7 +4,6 @@ import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/goback_logo.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/components/profile_image/profile_image.dart';
-import 'package:cloudless/presentation/pages/home/components/home_time_limit_toggle.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
 import 'package:cloudless/presentation/pages/friends_locked_out/friends_locked_out_routable.dart';
 import 'package:cloudless/presentation/pages/notifications/notifications_routable.dart';
@@ -32,7 +31,6 @@ class HomeNavigationBar extends HookConsumerWidget
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: Row(
         children: [
-          const HomeTimeLimitToggle(),
           const Spacer(),
           GestureDetector(
             onTap: () => router.push(

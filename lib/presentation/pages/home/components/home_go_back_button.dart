@@ -1,6 +1,5 @@
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_manual_lockout_post.dart';
-import 'package:cloudless/core/features/time_limit/domain/providers/time_limit_tracker_notifier_provider.dart';
 import 'package:cloudless/presentation/pages/home/components/manual_lockout_dialog.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
@@ -18,18 +17,6 @@ class HomeGoBackButton extends HookConsumerWidget
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-
-    // Check if daily time limit is reached - only show button if NOT reached
-    final timeLimitAsync = ref.watch(timeLimitTrackerNotifierProvider);
-    final isDailyLimitReached = timeLimitAsync.whenOrNull(
-          data: (timeLimit) => timeLimit.isLimitReached,
-        ) ??
-        false;
-
-    // Don't show button if daily limit is reached
-    if (isDailyLimitReached) {
-      return const SizedBox.shrink();
-    }
 
     return GestureDetector(
       onTap: () async {
@@ -57,9 +44,6 @@ class HomeGoBackButton extends HookConsumerWidget
           // Set lockout
           final lockoutNotifier = ref.read(manualLockoutNotifierProvider.notifier);
           await lockoutNotifier.setLockout(duration);
-
-          // Stop time tracking (will be checked on next build)
-          ref.invalidate(timeLimitTrackerNotifierProvider);
 
           // Navigate to lockout screen
           if (context.mounted) {
