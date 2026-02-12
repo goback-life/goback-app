@@ -1,3 +1,4 @@
+import 'package:cloudless/presentation/pages/camera_capture/camera_capture_routable.dart';
 import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
 import 'package:cloudless/presentation/pages/content_editor/content_editor_routable.dart';
 import 'package:cloudless/presentation/pages/create_profile/create_profile_routable.dart';
@@ -43,4 +44,5 @@ final List<BaseRoutable> routes = [
   const LockoutCompleteRoutable(lockoutSessionId: ''),
   const NotificationsRoutable(),
   const FriendsLockedOutRoutable(),
+  const CameraCaptureRoutable(),
 ];

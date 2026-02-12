@@ -4,8 +4,8 @@ import 'package:cloudless/core/features/lockout/data/providers/lockout_session_s
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout_post_provider.dart';
-import 'package:cloudless/core/features/post/domain/hooks/use_post_creation_initialization.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
+import 'package:cloudless/presentation/pages/camera_capture/camera_capture_routable.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/lockout_friends_overlay.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
@@ -50,12 +50,6 @@ class ManualLockoutView extends HookConsumerWidget {
       Tween<double>(begin: 0.0, end: 1.0).animate(
         CurvedAnimation(parent: textFadeCtrl, curve: Curves.easeIn),
       ),
-    );
-
-    // Post creation hook for share flow
-    final postCreationInit = usePostCreationInitialization(
-      ref,
-      skipContentTypePicker: true,
     );
 
     // Fetch session ID on mount
@@ -143,8 +137,7 @@ class ManualLockoutView extends HookConsumerWidget {
           if (isLockoutComplete.value && completionTextOpacity > 0)
             _CompletionTapTargets(
               opacity: completionTextOpacity,
-              onShare: () =>
-                  _handleShare(ref, sessionId.value, postCreationInit),
+              onShare: () => _handleShare(ref, sessionId.value),
               onSkip: () => _handleSkip(ref, sessionId.value),
             ),
 
@@ -164,17 +157,13 @@ class ManualLockoutView extends HookConsumerWidget {
     return '$hours:${minutes.toString().padLeft(2, '0')}';
   }
 
-  void _handleShare(
-    WidgetRef ref,
-    String lockoutSessionId,
-    PostCreationInitializationResult postCreationInit,
-  ) {
+  void _handleShare(WidgetRef ref, String lockoutSessionId) {
     if (lockoutSessionId.isNotEmpty) {
       ref
           .read(pendingLockoutPostProvider.notifier)
           .setLockoutId(lockoutSessionId);
     }
-    postCreationInit.selectMainImage();
+    router.push(const CameraCaptureRoutable());
   }
 
   Future<void> _handleSkip(WidgetRef ref, String lockoutSessionId) async {
@@ -282,13 +271,14 @@ class _CutoutPainter extends CustomPainter {
 
     // 2. Punch timer text hole using dstOut foreground paint
     if (countdown.isNotEmpty) {
-      final timerFontSize = size.width * 0.58;
+      final timerFontSize = size.width * 0.78;
       final tp = TextPainter(
         text: TextSpan(
           text: countdown,
           style: TextStyle(
             fontFamily: MainFontFamilies.lilitaOne,
             fontSize: timerFontSize,
+            letterSpacing: -timerFontSize * 0.06,
             height: 1.0,
             foreground: _holePaint(),
           ),
@@ -296,8 +286,8 @@ class _CutoutPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       )..layout();
 
-      // Scale down if text exceeds 95% of screen width
-      final maxW = size.width * 0.95;
+      // Scale down if text exceeds 98% of screen width
+      final maxW = size.width * 0.98;
       final scale = tp.width > maxW ? maxW / tp.width : 1.0;
       final timerY = size.height * 0.35;
       final timerX = (size.width - tp.width * scale) / 2;
