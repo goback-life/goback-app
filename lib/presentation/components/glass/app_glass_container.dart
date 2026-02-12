@@ -163,7 +163,10 @@ class _ShaderGlass extends StatelessWidget {
         children: [
           Positioned.fill(
             child: CustomPaint(
-              painter: _RoundedGlassOverlay(cornerRadius: radius),
+              painter: _RoundedGlassOverlay(
+                cornerRadius: radius,
+                tint: config.tint,
+              ),
             ),
           ),
           child,
@@ -201,9 +204,10 @@ class _ShaderGlass extends StatelessWidget {
 /// Glass overlay for rounded rectangles: tint, gradient, inner shadow,
 /// and NW directional edge highlights.
 class _RoundedGlassOverlay extends CustomPainter {
-  _RoundedGlassOverlay({required this.cornerRadius});
+  _RoundedGlassOverlay({required this.cornerRadius, this.tint});
 
   final double cornerRadius;
+  final Color? tint;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -213,10 +217,18 @@ class _RoundedGlassOverlay extends CustomPainter {
     );
     final bounds = Offset.zero & size;
 
+    // 0. Tint fill — colored glass when a tint is specified
+    if (tint != null) {
+      canvas.drawRRect(
+        rrect,
+        Paint()..color = tint!.withValues(alpha: 0.12),
+      );
+    }
+
     // 1. Light tint — bright and clear like water
     canvas.drawRRect(
       rrect,
-      Paint()..color = Colors.white.withValues(alpha: 0.10),
+      Paint()..color = Colors.white.withValues(alpha: 0.15),
     );
 
     // -- Clipped interior --
@@ -230,8 +242,8 @@ class _RoundedGlassOverlay extends CustomPainter {
           bounds.topLeft,
           bounds.bottomRight,
           [
-            Colors.white.withValues(alpha: 0.10),
-            Colors.white.withValues(alpha: 0.03),
+            Colors.white.withValues(alpha: 0.15),
+            Colors.white.withValues(alpha: 0.05),
           ],
         ),
     );
@@ -246,7 +258,7 @@ class _RoundedGlassOverlay extends CustomPainter {
         ..shader = ui.Gradient.linear(
           bounds.topLeft,
           bounds.bottomRight,
-          [Colors.transparent, Colors.white.withValues(alpha: 0.08)],
+          [Colors.transparent, Colors.white.withValues(alpha: 0.15)],
         ),
     );
 
@@ -262,8 +274,8 @@ class _RoundedGlassOverlay extends CustomPainter {
           bounds.topLeft,
           bounds.bottomRight,
           [
-            Colors.white.withValues(alpha: 0.70),
-            Colors.white.withValues(alpha: 0.15),
+            Colors.white.withValues(alpha: 0.85),
+            Colors.white.withValues(alpha: 0.25),
             Colors.transparent,
           ],
           [0.0, 0.45, 0.75],
@@ -273,5 +285,5 @@ class _RoundedGlassOverlay extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _RoundedGlassOverlay old) =>
-      old.cornerRadius != cornerRadius;
+      old.cornerRadius != cornerRadius || old.tint != tint;
 }

@@ -2,8 +2,8 @@ import 'dart:math' as math;
 
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
-import 'package:cloudless/presentation/pages/join_circle/join_circle_routable.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/invite_card_popup.dart';
+import 'package:cloudless/presentation/pages/your_circle/components/receive_code_card_popup.dart';
 import 'package:cloudless/presentation/pages/your_circle/your_circle_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
@@ -172,7 +172,7 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
 
   void _onDownTap() {
     _toggle();
-    router.push(const JoinCircleRoutable());
+    showReceiveCodeCardPopup(context);
   }
 
   @override
@@ -218,6 +218,7 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
                           height: arrowHeight,
                           child: AppGlassContainer(
                             config: const GlassConfig(
+                              variant: GlassVariant.clear,
                               tint: MainColors.accent,
                               pathData: _kArrowDownPathData,
                             ),
@@ -262,6 +263,7 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
                   height: addButtonSize,
                   child: AppGlassContainer(
                     config: GlassConfig(
+                      variant: GlassVariant.clear,
                       tint: MainColors.accent,
                       pathData: rotatedPlusPath,
                     ),

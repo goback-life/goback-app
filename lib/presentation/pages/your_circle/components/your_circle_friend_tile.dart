@@ -13,14 +13,80 @@ class YourCircleFriendTile extends StatelessWidget
     required this.profile,
     required this.onTap,
     required this.onSwipeDelete,
+    this.isRemoveMode = false,
+    this.isSelected = false,
+    this.onToggle,
   });
 
   final ProfileModel profile;
   final VoidCallback onTap;
   final VoidCallback onSwipeDelete;
+  final bool isRemoveMode;
+  final bool isSelected;
+  final VoidCallback? onToggle;
 
   @override
   Widget build(BuildContext context) {
+    final tile = GestureDetector(
+      onTap: isRemoveMode ? onToggle : onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        height: friendTileHeight,
+        child: Row(
+          children: [
+            SizedBox(width: MediaQuery.of(context).size.width * 0.10),
+            _Avatar(
+              url: profile.avatarUrl,
+              username: profile.username,
+              size: friendAvatarSize,
+            ),
+            SizedBox(width: friendAvatarToText),
+            Expanded(
+              child: Text(
+                profile.username,
+                style: TextStyle(
+                  fontFamily: MainFontFamilies.quicksand,
+                  fontWeight: FontWeight.w500,
+                  fontSize: friendTextSize,
+                  color: MainColors.white,
+                  letterSpacing: friendLetterSpacing,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(
+                right: MediaQuery.of(context).size.width * 0.10,
+              ),
+              child: SizedBox(
+                width: addButtonSize,
+                child: Center(
+                  child: isRemoveMode
+                      ? _Checkbox(
+                          isSelected: isSelected,
+                          size: checkboxSize,
+                          radius: checkboxRadius,
+                        )
+                      : Text(
+                          '>',
+                          style: TextStyle(
+                            fontFamily: MainFontFamilies.quicksand,
+                            fontWeight: FontWeight.w500,
+                            fontSize: friendTextSize,
+                            color: MainColors.white,
+                            letterSpacing: friendLetterSpacing,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (isRemoveMode) return tile;
+
     return Dismissible(
       key: ValueKey(profile.id),
       direction: DismissDirection.endToStart,
@@ -32,63 +98,9 @@ class YourCircleFriendTile extends StatelessWidget
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
-        color: MainColors.dark,
-        child: Container(
-          width: 60,
-          height: friendTileHeight,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE13748),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(Icons.close, color: MainColors.white, size: 20),
-        ),
+        child: const Icon(Icons.close, color: MainColors.white, size: 20),
       ),
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: SizedBox(
-          height: friendTileHeight,
-          child: Row(
-            children: [
-              SizedBox(width: MediaQuery.of(context).size.width * 0.10),
-              _Avatar(
-                url: profile.avatarUrl,
-                username: profile.username,
-                size: friendAvatarSize,
-              ),
-              SizedBox(width: friendAvatarToText),
-              Expanded(
-                child: Text(
-                  profile.username,
-                  style: TextStyle(
-                    fontFamily: MainFontFamilies.quicksand,
-                    fontWeight: FontWeight.w500,
-                    fontSize: friendTextSize,
-                    color: MainColors.white,
-                    letterSpacing: friendLetterSpacing,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(
-                  right: MediaQuery.of(context).size.width * 0.10,
-                ),
-                child: Text(
-                  '>',
-                  style: TextStyle(
-                    fontFamily: MainFontFamilies.quicksand,
-                    fontWeight: FontWeight.w500,
-                    fontSize: friendTextSize,
-                    color: MainColors.white,
-                    letterSpacing: friendLetterSpacing,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      child: tile,
     );
   }
 }
@@ -142,6 +154,38 @@ class _Avatar extends StatelessWidget {
             fontSize: size * 0.4,
             color: MainColors.white,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Squircle checkbox for remove mode.
+class _Checkbox extends StatelessWidget {
+  const _Checkbox({
+    required this.isSelected,
+    required this.size,
+    required this.radius,
+  });
+
+  final bool isSelected;
+  final double size;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: isSelected ? MainColors.accent : Colors.transparent,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(
+          color: isSelected
+              ? MainColors.accent
+              : MainColors.white.withValues(alpha: 0.4),
+          width: 1.5,
         ),
       ),
     );

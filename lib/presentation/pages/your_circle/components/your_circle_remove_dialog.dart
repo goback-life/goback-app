@@ -15,7 +15,7 @@ Future<bool> showRemoveFriendDialog({
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Dismiss',
-    barrierColor: Colors.black54,
+    barrierColor: Colors.transparent,
     pageBuilder: (_, __, ___) => _RemoveDialogContent(username: username),
   );
   return result ?? false;
@@ -64,24 +64,23 @@ class _RemoveDialogContent extends StatelessWidget {
                         Expanded(
                           child: GestureDetector(
                             onTap: () => Navigator.of(context).pop(false),
-                            child: Container(
+                            child: SizedBox(
                               height: 44,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(22),
-                                border: Border.all(
-                                  color: MainColors.white.withValues(
-                                    alpha: 0.3,
-                                  ),
+                              child: AppGlassContainer(
+                                config: const GlassConfig(
+                                  tint: MainColors.accent,
+                                  cornerRadius: 22,
                                 ),
-                              ),
-                              alignment: Alignment.center,
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  fontFamily: MainFontFamilies.quicksand,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                  color: MainColors.white,
+                                child: const Center(
+                                  child: Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontFamily: MainFontFamilies.quicksand,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      color: MainColors.white,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -91,20 +90,23 @@ class _RemoveDialogContent extends StatelessWidget {
                         Expanded(
                           child: GestureDetector(
                             onTap: () => Navigator.of(context).pop(true),
-                            child: Container(
+                            child: SizedBox(
                               height: 44,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(22),
-                                color: const Color(0xFFE13748),
-                              ),
-                              alignment: Alignment.center,
-                              child: const Text(
-                                'Remove',
-                                style: TextStyle(
-                                  fontFamily: MainFontFamilies.quicksand,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                  color: MainColors.white,
+                              child: AppGlassContainer(
+                                config: const GlassConfig(
+                                  tint: MainColors.accent,
+                                  cornerRadius: 22,
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    'Remove',
+                                    style: TextStyle(
+                                      fontFamily: MainFontFamilies.quicksand,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      color: MainColors.white,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),

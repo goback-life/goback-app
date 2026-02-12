@@ -30,4 +30,10 @@ mixin YourCircleLayout on MainLayout {
 
   // Swipe
   double get swipeDeleteThreshold => 0.3;
+
+  // Remove mode
+  double get removeButtonWidth => 318.0;
+  double get removeButtonHeight => 51.0;
+  double get checkboxSize => 18.0;
+  double get checkboxRadius => 5.0;
 }

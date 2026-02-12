@@ -1,7 +1,9 @@
 import 'package:cloudless/core/features/connection/domain/hooks/use_circle_members.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_remove_connection.dart';
-import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
+import 'package:cloudless/core/models/profile_model.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/main_data_loader.dart';
 import 'package:cloudless/presentation/components/main_empty_state.dart';
 import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
@@ -10,10 +12,17 @@ import 'package:cloudless/presentation/pages/your_circle/components/your_circle_
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_remove_dialog.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_search_pill.dart';
 import 'package:cloudless/presentation/pages/your_circle/your_circle_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
+import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
+import 'package:dedecube_storage/dedecube_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+const _kMaxCircleSize = 150;
+const _kFullAlertKey = 'circle_full_alert_shown';
 
 class YourCircleView extends HookConsumerWidget
     with MainLayout, YourCircleLayout {
@@ -29,6 +38,24 @@ class YourCircleView extends HookConsumerWidget
     final bottomPad = mq.padding.bottom;
     final topPad = mq.padding.top;
     final sidePad = mq.size.width * 0.10;
+
+    final removeMode = useState(false);
+    final selectedIds = useState(<String>{});
+    final isFull = circleMembersData.allUsers.length >= _kMaxCircleSize;
+
+    // One-time circle full alert.
+    useEffect(() {
+      if (!isFull) return null;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!context.mounted) return;
+        final shown = await simpleStorage.getBool(_kFullAlertKey, false);
+        if (shown) return;
+        await simpleStorage.setBool(_kFullAlertKey, true);
+        if (!context.mounted) return;
+        _showCircleFullAlert(context);
+      });
+      return null;
+    }, [isFull]);
 
     return MainDataLoader(
       provider: asyncValue,
@@ -49,7 +76,12 @@ class YourCircleView extends HookConsumerWidget
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: EdgeInsets.only(
-                  bottom: searchPillHeight + bottomBarBottomPadding + bottomPad + 24,
+                  bottom: (removeMode.value
+                          ? removeButtonHeight
+                          : searchPillHeight) +
+                      bottomBarBottomPadding +
+                      bottomPad +
+                      24,
                   top: topPad + 16,
                 ),
                 itemCount: members.length,
@@ -57,6 +89,8 @@ class YourCircleView extends HookConsumerWidget
                   final profile = members[index];
                   return YourCircleFriendTile(
                     profile: profile,
+                    isRemoveMode: removeMode.value,
+                    isSelected: selectedIds.value.contains(profile.id),
                     onTap: () => router.push(
                       CircleProfileRoutable(userId: profile.id),
                     ),
@@ -67,6 +101,15 @@ class YourCircleView extends HookConsumerWidget
                       removeConnection,
                       ref,
                     ),
+                    onToggle: () {
+                      final ids = Set<String>.from(selectedIds.value);
+                      if (ids.contains(profile.id)) {
+                        ids.remove(profile.id);
+                      } else {
+                        ids.add(profile.id);
+                      }
+                      selectedIds.value = ids;
+                    },
                   );
                 },
               ),
@@ -76,18 +119,49 @@ class YourCircleView extends HookConsumerWidget
               left: sidePad,
               right: sidePad,
               bottom: bottomPad + bottomBarBottomPadding,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  YourCircleSearchPill(
-                    searchQuery: circleMembersData.searchQuery,
-                    onSearchChanged: circleMembersData.updateSearchQuery,
-                    controller: searchController,
-                  ),
-                  const Spacer(),
-                  const YourCircleAddMenu(),
-                ],
-              ),
+              child: removeMode.value
+                  ? _RemoveBar(
+                      selectedCount: selectedIds.value.length,
+                      onRemove: () => _batchRemove(
+                        context,
+                        selectedIds,
+                        removeMode,
+                        removeConnection,
+                        ref,
+                      ),
+                      onCancel: () {
+                        removeMode.value = false;
+                        selectedIds.value = {};
+                      },
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        YourCircleSearchPill(
+                          searchQuery: circleMembersData.searchQuery,
+                          onSearchChanged:
+                              circleMembersData.updateSearchQuery,
+                          controller: searchController,
+                        ),
+                        const Spacer(),
+                        if (isFull)
+                          SizedBox(
+                            height: searchPillHeight,
+                            child: Center(
+                              child: _MinusPill(
+                                onTap: () {
+                                  removeMode.value = true;
+                                  selectedIds.value = {};
+                                  circleMembersData.updateSearchQuery('');
+                                  searchController.clear();
+                                },
+                              ),
+                            ),
+                          )
+                        else
+                          const YourCircleAddMenu(),
+                      ],
+                    ),
             ),
           ],
         );
@@ -95,7 +169,6 @@ class YourCircleView extends HookConsumerWidget
     );
   }
 
-  /// Flattens grouped members into a single sorted list.
   List<ProfileModel> _flatMembers(CircleMembersData data) {
     final flat = <ProfileModel>[];
     for (final profiles in data.groupedMembers.values) {
@@ -119,5 +192,196 @@ class YourCircleView extends HookConsumerWidget
 
     await removeConnection(userId);
     ref.invalidate(getCircleMembersProvider);
+  }
+
+  Future<void> _batchRemove(
+    BuildContext context,
+    ValueNotifier<Set<String>> selectedIds,
+    ValueNotifier<bool> removeMode,
+    RemoveConnectionCallback removeConnection,
+    WidgetRef ref,
+  ) async {
+    final count = selectedIds.value.length;
+    final confirmed = await showRemoveFriendDialog(
+      context: context,
+      username: '$count connection${count > 1 ? 's' : ''}',
+    );
+    if (!confirmed) return;
+
+    HapticFeedback.mediumImpact();
+    for (final id in selectedIds.value) {
+      await removeConnection(id);
+    }
+    selectedIds.value = {};
+    removeMode.value = false;
+    ref.invalidate(getCircleMembersProvider);
+  }
+
+  Future<void> _showCircleFullAlert(BuildContext context) {
+    return showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 250),
+      transitionBuilder: (ctx, anim, _, child) =>
+          FadeTransition(opacity: anim, child: child),
+      pageBuilder: (ctx, _, __) => Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: SizedBox(
+            width: double.infinity,
+            child: AppGlassContainer(
+              config: const GlassConfig(
+                tint: MainColors.accent,
+                cornerRadius: 24,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 28,
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Your circle is full!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: MainFontFamilies.quicksand,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 22,
+                          color: MainColors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'You\'ve reached the maximum of '
+                        '$_kMaxCircleSize connections.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: MainFontFamilies.quicksand,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 16,
+                          color: MainColors.white.withValues(alpha: 0.7),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      GestureDetector(
+                        onTap: () => Navigator.of(ctx).pop(),
+                        child: SizedBox(
+                          width: 120,
+                          height: 44,
+                          child: AppGlassContainer(
+                            config: const GlassConfig(
+                              tint: MainColors.accent,
+                              cornerRadius: 22,
+                            ),
+                            child: const Center(
+                              child: Text(
+                                'Got it',
+                                style: TextStyle(
+                                  fontFamily: MainFontFamilies.quicksand,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                  color: MainColors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Minus pill — replaces plus button when circle is at capacity
+// ---------------------------------------------------------------------------
+
+class _MinusPill extends StatelessWidget with MainLayout, YourCircleLayout {
+  const _MinusPill({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: addButtonSize,
+        height: 16,
+        child: AppGlassContainer(
+          config: const GlassConfig(
+            variant: GlassVariant.clear,
+            tint: MainColors.accent,
+            cornerRadius: 8,
+          ),
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Remove bar — bottom bar in remove mode
+// ---------------------------------------------------------------------------
+
+class _RemoveBar extends StatelessWidget with MainLayout, YourCircleLayout {
+  const _RemoveBar({
+    required this.selectedCount,
+    required this.onRemove,
+    required this.onCancel,
+  });
+
+  final int selectedCount;
+  final VoidCallback onRemove;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final canRemove = selectedCount > 0;
+    return Center(
+      child: GestureDetector(
+        onTap: canRemove ? onRemove : onCancel,
+        child: AnimatedOpacity(
+          opacity: canRemove ? 1.0 : 0.4,
+          duration: const Duration(milliseconds: 200),
+          child: SizedBox(
+            width: removeButtonWidth,
+            height: removeButtonHeight,
+            child: AppGlassContainer(
+              config: const GlassConfig(
+                tint: MainColors.accent,
+                cornerRadius: 47,
+              ),
+              child: const Center(
+                child: Text(
+                  'Remove connections',
+                  style: TextStyle(
+                    fontFamily: MainFontFamilies.quicksand,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 27,
+                    color: MainColors.white,
+                    letterSpacing: -1.62,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
