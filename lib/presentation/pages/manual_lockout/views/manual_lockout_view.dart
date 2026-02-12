@@ -1,123 +1,159 @@
 import 'dart:async';
 
+import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
+import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout_post_provider.dart';
+import 'package:cloudless/core/features/post/domain/hooks/use_post_creation_initialization.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
-import 'package:cloudless/presentation/components/background_image.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
-import 'package:cloudless/presentation/pages/lockout_complete/lockout_complete_routable.dart';
-import 'package:cloudless/presentation/pages/manual_lockout/components/friends_locked_out_list.dart';
-import 'package:cloudless/presentation/pages/manual_lockout/components/manual_lockout_exit_button.dart';
-import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_layout.dart';
-import 'package:cloudless/presentation/utilities/main_layout.dart';
+import 'package:cloudless/presentation/pages/manual_lockout/components/lockout_friends_overlay.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
+import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
-class ManualLockoutView extends HookConsumerWidget
-    with MainLayout, ManualLockoutLayout {
+/// Restyled lockout page with sky cutout effect.
+///
+/// Solid inverted background (dark in light mode, white in dark mode) with
+/// timer text and decorative triangle acting as cutout windows revealing the
+/// sky image beneath. When the timer reaches 0:00, transitions in-place to
+/// a share/skip prompt.
+class ManualLockoutView extends HookConsumerWidget {
   const ManualLockoutView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
+    final brightness = Theme.of(context).brightness;
+    final bgColor =
+        brightness == Brightness.dark ? MainColors.white : MainColors.dark;
 
     final lockoutStateAsync = ref.watch(manualLockoutNotifierProvider);
     final countdown = useState('');
-    final hasNavigated = useState(false);
+    final isLockoutComplete = useState(false);
+    final sessionId = useState<String>('');
 
+    // Animation controllers for lockout-end transition
+    final triangleFadeCtrl = useAnimationController(
+      duration: const Duration(milliseconds: 300),
+    );
+    final textFadeCtrl = useAnimationController(
+      duration: const Duration(milliseconds: 400),
+    );
+    final triangleOpacity = useAnimation(
+      Tween<double>(begin: 1.0, end: 0.0).animate(
+        CurvedAnimation(parent: triangleFadeCtrl, curve: Curves.easeOut),
+      ),
+    );
+    final completionTextOpacity = useAnimation(
+      Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(parent: textFadeCtrl, curve: Curves.easeIn),
+      ),
+    );
+
+    // Post creation hook for share flow
+    final postCreationInit = usePostCreationInitialization(
+      ref,
+      skipContentTypePicker: true,
+    );
+
+    // Fetch session ID on mount
+    useEffect(() {
+      ref.read(manualLockoutStorableProvider).getLockoutSessionId().then((id) {
+        sessionId.value = id ?? '';
+      });
+      return null;
+    }, const []);
+
+    // Friends overlay state
+    final showFriendsOverlay = useState(false);
+
+    // Timer logic
     useEffect(() {
       Timer? timer;
 
       lockoutStateAsync.whenData((lockoutState) {
-        if (!lockoutState.isLockedOut && !hasNavigated.value) {
-          // Lockout expired, navigate to lockout complete screen
-          hasNavigated.value = true;
-          _navigateToLockoutComplete(ref);
+        if (!lockoutState.isLockedOut && !isLockoutComplete.value) {
+          isLockoutComplete.value = true;
+          countdown.value = '0:00';
+          triangleFadeCtrl.forward().then((_) {
+            textFadeCtrl.forward();
+          });
           return;
         }
 
-        // Update countdown periodically
         timer?.cancel();
         timer = Timer.periodic(const Duration(seconds: 1), (_) {
-          ref.read(manualLockoutNotifierProvider.notifier).refresh().then((_) {
-            final updatedState = ref.read(manualLockoutNotifierProvider);
-            updatedState.whenData((state) {
+          ref
+              .read(manualLockoutNotifierProvider.notifier)
+              .refresh()
+              .then((_) {
+            final updated = ref.read(manualLockoutNotifierProvider);
+            updated.whenData((state) {
               if (state.isLockedOut && state.remainingDuration != null) {
                 countdown.value = _formatDuration(state.remainingDuration!);
-              } else if (!hasNavigated.value) {
-                // Lockout expired
-                hasNavigated.value = true;
-                _navigateToLockoutComplete(ref);
+              } else if (!isLockoutComplete.value) {
+                isLockoutComplete.value = true;
+                countdown.value = '0:00';
+                triangleFadeCtrl.forward().then((_) {
+                  textFadeCtrl.forward();
+                });
               }
             });
           });
         });
 
-        // Initial countdown
         if (lockoutState.remainingDuration != null) {
           countdown.value = _formatDuration(lockoutState.remainingDuration!);
         }
       });
 
-      return () {
-        timer?.cancel();
-      };
+      return () => timer?.cancel();
     }, [lockoutStateAsync]);
 
-    return BackgroundImage(
-      backgroundImage: Assets.png.backgroundGoback.provider(),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: const [0.0, 0.6],
-            colors: [
-              colorScheme.secondary.withValues(alpha: 0.6),
-              Colors.transparent,
-            ],
+    return GestureDetector(
+      onLongPress: () {
+        showFriendsOverlay.value = true;
+      },
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Layer 1: Sky image (full screen, revealed through cutouts)
+          Assets.png.backgroundGoback.render(
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
           ),
-        ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(height: topPadding),
-                  Text(
-                    translator.translate('pages.manual_lockout.title'),
-                    style: textTheme.displaySmall?.copyWith(
-                      color: colorScheme.surface,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 24),
-                  if (countdown.value.isNotEmpty)
-                    Text(
-                      countdown.value,
-                      style: textTheme.headlineLarge?.copyWith(
-                        color: colorScheme.surface,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  const Spacer(flex: 2),
-                  Assets.svg.logoApp.render(width: logoSize, height: logoSize),
-                  const Spacer(flex: 2),
-                  const FriendsLockedOutList(),
-                  const Spacer(flex: 1),
-                  const ManualLockoutExitButton(),
-                  SizedBox(height: buttonBottomPadding),
-                ],
+
+          // Layer 2: Solid bg with cutout holes painted via saveLayer
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _CutoutPainter(
+                bgColor: bgColor,
+                countdown: countdown.value,
+                triangleOpacity: triangleOpacity,
+                completionTextOpacity: completionTextOpacity,
+                isComplete: isLockoutComplete.value,
               ),
             ),
           ),
-        ),
+
+          // Layer 3: Invisible tap targets for share/skip (only during completion)
+          if (isLockoutComplete.value && completionTextOpacity > 0)
+            _CompletionTapTargets(
+              opacity: completionTextOpacity,
+              onShare: () =>
+                  _handleShare(ref, sessionId.value, postCreationInit),
+              onSkip: () => _handleSkip(ref, sessionId.value),
+            ),
+
+          // Friends overlay
+          if (showFriendsOverlay.value)
+            LockoutFriendsOverlay(
+              onDismiss: () => showFriendsOverlay.value = false,
+            ),
+        ],
       ),
     );
   }
@@ -125,26 +161,291 @@ class ManualLockoutView extends HookConsumerWidget
   String _formatDuration(Duration duration) {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
-
-    if (hours > 0) {
-      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    } else {
-      return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    }
+    return '$hours:${minutes.toString().padLeft(2, '0')}';
   }
 
-  Future<void> _navigateToLockoutComplete(WidgetRef ref) async {
+  void _handleShare(
+    WidgetRef ref,
+    String lockoutSessionId,
+    PostCreationInitializationResult postCreationInit,
+  ) {
+    if (lockoutSessionId.isNotEmpty) {
+      ref
+          .read(pendingLockoutPostProvider.notifier)
+          .setLockoutId(lockoutSessionId);
+    }
+    postCreationInit.selectMainImage();
+  }
+
+  Future<void> _handleSkip(WidgetRef ref, String lockoutSessionId) async {
     final storable = ref.read(manualLockoutStorableProvider);
-    final sessionId = await storable.getLockoutSessionId();
 
-    logger.info('Lockout complete - sessionId: $sessionId');
+    if (lockoutSessionId.isNotEmpty) {
+      final userStartedAt = await storable.getLockoutStart();
+      final sessionService = ref.read(lockoutSessionServiceProvider);
+      await sessionService.completeSessionWithoutPost(
+        lockoutSessionId,
+        userStartedAt: userStartedAt,
+      );
+    }
 
-    // Always navigate to lockout complete screen, even without sessionId
-    // User can still create a post, it just won't be linked to a session
-    final effectiveSessionId = sessionId ?? '';
-    logger.info('Navigating to LockoutComplete screen with sessionId: $effectiveSessionId');
-    router.go(LockoutCompleteRoutable(lockoutSessionId: effectiveSessionId));
+    await storable.clearLockout();
+    router.go(const HomeRoutable());
   }
 }
 
+/// Invisible positioned tap targets aligned with the painted share/skip text.
+class _CompletionTapTargets extends StatelessWidget {
+  const _CompletionTapTargets({
+    required this.opacity,
+    required this.onShare,
+    required this.onSkip,
+  });
+
+  final double opacity;
+  final VoidCallback onShare;
+  final VoidCallback onSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    // Must match _CutoutPainter layout exactly
+    final timerFontSize = screenSize.width * 0.58;
+    final timerY = screenSize.height * 0.35;
+    final shareY = timerY + timerFontSize + 24;
+    final skipY = shareY + 60 + 16;
+
+    return Stack(
+      children: [
+        Positioned(
+          top: shareY,
+          left: 0,
+          right: 0,
+          height: 60,
+          child: GestureDetector(
+            onTap: onShare,
+            behavior: HitTestBehavior.opaque,
+            child: const SizedBox.expand(),
+          ),
+        ),
+        Positioned(
+          top: skipY,
+          left: 0,
+          right: 0,
+          height: 36,
+          child: GestureDetector(
+            onTap: onSkip,
+            behavior: HitTestBehavior.opaque,
+            child: const SizedBox.expand(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Custom painter that draws a solid background with transparent cutouts
+/// for the timer text, triangle, and completion text.
+///
+/// Uses [Canvas.saveLayer] + [BlendMode.clear] to punch holes through
+/// the solid background, revealing the sky image beneath.
+class _CutoutPainter extends CustomPainter {
+  _CutoutPainter({
+    required this.bgColor,
+    required this.countdown,
+    required this.triangleOpacity,
+    required this.completionTextOpacity,
+    required this.isComplete,
+  });
+
+  final Color bgColor;
+  final String countdown;
+  final double triangleOpacity;
+  final double completionTextOpacity;
+  final bool isComplete;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final clearPaint = Paint()..blendMode = BlendMode.clear;
+
+    // saveLayer so BlendMode.clear works within this compositing group
+    canvas.saveLayer(rect, Paint());
+
+    // 1. Solid background fill
+    canvas.drawRect(rect, Paint()..color = bgColor);
+
+    // 2. Cut out timer text
+    if (countdown.isNotEmpty) {
+      final timerFontSize = size.width * 0.58;
+      final tp = TextPainter(
+        text: TextSpan(
+          text: countdown,
+          style: TextStyle(
+            fontFamily: MainFontFamilies.lilitaOne,
+            fontSize: timerFontSize,
+            height: 1.0,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
+      )..layout(maxWidth: size.width);
+
+      final timerY = size.height * 0.35;
+      final timerX = (size.width - tp.width) / 2;
+
+      canvas.saveLayer(rect, clearPaint);
+      tp.paint(canvas, Offset(timerX, timerY));
+      canvas.restore();
+    }
+
+    // 3. Cut out triangle (decorative, fading out on completion)
+    if (triangleOpacity > 0) {
+      final triangleH = size.width * 0.35;
+      final triangleW = triangleH * 86 / 102;
+      final triangleX = (size.width - triangleW) / 2;
+      final triangleY = size.height - size.height * 0.08 - triangleH;
+      final path = _trianglePath(Size(triangleW, triangleH));
+
+      canvas.save();
+      canvas.translate(triangleX, triangleY);
+
+      // Cut the triangle shape fully
+      canvas.saveLayer(
+        Offset.zero & Size(triangleW, triangleH),
+        clearPaint,
+      );
+      canvas.drawPath(path, Paint()..color = Colors.white);
+      canvas.restore();
+
+      // During fade-out, paint bgColor back over the hole to partially
+      // restore the solid background (inverse opacity).
+      if (triangleOpacity < 1.0) {
+        canvas.drawPath(
+          path,
+          Paint()..color = bgColor.withValues(alpha: 1.0 - triangleOpacity),
+        );
+      }
+      canvas.restore();
+    }
+
+    // 4. Cut out completion text ("Share your goback" + "Skip")
+    if (isComplete && completionTextOpacity > 0) {
+      final timerFontSize = size.width * 0.58;
+      final baseY = size.height * 0.35 + timerFontSize + 24;
+
+      final shareTp = TextPainter(
+        text: TextSpan(
+          text: 'Share your goback',
+          style: TextStyle(
+            fontFamily: MainFontFamilies.lilitaOne,
+            fontSize: 48,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
+      )..layout(maxWidth: size.width);
+
+      final skipTp = TextPainter(
+        text: TextSpan(
+          text: 'Skip',
+          style: TextStyle(
+            fontFamily: MainFontFamilies.quicksand,
+            fontWeight: FontWeight.w500,
+            fontSize: 24,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
+      )..layout(maxWidth: size.width);
+
+      // Cut out text shapes fully
+      final shareOffset =
+          Offset((size.width - shareTp.width) / 2, baseY);
+      canvas.saveLayer(rect, clearPaint);
+      shareTp.paint(canvas, shareOffset);
+      canvas.restore();
+
+      final skipY = baseY + 60 + 16;
+      final skipOffset =
+          Offset((size.width - skipTp.width) / 2, skipY);
+      canvas.saveLayer(rect, clearPaint);
+      skipTp.paint(canvas, skipOffset);
+      canvas.restore();
+
+      // During fade-in, paint bgColor back over text areas to partially
+      // restore solid background (inverse of completion text opacity).
+      if (completionTextOpacity < 1.0) {
+        final fillAlpha = 1.0 - completionTextOpacity;
+        // We need to re-layout to draw back; simplest: paint bg-colored
+        // text over the cleared areas.
+        final shareFillTp = TextPainter(
+          text: TextSpan(
+            text: 'Share your goback',
+            style: TextStyle(
+              fontFamily: MainFontFamilies.lilitaOne,
+              fontSize: 48,
+              color: bgColor.withValues(alpha: fillAlpha),
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.center,
+        )..layout(maxWidth: size.width);
+        shareFillTp.paint(canvas, shareOffset);
+
+        final skipFillTp = TextPainter(
+          text: TextSpan(
+            text: 'Skip',
+            style: TextStyle(
+              fontFamily: MainFontFamilies.quicksand,
+              fontWeight: FontWeight.w500,
+              fontSize: 24,
+              color: bgColor.withValues(alpha: fillAlpha),
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.center,
+        )..layout(maxWidth: size.width);
+        skipFillTp.paint(canvas, skipOffset);
+      }
+    }
+
+    canvas.restore(); // restore outer saveLayer
+  }
+
+  @override
+  bool shouldRepaint(covariant _CutoutPainter oldDelegate) =>
+      oldDelegate.bgColor != bgColor ||
+      oldDelegate.countdown != countdown ||
+      oldDelegate.triangleOpacity != triangleOpacity ||
+      oldDelegate.completionTextOpacity != completionTextOpacity ||
+      oldDelegate.isComplete != isComplete;
+}
+
+/// Triangle path matching feed_lockout_button (viewBox 86x102).
+Path _trianglePath(Size size) {
+  final sx = size.width / 86.0;
+  final sy = size.height / 102.0;
+
+  return Path()
+    ..moveTo(10.0244 * sx, 55.1414 * sy)
+    ..cubicTo(
+      1.42744 * sx, 48.7205 * sy,
+      2.1564 * sx, 35.6124 * sy,
+      11.4122 * sx, 30.1843 * sy,
+    )
+    ..lineTo(59.3289 * sx, 2.0836 * sy)
+    ..cubicTo(
+      69.3286 * sx, -3.7807 * sy,
+      81.917 * sx, 3.43033 * sy,
+      81.917 * sx, 15.0227 * sy,
+    )
+    ..lineTo(81.917 * sx, 78.9116 * sy)
+    ..cubicTo(
+      81.917 * sx, 91.2584 * sy,
+      67.8333 * sx, 98.3179 * sy,
+      57.941 * sx, 90.9295 * sy,
+    )
+    ..lineTo(10.0244 * sx, 55.1414 * sy)
+    ..close();
+}

@@ -77,7 +77,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                     onSelectedItemChanged: (index) {
                       selectedHours.value = index;
                     },
-                    children: List.generate(25, (index) {
+                    children: List.generate(10, (index) {
                       final hours = index;
                       return Center(
                         child: Text(
