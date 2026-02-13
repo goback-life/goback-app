@@ -1,4 +1,5 @@
 import 'package:cloudless/core/features/calendar/data/dtos/calendar_post_dto.dart';
+import 'package:cloudless/core/features/calendar/data/dtos/pending_selection_post_dto.dart';
 import 'package:cloudless/core/features/calendar/domain/contracts/calendar_service_contract.dart';
 import 'package:cloudless/core/features/storage/data/providers/signed_url_provider.dart';
 import 'package:cloudless/core/features/supabase/utilities/supabase_buckets.dart';
@@ -93,7 +94,7 @@ class CalendarService implements CalendarServiceContract {
   }
 
   @override
-  Future<List<CalendarPostDto>> getPendingSelectionPosts({DateTime? date}) async {
+  Future<List<PendingSelectionPostDto>> getPendingSelectionPosts({DateTime? date}) async {
     try {
       final params = <String, dynamic>{};
       if (date != null) {
@@ -102,7 +103,7 @@ class CalendarService implements CalendarServiceContract {
 
       final response = await supabaseClient.rpc(
         'get_pending_selection_posts',
-        params: params.isNotEmpty ? params : null,
+        params: params,
       );
 
       if (response is! List || response.isEmpty) {
@@ -111,8 +112,12 @@ class CalendarService implements CalendarServiceContract {
 
       final postFutures = response.map((json) async {
         final postJson = Map<String, dynamic>.from(json as Map<String, dynamic>);
-        await _enrichPostWithSignedUrls(postJson);
-        return CalendarPostDto.fromJson(postJson);
+        // Enrich thumbnail with signed URL
+        final thumbnailUrl = postJson['thumbnail_url'] as String?;
+        if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
+          postJson['thumbnail_url'] = await _fetchMediaUrl(thumbnailUrl);
+        }
+        return PendingSelectionPostDto.fromJson(postJson);
       });
 
       return Future.wait(postFutures);

@@ -461,8 +461,8 @@ BEGIN
     RETURN json_build_object('success', true, 'message', 'Post already saved to calendar');
   END IF;
 
-  -- Check 24h window
-  IF v_post.published_at < NOW() - INTERVAL '24 hours' THEN
+  -- Check 72h window
+  IF v_post.published_at < NOW() - INTERVAL '72 hours' THEN
     RETURN json_build_object('success', false, 'error', 'Selection window has expired');
   END IF;
 

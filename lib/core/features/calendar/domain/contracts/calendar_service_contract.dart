@@ -1,4 +1,5 @@
 import 'package:cloudless/core/features/calendar/data/dtos/calendar_post_dto.dart';
+import 'package:cloudless/core/features/calendar/data/dtos/pending_selection_post_dto.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 
 abstract class CalendarServiceContract {
@@ -36,8 +37,8 @@ abstract class CalendarServiceContract {
   /// Removes a post from the calendar.
   FutureResult<void> unsavePostFromCalendar(String postId);
 
-  /// Gets pending posts for selection (yesterday's unsaved lockout posts).
-  Future<List<CalendarPostDto>> getPendingSelectionPosts({DateTime? date});
+  /// Gets pending posts for selection (unsaved lockout posts within 72h).
+  Future<List<PendingSelectionPostDto>> getPendingSelectionPosts({DateTime? date});
 
   /// Checks if user has pending posts for selection.
   Future<bool> hasPendingSelection({DateTime? date});

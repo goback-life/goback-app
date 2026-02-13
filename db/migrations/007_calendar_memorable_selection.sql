@@ -35,8 +35,25 @@ BEGIN
     RAISE EXCEPTION 'User not authenticated';
   END IF;
 
-  -- Default to yesterday if no date provided
-  v_target_date := COALESCE(p_date, CURRENT_DATE - INTERVAL '1 day');
+  -- If date given, use it; otherwise find most recent date within 72h with unsaved lockout posts
+  IF p_date IS NOT NULL THEN
+    v_target_date := p_date;
+  ELSE
+    SELECT DATE(p.published_at AT TIME ZONE COALESCE(p.published_timezone, 'UTC'))
+    INTO v_target_date
+    FROM posts p
+    WHERE
+      p.author_id = v_user_id
+      AND p.calendar_saved_at IS NULL
+      AND p.lockout_id IS NOT NULL
+      AND p.published_at > NOW() - INTERVAL '72 hours'
+    ORDER BY p.published_at DESC
+    LIMIT 1;
+
+    IF v_target_date IS NULL THEN
+      RETURN;
+    END IF;
+  END IF;
 
   RETURN QUERY
   SELECT
@@ -54,10 +71,9 @@ BEGIN
   WHERE
     p.author_id = v_user_id
     AND p.calendar_saved_at IS NULL
-    AND p.lockout_id IS NOT NULL  -- Only lockout posts can be saved
+    AND p.lockout_id IS NOT NULL
     AND DATE(p.published_at AT TIME ZONE COALESCE(p.published_timezone, 'UTC')) = v_target_date
-    -- Must still be within 24h window for saving
-    AND p.published_at > NOW() - INTERVAL '24 hours'
+    AND p.published_at > NOW() - INTERVAL '72 hours'
   ORDER BY p.published_at DESC;
 END;
 $$;
@@ -207,7 +223,6 @@ SET search_path = public
 AS $$
 DECLARE
   v_user_id UUID;
-  v_target_date DATE;
   v_count INT;
 BEGIN
   v_user_id := auth.uid();
@@ -216,16 +231,24 @@ BEGIN
     RETURN FALSE;
   END IF;
 
-  v_target_date := COALESCE(p_date, CURRENT_DATE - INTERVAL '1 day');
-
-  SELECT COUNT(*) INTO v_count
-  FROM posts p
-  WHERE
-    p.author_id = v_user_id
-    AND p.calendar_saved_at IS NULL
-    AND p.lockout_id IS NOT NULL
-    AND DATE(p.published_at AT TIME ZONE COALESCE(p.published_timezone, 'UTC')) = v_target_date
-    AND p.published_at > NOW() - INTERVAL '24 hours';
+  IF p_date IS NOT NULL THEN
+    SELECT COUNT(*) INTO v_count
+    FROM posts p
+    WHERE
+      p.author_id = v_user_id
+      AND p.calendar_saved_at IS NULL
+      AND p.lockout_id IS NOT NULL
+      AND DATE(p.published_at AT TIME ZONE COALESCE(p.published_timezone, 'UTC')) = p_date
+      AND p.published_at > NOW() - INTERVAL '72 hours';
+  ELSE
+    SELECT COUNT(*) INTO v_count
+    FROM posts p
+    WHERE
+      p.author_id = v_user_id
+      AND p.calendar_saved_at IS NULL
+      AND p.lockout_id IS NOT NULL
+      AND p.published_at > NOW() - INTERVAL '72 hours';
+  END IF;
 
   RETURN v_count > 0;
 END;

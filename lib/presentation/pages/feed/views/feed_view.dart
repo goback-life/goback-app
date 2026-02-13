@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
+import 'package:cloudless/core/features/calendar/domain/providers/pending_selection_provider.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_app_resume_refresh.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
@@ -13,6 +14,7 @@ import 'package:cloudless/core/features/post/domain/providers/post_action_notifi
 import 'package:cloudless/core/features/post/domain/providers/post_published_notifier_provider.dart';
 import 'package:cloudless/presentation/components/main_data_loader.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_date_overlay.dart';
+import 'package:cloudless/presentation/pages/home/components/memorable_post_selection_dialog.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_lockout_button.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_new_posts_banner.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_posts_list.dart';
@@ -79,6 +81,19 @@ class FeedView extends HookConsumerWidget {
         }
       }
       check();
+      return null;
+    }, []);
+
+    // -- Memorable post selection prompt --
+    useEffect(() {
+      Future<void> checkMemorableSelection() async {
+        final shouldShow =
+            await ref.read(shouldShowMemorableSelectionProvider.future);
+        if (shouldShow && context.mounted) {
+          MemorablePostSelectionDialog.show(context);
+        }
+      }
+      checkMemorableSelection();
       return null;
     }, []);
 
