@@ -213,7 +213,7 @@
         },
         "objective": {
             "title": "Il Progetto",
-            "description": "Torniamo a \"vivere\" davvero!\n\n•   Hai {shortMinutes} o {longMinutes} minuti al giorno sull'app\n•   Salva uno dei tuoi ricordi al giorno\n•    Puoi invitare solo i tuoi contatti telefonici\n\nDopo {longMinutes} minuti non hai più scuse, torna alla vita. Ogni mezzanotte il feed si resetta, torna a condividere senza pressioni, hai solo i tuoi amici stretti qui!\n\n<bold>torna alla vita</bold>",
+            "description": "Il tuo cervello si è evoluto per le tribù, non per le timeline. I social media ignorano questo fatto — e guadagnano dalle conseguenze.\n\ngoback è il network costruito attorno alla tua neurochimica, non contro di essa. Connessione senza rumore.\n\n<bold>torna alla vita</bold>",
             "button": "Continua"
         },
         "sign_in": {
@@ -272,15 +272,6 @@
             "no_circle_box": {
                 "title": "Ciao @{username}",
                 "description": "Invita i tuoi amici stretti e torna alla vita"
-            },
-            "time_limit": {
-                "minutes_format": "{minutes}",
-                "alert": {
-                    "cannot_decrease": {
-                        "title": "Impossibile modificare il limite",
-                        "content": "Non puoi diminuire il limite quando hai già superato i minuti richiesti. Riprova domani."
-                    }
-                }
             },
             "go_back_button": "Torna alla vita",
             "lockout_join_button": "Unisciti",
@@ -422,7 +413,15 @@
             "character_count": "{current}/{max}",
             "tag_users": "Tag",
             "user": "@{username}",
-            "button": "Continua"
+            "button": "Continua",
+            "restrict_visibility": {
+                "label": "limita visibilit\u00e0",
+                "restricted_count": "limitato a {count} persone",
+                "title": "Limita visibilit\u00e0",
+                "select_all": "Seleziona tutto",
+                "deselect_all": "Deseleziona tutto",
+                "done": "Fatto"
+            }
         },
         "publish_content": {
             "button": "Pubblica",
@@ -433,10 +432,6 @@
                 "success_message": "Contenuto pubblicato con successo!",
                 "update_success_message": "Contenuto aggiornato con successo!"
             }
-        },
-        "time_limit_reached": {
-            "title": "tempo scaduto...\ntorna alla vita",
-            "button": "Torna alla vita"
         },
         "manual_lockout": {
             "title": "torna alla vita",

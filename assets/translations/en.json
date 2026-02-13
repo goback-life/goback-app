@@ -213,7 +213,7 @@
         },
         "objective": {
             "title": "The Project",
-            "description": "Let's \"go back\" to living!\n\n•   You have {shortMinutes} or {longMinutes} minutes per day on the app\n•   Save one of your memories per day\n•    You can invite your phone contacts only\n\nAfter {longMinutes} minutes you have no more excuses, goback. to life. Every midnight the feed is reset, goback. to sharing with no pressure, you only have your close friends here!\n\n<bold>goback. to life</bold>",
+            "description": "Your brain evolved for tribes, not timelines. Social media ignores this — and profits from the fallout.\n\ngoback is the network built around your neurochemistry, not against it. Connection without the noise.\n\n<bold>goback. to life</bold>",
             "button": "Continue"
         },
         "sign_in": {
@@ -272,15 +272,6 @@
             "no_circle_box": {
                 "title": "Hi @{username}",
                 "description": "Invite your close friends and goback. to life"
-            },
-            "time_limit": {
-                "minutes_format": "{minutes}",
-                "alert": {
-                    "cannot_decrease": {
-                        "title": "Cannot Change Limit",
-                        "content": "You cannot decrease the limit when you have already exceeded the required minutes. Try again tomorrow."
-                    }
-                }
             },
             "go_back_button": "Go Back",
             "lockout_join_button": "Join",
@@ -422,7 +413,15 @@
             "character_count": "{current}/{max}",
             "tag_users": "Tag",
             "user": "@{username}",
-            "button": "Continue"
+            "button": "Continue",
+            "restrict_visibility": {
+                "label": "restrict visibility",
+                "restricted_count": "restricted to {count} people",
+                "title": "Restrict visibility",
+                "select_all": "Select all",
+                "deselect_all": "Deselect all",
+                "done": "Done"
+            }
         },
         "publish_content": {
             "button": "Publish",
@@ -433,10 +432,6 @@
                 "success_message": "Content published successfully!",
                 "update_success_message": "Content updated successfully!"
             }
-        },
-        "time_limit_reached": {
-            "title": "time's up...\ngoback. to life",
-            "button": "GoBack"
         },
         "manual_lockout": {
             "title": "goback. to life",

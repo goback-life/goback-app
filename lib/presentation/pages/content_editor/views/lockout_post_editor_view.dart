@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
+import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_creation.dart';
 import 'package:cloudless/presentation/components/alerts/main_alert.dart';
 import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
@@ -9,6 +10,7 @@ import 'package:cloudless/presentation/components/glass/app_glass_container.dart
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/squircle_clipper.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
+import 'package:cloudless/presentation/pages/visibility_selection/visibility_selection_routable.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
@@ -53,6 +55,13 @@ class LockoutPostEditorView extends HookConsumerWidget {
     final avatarUrl = profileAsync?.whenOrNull(
           data: (r) => r.fold((p) => p?.avatarUrl, (_) => null),
         );
+
+    // Watch circle members for total count (used by restrict visibility)
+    final circleMembersAsync = ref.watch(getCircleMembersProvider);
+    final totalMemberCount = circleMembersAsync.whenOrNull(
+          data: (r) => r.fold((members) => members.length, (_) => 0),
+        ) ??
+        0;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -135,6 +144,17 @@ class LockoutPostEditorView extends HookConsumerWidget {
                       isProcessing,
                     ),
                   ),
+
+                  SizedBox(height: 14 * s),
+
+                  // Restrict visibility link
+                  _RestrictVisibilityLink(
+                    visibleCount: totalMemberCount -
+                        contentCreation.data.excludedUserIds.length,
+                    hasExclusions:
+                        contentCreation.data.excludedUserIds.isNotEmpty,
+                    scale: s,
+                  ),
                 ],
               ),
             ),
@@ -174,8 +194,10 @@ class LockoutPostEditorView extends HookConsumerWidget {
     if (isProcessing.value) return;
     isProcessing.value = true;
 
-    // Publish to full circle (empty exclusions)
-    final result = await contentCreation.publishPostWithExclusions([]);
+    // Publish with any exclusions set via restrict visibility
+    final result = await contentCreation.publishPostWithExclusions(
+      contentCreation.data.excludedUserIds,
+    );
     isProcessing.value = false;
 
     if (result != null && context.mounted) {
@@ -372,6 +394,50 @@ class _ShareButton extends StatelessWidget {
                 letterSpacing: -1.44 * scale,
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tappable text below Share that opens the visibility selection page.
+class _RestrictVisibilityLink extends StatelessWidget {
+  const _RestrictVisibilityLink({
+    required this.visibleCount,
+    required this.hasExclusions,
+    required this.scale,
+  });
+
+  final int visibleCount;
+  final bool hasExclusions;
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = hasExclusions
+        ? translator.translate(
+            'pages.content_editor.restrict_visibility.restricted_count',
+            arguments: {'count': visibleCount.toString()},
+          )
+        : translator.translate(
+            'pages.content_editor.restrict_visibility.label',
+          );
+
+    return GestureDetector(
+      onTap: () => router.push(const VisibilitySelectionRoutable()),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 4 * scale),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontFamily: MainFontFamilies.quicksand,
+            fontWeight: FontWeight.w400,
+            fontSize: 14 * scale,
+            color: MainColors.dark.withValues(
+              alpha: hasExclusions ? 0.8 : 0.6,
+            ),
+            letterSpacing: -0.84 * scale,
           ),
         ),
       ),
