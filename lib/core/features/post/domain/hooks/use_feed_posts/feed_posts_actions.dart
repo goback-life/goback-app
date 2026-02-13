@@ -108,13 +108,7 @@ class FeedPostsActions {
 
       result.fold(
         (feedResponse) {
-          // ignore: avoid_print
-          print('[FeedPostsActions] loadInitialPosts received ${feedResponse.posts.length} posts');
-          // ignore: avoid_print
-          print('[FeedPostsActions] First post ID: ${feedResponse.posts.isNotEmpty ? feedResponse.posts.first.id : "none"}');
           posts.value = feedResponse.posts;
-          // ignore: avoid_print
-          print('[FeedPostsActions] posts.value set to ${posts.value.length} posts');
           hasNextPage.value = feedResponse.hasNextPage;
 
           if (feedResponse.posts.isNotEmpty) {
@@ -131,10 +125,6 @@ class FeedPostsActions {
           errorMessage.value = null;
         },
         (error) {
-          // ignore: avoid_print
-          print('[FeedPostsActions] loadInitialPosts ERROR: $error');
-          // ignore: avoid_print
-          print('[FeedPostsActions] Error type: ${error.runtimeType}');
           errorMessage.value = error.toString();
         },
       );

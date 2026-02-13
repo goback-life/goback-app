@@ -58,8 +58,6 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     }, [currentUserAsync]);
 
     final feedPosts = useFeedPosts(ref, userId: userId ?? '');
-    // ignore: avoid_print
-    print('[HomeView] feedPosts.posts.length: ${feedPosts.posts.length}, isLoading: ${feedPosts.isLoading}, userId: $userId');
     final isRefreshingFeed = useState(false);
     final topPostDate = useState<DateTime?>(null);
 
@@ -73,15 +71,9 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
         // Check if full rebuild is needed (cold start or >6 hours since last validation)
         Future.microtask(() {
           final needsRebuild = cacheNotifier.needsFullRebuild;
-          // ignore: avoid_print
-          print('[HomeView] Checking cache: needsFullRebuild=$needsRebuild');
           if (needsRebuild) {
-            // ignore: avoid_print
-            print('[HomeView] Cache needs full rebuild');
             cacheNotifier.fullCacheRebuild(userId);
           } else {
-            // ignore: avoid_print
-            print('[HomeView] Cache valid, calling preloadFeed');
             cacheNotifier.preloadFeed(userId);
           }
         });
@@ -122,7 +114,6 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     // This replaces aggressive polling - data is fetched in parallel on resume
     useAppResumeRefresh(
       onResume: () async {
-        debugPrint('[HomeView] App resume refresh triggered');
         // Refresh circle members (avatars fetched in parallel)
         ref.invalidate(getCircleMembersProvider);
         // Refresh notification count and feed
@@ -131,7 +122,6 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
           // Always refresh feed on app resume to get new/deleted posts
           final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
-          debugPrint('[HomeView] Refreshing feed and checking deletions');
           await cacheNotifier.refresh(userId);
           await cacheNotifier.checkForDeletions(userId);
 
@@ -139,8 +129,6 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
           final backgroundDuration =
               DateTime.now().difference(lastActiveTime.value);
           if (backgroundDuration > const Duration(hours: 3)) {
-            debugPrint(
-                '[HomeView] Backgrounded for ${backgroundDuration.inHours}h - re-enriching cached posts');
             await cacheNotifier.reEnrichCachedPosts();
           }
         }
@@ -152,7 +140,6 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     useEffect(() {
       if (userId != null && userId.isNotEmpty) {
         final timer = Timer.periodic(const Duration(seconds: 60), (_) async {
-          debugPrint('[HomeView] Periodic refresh triggered');
           final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
           await cacheNotifier.refresh(userId);
           await cacheNotifier.checkForDeletions(userId);
@@ -504,9 +491,6 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     required void Function(DateTime?) onTopPostDateChanged,
   }) {
     final showLoading = feedPosts.isLoading && feedPosts.posts.isEmpty;
-
-    // ignore: avoid_print
-    print('[HomeView._buildFeedContent] posts: ${feedPosts.posts.length}, showLoading: $showLoading');
 
     if (showLoading) {
       return const Center(child: CircularProgressIndicator());

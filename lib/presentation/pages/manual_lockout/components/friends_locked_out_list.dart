@@ -42,17 +42,12 @@ class FriendsLockedOutList extends HookConsumerWidget {
     useEffect(() {
       void fetchSessionId() {
         storable.getLockoutSessionId().then((id) {
-          // ignore: avoid_print
-          print('[SAME-LOCKOUT] Fetched currentSessionId: $id');
           currentSessionId.value = id;
         });
       }
       fetchSessionId();
       return null;
     }, [cacheState.activeLockouts.length]);
-
-    // ignore: avoid_print
-    print('[WIDGET] build: ${cacheState.activeLockouts.length} friends, isFetching=${cacheState.isFetching}, currentSessionId=${currentSessionId.value}');
 
     // Ensure data is fresh on first build (defer to after frame completes)
     useEffect(() {
@@ -73,11 +68,7 @@ class FriendsLockedOutList extends HookConsumerWidget {
     // Refresh on app resume
     useEffect(() {
       final observer = _LifecycleObserver((lifecycleState) {
-        // ignore: avoid_print
-        print('[WIDGET] Lifecycle: $lifecycleState');
         if (lifecycleState == AppLifecycleState.resumed) {
-          // ignore: avoid_print
-          print('[WIDGET] App resumed - calling refresh()');
           cacheNotifier.refresh();
         }
       });
@@ -153,13 +144,6 @@ class FriendsLockedOutList extends HookConsumerWidget {
     TextTheme textTheme,
     String? currentSessionId,
   ) {
-    // ignore: avoid_print
-    print('[SAME-LOCKOUT] _buildList: currentSessionId=$currentSessionId');
-    for (final f in friends) {
-      final matches = currentSessionId != null && f.id == currentSessionId;
-      // ignore: avoid_print
-      print('[SAME-LOCKOUT]   -> ${f.username}: id=${f.id}, matches=$matches');
-    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -185,11 +169,6 @@ class FriendsLockedOutList extends HookConsumerWidget {
               final session = friends[index];
               final isInSameLockout =
                   currentSessionId != null && session.id == currentSessionId;
-              // ignore: avoid_print
-              print('[SAME-LOCKOUT] Friend ${session.username}: '
-                  'session.id=${session.id}, '
-                  'currentSessionId=$currentSessionId, '
-                  'match=$isInSameLockout');
               return FriendLockedOutItem(
                 session: session,
                 onTap: () => _handleJoinTap(context, ref, session),

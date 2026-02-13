@@ -109,14 +109,10 @@ class PostRepository
           pageSize: pageSize,
           cursor: cursor,
         );
-        // ignore: avoid_print
-        print('[PostRepository] getFeedPosts: ${feedResponseDto.posts.length} posts from service');
         return Result.success(feedResponseDto);
       },
       responseMapper: (feedResponseDto) async {
         final mapped = feedResponseMapper.mapDto(feedResponseDto);
-        // ignore: avoid_print
-        print('[PostRepository] getFeedPosts: ${mapped.posts.length} posts after mapping');
         return mapped;
       },
       exceptionMapper: FeedPostExceptionMapper.fromSupabaseException,

@@ -180,26 +180,15 @@ class LockoutSessionService {
   /// Returns sessions with denormalized user profile data.
   FutureResult<List<LockoutSessionDto>> getFriendsLockedOut() async {
     try {
-      // ignore: avoid_print
-      print('[SERVICE] getFriendsLockedOut: Calling RPC...');
       final response = await supabase.rpc('get_friends_locked_out');
-      // ignore: avoid_print
-      print('[SERVICE] getFriendsLockedOut: Raw response: $response');
 
       final sessions = (response as List)
-          .map((json) {
-            // ignore: avoid_print
-            print('[SERVICE] Parsing session: $json');
-            return LockoutSessionDto.fromJson(json as Map<String, dynamic>);
-          })
+          .map((json) =>
+            LockoutSessionDto.fromJson(json as Map<String, dynamic>))
           .toList();
 
-      // ignore: avoid_print
-      print('[SERVICE] Parsed ${sessions.length} sessions');
       return Result.success(sessions);
     } catch (e) {
-      // ignore: avoid_print
-      print('[SERVICE] ERROR: $e');
       logger.error('Failed to get friends locked out', exception: e);
       return Result.failure(
         e is Exception ? e : Exception('Failed to get friends locked out: $e'),

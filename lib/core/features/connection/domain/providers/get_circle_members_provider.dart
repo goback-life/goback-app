@@ -22,8 +22,6 @@ part 'get_circle_members_provider.g.dart';
 class GetCircleMembers extends _$GetCircleMembers {
   @override
   Future<Result<List<ConnectionMemberModel>>> build() async {
-    // ignore: avoid_print
-    print('[GetCircleMembersProvider] build() called - fetching circle members');
     final service = ref.watch(connectionServiceProvider);
 
     // First, get basic member data (fast, without avatar URLs)
@@ -39,9 +37,6 @@ class GetCircleMembers extends _$GetCircleMembers {
         // This allows the UI to render immediately with placeholders
         _enrichAvatarsInBackground(service, basicMembers);
 
-        // Return immediately with placeholder data
-        // ignore: avoid_print
-        print('[GetCircleMembersProvider] Returning ${placeholderModels.length} members (avatars loading in background)');
         return Result.success(placeholderModels);
       },
       (error) => Result.failure(error),
@@ -64,11 +59,7 @@ class GetCircleMembers extends _$GetCircleMembers {
       // Update state with complete data (avatars loaded)
       final completeModels = _convertToConnectionMembers(completeMembers);
       state = AsyncValue.data(Result.success(completeModels));
-      // ignore: avoid_print
-      print('[GetCircleMembersProvider] Avatar enrichment complete - state updated');
     } catch (e) {
-      // ignore: avoid_print
-      print('[GetCircleMembersProvider] Avatar enrichment failed: $e');
       // Keep placeholder data on error - don't update state
     }
   }

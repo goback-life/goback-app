@@ -52,20 +52,6 @@ class NotificationsView extends HookConsumerWidget {
               data: (notificationsResult) {
                 return notificationsResult.fold(
                   (notifications) {
-                    final lockoutCount = notifications
-                        .where(
-                          (n) =>
-                              n.type == NotificationType.lockoutStarted ||
-                              n.type == NotificationType.lockoutJoined,
-                        )
-                        .length;
-                    // ignore: avoid_print
-                    print('[NotificationsView] total=${notifications.length}, lockout=$lockoutCount, visible=${notifications.length - lockoutCount}');
-                    for (final n in notifications) {
-                      // ignore: avoid_print
-                      print('[NotificationsView]   type=${n.type.value}, ref=${n.referenceId}');
-                    }
-
                     final filtered = notifications
                         .where(
                           (n) =>

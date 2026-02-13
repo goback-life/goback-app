@@ -1,5 +1,4 @@
 import 'package:dedecube_core/dedecube_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Hook that triggers a callback when the app resumes from background.
@@ -20,16 +19,9 @@ void useAppResumeRefresh({
 
         // Skip if last refresh was within debounce period
         if (lastRefresh != null && now.difference(lastRefresh) < debounce) {
-          final elapsed = now.difference(lastRefresh);
-          debugPrint(
-            '[AppResumeRefresh] Skipped - last refresh ${elapsed.inSeconds}s ago (debounce: ${debounce.inSeconds}s)',
-          );
           return;
         }
 
-        debugPrint(
-          '[AppResumeRefresh] Triggering refresh (last: ${lastRefresh?.toIso8601String() ?? "never"})',
-        );
         lastRefreshTime.value = now;
         onResume();
       },

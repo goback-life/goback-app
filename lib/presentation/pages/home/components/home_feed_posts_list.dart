@@ -36,8 +36,6 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ignore: avoid_print
-    print('[HomeFeedPostsList] build called with ${posts.length} posts, isLoading: $isLoading');
     final internalScrollController = useScrollController();
     final effectiveScrollController =
         scrollController ?? internalScrollController;
@@ -250,16 +248,6 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
 
     return NotificationListener<ScrollUpdateNotification>(
       onNotification: (notification) {
-        // Debug: log scroll state occasionally
-        if (effectiveScrollController.hasClients) {
-          final position = effectiveScrollController.position;
-          final isAtBottom = position.pixels <= position.minScrollExtent + 20;
-          if (isAtBottom && notification.scrollDelta != null && notification.scrollDelta! < 0) {
-            // ignore: avoid_print
-            print('[HomeFeedPostsList] ScrollUpdate: pixels=${position.pixels.toStringAsFixed(1)}, min=${position.minScrollExtent.toStringAsFixed(1)}, delta=${notification.scrollDelta}, isRefreshing=${isRefreshingRef.value}, isLoading=$isLoading');
-          }
-        }
-
         // Fallback: detect when at bottom and trying to scroll further
         // Remove isLoading check to allow refresh during loading
         if (effectiveScrollController.hasClients &&
@@ -271,8 +259,6 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
           final isTryingToPullUp = notification.scrollDelta != null && notification.scrollDelta! < -2;
 
           if (isAtBottom && isTryingToPullUp) {
-            // ignore: avoid_print
-            print('[HomeFeedPostsList] Pull-to-refresh triggered via ScrollUpdateNotification');
             isRefreshingRef.value = true;
             setRefreshing(true);
             onRefresh().then((_) {
@@ -296,13 +282,6 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
       },
       child: NotificationListener<OverscrollNotification>(
         onNotification: (notification) {
-          // Debug: log overscroll
-          if (effectiveScrollController.hasClients) {
-            final position = effectiveScrollController.position;
-            // ignore: avoid_print
-            print('[HomeFeedPostsList] Overscroll: ${notification.overscroll.toStringAsFixed(1)}, pixels=${position.pixels.toStringAsFixed(1)}, min=${position.minScrollExtent.toStringAsFixed(1)}, isRefreshing=${isRefreshingRef.value}, isLoading=$isLoading');
-          }
-
           // In reverse ListView, minScrollExtent is at bottom (most recent posts)
           // Remove isLoading check to allow refresh during loading
           if (effectiveScrollController.hasClients &&
@@ -316,8 +295,6 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
             // In reversed ListView with BouncingScrollPhysics, NEGATIVE overscroll means
             // trying to go below minScrollExtent (pulling down to refresh)
             if (isAtBottom && notification.overscroll < -5) {
-              // ignore: avoid_print
-              print('[HomeFeedPostsList] Pull-to-refresh triggered via OverscrollNotification (overscroll: ${notification.overscroll})');
               isRefreshingRef.value = true;
               setRefreshing(true);
               onRefresh().then((_) {

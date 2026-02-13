@@ -55,9 +55,6 @@ class ProfileWeeklyStats extends HookConsumerWidget {
     TextTheme textTheme,
     ColorScheme colorScheme,
   ) {
-    // ignore: avoid_print
-    print('[ProfileWeeklyStats] weeklyLockoutMinutes: $weeklyLockoutMinutes');
-
     final String displayText;
     if (weeklyLockoutMinutes == null || weeklyLockoutMinutes == 0) {
       displayText = translator.translate('pages.profile.weekly_stats.no_lockouts');

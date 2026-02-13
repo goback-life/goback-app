@@ -23,13 +23,6 @@ class GetFriendsLockedOut extends _$GetFriendsLockedOut {
     // modifying another provider's state during this provider's build)
     Future.microtask(cacheNotifier.ensureFresh);
 
-    // ignore: avoid_print
-    print('[GetFriendsLockedOut] build: returning ${cacheState.activeLockouts.length} lockouts from cache');
-    for (final l in cacheState.activeLockouts) {
-      // ignore: avoid_print
-      print('[GetFriendsLockedOut]   lockout: id=${l.id}, user=${l.username}, endsAt=${l.endsAt}');
-    }
-
     return Result.success(cacheState.activeLockouts);
   }
 

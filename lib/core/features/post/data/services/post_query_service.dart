@@ -27,7 +27,6 @@ class PostQueryService {
     int pageSize = 15,
     DateTime? cursor,
   }) async {
-    final stopwatch = Stopwatch()..start();
     late dynamic feedResponse;
 
     try {
@@ -40,31 +39,20 @@ class PostQueryService {
       }
 
       feedResponse = await supabaseClient.rpc('get_user_feed', params: params);
-      // ignore: avoid_print
-      print('[FeedPosts] RPC completed in ${stopwatch.elapsedMilliseconds}ms');
     } catch (e) {
-      // ignore: avoid_print
-      print('[FeedPosts] RPC error: $e');
       rethrow;
     }
 
     final feedList = feedResponse as List;
-    // ignore: avoid_print
-    print('[FeedPosts] RPC returned ${feedList.length} posts');
     final postDataList = feedList
         .map((json) => json as Map<String, dynamic>)
         .toList();
 
     // Enrich posts with rate limiting (15 concurrent requests max)
     // 15 concurrent × 3 URLs each = 45 peak concurrent, reduces enrichment latency ~60%
-    final enrichStart = stopwatch.elapsedMilliseconds;
     await _enrichPostsWithRateLimit(postDataList, concurrency: 15);
-    // ignore: avoid_print
-    print('[FeedPosts] Enrichment of ${postDataList.length} posts completed in ${stopwatch.elapsedMilliseconds - enrichStart}ms');
 
     final posts = postDataList.map((data) => FeedPostDto.fromJson(data)).toList();
-    // ignore: avoid_print
-    print('[FeedPosts] Total feed load: ${stopwatch.elapsedMilliseconds}ms');
 
     final hasNextPage = posts.length >= pageSize;
 

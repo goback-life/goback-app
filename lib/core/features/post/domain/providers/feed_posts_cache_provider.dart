@@ -53,19 +53,12 @@ class FeedPostsCache extends _$FeedPostsCache {
   /// Loads the initial page of posts (fast, for immediate display).
   /// Returns the posts immediately, then starts background loading.
   Future<List<FeedPostModel>> loadInitialPosts(String userId) async {
-    // ignore: avoid_print
-    print('[FeedCache] loadInitialPosts called, userId: $userId, currentUserId: $_currentUserId, initialLoadComplete: ${state.initialLoadComplete}, posts: ${state.posts.length}');
-
     if (userId.isEmpty || userId.trim().isEmpty) {
-      // ignore: avoid_print
-      print('[FeedCache] loadInitialPosts: empty userId, returning');
       return [];
     }
 
     // Clear cache if user changed
     if (_currentUserId != null && _currentUserId != userId) {
-      // ignore: avoid_print
-      print('[FeedCache] loadInitialPosts: user changed, invalidating cache');
       invalidateCache();
     }
     _currentUserId = userId;
@@ -73,29 +66,18 @@ class FeedPostsCache extends _$FeedPostsCache {
     // If we already have posts for this user, return them immediately
     // and trigger a background refresh for new posts
     if (state.initialLoadComplete && state.posts.isNotEmpty) {
-      // ignore: avoid_print
-      print('[FeedCache] loadInitialPosts: cache valid, returning ${state.posts.length} cached posts and checking for new');
-      // Check for new posts in background
       _checkForNewPostsInBackground(userId);
       return state.posts;
     }
-
-    // ignore: avoid_print
-    print('[FeedCache] loadInitialPosts: fetching initial posts from server');
 
     // Fetch first page
     final result = await ref.read(
       getFeedPostsProvider(userId: userId, pageSize: _pageSize).future,
     );
 
-    // ignore: avoid_print
-    print('[FeedCache] loadInitialPosts: fetch complete, processing result');
-
     return result.fold(
       (response) {
         final posts = response.posts;
-        // ignore: avoid_print
-        print('[FeedCache] loadInitialPosts: got ${posts.length} posts, hasNextPage: ${response.hasNextPage}');
 
         state = state.copyWith(
           posts: posts,
@@ -109,19 +91,12 @@ class FeedPostsCache extends _$FeedPostsCache {
 
         // Start background loading of remaining posts
         if (response.hasNextPage) {
-          // ignore: avoid_print
-          print('[FeedCache] loadInitialPosts: starting background loading');
           _startBackgroundLoading(userId);
-        } else {
-          // ignore: avoid_print
-          print('[FeedCache] loadInitialPosts: no more pages, not starting background loading');
         }
 
         return posts;
       },
       (error) {
-        // ignore: avoid_print
-        print('[FeedCache] Error loading initial posts: $error');
         return <FeedPostModel>[];
       },
     );
@@ -130,8 +105,6 @@ class FeedPostsCache extends _$FeedPostsCache {
   /// Starts background loading of all remaining posts.
   /// Updates UI progressively as each batch loads.
   void _startBackgroundLoading(String userId) {
-    // ignore: avoid_print
-    print('[FeedCache] _startBackgroundLoading called, _isBackgroundLoading: $_isBackgroundLoading');
     if (_isBackgroundLoading) return;
     _isBackgroundLoading = true;
     state = state.copyWith(isPreloading: true);
@@ -141,15 +114,10 @@ class FeedPostsCache extends _$FeedPostsCache {
 
   /// Loads the next batch of posts in background.
   Future<void> _loadNextBatch(String userId) async {
-    // ignore: avoid_print
-    print('[FeedCache] _loadNextBatch called, _isBackgroundLoading: $_isBackgroundLoading, fullyLoaded: ${state.fullyLoaded}, posts: ${state.posts.length}');
-
     if (!_isBackgroundLoading) return;
     if (state.fullyLoaded) {
       _isBackgroundLoading = false;
       state = state.copyWith(isPreloading: false);
-      // ignore: avoid_print
-      print('[FeedCache] _loadNextBatch: already fully loaded, stopping');
       return;
     }
     if (state.posts.length >= _maxCachedPosts) {
@@ -213,9 +181,6 @@ class FeedPostsCache extends _$FeedPostsCache {
           isPreloading: response.hasNextPage && !reachedLimit,
         );
 
-        // ignore: avoid_print
-        print('[FeedCache] Background loaded ${newPosts.length} posts, total: ${allPosts.length}');
-
         // Continue loading if more available
         if (response.hasNextPage && !reachedLimit) {
           // Small delay to avoid overwhelming the server
@@ -227,8 +192,6 @@ class FeedPostsCache extends _$FeedPostsCache {
         }
       },
       (error) {
-        // ignore: avoid_print
-        print('[FeedCache] Background loading error: $error');
         _isBackgroundLoading = false;
         state = state.copyWith(isPreloading: false);
       },
@@ -291,9 +254,6 @@ class FeedPostsCache extends _$FeedPostsCache {
   /// Checks for new posts (published after our newest cached post).
   /// If cache is empty, fetches initial posts.
   Future<void> _checkForNewPostsInBackground(String userId) async {
-    // ignore: avoid_print
-    print('[FeedCache] Checking for new posts, cache has ${state.posts.length} posts');
-
     // Invalidate the provider to force a fresh fetch
     ref.invalidate(getFeedPostsProvider(userId: userId, pageSize: _pageSize));
 
@@ -317,13 +277,9 @@ class FeedPostsCache extends _$FeedPostsCache {
             initialLoadComplete: true,
             fullyLoaded: !response.hasNextPage,
           );
-          // ignore: avoid_print
-          print('[FeedCache] Loaded ${response.posts.length} posts into empty cache, hasNextPage: ${response.hasNextPage}');
 
           // Start background loading if more posts available
           if (response.hasNextPage && _currentUserId != null) {
-            // ignore: avoid_print
-            print('[FeedCache] Starting background loading after refilling empty cache');
             _startBackgroundLoading(_currentUserId!);
           }
           return;
@@ -346,8 +302,6 @@ class FeedPostsCache extends _$FeedPostsCache {
               newestPostTimestamp: allPosts.first.createdAt,
               lastFetchedAt: DateTime.now(),
             );
-            // ignore: avoid_print
-            print('[FeedCache] Merged ${newPosts.length} posts (no timestamp ref)');
           }
           return;
         }
@@ -369,15 +323,9 @@ class FeedPostsCache extends _$FeedPostsCache {
             newestPostTimestamp: allPosts.first.createdAt,
             lastFetchedAt: DateTime.now(),
           );
-
-          // ignore: avoid_print
-          print('[FeedCache] Found ${newPosts.length} new posts');
         }
       },
-      (error) {
-        // ignore: avoid_print
-        print('[FeedCache] Error checking for new posts: $error');
-      },
+      (error) {},
     );
   }
 
@@ -403,19 +351,11 @@ class FeedPostsCache extends _$FeedPostsCache {
       return result.fold(
         (newPost) {
           addPost(newPost);
-          // ignore: avoid_print
-          print('[FeedCache] Added new post $postId');
           return true;
         },
-        (error) {
-          // ignore: avoid_print
-          print('[FeedCache] Error fetching post $postId: $error');
-          return false;
-        },
+        (error) => false,
       );
     } catch (e) {
-      // ignore: avoid_print
-      print('[FeedCache] Exception fetching post $postId: $e');
       return false;
     }
   }
@@ -425,9 +365,6 @@ class FeedPostsCache extends _$FeedPostsCache {
   /// Edits are fetched when user taps on a post to view details.
   Future<void> checkForDeletions(String userId) async {
     if (state.posts.isEmpty || userId.isEmpty) return;
-
-    // ignore: avoid_print
-    print('[FeedCache] checkForDeletions starting, cache has ${state.posts.length} posts');
 
     // Invalidate the provider to force a fresh fetch
     ref.invalidate(getFeedPostsProvider(userId: userId, pageSize: 50));
@@ -442,15 +379,10 @@ class FeedPostsCache extends _$FeedPostsCache {
 
     result.fold(
       (response) {
-        // ignore: avoid_print
-        print('[FeedCache] Server returned ${response.posts.length} posts for deletion check');
-
         final visiblePostIds = response.posts.map((p) => p.id).toSet();
 
         // If server returns 0 posts but we have cached posts, clear the cache
         if (response.posts.isEmpty && state.posts.isNotEmpty) {
-          // ignore: avoid_print
-          print('[FeedCache] Server has 0 posts, clearing cache of ${state.posts.length} posts');
           state = state.copyWith(
             posts: [],
             oldestPostTimestamp: null,
@@ -474,9 +406,6 @@ class FeedPostsCache extends _$FeedPostsCache {
           }
         }
 
-        // ignore: avoid_print
-        print('[FeedCache] Found ${deletedIds.length} deleted posts out of ${postsToCheck.length} checked');
-
         if (deletedIds.isNotEmpty) {
           final newPosts = state.posts.where((p) => !deletedIds.contains(p.id)).toList();
           state = state.copyWith(
@@ -484,14 +413,9 @@ class FeedPostsCache extends _$FeedPostsCache {
             oldestPostTimestamp: newPosts.isNotEmpty ? newPosts.last.createdAt : null,
             newestPostTimestamp: newPosts.isNotEmpty ? newPosts.first.createdAt : null,
           );
-          // ignore: avoid_print
-          print('[FeedCache] Removed ${deletedIds.length} deleted/hidden posts, ${newPosts.length} remaining');
         }
       },
-      (error) {
-        // ignore: avoid_print
-        print('[FeedCache] Error checking for deletions: $error');
-      },
+      (error) {},
     );
   }
 
@@ -521,12 +445,9 @@ class FeedPostsCache extends _$FeedPostsCache {
       return;
     }
 
-    // For posts 50+, trust 24h expiry (handled by posts getter filter)
+    // For posts 50+, trust 24h expiry (handled by posts getter filter).
     // This is simpler and avoids complex cursor-based server queries.
     // Posts beyond 50 are older, so they're closer to natural expiry anyway.
-    // ignore: avoid_print
-    print(
-        '[FeedCache] Staggered check batch $batchStart-$batchEnd (trusting 24h expiry)');
   }
 
   /// Adds a newly created post to the top of the cache.
@@ -586,25 +507,18 @@ class FeedPostsCache extends _$FeedPostsCache {
 
   /// Returns true if cache needs a full rebuild.
   bool get needsFullRebuild {
-    final result = _lastFullValidation == null ||
+    return _lastFullValidation == null ||
         DateTime.now().difference(_lastFullValidation!) > const Duration(hours: 6);
-    // ignore: avoid_print
-    print('[FeedCache] needsFullRebuild: $result (lastValidation: $_lastFullValidation)');
-    return result;
   }
 
   /// Performs a full cache rebuild by fetching fresh data from server.
   /// Called on cold start or after 6 hours of active use.
   Future<void> fullCacheRebuild(String userId) async {
-    // ignore: avoid_print
-    print('[FeedCache] fullCacheRebuild called for userId: $userId');
     _lastFullValidation = DateTime.now();
     _lastEnrichedAt = DateTime.now();
     _deletionCheckOffset = 0;
     invalidateCache();
     await loadInitialPosts(userId);
-    // ignore: avoid_print
-    print('[FeedCache] fullCacheRebuild complete, posts: ${state.posts.length}');
   }
 
   /// Re-enriches all cached posts with fresh signed URLs.

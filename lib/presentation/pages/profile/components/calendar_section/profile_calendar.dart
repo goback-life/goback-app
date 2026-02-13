@@ -50,16 +50,11 @@ Future<List<CalendarPostModel>?> _fetchMonths(
     for (final result in results) {
       result.fold(
         (posts) => allPosts.addAll(posts),
-        (error) {
-          // ignore: avoid_print
-          print('[Calendar] fetch error: $error');
-        },
+        (error) {},
       );
     }
     return allPosts;
   } catch (e) {
-    // ignore: avoid_print
-    print('[Calendar] fetch exception: $e');
     return null;
   }
 }
@@ -85,9 +80,6 @@ Future<void> preloadCalendarCache(WidgetRef ref) async {
 
   final allPosts = await _fetchMonths(ref, userId, months);
   if (allPosts == null) return;
-
-  // ignore: avoid_print
-  print('[Calendar] preload: ${allPosts.length} posts cached');
 
   cacheNotifier.mergePosts(
     allPosts,
@@ -133,10 +125,6 @@ class ProfileCalendar extends HookConsumerWidget
           cacheNotifier.currentUserId == targetUserId &&
           calendarCache.isNotEmpty;
 
-      // ignore: avoid_print
-      print('[Calendar] display effect: hasCachedData=$hasCachedData, '
-          'cacheSize=${calendarCache.length}, month=${selectedMonth.month}/${selectedMonth.year}');
-
       if (hasCachedData) {
         _filterCachedPosts(calendarCache, selectedMonth, calendarPostsByDay);
       }
@@ -161,10 +149,6 @@ class ProfileCalendar extends HookConsumerWidget
       if (!isCurrentUser) {
         calendarPostsByDay.value = {};
       }
-
-      // ignore: avoid_print
-      print('[Calendar] fetch effect: userId=$targetUserId, '
-          'isOwn=$isCurrentUser, month=${selectedMonth.month}/${selectedMonth.year}');
 
       _loadCalendarForUser(
         ref,
@@ -311,12 +295,6 @@ class ProfileCalendar extends HookConsumerWidget
       }
     }
 
-    // ignore: avoid_print
-    print('[Calendar] filter: ${cache.length} cached -> '
-        '${postsByDay.length} visible for '
-        '${selectedMonth.month}/${selectedMonth.year} '
-        '(range ${start.month}/${start.day} - ${end.month}/${end.day})');
-
     calendarPostsByDay.value = postsByDay;
   }
 
@@ -343,10 +321,6 @@ class ProfileCalendar extends HookConsumerWidget
 
     final allPosts = await _fetchMonths(ref, targetUserId, monthsToFetch);
     if (allPosts == null || !isMounted()) return;
-
-    // ignore: avoid_print
-    print('[Calendar] fetch OK: ${allPosts.length} posts for '
-        '$targetUserId (${monthsToFetch.length} months)');
 
     if (isCurrentUser) {
       ref

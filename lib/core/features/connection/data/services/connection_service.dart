@@ -211,14 +211,6 @@ class ConnectionService implements ConnectionServiceContract {
   FutureResult<List<GetCircleMembersResponseDto>> enrichMembersWithAvatars(
     List<GetCircleMembersResponseDto> members,
   ) async {
-    // ignore: avoid_print
-    print('[AvatarRefresh] Starting avatar enrichment for ${members.length} members');
-    final stopwatch = Stopwatch()..start();
-
-    int skipped = 0;
-    int fetched = 0;
-    int failed = 0;
-
     final enrichedMembers = <GetCircleMembersResponseDto>[];
     const batchSize = 10; // Process 10 at a time to avoid overwhelming server
 
@@ -229,7 +221,6 @@ class ConnectionService implements ConnectionServiceContract {
         batch.map((member) async {
           // Skip if avatar URL already exists
           if (member.avatarUrl != null && member.avatarUrl!.isNotEmpty) {
-            skipped++;
             return member;
           }
 
@@ -241,15 +232,8 @@ class ConnectionService implements ConnectionServiceContract {
                 member.id,
               ).future,
             );
-            fetched++;
           } catch (e) {
-            // Log first few failures to understand the error
-            if (failed < 3) {
-              // ignore: avoid_print
-              print('[AvatarRefresh] Error for ${member.id}: $e');
-            }
             avatarUrl = null;
-            failed++;
           }
 
           return member.copyWith(avatarUrl: avatarUrl);
@@ -258,14 +242,6 @@ class ConnectionService implements ConnectionServiceContract {
 
       enrichedMembers.addAll(batchResults);
     }
-
-    stopwatch.stop();
-
-    // ignore: avoid_print
-    print(
-      '[AvatarRefresh] Completed in ${stopwatch.elapsedMilliseconds}ms - '
-      'fetched: $fetched, skipped: $skipped, failed: $failed',
-    );
 
     return Result.success(enrichedMembers);
   }

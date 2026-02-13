@@ -72,9 +72,6 @@ FeedPostsResult useFeedPosts(
         !hasInitialized.value ||
         (cacheNotifier.currentUserId != userId);
 
-    // ignore: avoid_print
-    print('[useFeedPosts] useEffect: shouldLoad=$shouldLoad, userId=$userId, currentUserId=${cacheNotifier.currentUserId}, initialLoadComplete=${cacheState.initialLoadComplete}');
-
     if (shouldLoad && userId.isNotEmpty && userId.trim().isNotEmpty) {
       lastUserId.value = userId;
       hasInitialized.value = true;
@@ -82,29 +79,21 @@ FeedPostsResult useFeedPosts(
       // Check if cache already has posts for this user
       if (cacheNotifier.currentUserId == userId && cacheState.initialLoadComplete) {
         // Already have posts, check for new ones and deletions
-        // ignore: avoid_print
-        print('[useFeedPosts] Using cached posts: ${cacheState.posts.length}');
         isLoading.value = false; // Ensure not loading
         cacheNotifier.refresh(userId);
         cacheNotifier.checkForDeletions(userId);
       } else {
         // Need to load initial posts
         isLoading.value = cacheNotifier.posts.isEmpty;
-        // ignore: avoid_print
-        print('[useFeedPosts] Loading initial posts for user: $userId, isLoading=${isLoading.value}');
 
         cacheNotifier.loadInitialPosts(userId).then((loadedPosts) {
           if (isMounted.value) {
             isLoading.value = false;
-            // ignore: avoid_print
-            print('[useFeedPosts] Initial load complete: ${loadedPosts.length} posts, setting isLoading=false');
           }
         }).catchError((error) {
           if (isMounted.value) {
             isLoading.value = false;
             errorMessage.value = error.toString();
-            // ignore: avoid_print
-            print('[useFeedPosts] Load error: $error');
           }
         });
       }
@@ -181,8 +170,6 @@ FeedPostsResult useFeedPosts(
   // Safety net: ensure isLoading is false when cache marks initial load complete
   useEffect(() {
     if (cacheState.initialLoadComplete && isLoading.value) {
-      // ignore: avoid_print
-      print('[useFeedPosts] Safety net: initialLoadComplete=true, setting isLoading=false');
       isLoading.value = false;
     }
     return null;
@@ -210,17 +197,9 @@ FeedPostsResult useFeedPosts(
 
   /// Refreshes the feed - checks for new posts.
   Future<void> refresh() async {
-    // ignore: avoid_print
-    print('[useFeedPosts] refresh() called');
-    if (userId.isEmpty) {
-      // ignore: avoid_print
-      print('[useFeedPosts] refresh() skipped - empty userId');
-      return;
-    }
+    if (userId.isEmpty) return;
     await cacheNotifier.refresh(userId);
     await cacheNotifier.checkForDeletions(userId);
-    // ignore: avoid_print
-    print('[useFeedPosts] refresh() completed');
   }
 
   return (

@@ -24,8 +24,6 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
 
   @override
   FriendsLockedOutCacheState build() {
-    // ignore: avoid_print
-    print('[CACHE] build() called — initializing empty state');
     // Load persisted cache on startup (defer to avoid modifying during build)
     Future.microtask(_loadFromStorage);
     return const FriendsLockedOutCacheState();
@@ -33,13 +31,9 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
 
   /// Load cached friends from persistent storage.
   Future<void> _loadFromStorage() async {
-    // ignore: avoid_print
-    print('[CACHE] _loadFromStorage: reading persisted data...');
     try {
       final storable = ref.read(friendsLockedOutStorableProvider);
       final cached = await storable.getCachedFriends();
-      // ignore: avoid_print
-      print('[CACHE] _loadFromStorage: got ${cached.length} cached entries');
 
       if (cached.isNotEmpty) {
         final models = cached
@@ -48,8 +42,6 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
             .toList();
 
         if (models.isNotEmpty) {
-          // ignore: avoid_print
-          print('[CACHE] Loaded ${models.length} friends from storage');
           state = state.copyWith(activeLockouts: models);
         }
       }
@@ -87,14 +79,10 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
         _fetchStartedAt != null &&
         DateTime.now().difference(_fetchStartedAt!) > _fetchTimeout;
     if (fetchStuck) {
-      // ignore: avoid_print
-      print('[CACHE] ensureFresh: fetch stuck for >${_fetchTimeout.inSeconds}s — resetting');
       state = state.copyWith(isFetching: false);
       _fetchStartedAt = null;
     }
 
-    // ignore: avoid_print
-    print('[CACHE] ensureFresh: valid=$isCacheValid, fetching=${state.isFetching}, lastFetch=${state.lastFetchedAt}, cached=${state.activeLockouts.length}');
     if (!isCacheValid && !state.isFetching) {
       _fetchInBackground();
     }
@@ -107,8 +95,6 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
         _fetchStartedAt != null &&
         DateTime.now().difference(_fetchStartedAt!) > _fetchTimeout;
     if (fetchStuck) {
-      // ignore: avoid_print
-      print('[CACHE] refresh: fetch stuck — resetting');
       state = state.copyWith(isFetching: false);
       _fetchStartedAt = null;
     }
@@ -121,8 +107,6 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
   /// Fetch data in background without affecting current displayed data.
   Future<void> _fetchInBackground() async {
     _fetchStartedAt = DateTime.now();
-    // ignore: avoid_print
-    print('[CACHE] _fetchInBackground: starting fetch at $_fetchStartedAt');
     state = state.copyWith(isFetching: true);
 
     try {
@@ -131,15 +115,7 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
 
       result.fold(
         (dtos) {
-          // ignore: avoid_print
-          print('[CACHE] RPC returned ${dtos.length} DTOs');
-          for (final dto in dtos) {
-            // ignore: avoid_print
-            print('[CACHE]   DTO: id=${dto.id}, user=${dto.userId}, username=${dto.username}, endsAt=${dto.endsAt}');
-          }
           final models = _mapper.mapDtoList(dtos);
-          // ignore: avoid_print
-          print('[CACHE] Mapped to ${models.length} models');
 
           // Update state atomically
           state = FriendsLockedOutCacheState(
@@ -152,15 +128,11 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
           _saveToStorage(models);
         },
         (error) {
-          // ignore: avoid_print
-          print('[CACHE] Fetch FAILED: $error');
           logger.warning('[FriendsLockedOutCache] Fetch error: $error');
           state = state.copyWith(isFetching: false);
         },
       );
     } catch (e) {
-      // ignore: avoid_print
-      print('[CACHE] _fetchInBackground EXCEPTION: $e');
       logger.error('[FriendsLockedOutCache] Exception: $e');
       state = state.copyWith(isFetching: false);
     }
