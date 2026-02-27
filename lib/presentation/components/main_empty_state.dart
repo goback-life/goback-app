@@ -12,6 +12,7 @@ class MainEmptyState extends StatelessWidget with MainLayout {
     final textTheme = theme.textTheme;
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           translator.translate('pages.your_circle.empty'),

@@ -317,6 +317,7 @@ class _MinusPill extends StatelessWidget with MainLayout, YourCircleLayout {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: SizedBox(
         width: addButtonSize,
