@@ -59,7 +59,6 @@ class CalendarDay extends StatelessWidget with MainLayout, ProfileLayout {
                 imageUrl: dayData.thumbnailUrl!,
                 fit: BoxFit.cover,
                 memCacheWidth: (cellW * 2).toInt(),
-                memCacheHeight: (cellH * 2).toInt(),
                 fadeInDuration: const Duration(milliseconds: 200),
                 fadeOutDuration: const Duration(milliseconds: 100),
                 placeholder: (context, url) => Container(

@@ -311,7 +311,6 @@ class _GlassCard extends StatelessWidget {
         width: squircleSize,
         height: squircleSize,
         memCacheWidth: (squircleSize * 2).toInt(),
-        memCacheHeight: (squircleSize * 2).toInt(),
         fadeInDuration: const Duration(milliseconds: 200),
         fadeOutDuration: const Duration(milliseconds: 100),
         placeholder: (_, __) => Container(color: MainColors.dark),

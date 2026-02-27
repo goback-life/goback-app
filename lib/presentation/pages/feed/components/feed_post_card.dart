@@ -75,7 +75,6 @@ class FeedPostCard extends HookConsumerWidget {
                               width: squircleSize,
                               height: squircleSize,
                               memCacheWidth: (squircleSize * 2).toInt(),
-                              memCacheHeight: (squircleSize * 2).toInt(),
                               fadeInDuration: const Duration(milliseconds: 200),
                               fadeOutDuration:
                                   const Duration(milliseconds: 100),
