@@ -23,133 +23,72 @@ class ProfileDescription extends HookConsumerWidget {
     final textTheme = theme.textTheme;
     final isExpanded = useState(false);
 
+    // Resolve biography from the appropriate source. Provider watches are
+    // registered unconditionally for each code-path so Riverpod tracks them.
+    String? resolvedBio;
+    bool isLoading = false;
+    bool isError = false;
+
     if (biography != null) {
-      return _buildDescriptionDisplay(
-        context,
-        textTheme,
-        colorScheme,
-        biography,
-        isExpanded,
-      );
-    }
-
-    if (profileId != null) {
+      resolvedBio = biography;
+    } else if (profileId != null) {
       final profileAsync = ref.watch(getProfileProvider(profileId!));
-
-      return profileAsync.when(
-        data: (profileResult) {
-          return profileResult.fold(
-            (profile) {
-              return _buildDescriptionDisplay(
-                context,
-                textTheme,
-                colorScheme,
-                profile?.biography,
-                isExpanded,
-              );
-            },
-            (error) {
-              logger.error('Profile error', exception: error);
-              return Text(
-                translator.translate('pages.profile.description.error'),
-                textAlign: TextAlign.center,
-                style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
-              );
-            },
-          );
-        },
-        loading: () => const SizedBox(height: 18),
+      profileAsync.when(
+        data: (result) => result.fold(
+          (profile) => resolvedBio = profile?.biography,
+          (error) {
+            logger.error('Profile error', exception: error);
+            isError = true;
+          },
+        ),
+        loading: () => isLoading = true,
         error: (error, stack) {
           logger.error('Profile async error', exception: error);
-          return Text(
-            translator.translate('pages.profile.description.error'),
-            textAlign: TextAlign.center,
-            style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
-          );
+          isError = true;
         },
       );
-    }
-
-    final currentUserAsync = ref.watch(getCurrentUserProvider);
-
-    return currentUserAsync.when(
-      data: (userResult) {
-        return userResult.fold(
+    } else {
+      final currentUserAsync = ref.watch(getCurrentUserProvider);
+      currentUserAsync.when(
+        data: (userResult) => userResult.fold(
           (user) {
             final profileAsync = ref.watch(getProfileProvider(user.id));
-
-            return profileAsync.when(
-              data: (profileResult) {
-                return profileResult.fold(
-                  (profile) {
-                    return _buildDescriptionDisplay(
-                      context,
-                      textTheme,
-                      colorScheme,
-                      profile?.biography,
-                      isExpanded,
-                    );
-                  },
-                  (error) {
-                    logger.error('Profile error', exception: error);
-                    return Text(
-                      translator.translate('pages.profile.description.error'),
-                      textAlign: TextAlign.center,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.error,
-                      ),
-                    );
-                  },
-                );
-              },
-              loading: () => const SizedBox(height: 18),
+            profileAsync.when(
+              data: (result) => result.fold(
+                (profile) => resolvedBio = profile?.biography,
+                (error) {
+                  logger.error('Profile error', exception: error);
+                  isError = true;
+                },
+              ),
+              loading: () => isLoading = true,
               error: (error, stack) {
                 logger.error('Profile async error', exception: error);
-                return Text(
-                  translator.translate('pages.profile.description.error'),
-                  textAlign: TextAlign.center,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.error,
-                  ),
-                );
+                isError = true;
               },
             );
           },
           (error) {
             logger.error('User error', exception: error);
-            return Text(
-              translator.translate('pages.profile.description.error'),
-              textAlign: TextAlign.center,
-              style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
-            );
+            isError = true;
           },
-        );
-      },
-      loading: () => const SizedBox(height: 18),
-      error: (error, stack) {
-        logger.error('User async error', exception: error);
-        return Text(
-          translator.translate('pages.profile.description.error'),
-          textAlign: TextAlign.center,
-          style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
-        );
-      },
-    );
-  }
+        ),
+        loading: () => isLoading = true,
+        error: (error, stack) {
+          logger.error('User async error', exception: error);
+          isError = true;
+        },
+      );
+    }
 
-  Widget _buildDescriptionDisplay(
-    BuildContext context,
-    TextTheme textTheme,
-    ColorScheme colorScheme,
-    String? displayBiography,
-    ValueNotifier<bool> isExpanded,
-  ) {
-    final biography = displayBiography?.trim();
-
-    final textPainter = useMemoized(() {
+    // Hook called unconditionally on every build (fixes hook ordering
+    // violation that caused crashes when async state changed).
+    final trimmedBio = resolvedBio?.trim();
+    final exceedsMaxLines = useMemoized(() {
+      if (trimmedBio == null || trimmedBio.isEmpty) return false;
       final painter = TextPainter(
         text: TextSpan(
-          text: biography,
+          text: trimmedBio,
           style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
         ),
         maxLines: 2,
@@ -157,7 +96,17 @@ class ProfileDescription extends HookConsumerWidget {
         textAlign: TextAlign.center,
       )..layout(maxWidth: MediaQuery.of(context).size.width - 32);
       return painter.didExceedMaxLines;
-    }, [biography, textTheme.bodyMedium]);
+    }, [trimmedBio, textTheme.bodyMedium]);
+
+    if (isLoading) return const SizedBox(height: 18);
+
+    if (isError) {
+      return Text(
+        translator.translate('pages.profile.description.error'),
+        textAlign: TextAlign.center,
+        style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
+      );
+    }
 
     return AnimatedSize(
       duration: const Duration(milliseconds: 300),
@@ -180,7 +129,7 @@ class ProfileDescription extends HookConsumerWidget {
                   ) ??
                   const TextStyle(),
               child: Text(
-                biography ?? '',
+                trimmedBio ?? '',
                 textAlign: TextAlign.center,
                 maxLines: showFullDescription || isExpanded.value ? null : 2,
                 overflow: showFullDescription || isExpanded.value
@@ -188,7 +137,7 @@ class ProfileDescription extends HookConsumerWidget {
                     : TextOverflow.ellipsis,
               ),
             ),
-            if (!showFullDescription && textPainter)
+            if (!showFullDescription && exceedsMaxLines)
               Center(
                 child: Icon(
                   isExpanded.value
