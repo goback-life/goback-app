@@ -45,7 +45,8 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
-        child: Column(
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
@@ -200,6 +201,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

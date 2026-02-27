@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:cloudless/presentation/pages/feed/components/feed_lockout_button.dart';
+import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
 import 'package:cloudless/presentation/pages/friends_locked_out/friends_locked_out_routable.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
 import 'package:cloudless/presentation/pages/notifications/notifications_routable.dart';
@@ -35,6 +36,10 @@ class NavOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final sw = size.width / 402.0;
+    final sh = size.height / 874.0;
+
     return GestureDetector(
       onTap: onDismiss,
       behavior: HitTestBehavior.opaque,
@@ -42,43 +47,53 @@ class NavOverlay extends StatelessWidget {
         filter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
         child: Container(
           color: MainColors.dark.withValues(alpha: 0.5),
-          child: SafeArea(
-            child: Column(
-              children: [
-                // Nav labels centred in the space above the button.
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (final item in _items)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            child: GestureDetector(
-                              onTap: () => _onItemTap(item),
-                              child: Text(
-                                item.label.toUpperCase(),
-                                style: const TextStyle(
-                                  fontFamily: MainFontFamilies.lilitaOne,
-                                  fontSize: 44,
-                                  color: MainColors.white,
-                                  letterSpacing: 1,
-                                  decoration: TextDecoration.none,
-                                ),
+          child: Stack(
+            children: [
+              // Nav labels centred in safe area.
+              SafeArea(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final item in _items)
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 14 * sh),
+                          child: GestureDetector(
+                            onTap: () => _onItemTap(item),
+                            child: Text(
+                              item.label.toUpperCase(),
+                              style: TextStyle(
+                                fontFamily: MainFontFamilies.lilitaOne,
+                                fontSize: 44 * sw,
+                                color: MainColors.white,
+                                letterSpacing: 1,
+                                decoration: TextDecoration.none,
                               ),
                             ),
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
                 ),
-                // Goback button pinned at bottom.
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 40),
-                  child: FeedLockoutButton(),
-                ),
-              ],
-            ),
+              ),
+              // Lockout button — same position as feed.
+              Builder(
+                builder: (context) {
+                  final btnW = 86 * sw;
+                  final btnH = 102 * sw;
+                  final bottomOffset =
+                      FeedLayout.lockoutBottomDistance * sw - btnH / 2;
+                  final leftOffset = size.width / 2 +
+                      FeedLayout.lockoutCenterOffsetX * sw -
+                      btnW / 2;
+                  return Positioned(
+                    bottom: bottomOffset,
+                    left: leftOffset,
+                    child: const FeedLockoutButton(),
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ),

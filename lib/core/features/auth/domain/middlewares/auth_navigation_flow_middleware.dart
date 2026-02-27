@@ -5,6 +5,7 @@ import 'package:cloudless/core/exceptions/request_timeout_exception.dart';
 import 'package:cloudless/core/exceptions/too_many_requests_exception.dart';
 import 'package:cloudless/core/features/auth/data/providers/auth_repository_provider.dart';
 import 'package:cloudless/core/features/auth/data/storables/objective_completed_storable.dart';
+import 'package:cloudless/core/features/lockout/data/storables/manual_lockout_storable.dart';
 import 'package:cloudless/core/features/auth/domain/providers/is_authenticated_provider.dart';
 import 'package:cloudless/core/features/auth/domain/providers/is_authenticated_stream_provider.dart';
 import 'package:cloudless/core/features/calendar/domain/providers/calendar_posts_cache_provider.dart';
@@ -154,6 +155,13 @@ class AuthNavigationFlowMiddleware extends Middleware {
         await profileCompletedStorable.set(false);
         return const SignInRoutable();
       }
+    }
+
+    // Check if user is currently locked out (mirrors old TimeLimitMiddleware).
+    final lockoutStorable = ManualLockoutStorable();
+    final isLockedOut = await lockoutStorable.isLockedOut();
+    if (isLockedOut) {
+      return const ManualLockoutRoutable();
     }
 
     // Check local boolean first to avoid network calls

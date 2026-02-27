@@ -71,10 +71,12 @@ class _NativeGlass extends StatelessWidget {
     final stack = Stack(
       children: [
         Positioned.fill(
-          child: UiKitView(
-            viewType: 'app_liquid_glass',
-            creationParams: config.toCreationParams(),
-            creationParamsCodec: const StandardMessageCodec(),
+          child: IgnorePointer(
+            child: UiKitView(
+              viewType: 'app_liquid_glass',
+              creationParams: config.toCreationParams(),
+              creationParamsCodec: const StandardMessageCodec(),
+            ),
           ),
         ),
         child,

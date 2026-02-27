@@ -159,8 +159,10 @@ class ManualLockoutView extends HookConsumerWidget {
   }
 
   String _formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
+    // Ceil to next whole minute so the display doesn't drop a minute early.
+    final totalMinutes = (duration.inSeconds / 60).ceil();
+    final hours = totalMinutes ~/ 60;
+    final minutes = totalMinutes % 60;
     return '$hours:${minutes.toString().padLeft(2, '0')}';
   }
 

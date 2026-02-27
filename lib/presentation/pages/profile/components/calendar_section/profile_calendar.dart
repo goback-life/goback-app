@@ -40,7 +40,6 @@ Future<List<CalendarPostModel>?> _fetchMonths(
       direction: CalendarLoadDirection.before,
       limit: 42,
     );
-    ref.invalidate(p);
     return ref.read(p.future);
   }).toList();
 
@@ -306,33 +305,44 @@ class ProfileCalendar extends HookConsumerWidget
     bool Function() isMounted, {
     bool isCurrentUser = false,
   }) async {
-    // API fetches by year/month, so fetch each month separately.
-    // Own user: current + 2 previous months. Others: current month only.
-    final monthsToFetch = <DateTime>[];
     if (isCurrentUser) {
-      for (var i = 0; i < _kPreloadMonths; i++) {
-        monthsToFetch.add(
-          DateTime(selectedMonth.year, selectedMonth.month - i),
-        );
-      }
-    } else {
-      monthsToFetch.add(selectedMonth);
-    }
+      // Check if cache already covers this month's grid range.
+      final cacheNotifier = ref.read(calendarPostsCacheProvider.notifier);
+      final cache = ref.read(calendarPostsCacheProvider);
+      final gridS = _gridStart(selectedMonth);
+      final gridE = _gridEnd(selectedMonth);
+      final cacheCovers = cacheNotifier.currentUserId == targetUserId &&
+          cache.any(
+            (p) =>
+                !DateTime(p.publishedAt.year, p.publishedAt.month,
+                        p.publishedAt.day)
+                    .isBefore(gridS) &&
+                !DateTime(p.publishedAt.year, p.publishedAt.month,
+                        p.publishedAt.day)
+                    .isAfter(gridE),
+          );
+      if (cacheCovers) return; // Cache already has data for this range.
 
-    final allPosts = await _fetchMonths(ref, targetUserId, monthsToFetch);
-    if (allPosts == null || !isMounted()) return;
+      // Only fetch the single selected month (preloadCalendarCache already
+      // covers the initial 3-month window on startup).
+      final allPosts =
+          await _fetchMonths(ref, targetUserId, [selectedMonth]);
+      if (allPosts == null || !isMounted()) return;
 
-    if (isCurrentUser) {
       ref
           .read(calendarPostsCacheProvider.notifier)
           .mergePosts(
             allPosts,
             userId: targetUserId,
-            rangeStart: _gridStart(monthsToFetch.last),
-            rangeEnd: _gridEnd(monthsToFetch.first),
+            rangeStart: gridS,
+            rangeEnd: gridE,
           );
       // Display is updated by the display effect reacting to cache change.
     } else {
+      final allPosts =
+          await _fetchMonths(ref, targetUserId, [selectedMonth]);
+      if (allPosts == null || !isMounted()) return;
+
       final postsByDay = <String, CalendarPostModel>{};
       for (final post in allPosts) {
         final d = DateTime(
