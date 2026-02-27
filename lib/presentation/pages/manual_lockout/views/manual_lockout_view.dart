@@ -211,6 +211,8 @@ class ManualLockoutView extends HookConsumerWidget {
     String lockoutSessionId,
     PostCreationInitializationResult postCreationInit,
   ) {
+    // Clear completion-pending so nav overlay unblocks
+    ref.read(manualLockoutNotifierProvider.notifier).clearLockout();
     if (lockoutSessionId.isNotEmpty) {
       ref
           .read(pendingLockoutPostProvider.notifier)
@@ -232,6 +234,8 @@ class ManualLockoutView extends HookConsumerWidget {
     }
 
     await storable.clearLockout();
+    // Clear completion-pending so nav overlay unblocks
+    await ref.read(manualLockoutNotifierProvider.notifier).clearLockout();
     router.go(const HomeRoutable());
   }
 }

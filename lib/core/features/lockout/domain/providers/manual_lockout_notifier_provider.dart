@@ -126,7 +126,10 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     try {
       await useCase.execute();
       state = AsyncValue.data(
-        const ManualLockoutModel(isLockedOut: false),
+        const ManualLockoutModel(
+          isLockedOut: false,
+          isCompletionPending: false,
+        ),
       );
       logger.info('Manual lockout cleared');
     } catch (error, stackTrace) {
@@ -243,6 +246,9 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     final checkUseCase = CheckManualLockoutUseCase(storable: storable);
     final isLockedOut = await checkUseCase.execute();
 
+    final wasLockedOut = state.value?.isLockedOut ?? false;
+    final wasCompletionPending = state.value?.isCompletionPending ?? false;
+
     Duration? remainingDuration;
     if (isLockedOut) {
       final getRemainingUseCase = GetLockoutRemainingTimeUseCase(
@@ -251,10 +257,15 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       remainingDuration = await getRemainingUseCase.execute();
     }
 
+    final nowLocked = isLockedOut && remainingDuration != null;
+
     state = AsyncValue.data(
       ManualLockoutModel(
-        isLockedOut: isLockedOut && remainingDuration != null,
+        isLockedOut: nowLocked,
         remainingDuration: remainingDuration,
+        // Timer just expired → completion pending (until share/skip)
+        isCompletionPending:
+            wasCompletionPending || (wasLockedOut && !nowLocked),
       ),
     );
   }

@@ -37,8 +37,10 @@ class NavOverlayWrapper extends HookConsumerWidget {
 
     // Check lockout state to disable overlay.
     final lockoutAsync = ref.watch(manualLockoutNotifierProvider);
+    final lockoutState = lockoutAsync.valueOrNull;
     final isBlocked = !hasCompletedSignup ||
-        lockoutAsync.valueOrNull?.isLockedOut == true;
+        lockoutState?.isLockedOut == true ||
+        lockoutState?.isCompletionPending == true;
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
