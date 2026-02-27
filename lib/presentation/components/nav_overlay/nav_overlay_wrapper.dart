@@ -1,6 +1,8 @@
 import 'package:cloudless/core/features/auth/domain/providers/is_authenticated_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/profile/data/storables/profile_completed_storable.dart';
+import 'dart:ui' as ui;
+
 import 'package:cloudless/presentation/components/nav_overlay/nav_overlay.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +50,13 @@ class NavOverlayWrapper extends HookConsumerWidget {
             },
       child: Stack(
         children: [
-          child,
+          if (isOverlayVisible.value)
+            ImageFiltered(
+              imageFilter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              child: child,
+            )
+          else
+            child,
           if (isOverlayVisible.value)
             Positioned.fill(
               child: NavOverlay(

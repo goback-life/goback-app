@@ -1,3 +1,4 @@
+import 'package:battery_plus/battery_plus.dart';
 import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/models/manual_lockout_model.dart';
@@ -49,6 +50,14 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     state = const AsyncValue.loading();
     String? sessionId;
 
+    // Capture battery level at lockout start
+    int? batteryAtStart;
+    try {
+      batteryAtStart = await Battery().batteryLevel;
+    } catch (_) {
+      // Permission denied or unavailable - score will be null
+    }
+
     try {
       // Create session in database first
       final sessionResult = await sessionService.createSession(
@@ -73,6 +82,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
         storable: storable,
         duration: duration,
         sessionId: sessionId,
+        batteryAtStart: batteryAtStart,
       );
       await useCase.execute();
 
@@ -142,6 +152,14 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     final storable = ref.read(manualLockoutStorableProvider);
     final sessionService = ref.read(lockoutSessionServiceProvider);
 
+    // Capture battery level at lockout start
+    int? batteryAtStart;
+    try {
+      batteryAtStart = await Battery().batteryLevel;
+    } catch (_) {
+      // Permission denied or unavailable - score will be null
+    }
+
     state = const AsyncValue.loading();
     try {
       // Get session details to determine end time
@@ -185,6 +203,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
         storable: storable,
         lockoutEndTime: lockoutEndTime!,
         lockoutSessionId: lockoutSessionId,
+        batteryAtStart: batteryAtStart,
       );
       await useCase.execute();
 

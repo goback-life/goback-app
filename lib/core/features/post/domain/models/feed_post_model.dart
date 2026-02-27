@@ -41,6 +41,10 @@ sealed class FeedPostModel with _$FeedPostModel {
     String? description,
     /// Reference to lockout_sessions table if this is a lockout post
     String? lockoutId,
+    /// Goback score (0-100) from lockout session
+    int? lockoutScore,
+    /// Lockout duration in minutes from lockout session
+    int? lockoutDurationMinutes,
     /// When this post was saved to calendar (null if not saved)
     DateTime? calendarSavedAt,
     @Default([]) List<LinkPreviewModel> linkPreviews,
@@ -50,6 +54,14 @@ sealed class FeedPostModel with _$FeedPostModel {
 
   /// Returns true if this is a lockout post (has a lockout session reference)
   bool get isLockoutPost => lockoutId != null;
+
+  /// Formatted lockout duration as "h:mm" (e.g. "2:05")
+  String? get lockoutDurationFormatted {
+    if (lockoutDurationMinutes == null) return null;
+    final h = lockoutDurationMinutes! ~/ 60;
+    final m = lockoutDurationMinutes! % 60;
+    return '$h:${m.toString().padLeft(2, '0')}';
+  }
 
   DateTime localPublishedAt(WidgetRef ref) {
     final currentTimezoneAsync = ref.watch(currentTimezoneProvider);

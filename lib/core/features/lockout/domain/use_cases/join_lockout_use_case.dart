@@ -8,11 +8,13 @@ class JoinLockoutUseCase implements UseCaseContract<void> {
     required this.storable,
     required this.lockoutEndTime,
     required this.lockoutSessionId,
+    this.batteryAtStart,
   });
 
   final ManualLockoutStorable storable;
   final DateTime lockoutEndTime;
   final String lockoutSessionId;
+  final int? batteryAtStart;
 
   @override
   Future<void> execute() async {
@@ -29,7 +31,7 @@ class JoinLockoutUseCase implements UseCaseContract<void> {
       lockoutEndTimestamp: lockoutEndTime,
       lockoutStartTimestamp: now,
       lockoutSessionId: lockoutSessionId,
+      batteryAtStart: batteryAtStart,
     );
   }
 }
-

@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:battery_plus/battery_plus.dart';
 import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout_post_provider.dart';
+import 'package:cloudless/core/features/lockout/domain/utilities/goback_score_calculator.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_creation_initialization.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
@@ -33,6 +35,8 @@ class ManualLockoutView extends HookConsumerWidget {
     final countdown = useState('');
     final isLockoutComplete = useState(false);
     final sessionId = useState<String>('');
+    final gobackScore = useState<int?>(null);
+    final lockoutDurationMinutes = useState<int>(0);
 
     // Animation controllers for lockout-end transition
     final triangleFadeCtrl = useAnimationController(
@@ -69,17 +73,53 @@ class ManualLockoutView extends HookConsumerWidget {
     // Friends overlay state
     final showFriendsOverlay = useState(false);
 
+    // Compute goback score and trigger completion transition
+    Future<void> onLockoutComplete() async {
+      if (isLockoutComplete.value) return;
+      isLockoutComplete.value = true;
+      countdown.value = '0:00';
+
+      // Compute score from battery data
+      final storable = ref.read(manualLockoutStorableProvider);
+      final batteryStart = await storable.getBatteryAtStart();
+      final lockoutStart = await storable.getLockoutStart();
+
+      if (lockoutStart != null) {
+        final duration = DateTime.now().difference(lockoutStart);
+        lockoutDurationMinutes.value = duration.inMinutes;
+
+        int? batteryEnd;
+        try {
+          batteryEnd = await Battery().batteryLevel;
+        } catch (_) {}
+
+        final score = GobackScoreCalculator.calculate(
+          batteryStart: batteryStart,
+          batteryEnd: batteryEnd,
+          duration: duration,
+        );
+        gobackScore.value = score;
+
+        // Upload score to server
+        final sid = sessionId.value;
+        if (score != null && sid.isNotEmpty) {
+          final sessionService = ref.read(lockoutSessionServiceProvider);
+          await sessionService.updateScore(sessionId: sid, score: score);
+        }
+      }
+
+      triangleFadeCtrl.forward().then((_) {
+        textFadeCtrl.forward();
+      });
+    }
+
     // Timer logic
     useEffect(() {
       Timer? timer;
 
       lockoutStateAsync.whenData((lockoutState) {
         if (!lockoutState.isLockedOut && !isLockoutComplete.value) {
-          isLockoutComplete.value = true;
-          countdown.value = '0:00';
-          triangleFadeCtrl.forward().then((_) {
-            textFadeCtrl.forward();
-          });
+          onLockoutComplete();
           return;
         }
 
@@ -94,11 +134,7 @@ class ManualLockoutView extends HookConsumerWidget {
               if (state.isLockedOut && state.remainingDuration != null) {
                 countdown.value = _formatDuration(state.remainingDuration!);
               } else if (!isLockoutComplete.value) {
-                isLockoutComplete.value = true;
-                countdown.value = '0:00';
-                triangleFadeCtrl.forward().then((_) {
-                  textFadeCtrl.forward();
-                });
+                onLockoutComplete();
               }
             });
           });
@@ -135,6 +171,8 @@ class ManualLockoutView extends HookConsumerWidget {
                 triangleOpacity: triangleOpacity,
                 completionTextOpacity: completionTextOpacity,
                 isComplete: isLockoutComplete.value,
+                gobackScore: gobackScore.value,
+                lockoutDurationMinutes: lockoutDurationMinutes.value,
               ),
             ),
           ),
@@ -150,8 +188,10 @@ class ManualLockoutView extends HookConsumerWidget {
 
           // Friends overlay
           if (showFriendsOverlay.value)
-            LockoutFriendsOverlay(
-              onDismiss: () => showFriendsOverlay.value = false,
+            Positioned.fill(
+              child: LockoutFriendsOverlay(
+                onDismiss: () => showFriendsOverlay.value = false,
+              ),
             ),
         ],
       ),
@@ -256,6 +296,8 @@ class _CutoutPainter extends CustomPainter {
     required this.triangleOpacity,
     required this.completionTextOpacity,
     required this.isComplete,
+    this.gobackScore,
+    this.lockoutDurationMinutes = 0,
   });
 
   final Color bgColor;
@@ -263,6 +305,8 @@ class _CutoutPainter extends CustomPainter {
   final double triangleOpacity;
   final double completionTextOpacity;
   final bool isComplete;
+  final int? gobackScore;
+  final int lockoutDurationMinutes;
 
   /// Creates a foreground paint that punches holes via dstOut.
   /// Where text/shape is drawn (alpha > 0), the solid bg becomes transparent,
@@ -327,7 +371,35 @@ class _CutoutPainter extends CustomPainter {
       canvas.restore();
     }
 
-    // 4. Punch completion text holes ("Share your goback" + "Skip")
+    // 4. Punch goback score hole (between timer and share/skip)
+    if (isComplete && completionTextOpacity > 0 && gobackScore != null) {
+      final dH = lockoutDurationMinutes ~/ 60;
+      final dM = lockoutDurationMinutes % 60;
+      final durationStr = '$dH:${dM.toString().padLeft(2, '0')}';
+      final scoreStr = 'score $gobackScore  $durationStr';
+
+      final scoreTp = TextPainter(
+        text: TextSpan(
+          text: scoreStr,
+          style: TextStyle(
+            fontFamily: MainFontFamilies.quicksand,
+            fontWeight: FontWeight.w500,
+            fontSize: 28,
+            letterSpacing: 1.0,
+            foreground: _holePaint(completionTextOpacity),
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+
+      final scoreY = size.height * 0.68;
+      scoreTp.paint(
+        canvas,
+        Offset((size.width - scoreTp.width) / 2, scoreY),
+      );
+    }
+
+    // 5. Punch completion text holes ("Share your goback" + "Skip")
     // Positioned at fixed screen fractions matching Figma (157:50).
     if (isComplete && completionTextOpacity > 0) {
       final shareY = size.height * 0.78;
@@ -377,7 +449,9 @@ class _CutoutPainter extends CustomPainter {
       oldDelegate.countdown != countdown ||
       oldDelegate.triangleOpacity != triangleOpacity ||
       oldDelegate.completionTextOpacity != completionTextOpacity ||
-      oldDelegate.isComplete != isComplete;
+      oldDelegate.isComplete != isComplete ||
+      oldDelegate.gobackScore != gobackScore ||
+      oldDelegate.lockoutDurationMinutes != lockoutDurationMinutes;
 }
 
 /// Triangle path matching feed_lockout_button (viewBox 86x102).

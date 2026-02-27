@@ -35,6 +35,10 @@ sealed class FeedPostDto with _$FeedPostDto {
     @JsonKey(name: 'author_avatar_url') String? authorAvatarUrl,
     /// Reference to lockout_sessions table if this is a lockout post
     @JsonKey(name: 'lockout_id') String? lockoutId,
+    /// Goback score (0-100) from lockout session
+    @JsonKey(name: 'lockout_score') int? lockoutScore,
+    /// Lockout duration in minutes from lockout session
+    @JsonKey(name: 'lockout_duration_minutes') int? lockoutDurationMinutes,
     /// When this post was saved to calendar (null if not saved)
     @JsonKey(name: 'calendar_saved_at') String? calendarSavedAt,
     String? description,

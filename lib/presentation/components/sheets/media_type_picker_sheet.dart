@@ -3,8 +3,6 @@ import 'package:cloudless/core/features/post/domain/models/parent_post_reference
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
 import 'package:cloudless/presentation/components/form_field/image_picker_sheet_layout.dart';
-import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
-import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/parent_post_preview/parent_post_preview.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -35,14 +33,15 @@ class MediaTypePickerSheet extends HookConsumerWidget
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return AppGlassContainer(
-      config: GlassConfig(
-        variant: GlassVariant.regular,
-        cornerRadius: sheetBorderRadius,
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(sheetBorderRadius),
+        ),
       ),
-      child: Padding(
-        padding: EdgeInsets.all(verticalSpacing),
-        child: SafeArea(
+      padding: EdgeInsets.all(verticalSpacing),
+      child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -87,7 +86,6 @@ class MediaTypePickerSheet extends HookConsumerWidget
             ),
           ],
         ),
-      ),
       ),
     );
   }

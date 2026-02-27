@@ -69,7 +69,7 @@ class YourCircleView extends HookConsumerWidget
           children: [
             // Layer 0: Scrollable friend list
             if (members.isEmpty)
-              const Center(child: MainEmptyState())
+              const Positioned.fill(child: Center(child: MainEmptyState()))
             else
               ListView.builder(
                 reverse: true,

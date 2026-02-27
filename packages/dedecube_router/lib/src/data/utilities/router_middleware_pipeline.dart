@@ -25,12 +25,11 @@ class RouterMiddlewarePipeline {
   ) async {
     for (final middleware in _middlewares) {
       if (middleware.excludedRoutes.any((route) => route.path == state.path)) {
-        // skip excluded routes
-      } else {
-        final operation = await middleware.handle(context, state);
-        if (operation != null) {
-          return operation.path;
-        }
+        continue;
+      }
+      final operation = await middleware.handle(context, state);
+      if (operation != null) {
+        return operation.path;
       }
     }
     return null;

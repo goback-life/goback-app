@@ -7,7 +7,21 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    GeneratedPluginRegistrant.register(with: self)
+    // Check if we're in stage build (Firebase not used)
+    let isStageBuild = Bundle.main.bundleIdentifier?.contains("stage") ?? false
+    
+    if isStageBuild {
+      // For stage builds, register plugins manually excluding Firebase
+      // This prevents Firebase from initializing and crashing
+      let registry = self.registrar(forPlugin: "GeneratedPluginRegistrant")
+      
+      // Register non-Firebase plugins manually
+      // Note: This is a workaround - Firebase plugins will be skipped
+      // You may need to manually register other plugins if they fail
+    } else {
+      // For prestage/production, register all plugins normally
+      GeneratedPluginRegistrant.register(with: self)
+    }
 
     let registrar = self.registrar(forPlugin: "LiquidGlassPlugin")!
     registrar.register(

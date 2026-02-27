@@ -1,4 +1,3 @@
-import 'package:cloudless/core/config/debug_form_values.dart';
 import 'package:cloudless/core/features/auth/data/exceptions/auth_access_denied_exception.dart';
 import 'package:cloudless/core/features/auth/data/exceptions/auth_invalid_verification_code_exception.dart';
 import 'package:cloudless/core/features/auth/data/exceptions/auth_user_banned_exception.dart';
@@ -33,13 +32,11 @@ extension OtpFormKeyExtension on OtpFormKey {
 }
 
 OtpFormResult useOtpForm(WidgetRef ref, String phoneNumber) {
-  final bool appDebug = environment.getBool('APP_DEBUG', false);
   final resendOtpCallback = useResendPhoneOtp(ref, phoneNumber);
 
   final formResult = useForm<bool>(
     controls: {
       OtpFormKey.otp.value: FormerControl<String>(
-        value: appDebug ? DebugFormValues.getVerificationCode() : null,
         validators: [
           FormerValidators.required(),
           FormerValidators.minLength(6),

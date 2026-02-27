@@ -2,7 +2,7 @@ name: cloudless
 description: "A Flutter app for sharing temporary content in private circles."
 publish_to: "none"
 
-version: 1.0.2+1
+version: 1.0.3+1
 
 environment:
   sdk: ^3.8.1
@@ -45,6 +45,7 @@ dependencies:
   liquid_glass_renderer: ^0.2.0-dev.4
   liquid_glass_widgets: ^0.3.0-dev.1
   vector_math: ^2.1.4
+  battery_plus: ^6.0.3
   video_player: ^2.10.0
   video_thumbnail: ^0.5.6
 

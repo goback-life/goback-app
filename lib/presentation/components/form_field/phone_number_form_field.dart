@@ -91,6 +91,7 @@ class PhoneNumberFormField extends HookConsumerWidget
                   ),
                 ),
                 child: PhoneFormField(
+                autovalidateMode: AutovalidateMode.disabled,
                 selectionControls: CustomTextSelectionControls(),
                 countrySelectorNavigator: const CountrySelectorNavigator.page(),
                 focusNode: focusNode,

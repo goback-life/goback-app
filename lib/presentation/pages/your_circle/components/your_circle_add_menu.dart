@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
@@ -60,56 +60,6 @@ const _kArrowDownPathData = GlassPathData(
   ],
 );
 
-/// Rotates all points in [data] by [angle] radians around the viewBox centre.
-///
-/// This ensures the glass overlay's NW lighting interacts differently with the
-/// shape at each rotation angle (the gradient stays screen-fixed while the path
-/// rotates within it).
-GlassPathData _rotatePath(GlassPathData data, double angle) {
-  if (angle == 0) return data;
-  final cx = data.viewBoxWidth / 2;
-  final cy = data.viewBoxHeight / 2;
-  final cosA = math.cos(angle);
-  final sinA = math.sin(angle);
-
-  double rx(double x, double y) => cx + (x - cx) * cosA - (y - cy) * sinA;
-  double ry(double x, double y) => cy + (x - cx) * sinA + (y - cy) * cosA;
-
-  final rotated = <List<dynamic>>[];
-  for (final cmd in data.commands) {
-    switch (cmd[0] as String) {
-      case 'M':
-        final x = (cmd[1] as num).toDouble();
-        final y = (cmd[2] as num).toDouble();
-        rotated.add(['M', rx(x, y), ry(x, y)]);
-      case 'L':
-        final x = (cmd[1] as num).toDouble();
-        final y = (cmd[2] as num).toDouble();
-        rotated.add(['L', rx(x, y), ry(x, y)]);
-      case 'C':
-        final x1 = (cmd[1] as num).toDouble();
-        final y1 = (cmd[2] as num).toDouble();
-        final x2 = (cmd[3] as num).toDouble();
-        final y2 = (cmd[4] as num).toDouble();
-        final x3 = (cmd[5] as num).toDouble();
-        final y3 = (cmd[6] as num).toDouble();
-        rotated.add([
-          'C',
-          rx(x1, y1), ry(x1, y1),
-          rx(x2, y2), ry(x2, y2),
-          rx(x3, y3), ry(x3, y3),
-        ]);
-      case 'Z':
-        rotated.add(['Z']);
-    }
-  }
-  return GlassPathData(
-    commands: rotated,
-    viewBoxWidth: data.viewBoxWidth,
-    viewBoxHeight: data.viewBoxHeight,
-  );
-}
-
 class YourCircleAddMenu extends StatefulWidget {
   const YourCircleAddMenu({super.key});
 
@@ -118,9 +68,10 @@ class YourCircleAddMenu extends StatefulWidget {
 }
 
 class _YourCircleAddMenuState extends State<YourCircleAddMenu>
-    with SingleTickerProviderStateMixin, MainLayout, YourCircleLayout {
+    with TickerProviderStateMixin, MainLayout, YourCircleLayout {
   late final AnimationController _controller;
-  late final Animation<double> _rotationAnim;
+  late final AnimationController _glowController;
+  late final Animation<double> _glowAnim;
   late final Animation<double> _firstArrowAnim;
   late final Animation<double> _secondArrowAnim;
   bool _expanded = false;
@@ -132,9 +83,22 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _rotationAnim = Tween<double>(begin: 0, end: math.pi / 4).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _glowController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
     );
+    _glowAnim = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 300,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.0, end: 0.0)
+            .chain(CurveTween(curve: Curves.easeInOutSine)),
+        weight: 800,
+      ),
+    ]).animate(_glowController);
     // Both arrows slide ABOVE the plus. First arrow (up/invite) is furthest.
     _firstArrowAnim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
@@ -153,6 +117,7 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
   @override
   void dispose() {
     _controller.dispose();
+    _glowController.dispose();
     super.dispose();
   }
 
@@ -160,6 +125,7 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
     setState(() => _expanded = !_expanded);
     if (_expanded) {
       _controller.forward();
+      _glowController.forward(from: 0);
     } else {
       _controller.reverse();
     }
@@ -184,15 +150,11 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
     final slot2Offset = slot1Offset + arrowHeight + arrowSpacing;
 
     return AnimatedBuilder(
-      animation: _controller,
+      animation: Listenable.merge([_controller, _glowController]),
       builder: (context, _) {
-        final rotatedPlusPath = _rotatePath(
-          _kPlusPathData,
-          _rotationAnim.value,
-        );
-
         // Full height so arrows stay within Stack bounds for hit testing.
         final fullHeight = slot2Offset + arrowHeight;
+        final expandT = _controller.value;
 
         return SizedBox(
           width: addButtonSize,
@@ -209,6 +171,7 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
                   child: Opacity(
                     opacity: _firstArrowAnim.value,
                     child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onTap: _onUpTap,
                       child: Transform(
                         alignment: Alignment.center,
@@ -239,6 +202,7 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
                   child: Opacity(
                     opacity: _secondArrowAnim.value,
                     child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onTap: _onDownTap,
                       child: SizedBox(
                         width: arrowWidth,
@@ -255,19 +219,33 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
                   ),
                 ),
               ),
-              // Plus / X button — path rotates so glass lighting shifts
+              // Plus button — scales down with glass glow when expanded
               GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: _toggle,
-                child: SizedBox(
-                  width: addButtonSize,
-                  height: addButtonSize,
-                  child: AppGlassContainer(
-                    config: GlassConfig(
-                      variant: GlassVariant.clear,
-                      tint: MainColors.accent,
-                      pathData: rotatedPlusPath,
+                child: Transform.scale(
+                  scale: 1.0 - 0.15 * expandT,
+                  child: SizedBox(
+                    width: addButtonSize,
+                    height: addButtonSize,
+                    child: Stack(
+                      children: [
+                        AppGlassContainer(
+                          config: const GlassConfig(
+                            variant: GlassVariant.clear,
+                            tint: MainColors.accent,
+                            pathData: _kPlusPathData,
+                          ),
+                          child: const SizedBox.expand(),
+                        ),
+                        CustomPaint(
+                          size: Size(addButtonSize, addButtonSize),
+                          painter: _PlusGlowPainter(
+                            glowIntensity: _glowAnim.value,
+                          ),
+                        ),
+                      ],
                     ),
-                    child: const SizedBox.expand(),
                   ),
                 ),
               ),
@@ -277,4 +255,93 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
       },
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Plus-shape path helper & glow painter (matches FeedLockoutButton style)
+// ---------------------------------------------------------------------------
+
+Path _plusPath(Size size) {
+  final sx = size.width / _kPlusPathData.viewBoxWidth;
+  final sy = size.height / _kPlusPathData.viewBoxHeight;
+  final path = Path();
+  for (final cmd in _kPlusPathData.commands) {
+    switch (cmd[0] as String) {
+      case 'M':
+        path.moveTo(
+          (cmd[1] as num).toDouble() * sx,
+          (cmd[2] as num).toDouble() * sy,
+        );
+      case 'L':
+        path.lineTo(
+          (cmd[1] as num).toDouble() * sx,
+          (cmd[2] as num).toDouble() * sy,
+        );
+      case 'C':
+        path.cubicTo(
+          (cmd[1] as num).toDouble() * sx,
+          (cmd[2] as num).toDouble() * sy,
+          (cmd[3] as num).toDouble() * sx,
+          (cmd[4] as num).toDouble() * sy,
+          (cmd[5] as num).toDouble() * sx,
+          (cmd[6] as num).toDouble() * sy,
+        );
+      case 'Z':
+        path.close();
+    }
+  }
+  return path;
+}
+
+/// Edge highlight + caustic glow on the plus shape.
+/// Matches [FeedLockoutButton]'s _GlassOverlayPainter effects 5a/5b.
+class _PlusGlowPainter extends CustomPainter {
+  _PlusGlowPainter({required this.glowIntensity});
+
+  final double glowIntensity;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (glowIntensity == 0) return;
+    final path = _plusPath(size);
+    final bounds = path.getBounds();
+
+    // Subtle edge brightening — NW light.
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0
+        ..shader = ui.Gradient.linear(
+          Offset(bounds.left, bounds.top),
+          Offset(bounds.right, bounds.bottom),
+          [
+            Colors.white.withValues(alpha: 0.18 * glowIntensity),
+            Colors.white.withValues(alpha: 0.06 * glowIntensity),
+            Colors.transparent,
+          ],
+          [0.0, 0.45, 0.75],
+        ),
+    );
+
+    // Subtle SE caustic.
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0
+        ..shader = ui.Gradient.radial(
+          Offset(bounds.right * 0.82, bounds.bottom * 0.88),
+          bounds.width * 0.35,
+          [
+            Colors.white.withValues(alpha: 0.12 * glowIntensity),
+            Colors.transparent,
+          ],
+        ),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _PlusGlowPainter old) =>
+      old.glowIntensity != glowIntensity;
 }

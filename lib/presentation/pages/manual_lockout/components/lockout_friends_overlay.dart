@@ -4,8 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
-import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
-import 'package:cloudless/presentation/components/glass/glass_config.dart';
+import 'dart:ui' as ui;
+
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -25,10 +25,7 @@ class LockoutFriendsOverlay extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final surface = Theme.of(context).colorScheme.surface;
-    // Text should contrast with lockout bg (which is the inverted surface)
-    final textColor =
-        surface.computeLuminance() < 0.5 ? MainColors.white : MainColors.dark;
+    const textColor = MainColors.dark;
 
     final cacheState = ref.watch(friendsLockedOutCacheProvider);
     final cacheNotifier = ref.read(friendsLockedOutCacheProvider.notifier);
@@ -88,16 +85,21 @@ class LockoutFriendsOverlay extends HookConsumerWidget {
     return GestureDetector(
       onTap: onDismiss,
       behavior: HitTestBehavior.opaque,
-      child: AppGlassContainer(
-        config: const GlassConfig(
-          variant: GlassVariant.regular,
-          cornerRadius: 0,
-        ),
-        child: SafeArea(
-          child: _FriendsList(
-            friends: friends,
-            textColor: textColor,
-            currentSessionId: currentSessionId.value,
+      child: SizedBox.expand(
+        child: ClipRect(
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: ColoredBox(
+              color: Colors.white.withValues(alpha: 0.12),
+              child: SafeArea(
+                bottom: false,
+                child: _FriendsList(
+                  friends: friends,
+                  textColor: textColor,
+                  currentSessionId: currentSessionId.value,
+                ),
+              ),
+            ),
           ),
         ),
       ),

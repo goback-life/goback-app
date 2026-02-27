@@ -193,11 +193,6 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                   : null,
               label: Text(
                 translator.translate('pages.manual_lockout.dialog.confirm'),
-                style: textTheme.titleMedium?.copyWith(
-                  color: isValid
-                      ? colorScheme.primary
-                      : colorScheme.onSurface.withValues(alpha: 0.5),
-                ),
               ),
             ),
           ],

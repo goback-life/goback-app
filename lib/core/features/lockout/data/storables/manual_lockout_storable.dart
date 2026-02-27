@@ -14,6 +14,7 @@ class ManualLockoutStorable extends Storable<Map> {
       'lockoutEndTimestamp': null,
       'lockoutStartTimestamp': null,
       'lockoutSessionId': null,
+      'batteryAtStart': null,
     });
     final result = Map<String, dynamic>.from(data);
     logger.info('$_tag getLockoutData: $result');
@@ -24,11 +25,13 @@ class ManualLockoutStorable extends Storable<Map> {
     required DateTime lockoutEndTimestamp,
     required DateTime lockoutStartTimestamp,
     String? lockoutSessionId,
+    int? batteryAtStart,
   }) async {
     final dataToStore = <String, dynamic>{
       'lockoutEndTimestamp': lockoutEndTimestamp.toIso8601String(),
       'lockoutStartTimestamp': lockoutStartTimestamp.toIso8601String(),
       'lockoutSessionId': lockoutSessionId,
+      'batteryAtStart': batteryAtStart,
     };
     logger.info('$_tag setLockoutData: $dataToStore');
     await set(dataToStore);
@@ -57,6 +60,11 @@ class ManualLockoutStorable extends Storable<Map> {
     return dateString != null ? DateTime.parse(dateString) : null;
   }
 
+  Future<int?> getBatteryAtStart() async {
+    final data = await getLockoutData();
+    return data['batteryAtStart'] as int?;
+  }
+
   Future<bool> isLockedOut() async {
     final lockoutEnd = await getLockoutEnd();
     if (lockoutEnd == null) {
@@ -70,6 +78,7 @@ class ManualLockoutStorable extends Storable<Map> {
       'lockoutEndTimestamp': null,
       'lockoutStartTimestamp': null,
       'lockoutSessionId': null,
+      'batteryAtStart': null,
     });
   }
 }

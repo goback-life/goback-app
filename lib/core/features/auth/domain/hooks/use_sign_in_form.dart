@@ -1,4 +1,3 @@
-import 'package:cloudless/core/config/debug_form_values.dart';
 import 'package:cloudless/core/features/auth/domain/providers/sign_in_provider.dart';
 import 'package:cloudless/core/features/supabase/data/handlers/common_supabase_exception_ui_handler.dart';
 import 'package:cloudless/presentation/components/alerts/main_alert.dart';
@@ -24,14 +23,12 @@ extension SignInFormKeyExtension on SignInFormKey {
 }
 
 SignInFormResult useSignInForm(WidgetRef ref) {
-  final bool appDebug = environment.getBool('APP_DEBUG', false);
   final isPrivacyAccepted = useState<bool>(false);
   String? phoneNumberValue;
 
   final formResult = useForm<void>(
     controls: {
       SignInFormKey.phoneNumber.value: FormerControl<String>(
-        value: appDebug ? DebugFormValues.getPhoneNumber() : null,
         validators: [FormerValidators.required()],
       ),
     },

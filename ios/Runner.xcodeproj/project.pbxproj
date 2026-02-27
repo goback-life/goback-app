@@ -30,6 +30,10 @@
 		E1019E27BA587A8C6058CD68 /* productionRelease.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = CA7B85D4DCB4CD5E346D5203 /* productionRelease.xcconfig */; };
 		EED3D30C675EF122273DF02A /* stageProfile.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 25D307307258A1FFAF0CC03B /* stageProfile.xcconfig */; };
 		F3673A464D636FC027BAFD5B /* prestageProfile.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 93151F0DB81D6C274ED8ADCD /* prestageProfile.xcconfig */; };
+		F77459292F3CD16800913C2B /* LiquidGlassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F77459272F3CD16800913C2B /* LiquidGlassView.swift */; };
+		F774592A2F3CD16800913C2B /* LiquidGlassViewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F77459282F3CD16800913C2B /* LiquidGlassViewFactory.swift */; };
+		F774592B2F3CD16800913C2B /* LiquidGlassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F77459272F3CD16800913C2B /* LiquidGlassView.swift */; };
+		F774592C2F3CD16800913C2B /* LiquidGlassViewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F77459282F3CD16800913C2B /* LiquidGlassViewFactory.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,6 +117,8 @@
 		E7EFA77FEC7D379D9FC2A4FB /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
 		F061A054D6FA725F18A14DE8 /* Pods-RunnerTests.release-stage.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release-stage.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release-stage.xcconfig"; sourceTree = "<group>"; };
 		F73D270361A3715E58DD8A8E /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "Runner/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		F77459272F3CD16800913C2B /* LiquidGlassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidGlassView.swift; sourceTree = "<group>"; };
+		F77459282F3CD16800913C2B /* LiquidGlassViewFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidGlassViewFactory.swift; sourceTree = "<group>"; };
 		F7F478DD349A302D55CA1459 /* prestageLaunchScreen.storyboard */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.storyboard; name = prestageLaunchScreen.storyboard; path = Runner/prestageLaunchScreen.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -223,6 +229,8 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				F77459272F3CD16800913C2B /* LiquidGlassView.swift */,
+				F77459282F3CD16800913C2B /* LiquidGlassViewFactory.swift */,
 				037927CF2ED7A96400BFAB1F /* InfoPlist.strings */,
 				03BFDF882E2645C100A768A0 /* Runner.entitlements */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
@@ -504,6 +512,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */,
+				F774592B2F3CD16800913C2B /* LiquidGlassView.swift in Sources */,
+				F774592C2F3CD16800913C2B /* LiquidGlassViewFactory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -513,6 +523,8 @@
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
+				F77459292F3CD16800913C2B /* LiquidGlassView.swift in Sources */,
+				F774592A2F3CD16800913C2B /* LiquidGlassViewFactory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

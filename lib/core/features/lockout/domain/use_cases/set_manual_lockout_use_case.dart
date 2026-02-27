@@ -7,11 +7,13 @@ class SetManualLockoutUseCase implements UseCaseContract<void> {
     required this.storable,
     required this.duration,
     this.sessionId,
+    this.batteryAtStart,
   });
 
   final ManualLockoutStorable storable;
   final Duration duration;
   final String? sessionId;
+  final int? batteryAtStart;
 
   @override
   Future<void> execute() async {
@@ -22,7 +24,7 @@ class SetManualLockoutUseCase implements UseCaseContract<void> {
       lockoutEndTimestamp: lockoutEnd,
       lockoutStartTimestamp: now,
       lockoutSessionId: sessionId,
+      batteryAtStart: batteryAtStart,
     );
   }
 }
-

@@ -41,6 +41,8 @@ class FeedPostDtoToModelMapper {
       description: dto.description,
       isAuthorConnected: dto.isAuthorConnected ?? false,
       lockoutId: dto.lockoutId,
+      lockoutScore: dto.lockoutScore,
+      lockoutDurationMinutes: dto.lockoutDurationMinutes,
       calendarSavedAt: dto.calendarSavedAt != null
           ? DateTime.tryParse(dto.calendarSavedAt!)
           : null,

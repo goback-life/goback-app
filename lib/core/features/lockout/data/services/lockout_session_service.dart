@@ -147,6 +147,28 @@ class LockoutSessionService {
     }
   }
 
+  /// Updates the goback score for a lockout session.
+  FutureResult<void> updateScore({
+    required String sessionId,
+    required int score,
+  }) async {
+    try {
+      await supabase.rpc(
+        'update_lockout_score',
+        params: {
+          'p_session_id': sessionId,
+          'p_score': score,
+        },
+      );
+      return Result.success(null);
+    } catch (e) {
+      logger.warning('Failed to update lockout score: $e');
+      return Result.failure(
+        e is Exception ? e : Exception('Failed to update score: $e'),
+      );
+    }
+  }
+
   /// Gets the current user's active lockout session (if any).
   FutureResult<LockoutSessionDto?> getCurrentSession() async {
     try {

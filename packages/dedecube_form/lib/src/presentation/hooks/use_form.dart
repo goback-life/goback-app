@@ -68,8 +68,9 @@ FormResult<T> useForm<T>({
     isSubmitting.value = true;
     try {
       final submitResult = await onSubmit(values);
+
       // Process the result:
-      // On success, set [result] and trigger [onSuccess] callback.
+      // On success, set [result] and invoke [onSuccess] callback.
       // On failure, trigger the [onFailure] callback.
       submitResult.fold(
         (successValue) {

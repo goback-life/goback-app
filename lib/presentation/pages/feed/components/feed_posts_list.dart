@@ -101,7 +101,7 @@ class FeedPostsList extends HookConsumerWidget {
           final cb = onTopPostDateChanged;
           final d = topDate;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            cb?.call(d);
+            if (mountedRef.value) cb?.call(d);
           });
         }
       }
