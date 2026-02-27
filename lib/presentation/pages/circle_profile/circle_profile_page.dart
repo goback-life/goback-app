@@ -76,6 +76,21 @@ class CircleProfilePage extends HookConsumerWidget
         children: [
           CircleProfileView(userId: userId, scale: s),
 
+          // Back button (top-left)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + hamburgerTopOffset * s,
+            left: 20 * s,
+            child: GestureDetector(
+              onTap: () => router.pop(),
+              behavior: HitTestBehavior.translucent,
+              child: Icon(
+                Icons.arrow_back_ios_new,
+                color: MainColors.white,
+                size: 20 * s,
+              ),
+            ),
+          ),
+
           // Hamburger menu button (top-right)
           Positioned(
             top: MediaQuery.of(context).padding.top + hamburgerTopOffset * s,

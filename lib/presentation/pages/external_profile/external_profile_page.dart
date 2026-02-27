@@ -2,6 +2,7 @@ import 'package:cloudless/presentation/pages/external_profile/views/external_pro
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
+import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 /// Non-friend profile page: only shows avatar, username, and bio.
@@ -23,7 +24,7 @@ class ExternalProfilePage extends HookConsumerWidget with MainLayout {
             Align(
               alignment: Alignment.centerLeft,
               child: GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () => router.pop(),
                 behavior: HitTestBehavior.translucent,
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
