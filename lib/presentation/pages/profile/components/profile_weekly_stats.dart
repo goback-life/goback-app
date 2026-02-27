@@ -5,13 +5,28 @@ import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 class ProfileWeeklyStats extends HookConsumerWidget {
-  const ProfileWeeklyStats({super.key});
+  const ProfileWeeklyStats({
+    super.key,
+    this.weeklyLockoutMinutes,
+    this.hasResolvedData = false,
+  });
+
+  /// Pre-resolved lockout minutes (avoids redundant provider watches).
+  final int? weeklyLockoutMinutes;
+
+  /// When true, uses [weeklyLockoutMinutes] directly instead of watching
+  /// providers. This allows the parent to resolve profile data once.
+  final bool hasResolvedData;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
+
+    if (hasResolvedData) {
+      return _buildDisplay(context, weeklyLockoutMinutes, textTheme, colorScheme);
+    }
 
     final currentUserAsync = ref.watch(getCurrentUserProvider);
 

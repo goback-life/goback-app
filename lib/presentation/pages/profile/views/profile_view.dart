@@ -1,3 +1,5 @@
+import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
+import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
 import 'package:cloudless/presentation/components/profile_description.dart';
 import 'package:cloudless/presentation/components/profile_image/profile_image.dart';
 import 'package:cloudless/presentation/components/username_field.dart';
@@ -7,15 +9,16 @@ import 'package:cloudless/presentation/pages/profile/profile_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
+import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 
-class ProfileView extends StatelessWidget with MainLayout, ProfileLayout {
+class ProfileView extends ConsumerWidget with MainLayout, ProfileLayout {
   const ProfileView({required this.scale, super.key});
 
   final double scale;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final topPad = MediaQuery.of(context).padding.top;
     final theme = Theme.of(context);
     final s = scale;
@@ -46,6 +49,30 @@ class ProfileView extends StatelessWidget with MainLayout, ProfileLayout {
       color: MainColors.white,
     );
 
+    // Resolve current user and profile once — children receive data via props
+    // instead of each independently watching the same providers.
+    final currentUserAsync = ref.watch(getCurrentUserProvider);
+    String? avatarUrl;
+    String? username;
+    String? biography;
+    int? weeklyLockoutMinutes;
+    bool profileResolved = false;
+
+    currentUserAsync.whenData((userResult) {
+      userResult.fold((user) {
+        final profileAsync = ref.watch(getProfileProvider(user.id));
+        profileAsync.whenData((profileResult) {
+          profileResult.fold((profile) {
+            avatarUrl = profile?.avatarUrl;
+            username = profile?.username;
+            biography = profile?.biography;
+            weeklyLockoutMinutes = profile?.weeklyLockoutMinutes;
+            profileResolved = true;
+          }, (_) {});
+        });
+      }, (_) {});
+    });
+
     return SizedBox.expand(
       child: Stack(
         children: [
@@ -55,12 +82,21 @@ class ProfileView extends StatelessWidget with MainLayout, ProfileLayout {
             left: 0,
             right: 0,
             child: Center(
-              child: ProfileImage(
-                showFromProfile: true,
-                isEditable: false,
-                showFullScreen: true,
-                size: scaledAvatarSize,
-              ),
+              child: profileResolved
+                  ? ProfileImage(
+                      imageUrl: avatarUrl,
+                      username: username,
+                      isEditable: false,
+                      showFullScreen: true,
+                      size: scaledAvatarSize,
+                    )
+                  : ProfileImage(
+                      showFromProfile: true,
+                      isEditable: false,
+                      showFullScreen: true,
+                      showLoading: true,
+                      size: scaledAvatarSize,
+                    ),
             ),
           ),
 
@@ -74,11 +110,13 @@ class ProfileView extends StatelessWidget with MainLayout, ProfileLayout {
                 textTheme:
                     theme.textTheme.copyWith(titleLarge: usernameStyle),
               ),
-              child: UsernameField(
-                loadingTextStyle: usernameStyle.copyWith(
-                  color: MainColors.white.withValues(alpha: 0.5),
-                ),
-              ),
+              child: profileResolved
+                  ? UsernameField(username: username ?? '')
+                  : UsernameField(
+                      loadingTextStyle: usernameStyle.copyWith(
+                        color: MainColors.white.withValues(alpha: 0.5),
+                      ),
+                    ),
             ),
           ),
 
@@ -95,9 +133,14 @@ class ProfileView extends StatelessWidget with MainLayout, ProfileLayout {
                     textTheme:
                         theme.textTheme.copyWith(bodyMedium: bioStyle),
                   ),
-                  child: const ProfileDescription(
-                    showFullDescription: true,
-                  ),
+                  child: profileResolved
+                      ? ProfileDescription(
+                          showFullDescription: true,
+                          biography: biography,
+                        )
+                      : const ProfileDescription(
+                          showFullDescription: true,
+                        ),
                 ),
               ),
             ),
@@ -108,7 +151,14 @@ class ProfileView extends StatelessWidget with MainLayout, ProfileLayout {
             top: statsTop,
             left: 0,
             right: 0,
-            child: const Center(child: ProfileWeeklyStats()),
+            child: Center(
+              child: profileResolved
+                  ? ProfileWeeklyStats(
+                      weeklyLockoutMinutes: weeklyLockoutMinutes,
+                      hasResolvedData: true,
+                    )
+                  : const ProfileWeeklyStats(),
+            ),
           ),
 
           // Calendar grid + month navigation

@@ -1,6 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
-import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/squircle_clipper.dart';
 import 'package:cloudless/presentation/pages/profile/components/calendar_section/models/calendar_day_model.dart';
 import 'package:cloudless/presentation/pages/profile/profile_layout.dart';
@@ -64,6 +62,12 @@ class CalendarDay extends StatelessWidget with MainLayout, ProfileLayout {
                 memCacheHeight: (cellH * 2).toInt(),
                 fadeInDuration: const Duration(milliseconds: 200),
                 fadeOutDuration: const Duration(milliseconds: 100),
+                placeholder: (context, url) => Container(
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
               ),
               Center(child: dayText),
             ],
@@ -74,15 +78,16 @@ class CalendarDay extends StatelessWidget with MainLayout, ProfileLayout {
       // Future days: empty, no cell rendered.
       cell = SizedBox(width: cellW, height: cellH);
     } else {
-      // Current month, no post: dark glass squircle.
-      cell = AppGlassContainer(
-        config: GlassConfig(
-          variant: GlassVariant.regular,
-          cornerRadius: dayCellRadius * scale,
-        ),
-        child: SizedBox(
+      // Current month, no post: lightweight dark squircle (avoids expensive
+      // BackdropFilter that caused GPU memory pressure on iOS).
+      cell = ClipPath(
+        clipper: const SquircleClipper(),
+        child: Container(
           width: cellW,
           height: cellH,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+          ),
           child: Center(child: dayText),
         ),
       );
