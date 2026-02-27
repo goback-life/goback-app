@@ -79,33 +79,6 @@ class HomeFeedPostCard extends HookConsumerWidget
                         ? CrossAxisAlignment.end
                         : CrossAxisAlignment.start,
                     children: [
-                      // Goback score row for lockout posts
-                      if (post.isLockoutPost && post.lockoutScore != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            children: [
-                              Text(
-                                'score ${post.lockoutScore}',
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              if (post.lockoutDurationFormatted != null) ...[
-                                const SizedBox(width: 6),
-                                Text(
-                                  post.lockoutDurationFormatted!,
-                                  style: textTheme.bodySmall?.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.6),
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
                       isText
                           ? _buildTextPost(
                               context, theme, colorScheme, textTheme,

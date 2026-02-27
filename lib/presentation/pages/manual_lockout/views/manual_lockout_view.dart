@@ -83,6 +83,8 @@ class ManualLockoutView extends HookConsumerWidget {
       final storable = ref.read(manualLockoutStorableProvider);
       final batteryStart = await storable.getBatteryAtStart();
       final lockoutStart = await storable.getLockoutStart();
+      logger.info('[LockoutScore] batteryStart=$batteryStart, '
+          'lockoutStart=$lockoutStart, sessionId=${sessionId.value}');
 
       if (lockoutStart != null) {
         final duration = DateTime.now().difference(lockoutStart);
@@ -91,7 +93,12 @@ class ManualLockoutView extends HookConsumerWidget {
         int? batteryEnd;
         try {
           batteryEnd = await Battery().batteryLevel;
-        } catch (_) {}
+        } catch (e) {
+          logger.warning('[LockoutScore] Battery read failed: $e');
+        }
+
+        logger.info('[LockoutScore] batteryEnd=$batteryEnd, '
+            'duration=${duration.inMinutes}min');
 
         final score = GobackScoreCalculator.calculate(
           batteryStart: batteryStart,
@@ -99,12 +106,17 @@ class ManualLockoutView extends HookConsumerWidget {
           duration: duration,
         );
         gobackScore.value = score;
+        logger.info('[LockoutScore] computed score=$score');
 
         // Upload score to server
         final sid = sessionId.value;
         if (score != null && sid.isNotEmpty) {
           final sessionService = ref.read(lockoutSessionServiceProvider);
-          await sessionService.updateScore(sessionId: sid, score: score);
+          final result = await sessionService.updateScore(
+            sessionId: sid,
+            score: score,
+          );
+          logger.info('[LockoutScore] upload result=$result');
         }
       }
 
@@ -380,7 +392,7 @@ class _CutoutPainter extends CustomPainter {
       final dH = lockoutDurationMinutes ~/ 60;
       final dM = lockoutDurationMinutes % 60;
       final durationStr = '$dH:${dM.toString().padLeft(2, '0')}';
-      final scoreStr = 'score $gobackScore  $durationStr';
+      final scoreStr = '$gobackScore | $durationStr';
 
       final scoreTp = TextPainter(
         text: TextSpan(
@@ -400,6 +412,25 @@ class _CutoutPainter extends CustomPainter {
       scoreTp.paint(
         canvas,
         Offset((size.width - scoreTp.width) / 2, scoreY),
+      );
+
+      // Label: "score / 100 | time"
+      final labelTp = TextPainter(
+        text: TextSpan(
+          text: 'score / 100 | time',
+          style: TextStyle(
+            fontFamily: MainFontFamilies.quicksand,
+            fontWeight: FontWeight.w400,
+            fontSize: 14,
+            letterSpacing: 0.5,
+            foreground: _holePaint(completionTextOpacity * 0.5),
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      labelTp.paint(
+        canvas,
+        Offset((size.width - labelTp.width) / 2, scoreY + scoreTp.height + 6),
       );
     }
 

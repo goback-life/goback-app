@@ -250,36 +250,6 @@ class PostDetailOverlayContent extends HookConsumerWidget {
           onTap: onAuthorTap,
           child: _buildAuthorRow(resolvedAvatarUrl: authorAvatarUrl),
         ),
-        if (post.isLockoutPost && post.lockoutScore != null) ...[
-          SizedBox(height: 8 * scale),
-          Row(
-            children: [
-              Text(
-                'score ${post.lockoutScore}',
-                style: TextStyle(
-                  fontFamily: MainFontFamilies.quicksand,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 15.0 * scale,
-                  color: MainColors.white,
-                  letterSpacing: -0.9 * scale,
-                ),
-              ),
-              if (post.lockoutDurationFormatted != null) ...[
-                SizedBox(width: 6 * scale),
-                Text(
-                  post.lockoutDurationFormatted!,
-                  style: TextStyle(
-                    fontFamily: MainFontFamilies.quicksand,
-                    fontWeight: FontWeight.w400,
-                    fontSize: 15.0 * scale,
-                    color: MainColors.white.withValues(alpha: 0.6),
-                    letterSpacing: -0.9 * scale,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
         if (hasDesc) ...[
           SizedBox(height: 12 * scale),
           GestureDetector(

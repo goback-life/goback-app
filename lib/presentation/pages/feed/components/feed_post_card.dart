@@ -59,43 +59,6 @@ class FeedPostCard extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Goback score row for lockout posts
-              if (post.isLockoutPost && post.lockoutScore != null)
-                Padding(
-                  padding: EdgeInsets.only(
-                    bottom: 6 * s,
-                    left: avatarInset,
-                    right: avatarInset,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'score ${post.lockoutScore}',
-                        style: TextStyle(
-                          fontFamily: MainFontFamilies.quicksand,
-                          fontWeight: FontWeight.w500,
-                          fontSize: fontSize,
-                          color: MainColors.white,
-                          letterSpacing: letterSpacing,
-                        ),
-                      ),
-                      if (post.lockoutDurationFormatted != null) ...[
-                        SizedBox(width: 8 * s),
-                        Text(
-                          post.lockoutDurationFormatted!,
-                          style: TextStyle(
-                            fontFamily: MainFontFamilies.quicksand,
-                            fontWeight: FontWeight.w400,
-                            fontSize: fontSize,
-                            color: MainColors.white.withValues(alpha: 0.6),
-                            letterSpacing: letterSpacing,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-
               // Squircle image with Hero for post detail transition
               GestureDetector(
                 onTap: onTap,

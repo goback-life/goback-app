@@ -7,6 +7,7 @@ import 'package:cloudless/presentation/components/squircle_clipper.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_overlay_content.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_overlay_reactions.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
+import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 
@@ -230,6 +231,26 @@ class _GlassCard extends StatelessWidget {
                 ),
               ),
             ),
+
+            // Fixed score label above squircle for lockout posts
+            if (post.isLockoutPost && post.lockoutScore != null)
+              Positioned(
+                left: squircleLeft,
+                right: squircleLeft,
+                top: squircleTop - 24 * scale,
+                child: Text(
+                  '${post.lockoutScore}'
+                  '${post.lockoutDurationFormatted != null ? ' | ${post.lockoutDurationFormatted}' : ''}',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: MainFontFamilies.quicksand,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15.0 * scale,
+                    color: MainColors.white,
+                    letterSpacing: -0.5 * scale,
+                  ),
+                ),
+              ),
 
             // Pinned squircle image
             Positioned(

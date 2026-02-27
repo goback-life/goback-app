@@ -312,26 +312,13 @@ class PostDetailView extends HookConsumerWidget
                   children: [
                     // Goback score for lockout posts
                     if (post.isLockoutPost && post.lockoutScore != null) ...[
-                      Row(
-                        children: [
-                          Text(
-                            'score ${post.lockoutScore}',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurface,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          if (post.lockoutDurationFormatted != null) ...[
-                            const SizedBox(width: 8),
-                            Text(
-                              post.lockoutDurationFormatted!,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurface
-                                    .withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ],
-                        ],
+                      Text(
+                        '${post.lockoutScore}'
+                        '${post.lockoutDurationFormatted != null ? ' | ${post.lockoutDurationFormatted}' : ''}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       SizedBox(height: sectionSpacing),
                     ],
