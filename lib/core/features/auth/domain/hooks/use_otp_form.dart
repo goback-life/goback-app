@@ -4,6 +4,7 @@ import 'package:cloudless/core/features/auth/data/exceptions/auth_invalid_verifi
 import 'package:cloudless/core/features/auth/data/exceptions/auth_user_banned_exception.dart';
 import 'package:cloudless/core/features/auth/domain/hooks/use_resend_phone_otp.dart';
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
+import 'package:cloudless/core/features/auth/domain/providers/is_authenticated_provider.dart';
 import 'package:cloudless/core/features/auth/domain/providers/verify_phone_otp_provider.dart';
 import 'package:cloudless/core/features/profile/domain/providers/has_completed_profile_provider.dart';
 import 'package:cloudless/core/features/supabase/data/handlers/common_supabase_exception_ui_handler.dart';
@@ -48,40 +49,36 @@ OtpFormResult useOtpForm(WidgetRef ref, String phoneNumber) {
     },
     onSubmit: (values) async {
       final code = values[OtpFormKey.otp.value] as String;
-
-      final result = await ref.read(
-        verifyPhoneOtpProvider(phoneNumber, code).future,
-      );
-      return result;
+      return ref.read(verifyPhoneOtpProvider(phoneNumber, code).future);
     },
     onSuccess: (success) async {
-      logger.info('OTP verification success: $success');
-
-      // Invalidate current user provider to force fresh fetch after login
+      // Invalidate auth + profile providers to prevent stale cached results.
+      // isAuthenticatedProvider is kept alive by NavOverlayWrapper and will
+      // otherwise still return false when the middleware checks it.
+      ref.invalidate(isAuthenticatedProvider);
       ref.invalidate(getCurrentUserProvider);
+      ref.invalidate(hasCompletedProfileProvider);
 
-      final hasCompletedProfileResult = await ref.read(
-        hasCompletedProfileProvider.future,
-      );
+      try {
+        final hasCompletedProfileResult = await ref.read(
+          hasCompletedProfileProvider.future,
+        );
 
-      hasCompletedProfileResult.fold(
-        (hasCompleted) {
-          if (hasCompleted) {
-            router.go(const HomeRoutable());
-          } else {
+        hasCompletedProfileResult.fold(
+          (hasCompleted) {
+            if (hasCompleted) {
+              router.go(const HomeRoutable());
+            } else {
+              router.go(const CreateProfileRoutable());
+            }
+          },
+          (error) {
             router.go(const CreateProfileRoutable());
-          }
-        },
-        (error) {
-          logger.error('Error checking completed profile', exception: error);
-          final handled = CommonSupabaseExceptionUIHandler()
-              .handleSupabaseException(context: ref.context, exception: error);
-
-          if (!handled) {
-            MainAlert.showGenericError(context: ref.context);
-          }
-        },
-      );
+          },
+        );
+      } catch (_) {
+        router.go(const CreateProfileRoutable());
+      }
     },
     onFailure: (form, error) {
       form.control(OtpFormKey.otp.value).setErrors({'invalid': true});

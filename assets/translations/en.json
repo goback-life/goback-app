@@ -489,6 +489,17 @@
             "no_posts": "No posts available to save",
             "save": "Save to Calendar",
             "skip": "Skip for today"
+        },
+        "onboarding": {
+            "step1_title": "Welcome to goback",
+            "step1_description": "Your brain evolved for tribes, not timelines. goback is your space for real connection \u2014 every post disappears after 24 hours, so every share is intentional.",
+            "step2_title": "Navigate with a touch",
+            "step2_description": "Press and hold anywhere to open the menu. From there you\u2019ll find your Feed, Circle, Notifications, Lockouts, and Profile.",
+            "step3_title": "Your Circle, your rules",
+            "step3_description": "Invite up to 150 people who matter. Use Lockouts to consciously step away \u2014 your circle will know you\u2019re living life offline.",
+            "next": "Next",
+            "done": "Got it",
+            "skip": "Skip"
         }
     },
     "permission": {

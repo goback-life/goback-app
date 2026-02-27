@@ -13,9 +13,12 @@ import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_p
 import 'package:cloudless/core/features/post/domain/providers/post_action_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_published_notifier_provider.dart';
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
+import 'package:cloudless/core/features/onboarding/data/storables/onboarding_completed_storable.dart';
+import 'package:cloudless/core/features/profile/data/storables/profile_completed_storable.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/background_image.dart';
 import 'package:cloudless/presentation/components/main_data_loader.dart';
+import 'package:cloudless/presentation/components/onboarding/onboarding_overlay.dart';
 import 'package:cloudless/presentation/pages/home/components/home_circle_actions_widget.dart';
 import 'package:cloudless/presentation/pages/home/components/home_date_badge.dart';
 import 'package:cloudless/presentation/pages/home/components/home_feed_posts_list.dart';
@@ -36,6 +39,24 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Onboarding overlay — shown once for first-time users
+    final onboardingDismissed = useState(false);
+    final onboardingFuture = useMemoized(() async {
+      final profileAlreadyDone =
+          await ProfileCompletedStorable().get(defaultValue: false);
+      final onboardingDone =
+          await OnboardingCompletedStorable().get(defaultValue: false);
+      // Existing users who never saw onboarding: auto-skip
+      if (profileAlreadyDone && !onboardingDone) {
+        await OnboardingCompletedStorable().set(true);
+        return true;
+      }
+      return onboardingDone;
+    });
+    final onboardingSnapshot = useFuture(onboardingFuture);
+    final hasCompletedOnboarding =
+        onboardingSnapshot.data ?? true; // default to true while loading
+
     final currentUserAsync = ref.watch(getCurrentUserProvider);
     final scrollController = useScrollController();
 
@@ -338,7 +359,10 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
           });
     }
 
-    return MainDataLoader(
+    final showOnboarding =
+        !hasCompletedOnboarding && !onboardingDismissed.value;
+
+    final homeContent = MainDataLoader(
       provider: currentUserAsync,
       useScaffold: false,
       onRetry: () {
@@ -360,7 +384,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
         final hasFeedReady = feedPosts.posts.isNotEmpty || (!feedPosts.isLoading && feedPosts.posts.isEmpty);
         final hasCircleMembers = circleMembersData.allUsers.isNotEmpty;
         final knowsNoCircleMembers = !circleMembersData.isLoading && circleMembersData.allUsers.isEmpty;
-        
+
         return _buildHomeContent(
           context,
           ref,
@@ -378,6 +402,20 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
           topPostDate,
         );
       },
+    );
+
+    if (!showOnboarding) return homeContent;
+
+    return Stack(
+      children: [
+        homeContent,
+        OnboardingOverlay(
+          onDismiss: () async {
+            await OnboardingCompletedStorable().set(true);
+            onboardingDismissed.value = true;
+          },
+        ),
+      ],
     );
   }
 
