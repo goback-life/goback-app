@@ -32,10 +32,10 @@ class ConnectionRequestsView extends HookConsumerWidget
 
     return Column(
       children: [
-        SizedBox(height: topPad + 48),
+        SizedBox(height: topPad + 56),
         // Search input
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 40),
           child: SizedBox(
             height: searchPillHeight,
             child: AppGlassContainer(
@@ -85,9 +85,10 @@ class ConnectionRequestsView extends HookConsumerWidget
                   requestsData: requestsData,
                   ref: ref,
                 )
-              : _OutgoingRequests(
+              : _RequestsIdle(
                   requestsData: requestsData,
                   bottomPad: bottomPad,
+                  ref: ref,
                 ),
         ),
       ],
@@ -293,23 +294,29 @@ class _SmallActionButton extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Outgoing requests list (idle state)
+// Combined incoming + outgoing requests (idle state)
 // ---------------------------------------------------------------------------
-class _OutgoingRequests extends StatelessWidget {
-  const _OutgoingRequests({
+class _RequestsIdle extends StatelessWidget {
+  const _RequestsIdle({
     required this.requestsData,
     required this.bottomPad,
+    required this.ref,
   });
 
   final ConnectionRequestsData requestsData;
   final double bottomPad;
+  final WidgetRef ref;
 
   @override
   Widget build(BuildContext context) {
     if (requestsData.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (requestsData.outgoingRequests.isEmpty) {
+
+    final hasIncoming = requestsData.incomingRequests.isNotEmpty;
+    final hasOutgoing = requestsData.outgoingRequests.isNotEmpty;
+
+    if (!hasIncoming && !hasOutgoing) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -325,20 +332,127 @@ class _OutgoingRequests extends StatelessWidget {
         ),
       );
     }
-    return ListView.builder(
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        bottom: bottomPad + 16,
+
+    return ListView(
+      padding: EdgeInsets.only(left: 24, right: 24, bottom: bottomPad + 16),
+      children: [
+        if (hasIncoming) ...[
+          _SectionHeader(label: 'Incoming'),
+          for (final request in requestsData.incomingRequests)
+            _IncomingRequestTile(
+              request: request,
+              onAccept: () => requestsData.respond(
+                request.requestId,
+                accept: true,
+              ),
+              onDeny: () => requestsData.respond(
+                request.requestId,
+                accept: false,
+              ),
+            ),
+        ],
+        if (hasOutgoing) ...[
+          if (hasIncoming) const SizedBox(height: 8),
+          _SectionHeader(label: 'Sent'),
+          for (final request in requestsData.outgoingRequests)
+            _OutgoingRequestTile(
+              request: request,
+              onCancel: () => requestsData.cancel(request.requestId),
+            ),
+        ],
+      ],
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12, top: 4),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontFamily: MainFontFamilies.quicksand,
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          color: MainColors.white.withValues(alpha: 0.4),
+          letterSpacing: 0.5,
+        ),
       ),
-      itemCount: requestsData.outgoingRequests.length,
-      itemBuilder: (context, index) {
-        final request = requestsData.outgoingRequests[index];
-        return _OutgoingRequestTile(
-          request: request,
-          onCancel: () => requestsData.cancel(request.requestId),
-        );
-      },
+    );
+  }
+}
+
+class _IncomingRequestTile extends StatelessWidget {
+  const _IncomingRequestTile({
+    required this.request,
+    required this.onAccept,
+    required this.onDeny,
+  });
+
+  final ConnectionRequestModel request;
+  final VoidCallback onAccept;
+  final VoidCallback onDeny;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: MainColors.accent.withValues(alpha: 0.2),
+            backgroundImage: request.profile.avatarUrl != null &&
+                    request.profile.avatarUrl!.isNotEmpty
+                ? NetworkImage(request.profile.avatarUrl!)
+                : null,
+            child: request.profile.avatarUrl == null ||
+                    request.profile.avatarUrl!.isEmpty
+                ? Text(
+                    request.profile.username.isNotEmpty
+                        ? request.profile.username[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      fontFamily: MainFontFamilies.quicksand,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: MainColors.white,
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              request.profile.username,
+              style: const TextStyle(
+                fontFamily: MainFontFamilies.quicksand,
+                fontWeight: FontWeight.w500,
+                fontSize: 18,
+                color: MainColors.white,
+                letterSpacing: -0.5,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          _SmallActionButton(
+            label: 'Accept',
+            color: MainColors.accent,
+            onTap: onAccept,
+          ),
+          const SizedBox(width: 8),
+          _SmallActionButton(
+            label: 'Deny',
+            color: MainColors.white.withValues(alpha: 0.3),
+            onTap: onDeny,
+          ),
+        ],
+      ),
     );
   }
 }

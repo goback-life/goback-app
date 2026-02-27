@@ -32,3 +32,30 @@ Future<Result<List<ConnectionRequestModel>>> getOutgoingRequests(
     (error) => Result.failure(error),
   );
 }
+
+@Riverpod(keepAlive: false)
+Future<Result<List<ConnectionRequestModel>>> getIncomingRequests(
+  Ref ref,
+) async {
+  final service = ref.watch(connectionServiceProvider);
+  final result = await service.getIncomingRequests();
+
+  return result.fold(
+    (dtos) {
+      final models = dtos.map((dto) {
+        return ConnectionRequestModel(
+          requestId: dto.requestId,
+          profile: ProfileModel(
+            id: dto.receiverId,
+            username: dto.receiverUsername,
+            avatarUrl: dto.receiverAvatarUrl,
+          ),
+          createdAt: DateTime.parse(dto.createdAt),
+          expiresAt: DateTime.parse(dto.expiresAt),
+        );
+      }).toList();
+      return Result.success(models);
+    },
+    (error) => Result.failure(error),
+  );
+}

@@ -356,7 +356,7 @@ BEGIN
     RAISE EXCEPTION 'User not authenticated';
   END IF;
 
-  UPDATE profiles SET notifications_checked_at = NOW() WHERE id = v_user_id;
+  UPDATE profiles SET notifications_checked_at = NOW() WHERE profiles.id = v_user_id;
 
   v_three_days_ago := NOW() - INTERVAL '3 days';
 
@@ -383,5 +383,44 @@ BEGIN
     )
   ORDER BY n.updated_at DESC
   LIMIT 50;
+END;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- RPC: get_incoming_connection_requests
+-- Returns pending incoming requests with sender profile info
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION get_incoming_connection_requests() RETURNS TABLE (
+  request_id UUID,
+  sender_id UUID,
+  sender_username TEXT,
+  sender_avatar_url TEXT,
+  created_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ
+)
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_uid UUID;
+BEGIN
+  v_uid := auth.uid();
+  IF v_uid IS NULL THEN
+    RAISE EXCEPTION 'User not authenticated';
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    cr.id AS request_id,
+    cr.sender_id,
+    p.username AS sender_username,
+    p.avatar_url AS sender_avatar_url,
+    cr.created_at,
+    cr.expires_at
+  FROM connection_requests cr
+  JOIN profiles p ON cr.sender_id = p.id
+  WHERE cr.receiver_id = v_uid
+    AND cr.expires_at > NOW()
+  ORDER BY cr.created_at DESC;
 END;
 $$;

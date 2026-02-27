@@ -331,7 +331,7 @@ class ConnectionService implements ConnectionServiceContract {
   @override
   FutureResult<List<Map<String, dynamic>>> searchUsers(
     String query, {
-    int limit = 20,
+    int limit = 10,
   }) async {
     try {
       final result = await supabase.rpc(
@@ -413,6 +413,32 @@ class ConnectionService implements ConnectionServiceContract {
         result.map((e) =>
           OutgoingRequestDto.fromJson(Map<String, dynamic>.from(e as Map)),
         ).toList(),
+      );
+    } catch (e) {
+      final exception = e is Exception ? e : Exception(e.toString());
+      return Result.failure(exception);
+    }
+  }
+
+  @override
+  FutureResult<List<OutgoingRequestDto>> getIncomingRequests() async {
+    try {
+      final result = await supabase.rpc(
+        'get_incoming_connection_requests',
+      ) as List<dynamic>;
+      return Result.success(
+        result.map((e) {
+          final raw = Map<String, dynamic>.from(e as Map);
+          // Map sender_* fields to receiver_* for DTO reuse
+          return OutgoingRequestDto.fromJson({
+            'request_id': raw['request_id'],
+            'receiver_id': raw['sender_id'],
+            'receiver_username': raw['sender_username'],
+            'receiver_avatar_url': raw['sender_avatar_url'],
+            'created_at': raw['created_at'],
+            'expires_at': raw['expires_at'],
+          });
+        }).toList(),
       );
     } catch (e) {
       final exception = e is Exception ? e : Exception(e.toString());

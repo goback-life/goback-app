@@ -78,7 +78,7 @@ abstract class ConnectionRepositoryContract {
 
   Future<Result<List<Map<String, dynamic>>>> searchUsers(
     String query, {
-    int limit = 20,
+    int limit = 10,
   });
 
   Future<Result<String>> sendConnectionRequest(String receiverId);
@@ -91,4 +91,6 @@ abstract class ConnectionRepositoryContract {
   Future<Result<void>> cancelConnectionRequest(String requestId);
 
   Future<Result<List<OutgoingRequestDto>>> getOutgoingRequests();
+
+  Future<Result<List<OutgoingRequestDto>>> getIncomingRequests();
 }

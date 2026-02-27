@@ -118,7 +118,7 @@ abstract class ConnectionServiceContract {
   /// Returns list of maps with user_id, username, avatar_url, connection_status.
   FutureResult<List<Map<String, dynamic>>> searchUsers(
     String query, {
-    int limit = 20,
+    int limit = 10,
   });
 
   /// Sends a connection request. Returns 'sent' or 'auto_accepted'.
@@ -135,4 +135,7 @@ abstract class ConnectionServiceContract {
 
   /// Gets all pending outgoing connection requests.
   FutureResult<List<OutgoingRequestDto>> getOutgoingRequests();
+
+  /// Gets all pending incoming connection requests.
+  FutureResult<List<OutgoingRequestDto>> getIncomingRequests();
 }

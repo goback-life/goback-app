@@ -6,6 +6,7 @@ import 'package:dedecube_core/dedecube_core.dart';
 class ConnectionRequestsData {
   const ConnectionRequestsData({
     required this.outgoingRequests,
+    required this.incomingRequests,
     required this.isLoading,
     required this.send,
     required this.respond,
@@ -14,6 +15,7 @@ class ConnectionRequestsData {
   });
 
   final List<ConnectionRequestModel> outgoingRequests;
+  final List<ConnectionRequestModel> incomingRequests;
   final bool isLoading;
   final Future<Result<String>> Function(String receiverId) send;
   final Future<Result<void>> Function(String requestId, {required bool accept})
@@ -24,6 +26,7 @@ class ConnectionRequestsData {
 
 ConnectionRequestsData useConnectionRequests(WidgetRef ref) {
   final asyncOutgoing = ref.watch(getOutgoingRequestsProvider);
+  final asyncIncoming = ref.watch(getIncomingRequestsProvider);
 
   final outgoingRequests = useMemoized(() {
     return asyncOutgoing.when(
@@ -36,17 +39,29 @@ ConnectionRequestsData useConnectionRequests(WidgetRef ref) {
     );
   }, [asyncOutgoing]);
 
-  final isLoading = asyncOutgoing.isLoading;
+  final incomingRequests = useMemoized(() {
+    return asyncIncoming.when(
+      data: (result) => result.fold(
+        (list) => list,
+        (_) => <ConnectionRequestModel>[],
+      ),
+      loading: () => <ConnectionRequestModel>[],
+      error: (_, __) => <ConnectionRequestModel>[],
+    );
+  }, [asyncIncoming]);
+
+  final isLoading = asyncOutgoing.isLoading || asyncIncoming.isLoading;
+
+  void _refreshAll() {
+    ref.invalidate(getOutgoingRequestsProvider);
+    ref.invalidate(getIncomingRequestsProvider);
+  }
 
   final send = useCallback((String receiverId) async {
     final result = await ref.read(
       sendConnectionRequestProvider(receiverId).future,
     );
-    // Refresh outgoing list after sending
-    result.fold(
-      (_) => ref.invalidate(getOutgoingRequestsProvider),
-      (_) {},
-    );
+    result.fold((_) => _refreshAll(), (_) {});
     return result;
   }, [ref]);
 
@@ -57,10 +72,7 @@ ConnectionRequestsData useConnectionRequests(WidgetRef ref) {
     final result = await ref.read(
       respondToConnectionRequestProvider(requestId, accept: accept).future,
     );
-    result.fold(
-      (_) => ref.invalidate(getOutgoingRequestsProvider),
-      (_) {},
-    );
+    result.fold((_) => _refreshAll(), (_) {});
     return result;
   }, [ref]);
 
@@ -68,19 +80,17 @@ ConnectionRequestsData useConnectionRequests(WidgetRef ref) {
     final result = await ref.read(
       cancelConnectionRequestProvider(requestId).future,
     );
-    result.fold(
-      (_) => ref.invalidate(getOutgoingRequestsProvider),
-      (_) {},
-    );
+    result.fold((_) => _refreshAll(), (_) {});
     return result;
   }, [ref]);
 
   return ConnectionRequestsData(
     outgoingRequests: outgoingRequests,
+    incomingRequests: incomingRequests,
     isLoading: isLoading,
     send: send,
     respond: respond,
     cancel: cancel,
-    refresh: () => ref.invalidate(getOutgoingRequestsProvider),
+    refresh: _refreshAll,
   );
 }

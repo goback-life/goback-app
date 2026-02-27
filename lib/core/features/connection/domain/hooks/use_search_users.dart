@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:cloudless/core/features/connection/domain/models/connection_request_model.dart';
 import 'package:cloudless/core/features/connection/domain/providers/search_users_provider.dart';
 import 'package:cloudless/core/models/profile_model.dart';
@@ -23,24 +21,10 @@ class SearchUsersData {
 
 SearchUsersData useSearchUsers(WidgetRef ref) {
   final query = useState<String>('');
-  final debouncedQuery = useState<String>('');
-  final debounceTimer = useRef<Timer?>(null);
+  final trimmed = query.value.trim();
 
-  // Debounce: update debouncedQuery 500ms after user stops typing
-  useEffect(() {
-    debounceTimer.value?.cancel();
-    if (query.value.trim().isEmpty) {
-      debouncedQuery.value = '';
-      return null;
-    }
-    debounceTimer.value = Timer(const Duration(milliseconds: 500), () {
-      debouncedQuery.value = query.value.trim();
-    });
-    return () => debounceTimer.value?.cancel();
-  }, [query.value]);
-
-  final asyncResults = debouncedQuery.value.isNotEmpty
-      ? ref.watch(searchUsersProvider(debouncedQuery.value))
+  final asyncResults = trimmed.isNotEmpty
+      ? ref.watch(searchUsersProvider(trimmed))
       : null;
 
   final results = useMemoized(() {

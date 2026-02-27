@@ -145,4 +145,16 @@ class ConnectionRepository
       exceptionMapper: (e) => ConnectionRequestException(e.toString()),
     );
   }
+
+  @override
+  FutureResult<List<OutgoingRequestDto>> getIncomingRequests() async {
+    return processSupabaseResult<
+      List<OutgoingRequestDto>,
+      List<OutgoingRequestDto>
+    >(
+      request: () => connectionService.getIncomingRequests(),
+      responseMapper: (results) async => results,
+      exceptionMapper: (e) => ConnectionRequestException(e.toString()),
+    );
+  }
 }
