@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
+import 'package:cloudless/core/features/connection/domain/providers/connection_request_actions_provider.dart';
+import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/connection/domain/providers/is_user_connected_provider.dart';
 import 'package:cloudless/core/features/notification/data/providers/notification_repository_provider.dart';
 import 'package:cloudless/core/features/notification/domain/enums/notification_type.dart';
@@ -88,6 +90,24 @@ class NotificationsView extends HookConsumerWidget {
                                 notification,
                               );
                             },
+                            onAccept: notification.type ==
+                                    NotificationType.connectionRequest
+                                ? () => _respondToRequest(
+                                      ref,
+                                      notification,
+                                      user.id,
+                                      accept: true,
+                                    )
+                                : null,
+                            onDeny: notification.type ==
+                                    NotificationType.connectionRequest
+                                ? () => _respondToRequest(
+                                      ref,
+                                      notification,
+                                      user.id,
+                                      accept: false,
+                                    )
+                                : null,
                           );
                         },
                       ),
@@ -162,6 +182,38 @@ class NotificationsView extends HookConsumerWidget {
     });
   }
 
+  void _respondToRequest(
+    WidgetRef ref,
+    AggregatedNotificationModel notification,
+    String userId, {
+    required bool accept,
+  }) {
+    if (notification.referenceId == null) return;
+    ref
+        .read(
+          respondToConnectionRequestProvider(
+            notification.referenceId!,
+            accept: accept,
+          ).future,
+        )
+        .then((result) {
+      result.fold(
+        (_) {
+          // Refresh notifications + circle members on accept
+          ref.invalidate(
+            aggregatedNotificationsProvider(userId: userId, pageSize: 20),
+          );
+          if (accept) {
+            ref.invalidate(getCircleMembersProvider);
+          }
+        },
+        (error) {
+          logger.error('Failed to respond to request', exception: error);
+        },
+      );
+    });
+  }
+
   Future<void> _navigateFromNotification(
     BuildContext context,
     WidgetRef ref,
@@ -207,6 +259,12 @@ class NotificationsView extends HookConsumerWidget {
               ),
             ),
           );
+        }
+      case NotificationType.connectionRequest:
+        // Tap navigates to the sender's profile
+        if (notification.actorIds.isNotEmpty) {
+          final actorId = notification.actorIds.first;
+          router.push(ExternalProfileRoutable(userId: actorId));
         }
       case NotificationType.friendJoined:
         if (notification.actorIds.isNotEmpty) {

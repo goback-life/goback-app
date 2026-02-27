@@ -472,7 +472,13 @@
             "tag": "@{username} tagged you in a post",
             "replySingle": "@{username} replied to your post",
             "replyMultiple": "@{username} and {count} others replied to your post",
-            "circleJoin": "@{username} joined your circle"
+            "circleJoin": "@{username} joined your circle",
+            "connectionRequest": "@{username} wants to connect",
+            "friendJoined": "@{username} joined your circle",
+            "lockoutStarted": "@{username} started a lockout",
+            "lockoutJoined": "@{username} joined your lockout",
+            "commentSingle": "@{username} commented on your post",
+            "commentMultiple": "@{username} and {count} others commented on your post"
         },
         "friends_locked_out": {
             "title": "Friends Offline",

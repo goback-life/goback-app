@@ -472,7 +472,13 @@
             "tag": "@{username} ti ha taggato in un post",
             "replySingle": "@{username} ha risposto al tuo post",
             "replyMultiple": "@{username} e altri {count} hanno risposto al tuo post",
-            "circleJoin": "@{username} si è unito alla tua cerchia"
+            "circleJoin": "@{username} si è unito alla tua cerchia",
+            "connectionRequest": "@{username} vuole connettersi",
+            "friendJoined": "@{username} si è unito alla tua cerchia",
+            "lockoutStarted": "@{username} ha iniziato un lockout",
+            "lockoutJoined": "@{username} si è unito al tuo lockout",
+            "commentSingle": "@{username} ha commentato il tuo post",
+            "commentMultiple": "@{username} e altri {count} hanno commentato il tuo post"
         },
         "friends_locked_out": {
             "title": "Amici Offline",

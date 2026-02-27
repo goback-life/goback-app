@@ -1,3 +1,4 @@
+import 'package:cloudless/core/features/connection/data/dtos/outgoing_request_dto.dart';
 import 'package:cloudless/core/features/connection/domain/models/connection_member_model.dart';
 import 'package:cloudless/core/features/connection/domain/models/invite_validation_result.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -74,4 +75,20 @@ abstract class ConnectionRepositoryContract {
   /// Returns [Result<bool>] indicating success or failure with domain-specific
   /// error information for troubleshooting and user feedback.
   Future<Result<bool>> removeConnection(String userId);
+
+  Future<Result<List<Map<String, dynamic>>>> searchUsers(
+    String query, {
+    int limit = 20,
+  });
+
+  Future<Result<String>> sendConnectionRequest(String receiverId);
+
+  Future<Result<void>> respondToConnectionRequest(
+    String requestId, {
+    required bool accept,
+  });
+
+  Future<Result<void>> cancelConnectionRequest(String requestId);
+
+  Future<Result<List<OutgoingRequestDto>>> getOutgoingRequests();
 }

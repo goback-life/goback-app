@@ -1,4 +1,5 @@
 import 'package:cloudless/core/features/connection/data/dtos/get_circle_members_response_dto.dart';
+import 'package:cloudless/core/features/connection/data/dtos/outgoing_request_dto.dart';
 import 'package:cloudless/core/features/connection/domain/models/invite_validation_result.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 
@@ -112,4 +113,26 @@ abstract class ConnectionServiceContract {
   ///
   /// Throws database exceptions for query failures.
   FutureResult<bool> isUserConnected(String userId);
+
+  /// Searches users by username prefix or phone number.
+  /// Returns list of maps with user_id, username, avatar_url, connection_status.
+  FutureResult<List<Map<String, dynamic>>> searchUsers(
+    String query, {
+    int limit = 20,
+  });
+
+  /// Sends a connection request. Returns 'sent' or 'auto_accepted'.
+  FutureResult<String> sendConnectionRequest(String receiverId);
+
+  /// Responds to a connection request (accept or deny).
+  FutureResult<void> respondToConnectionRequest(
+    String requestId, {
+    required bool accept,
+  });
+
+  /// Cancels an outgoing connection request (direct DELETE via RLS).
+  FutureResult<void> cancelConnectionRequest(String requestId);
+
+  /// Gets all pending outgoing connection requests.
+  FutureResult<List<OutgoingRequestDto>> getOutgoingRequests();
 }

@@ -14,10 +14,14 @@ class NotificationItem extends HookConsumerWidget
     super.key,
     required this.notification,
     required this.onTap,
+    this.onAccept,
+    this.onDeny,
   });
 
   final AggregatedNotificationModel notification;
   final VoidCallback onTap;
+  final VoidCallback? onAccept;
+  final VoidCallback? onDeny;
 
   Widget _buildPostPreview(
     BuildContext context,
@@ -26,7 +30,8 @@ class NotificationItem extends HookConsumerWidget
     ColorScheme colorScheme,
     NotificationType notificationType,
   ) {
-    if (notificationType == NotificationType.friendJoined) {
+    if (notificationType == NotificationType.friendJoined ||
+        notificationType == NotificationType.connectionRequest) {
       return Icon(
         Icons.person_outline,
         color: colorScheme.onSurface.withOpacity(0.5),
@@ -135,6 +140,12 @@ class NotificationItem extends HookConsumerWidget
           context: context,
           arguments: {'username': firstUsername},
         );
+      case NotificationType.connectionRequest:
+        return translator.translate(
+          'pages.notifications.connectionRequest',
+          context: context,
+          arguments: {'username': firstUsername},
+        );
     }
   }
 
@@ -217,10 +228,68 @@ class NotificationItem extends HookConsumerWidget
                       color: colorScheme.onSurface.withOpacity(0.6),
                     ),
                   ),
+                  if (notification.type ==
+                          NotificationType.connectionRequest &&
+                      (onAccept != null || onDeny != null)) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        if (onAccept != null)
+                          _ActionChip(
+                            label: 'Accept',
+                            color: MainColors.accent,
+                            onTap: onAccept!,
+                          ),
+                        if (onAccept != null && onDeny != null)
+                          const SizedBox(width: 8),
+                        if (onDeny != null)
+                          _ActionChip(
+                            label: 'Deny',
+                            color: colorScheme.onSurface.withOpacity(0.3),
+                            onTap: onDeny!,
+                          ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionChip extends StatelessWidget {
+  const _ActionChip({
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
         ),
       ),
     );

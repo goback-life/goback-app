@@ -1,11 +1,14 @@
 import 'dart:math';
 
 import 'package:cloudless/core/features/connection/data/dtos/get_circle_members_response_dto.dart';
+import 'package:cloudless/core/features/connection/data/dtos/outgoing_request_dto.dart';
 import 'package:cloudless/core/features/connection/data/exceptions/invite_code_generation_exception.dart';
 import 'package:cloudless/core/features/connection/data/exceptions/invite_limit_exception.dart';
 import 'package:cloudless/core/features/connection/domain/contracts/connection_service_contract.dart';
 import 'package:cloudless/core/features/connection/domain/exceptions/cannot_use_own_invite_code_exception.dart';
+import 'package:cloudless/core/features/connection/domain/exceptions/circle_full_exception.dart';
 import 'package:cloudless/core/features/connection/domain/exceptions/connection_exception.dart';
+import 'package:cloudless/core/features/connection/domain/exceptions/connection_request_exception.dart';
 import 'package:cloudless/core/features/connection/domain/exceptions/invite_code_already_used_exception.dart';
 import 'package:cloudless/core/features/connection/domain/exceptions/invite_code_expired_exception.dart';
 import 'package:cloudless/core/features/connection/domain/exceptions/invite_code_not_found_exception.dart';
@@ -323,6 +326,98 @@ class ConnectionService implements ConnectionServiceContract {
     return userIdA.compareTo(userIdB) < 0
         ? (userIdA, userIdB)
         : (userIdB, userIdA);
+  }
+
+  @override
+  FutureResult<List<Map<String, dynamic>>> searchUsers(
+    String query, {
+    int limit = 20,
+  }) async {
+    try {
+      final result = await supabase.rpc(
+        'search_users',
+        params: {'p_query': query.trim(), 'p_limit': limit},
+      ) as List<dynamic>;
+      return Result.success(
+        result.map((e) => Map<String, dynamic>.from(e as Map)).toList(),
+      );
+    } catch (e) {
+      final exception = e is Exception ? e : Exception(e.toString());
+      return Result.failure(exception);
+    }
+  }
+
+  @override
+  FutureResult<String> sendConnectionRequest(String receiverId) async {
+    try {
+      final result = await supabase.rpc(
+        'send_connection_request',
+        params: {'p_receiver_id': receiverId},
+      ) as String;
+      return Result.success(result);
+    } on PostgrestException catch (e) {
+      if (e.message.contains('circle is full')) {
+        return Result.failure(const CircleFullException());
+      }
+      return Result.failure(ConnectionRequestException(e.message));
+    } catch (e) {
+      final exception = e is Exception ? e : Exception(e.toString());
+      return Result.failure(exception);
+    }
+  }
+
+  @override
+  FutureResult<void> respondToConnectionRequest(
+    String requestId, {
+    required bool accept,
+  }) async {
+    try {
+      await supabase.rpc(
+        'respond_to_connection_request',
+        params: {'p_request_id': requestId, 'p_accept': accept},
+      );
+      return Result.success(null);
+    } on PostgrestException catch (e) {
+      if (e.message.contains('circle is full')) {
+        return Result.failure(const CircleFullException());
+      }
+      return Result.failure(ConnectionRequestException(e.message));
+    } catch (e) {
+      final exception = e is Exception ? e : Exception(e.toString());
+      return Result.failure(exception);
+    }
+  }
+
+  @override
+  FutureResult<void> cancelConnectionRequest(String requestId) async {
+    try {
+      await supabase
+          .from('connection_requests')
+          .delete()
+          .eq('id', requestId)
+          .eq('sender_id', supabase.auth.currentUser!.id);
+      return Result.success(null);
+    } catch (e) {
+      final exception = e is Exception ? e : Exception(e.toString());
+      return Result.failure(exception);
+    }
+  }
+
+  @override
+  FutureResult<List<OutgoingRequestDto>> getOutgoingRequests() async {
+    try {
+      final result = await supabase.rpc(
+        'get_outgoing_connection_requests',
+      ) as List<dynamic>;
+      return Result.success(
+        result.map((e) =>
+          OutgoingRequestDto.fromJson(Map<String, dynamic>.from(e as Map)),
+        ).toList(),
+      );
+    } catch (e) {
+      final exception = e is Exception ? e : Exception(e.toString());
+      return Result.failure(exception);
+    }
   }
 
   @override
