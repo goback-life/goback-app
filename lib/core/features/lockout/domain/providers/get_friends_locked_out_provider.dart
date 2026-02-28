@@ -1,7 +1,6 @@
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:dedecube_core/dedecube_core.dart';
-import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'get_friends_locked_out_provider.g.dart';
@@ -28,7 +27,6 @@ class GetFriendsLockedOut extends _$GetFriendsLockedOut {
 
   /// Force refresh, keeps showing old data during fetch.
   void refresh() {
-    logger.info('[GetFriendsLockedOut] refresh() called');
     final cacheNotifier = ref.read(friendsLockedOutCacheProvider.notifier);
     cacheNotifier.refresh();
     // Cache state update will trigger a rebuild of this provider automatically

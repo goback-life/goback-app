@@ -423,11 +423,9 @@ class ConnectionService implements ConnectionServiceContract {
   @override
   FutureResult<List<OutgoingRequestDto>> getIncomingRequests() async {
     try {
-      logger.info('[getIncomingRequests] calling RPC...');
       final result = await supabase.rpc(
         'get_incoming_connection_requests',
       ) as List<dynamic>;
-      logger.info('[getIncomingRequests] got ${result.length} results');
       return Result.success(
         result.map((e) {
           final raw = Map<String, dynamic>.from(e as Map);
@@ -442,7 +440,6 @@ class ConnectionService implements ConnectionServiceContract {
         }).toList(),
       );
     } catch (e) {
-      logger.error('[getIncomingRequests] ERROR: $e');
       final exception = e is Exception ? e : Exception(e.toString());
       return Result.failure(exception);
     }

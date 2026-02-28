@@ -62,16 +62,12 @@ class MemorablePostSelectionDialog extends HookConsumerWidget with MainLayout {
             Navigator.of(context).pop();
           },
           (err) {
-            // ignore: avoid_print
-            print('[SAVE_CAL_UI] fold error: $err');
-            error.value = err.toString();
+            error.value = 'Failed to save post';
             savingPostId.value = null;
           },
         );
       } catch (e) {
-        // ignore: avoid_print
-        print('[SAVE_CAL_UI] catch error: $e');
-        error.value = e.toString();
+        error.value = 'Failed to save post';
         savingPostId.value = null;
       }
     }

@@ -46,7 +46,7 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
         }
       }
     } catch (e) {
-      logger.warning('[FriendsLockedOutCache] Error loading from storage: $e');
+      logger.warning('Error loading from storage: $e');
     }
   }
 
@@ -57,7 +57,7 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
       final jsonList = models.map((m) => m.toJson()).toList();
       await storable.setCachedFriends(jsonList);
     } catch (e) {
-      logger.warning('[FriendsLockedOutCache] Error saving to storage: $e');
+      logger.warning('Error saving to storage: $e');
     }
   }
 
@@ -128,12 +128,11 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
           _saveToStorage(models);
         },
         (error) {
-          logger.warning('[FriendsLockedOutCache] Fetch error: $error');
+          logger.warning('Fetch error: $error');
           state = state.copyWith(isFetching: false);
         },
       );
-    } catch (e) {
-      logger.error('[FriendsLockedOutCache] Exception: $e');
+    } catch (_) {
       state = state.copyWith(isFetching: false);
     }
   }

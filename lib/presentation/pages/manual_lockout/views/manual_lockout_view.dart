@@ -83,8 +83,6 @@ class ManualLockoutView extends HookConsumerWidget {
       final storable = ref.read(manualLockoutStorableProvider);
       final batteryStart = await storable.getBatteryAtStart();
       final lockoutStart = await storable.getLockoutStart();
-      logger.info('[LockoutScore] batteryStart=$batteryStart, '
-          'lockoutStart=$lockoutStart, sessionId=${sessionId.value}');
 
       if (lockoutStart != null) {
         final duration = DateTime.now().difference(lockoutStart);
@@ -94,11 +92,8 @@ class ManualLockoutView extends HookConsumerWidget {
         try {
           batteryEnd = await Battery().batteryLevel;
         } catch (e) {
-          logger.warning('[LockoutScore] Battery read failed: $e');
+          logger.warning('Battery read failed', exception: e);
         }
-
-        logger.info('[LockoutScore] batteryEnd=$batteryEnd, '
-            'duration=${duration.inMinutes}min');
 
         final score = GobackScoreCalculator.calculate(
           batteryStart: batteryStart,
@@ -106,17 +101,15 @@ class ManualLockoutView extends HookConsumerWidget {
           duration: duration,
         );
         gobackScore.value = score;
-        logger.info('[LockoutScore] computed score=$score');
 
         // Upload score to server
         final sid = sessionId.value;
         if (score != null && sid.isNotEmpty) {
           final sessionService = ref.read(lockoutSessionServiceProvider);
-          final result = await sessionService.updateScore(
+          await sessionService.updateScore(
             sessionId: sid,
             score: score,
           );
-          logger.info('[LockoutScore] upload result=$result');
         }
       }
 
