@@ -24,8 +24,8 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final selectedHours = useState<int>(0);
-    final selectedMinutes = useState<int>(2);
+    final selectedHours = useState<int>(1);
+    final selectedMinutes = useState<int>(0);
     final activityController = useTextEditingController();
 
     // Calculate total duration
@@ -34,9 +34,8 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
       minutes: selectedMinutes.value,
     );
 
-    // Validate: must be > 1 hour
-    // Validate: must be >= 2 minutes
-    final isValid = totalDuration.inMinutes >= 2;
+    // Validate: must be >= 1 hour
+    final isValid = totalDuration.inMinutes >= 60;
 
     return Dialog(
       backgroundColor: colorScheme.surface,
@@ -75,19 +74,17 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                   height: 150,
                   child: CupertinoPicker(
                     scrollController: FixedExtentScrollController(
-                      initialItem: selectedHours.value,
+                      initialItem: selectedHours.value - 1,
                     ),
                     itemExtent: 40,
                     onSelectedItemChanged: (index) {
-                      selectedHours.value = index;
+                      selectedHours.value = index + 1;
                     },
-                    children: List.generate(10, (index) {
-                      final hours = index;
+                    children: List.generate(9, (index) {
+                      final hours = index + 1;
                       return Center(
                         child: Text(
-                          hours == 0
-                              ? '0 hrs'
-                              : '$hours ${hours == 1 ? 'hr' : 'hrs'}',
+                          '$hours ${hours == 1 ? 'hr' : 'hrs'}',
                           style: textTheme.bodyLarge?.copyWith(
                             color: colorScheme.onSurface,
                           ),
@@ -103,13 +100,13 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                   height: 150,
                   child: CupertinoPicker(
                     scrollController: FixedExtentScrollController(
-                      initialItem: [2, 0, 15, 30, 45].indexOf(selectedMinutes.value),
+                      initialItem: [0, 15, 30, 45].indexOf(selectedMinutes.value),
                     ),
                     itemExtent: 40,
                     onSelectedItemChanged: (index) {
-                      selectedMinutes.value = [2, 0, 15, 30, 45][index];
+                      selectedMinutes.value = [0, 15, 30, 45][index];
                     },
-                    children: [2, 0, 15, 30, 45].map((minutes) {
+                    children: [0, 15, 30, 45].map((minutes) {
                       return Center(
                         child: Text(
                           '$minutes min',
