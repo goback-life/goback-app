@@ -56,19 +56,41 @@ class CalendarService implements CalendarServiceContract {
   @override
   FutureResult<void> savePostToCalendar(String postId) async {
     try {
+      // ignore: avoid_print
+      print('[SAVE_CAL] calling RPC with postId=$postId');
       final response = await supabaseClient.rpc(
         'save_post_to_calendar',
         params: {'p_post_id': postId},
       );
+      // ignore: avoid_print
+      print('[SAVE_CAL] response type=${response.runtimeType} value=$response');
 
-      final result = response as Map<String, dynamic>;
+      final Map<String, dynamic> result;
+      if (response is Map<String, dynamic>) {
+        result = response;
+      } else if (response is Map) {
+        result = Map<String, dynamic>.from(response);
+      } else {
+        // ignore: avoid_print
+        print('[SAVE_CAL] unexpected response type: ${response.runtimeType}');
+        return Result.failure(Exception('Unexpected response: $response'));
+      }
+
       if (result['success'] == true) {
         return Result.success(null);
       } else {
-        return Result.failure(Exception(result['error'] ?? 'Failed to save post'));
+        final errorMsg = result['error']?.toString() ?? 'Unknown error';
+        // ignore: avoid_print
+        print('[SAVE_CAL] RPC returned error: $errorMsg');
+        return Result.failure(Exception(errorMsg));
       }
+    } on PostgrestException catch (e) {
+      // ignore: avoid_print
+      print('[SAVE_CAL] PostgrestException: code=${e.code} message=${e.message}');
+      return Result.failure(Exception(e.message));
     } catch (e) {
-      logger.error('Failed to save post to calendar', exception: e);
+      // ignore: avoid_print
+      print('[SAVE_CAL] exception: $e');
       return Result.failure(e is Exception ? e : Exception(e.toString()));
     }
   }

@@ -1,3 +1,4 @@
+import 'package:cloudless/core/features/connection/domain/hooks/use_circle_members.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_connection_requests.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_search_users.dart';
 import 'package:cloudless/core/features/connection/domain/models/connection_request_model.dart';
@@ -15,6 +16,8 @@ import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+const _kMaxCircleSize = 150;
+
 class ConnectionRequestsView extends HookConsumerWidget
     with MainLayout, YourCircleLayout {
   const ConnectionRequestsView({super.key});
@@ -23,12 +26,14 @@ class ConnectionRequestsView extends HookConsumerWidget
   Widget build(BuildContext context, WidgetRef ref) {
     final searchData = useSearchUsers(ref);
     final requestsData = useConnectionRequests(ref);
+    final circleMembersData = useCircleMembers(ref);
     final searchController = useTextEditingController();
     final mq = MediaQuery.of(context);
     final topPad = mq.padding.top;
     final bottomPad = mq.padding.bottom;
 
     final isSearching = searchData.query.isNotEmpty;
+    final isFull = circleMembersData.allUsers.length >= _kMaxCircleSize;
 
     return Column(
       children: [
@@ -84,11 +89,13 @@ class ConnectionRequestsView extends HookConsumerWidget
                   searchData: searchData,
                   requestsData: requestsData,
                   ref: ref,
+                  isCircleFull: isFull,
                 )
               : _RequestsIdle(
                   requestsData: requestsData,
                   bottomPad: bottomPad,
                   ref: ref,
+                  isCircleFull: isFull,
                 ),
         ),
       ],
@@ -104,11 +111,13 @@ class _SearchResults extends StatelessWidget {
     required this.searchData,
     required this.requestsData,
     required this.ref,
+    required this.isCircleFull,
   });
 
   final SearchUsersData searchData;
   final ConnectionRequestsData requestsData;
   final WidgetRef ref;
+  final bool isCircleFull;
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +144,7 @@ class _SearchResults extends StatelessWidget {
         return _SearchResultTile(
           profile: profile,
           status: status,
+          isCircleFull: isCircleFull,
           onConnect: () => _handleConnect(profile.id),
           onAccept: () => _handleAcceptFromSearch(profile.id),
         );
@@ -172,12 +182,14 @@ class _SearchResultTile extends StatelessWidget {
     required this.status,
     required this.onConnect,
     required this.onAccept,
+    required this.isCircleFull,
   });
 
   final ProfileModel profile;
   final ConnectionStatus status;
   final VoidCallback onConnect;
   final VoidCallback onAccept;
+  final bool isCircleFull;
 
   @override
   Widget build(BuildContext context) {
@@ -230,28 +242,29 @@ class _SearchResultTile extends StatelessWidget {
   }
 
   Widget _buildActionButton() {
+    final disabledColor = MainColors.white.withValues(alpha: 0.3);
     switch (status) {
       case ConnectionStatus.none:
         return _SmallActionButton(
-          label: 'Connect',
-          color: MainColors.accent,
-          onTap: onConnect,
+          label: isCircleFull ? 'Full' : 'Connect',
+          color: isCircleFull ? disabledColor : MainColors.accent,
+          onTap: isCircleFull ? null : onConnect,
         );
       case ConnectionStatus.pendingOutgoing:
         return _SmallActionButton(
           label: 'Pending',
-          color: MainColors.white.withValues(alpha: 0.3),
+          color: disabledColor,
         );
       case ConnectionStatus.pendingIncoming:
         return _SmallActionButton(
-          label: 'Accept',
-          color: MainColors.accent,
-          onTap: onAccept,
+          label: isCircleFull ? 'Full' : 'Accept',
+          color: isCircleFull ? disabledColor : MainColors.accent,
+          onTap: isCircleFull ? null : onAccept,
         );
       case ConnectionStatus.connected:
         return _SmallActionButton(
           label: 'Connected',
-          color: MainColors.white.withValues(alpha: 0.3),
+          color: disabledColor,
         );
     }
   }
@@ -301,11 +314,13 @@ class _RequestsIdle extends StatelessWidget {
     required this.requestsData,
     required this.bottomPad,
     required this.ref,
+    required this.isCircleFull,
   });
 
   final ConnectionRequestsData requestsData;
   final double bottomPad;
   final WidgetRef ref;
+  final bool isCircleFull;
 
   @override
   Widget build(BuildContext context) {
@@ -341,6 +356,7 @@ class _RequestsIdle extends StatelessWidget {
           for (final request in requestsData.incomingRequests)
             _IncomingRequestTile(
               request: request,
+              isCircleFull: isCircleFull,
               onAccept: () => requestsData.respond(
                 request.requestId,
                 accept: true,
@@ -392,11 +408,13 @@ class _IncomingRequestTile extends StatelessWidget {
     required this.request,
     required this.onAccept,
     required this.onDeny,
+    required this.isCircleFull,
   });
 
   final ConnectionRequestModel request;
   final VoidCallback onAccept;
   final VoidCallback onDeny;
+  final bool isCircleFull;
 
   @override
   Widget build(BuildContext context) {
@@ -441,9 +459,11 @@ class _IncomingRequestTile extends StatelessWidget {
             ),
           ),
           _SmallActionButton(
-            label: 'Accept',
-            color: MainColors.accent,
-            onTap: onAccept,
+            label: isCircleFull ? 'Full' : 'Accept',
+            color: isCircleFull
+                ? MainColors.white.withValues(alpha: 0.3)
+                : MainColors.accent,
+            onTap: isCircleFull ? null : onAccept,
           ),
           const SizedBox(width: 8),
           _SmallActionButton(

@@ -41,6 +41,16 @@ class NotificationsView extends HookConsumerWidget {
               pageSize: 20,
             );
 
+            // Check if circle is full to disable Accept on connection requests
+            final circleMembersAsync = ref.watch(getCircleMembersProvider);
+            final circleCount = circleMembersAsync.whenOrNull(
+              data: (result) => result.fold(
+                (members) => members.length,
+                (_) => 0,
+              ),
+            ) ?? 0;
+            final isCircleFull = circleCount >= 150;
+
             // Auto-mark all as read after 1.5s delay
             useEffect(() {
               final timer = Timer(
@@ -91,7 +101,8 @@ class NotificationsView extends HookConsumerWidget {
                               );
                             },
                             onAccept: notification.type ==
-                                    NotificationType.connectionRequest
+                                        NotificationType.connectionRequest &&
+                                    !isCircleFull
                                 ? () => _respondToRequest(
                                       ref,
                                       notification,
