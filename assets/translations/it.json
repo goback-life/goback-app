@@ -495,6 +495,17 @@
             "no_posts": "Nessun post disponibile da salvare",
             "save": "Salva nel Calendario",
             "skip": "Salta per oggi"
+        },
+        "onboarding": {
+            "step1_title": "Benvenuto su goback",
+            "step1_description": "Il tuo cervello si è evoluto per le tribù, non per le timeline. goback è il tuo spazio per connessioni autentiche — ogni post scompare dopo 24 ore, così ogni condivisione è intenzionale.",
+            "step2_title": "Naviga con un tocco",
+            "step2_description": "Tieni premuto ovunque per aprire il menu. Da lì troverai il tuo Feed, Cerchia, Notifiche, Lockout e Profilo.",
+            "step3_title": "La tua Cerchia, le tue regole",
+            "step3_description": "Invita fino a 150 persone che contano davvero. Usa i Lockout per disconnetterti consapevolmente — la tua cerchia saprà che stai vivendo la vita offline.",
+            "next": "Avanti",
+            "done": "Ho capito",
+            "skip": "Salta"
         }
     },
     "permission": {
