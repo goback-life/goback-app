@@ -142,7 +142,13 @@ class CircleProfileView extends HookConsumerWidget
                 top: statsTop,
                 left: 0,
                 right: 0,
-                child: const Center(child: ProfileWeeklyStats()),
+                child: Center(
+                  child: ProfileWeeklyStats(
+                    weeklyLockoutMinutes:
+                        profileToUse?.weeklyLockoutMinutes,
+                    hasResolvedData: true,
+                  ),
+                ),
               ),
 
               // Calendar (read-only: friends can view but not add
