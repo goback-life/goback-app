@@ -33,7 +33,17 @@ SignInFormResult useSignInForm(WidgetRef ref) {
       ),
     },
     onSubmit: (values) async {
-      phoneNumberValue = values[SignInFormKey.phoneNumber.value] as String;
+      final rawPhone = values[SignInFormKey.phoneNumber.value] as String;
+      // Strip all non-digit/+ chars and validate minimum length
+      // E.164: + country code (1-3 digits) + subscriber (min ~4 digits)
+      final sanitized = rawPhone.replaceAll(RegExp(r'[^\d+]'), '');
+      final digitsOnly = sanitized.replaceAll('+', '');
+      if (digitsOnly.length < 7) {
+        throw FormatException('Invalid phone number: $rawPhone');
+      }
+      phoneNumberValue = sanitized.startsWith('+')
+          ? sanitized
+          : '+$sanitized';
 
       final result = await ref.read(signInProvider(phoneNumberValue!).future);
       return result;

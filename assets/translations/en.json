@@ -306,7 +306,7 @@
             "account": "Account",
             "phone_number": "Number: ",
             "phone_number_error": "Unable to display the phone number",
-            "delete_data": "Delete data",
+            "delete_data": "Delete account",
             "preferences": "Preferences",
             "objective": "Objective",
             "notifications": "Notifications",
@@ -503,6 +503,8 @@
             "step2_description": "Press and hold anywhere to open the menu. From there you\u2019ll find your Feed, Circle, Notifications, Lockouts, and Profile.",
             "step3_title": "Your Circle, your rules",
             "step3_description": "Invite up to 150 people who matter. Use Lockouts to consciously step away \u2014 your circle will know you\u2019re living life offline.",
+            "step4_title": "Grow your circle",
+            "step4_description": "Head to your Circle and tap the Requests tab. From there you can search for friends, send connection requests, and accept incoming ones.",
             "next": "Next",
             "done": "Got it",
             "skip": "Skip"

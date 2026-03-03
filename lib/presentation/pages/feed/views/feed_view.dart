@@ -12,7 +12,9 @@ import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart'
 import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_action_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_published_notifier_provider.dart';
+import 'package:cloudless/core/features/onboarding/data/storables/onboarding_completed_storable.dart';
 import 'package:cloudless/presentation/components/main_data_loader.dart';
+import 'package:cloudless/presentation/components/onboarding/onboarding_overlay.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_date_overlay.dart';
 import 'package:cloudless/presentation/pages/home/components/memorable_post_selection_dialog.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_lockout_button.dart';
@@ -32,6 +34,16 @@ class FeedView extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Onboarding overlay — shown once per storable version
+    final onboardingDismissed = useState(false);
+    final onboardingFuture = useMemoized(
+      () => OnboardingCompletedStorable().get(defaultValue: false),
+    );
+    final onboardingSnapshot = useFuture(onboardingFuture);
+    final hasCompletedOnboarding = onboardingSnapshot.data ?? false;
+    final showOnboarding =
+        !hasCompletedOnboarding && !onboardingDismissed.value;
+
     final currentUserAsync = ref.watch(getCurrentUserProvider);
     final scrollController = useScrollController();
     final screenWidth = MediaQuery.of(context).size.width;
@@ -267,7 +279,7 @@ class FeedView extends HookConsumerWidget {
       });
     }
 
-    return MainDataLoader(
+    final feedContent = MainDataLoader(
       provider: currentUserAsync,
       useScaffold: false,
       onRetry: () => ref.invalidate(getCurrentUserProvider),
@@ -287,6 +299,20 @@ class FeedView extends HookConsumerWidget {
           onScrollToBottom,
         );
       },
+    );
+
+    if (!showOnboarding) return feedContent;
+
+    return Stack(
+      children: [
+        feedContent,
+        OnboardingOverlay(
+          onDismiss: () async {
+            await OnboardingCompletedStorable().set(true);
+            onboardingDismissed.value = true;
+          },
+        ),
+      ],
     );
   }
 

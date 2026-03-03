@@ -31,6 +31,10 @@ class _OnboardingOverlayState extends State<OnboardingOverlay> {
       titleKey: 'pages.onboarding.step3_title',
       descKey: 'pages.onboarding.step3_description',
     ),
+    (
+      titleKey: 'pages.onboarding.step4_title',
+      descKey: 'pages.onboarding.step4_description',
+    ),
   ];
 
   void _next() {

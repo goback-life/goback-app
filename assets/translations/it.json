@@ -306,7 +306,7 @@
             "account": "Account",
             "phone_number": "Numero: ",
             "phone_number_error": "Impossibile visualizzare il numero di telefono",
-            "delete_data": "Elimina dati",
+            "delete_data": "Elimina account",
             "preferences": "Preferenze",
             "objective": "Obiettivo",
             "notifications": "Notifiche",
@@ -503,6 +503,8 @@
             "step2_description": "Tieni premuto ovunque per aprire il menu. Da lì troverai il tuo Feed, Cerchia, Notifiche, Lockout e Profilo.",
             "step3_title": "La tua Cerchia, le tue regole",
             "step3_description": "Invita fino a 150 persone che contano davvero. Usa i Lockout per disconnetterti consapevolmente — la tua cerchia saprà che stai vivendo la vita offline.",
+            "step4_title": "Fai crescere la tua cerchia",
+            "step4_description": "Vai alla tua Cerchia e tocca la scheda Richieste. Da lì puoi cercare amici, inviare richieste di connessione e accettare quelle in arrivo.",
             "next": "Avanti",
             "done": "Ho capito",
             "skip": "Salta"

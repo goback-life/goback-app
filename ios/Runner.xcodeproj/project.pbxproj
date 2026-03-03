@@ -719,6 +719,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
+				INFOPLIST_KEY_CFBundleDisplayName = goback.;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -863,6 +864,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = goback.;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -883,6 +885,7 @@
 			baseConfigurationReference = BA0FC77DF87CA91ED9BA4D22 /* productionProfile.xcconfig */;
 			buildSettings = {
 				DEVELOPMENT_TEAM = QB78GSBHZJ;
+				INFOPLIST_KEY_CFBundleDisplayName = goback.;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1016,6 +1019,7 @@
 			baseConfigurationReference = 7737E572B215B8F22F69A5A2 /* productionDebug.xcconfig */;
 			buildSettings = {
 				DEVELOPMENT_TEAM = QB78GSBHZJ;
+				INFOPLIST_KEY_CFBundleDisplayName = goback.;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1245,6 +1249,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
+				INFOPLIST_KEY_CFBundleDisplayName = goback.;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1258,6 +1263,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QB78GSBHZJ;
+				INFOPLIST_KEY_CFBundleDisplayName = goback.;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1348,6 +1354,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
+				INFOPLIST_KEY_CFBundleDisplayName = goback.;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1480,6 +1487,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = goback.;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1509,6 +1517,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = goback.;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1531,6 +1540,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
+				INFOPLIST_KEY_CFBundleDisplayName = goback.;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1544,6 +1554,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
+				INFOPLIST_KEY_CFBundleDisplayName = goback.;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1627,6 +1638,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
+				INFOPLIST_KEY_CFBundleDisplayName = goback.;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

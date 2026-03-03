@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloudless/core/features/auth/domain/providers/is_authenticated_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/profile/data/storables/profile_completed_storable.dart';
@@ -27,13 +29,29 @@ class NavOverlayWrapper extends HookConsumerWidget {
     final isOverlayVisible = useState(false);
 
     // Check if the user has completed signup (auth + profile).
+    // NavOverlayWrapper sits above the Navigator (in MaterialApp.builder)
+    // so it does NOT rebuild on route changes. Poll the storable after auth
+    // until confirmed, then stop.
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
-    final profileCompletedFuture = useMemoized(
-      () => ProfileCompletedStorable().get(defaultValue: false),
-    );
-    final profileSnapshot = useFuture(profileCompletedFuture);
-    final hasCompletedSignup =
-        isAuthenticated && (profileSnapshot.data ?? false);
+    final profileCompleted = useState(false);
+    useEffect(() {
+      if (!isAuthenticated) {
+        profileCompleted.value = false;
+        return null;
+      }
+      void check() {
+        ProfileCompletedStorable().get(defaultValue: false).then((v) {
+          if (v && !profileCompleted.value) profileCompleted.value = true;
+        });
+      }
+      check();
+      final timer = Timer.periodic(
+        const Duration(milliseconds: 500),
+        (_) { if (!profileCompleted.value) check(); },
+      );
+      return timer.cancel;
+    }, [isAuthenticated]);
+    final hasCompletedSignup = isAuthenticated && profileCompleted.value;
 
     // Check lockout state to disable overlay.
     final lockoutAsync = ref.watch(manualLockoutNotifierProvider);
