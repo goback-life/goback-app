@@ -187,25 +187,30 @@ class ProfileCalendar extends HookConsumerWidget
       behavior: HitTestBehavior.opaque,
       child: Column(
         children: [
-          CalendarGrid(
-            selectedMonth: selectedMonth,
-            currentDate: currentDate,
-            scale: scale,
-            calendarThumbnails: calendarPostsByDay.value.map(
-              (day, post) => MapEntry(day, post.thumbnailUrl ?? ''),
+          Expanded(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: CalendarGrid(
+                selectedMonth: selectedMonth,
+                currentDate: currentDate,
+                scale: scale,
+                calendarThumbnails: calendarPostsByDay.value.map(
+                  (day, post) => MapEntry(day, post.thumbnailUrl ?? ''),
+                ),
+                onDayTap: (DateTime tappedDate) {
+                  _handleDayTap(
+                    context,
+                    ref,
+                    tappedDate,
+                    selectedMonth,
+                    currentDate,
+                    calendarPostsByDay,
+                  );
+                },
+              ),
             ),
-            onDayTap: (DateTime tappedDate) {
-              _handleDayTap(
-                context,
-                ref,
-                tappedDate,
-                selectedMonth,
-                currentDate,
-                calendarPostsByDay,
-              );
-            },
           ),
-          const Spacer(),
+          SizedBox(height: 8 * scale),
           CalendarHeader(
             selectedMonth: selectedMonth,
             scale: scale,
@@ -229,7 +234,6 @@ class ProfileCalendar extends HookConsumerWidget
                   }
                 : null,
           ),
-          const Spacer(flex: 3),
         ],
       ),
     );

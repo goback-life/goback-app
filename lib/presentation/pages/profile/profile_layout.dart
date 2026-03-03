@@ -22,7 +22,7 @@ mixin ProfileLayout on MainLayout {
   // Calendar grid
   double get dayCellWidth => 39.0;
   double get dayCellHeight => 48.0;
-  double get calendarGridTop => 404.0;
+  double get calendarGridTop => 360.0;
   double get calendarGridWidth => 340.0;
   double get calendarRowSpacing => 59.0;
   double get dayFontSize => 24.0;
