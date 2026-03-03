@@ -118,6 +118,18 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     }
   }
 
+  /// Dismisses the completion UI without clearing local storage.
+  /// Used by _handleShare so lockoutStartTimestamp remains available
+  /// for the post-creation hook to read later.
+  void dismissCompletion() {
+    state = AsyncValue.data(
+      const ManualLockoutModel(
+        isLockedOut: false,
+        isCompletionPending: false,
+      ),
+    );
+  }
+
   Future<void> clearLockout() async {
     final storable = ref.read(manualLockoutStorableProvider);
     final useCase = ClearManualLockoutUseCase(storable: storable);

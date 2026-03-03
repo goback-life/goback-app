@@ -216,8 +216,8 @@ class ManualLockoutView extends HookConsumerWidget {
     String lockoutSessionId,
     PostCreationInitializationResult postCreationInit,
   ) {
-    // Clear completion-pending so nav overlay unblocks
-    ref.read(manualLockoutNotifierProvider.notifier).clearLockout();
+    // Dismiss completion UI (preserves local storage for post creation hook)
+    ref.read(manualLockoutNotifierProvider.notifier).dismissCompletion();
     if (lockoutSessionId.isNotEmpty) {
       ref
           .read(pendingLockoutPostProvider.notifier)

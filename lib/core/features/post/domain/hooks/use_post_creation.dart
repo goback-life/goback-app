@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
+import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout_post_provider.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_creation_dto.dart';
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
@@ -124,12 +125,14 @@ PostCreationResult usePostCreation(WidgetRef ref) {
 
             // Auto-tag lockout participants when creating a lockout post
             var finalTaggedUserIds = List<String>.from(postCreationData.taggedUserIds);
+            String? lockoutOwnerId;
             if (pendingLockoutId != null) {
               final sessionService = ref.read(lockoutSessionServiceProvider);
               final sessionResult = await sessionService.getSessionById(pendingLockoutId);
               sessionResult.fold(
                 (session) {
                   if (session != null) {
+                    lockoutOwnerId = session.userId;
                     // Tag the session owner (if current user is a joiner)
                     if (!finalTaggedUserIds.contains(session.userId) &&
                         session.userId != user.id) {
@@ -195,15 +198,17 @@ PostCreationResult usePostCreation(WidgetRef ref) {
                   final storable = ref.read(manualLockoutStorableProvider);
                   final userStartedAt = await storable.getLockoutStart();
 
-                  // Link post to session
-                  final updateResult = await sessionService.updateSessionPostId(
-                    sessionId: pendingLockoutId,
-                    postId: post.id,
-                  );
-                  updateResult.fold(
-                    (_) => logger.info('Linked post ${post.id} to lockout session $pendingLockoutId'),
-                    (error) => logger.warning('Failed to link post to lockout session: $error'),
-                  );
+                  // Only session owner sets post_id; joiners link via posts.lockout_id
+                  if (lockoutOwnerId == user.id) {
+                    final updateResult = await sessionService.updateSessionPostId(
+                      sessionId: pendingLockoutId,
+                      postId: post.id,
+                    );
+                    updateResult.fold(
+                      (_) => logger.info('Linked post ${post.id} to lockout session $pendingLockoutId'),
+                      (error) => logger.warning('Failed to link post to lockout session: $error'),
+                    );
+                  }
 
                   // Update weekly stats with user's actual start time (important for joiners)
                   await sessionService.completeSessionWithStats(
@@ -213,6 +218,7 @@ PostCreationResult usePostCreation(WidgetRef ref) {
 
                   ref.read(pendingLockoutPostProvider.notifier).clear();
                   await storable.clearLockout();
+                  ref.read(manualLockoutNotifierProvider.notifier).clearLockout();
                 }
 
                 if (postCreationData.isEditing) {
