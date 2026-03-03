@@ -218,7 +218,7 @@ PostCreationResult usePostCreation(WidgetRef ref) {
 
                   ref.read(pendingLockoutPostProvider.notifier).clear();
                   await storable.clearLockout();
-                  ref.read(manualLockoutNotifierProvider.notifier).clearLockout();
+                  await ref.read(manualLockoutNotifierProvider.notifier).clearLockout();
                 }
 
                 if (postCreationData.isEditing) {
