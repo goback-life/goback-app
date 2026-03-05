@@ -40,7 +40,7 @@ class FeedView extends HookConsumerWidget {
       () => OnboardingCompletedStorable().get(defaultValue: false),
     );
     final onboardingSnapshot = useFuture(onboardingFuture);
-    final hasCompletedOnboarding = onboardingSnapshot.data ?? false;
+    final hasCompletedOnboarding = onboardingSnapshot.data ?? true;
     final showOnboarding =
         !hasCompletedOnboarding && !onboardingDismissed.value;
 

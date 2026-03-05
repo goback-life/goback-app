@@ -44,7 +44,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     );
     final onboardingSnapshot = useFuture(onboardingFuture);
     final hasCompletedOnboarding =
-        onboardingSnapshot.data ?? false;
+        onboardingSnapshot.data ?? true;
 
     final currentUserAsync = ref.watch(getCurrentUserProvider);
     final scrollController = useScrollController();
