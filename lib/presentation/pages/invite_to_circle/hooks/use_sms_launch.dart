@@ -44,6 +44,8 @@ InviteSendingState useSmsSender(WidgetRef ref) {
 
     final currentUserResult = await ref.read(getCurrentUserProvider.future);
 
+    if (!context.mounted) return;
+
     final currentUser = await currentUserResult.fold((user) async => user, (
       error,
     ) {
@@ -53,6 +55,8 @@ InviteSendingState useSmsSender(WidgetRef ref) {
     final profileResult = await ref.read(
       getProfileProvider(currentUser!.id).future,
     );
+
+    if (!context.mounted) return;
 
     final currentProfile = await profileResult.fold(
       (profile) async => profile,
@@ -66,6 +70,8 @@ InviteSendingState useSmsSender(WidgetRef ref) {
     }
 
     final result = await createInviteCode();
+
+    if (!context.mounted) return;
 
     await result.fold(
       (inviteCode) async {

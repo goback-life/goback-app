@@ -16,7 +16,6 @@ StartupConfig get startupConfig {
     routes: routes,
     localizationsDelegates: [...PhoneFieldLocalization.delegates],
     middlewares: [AuthNavigationFlowMiddleware()],
-    errorPage: const ColoredBox(color: MainColors.dark),
     loadingPage: MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
