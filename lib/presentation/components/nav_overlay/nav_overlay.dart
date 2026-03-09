@@ -38,6 +38,12 @@ class NavOverlay extends StatelessWidget {
     final sw = size.width / 402.0;
     final sh = size.height / 874.0;
 
+    // Lockout triangle geometry.
+    final btnW = 86 * sw;
+    final btnH = 102 * sw;
+    final lockoutBottom = FeedLayout.lockoutBottomDistance * sw - btnH / 2;
+    final triangleTopFromBottom = lockoutBottom + btnH;
+
     return GestureDetector(
       onTap: onDismiss,
       behavior: HitTestBehavior.opaque,
@@ -45,8 +51,13 @@ class NavOverlay extends StatelessWidget {
         color: MainColors.dark.withValues(alpha: 0.88),
         child: Stack(
           children: [
-            // Nav labels centred in safe area.
-            SafeArea(
+            // Nav labels: last item equidistant from screen top
+            // and triangle top.
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: triangleTopFromBottom,
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -73,21 +84,12 @@ class NavOverlay extends StatelessWidget {
               ),
             ),
             // Lockout button — same position as feed.
-            Builder(
-              builder: (context) {
-                final btnW = 86 * sw;
-                final btnH = 102 * sw;
-                final bottomOffset =
-                    FeedLayout.lockoutBottomDistance * sw - btnH / 2;
-                final leftOffset = size.width / 2 +
-                    FeedLayout.lockoutCenterOffsetX * sw -
-                    btnW / 2;
-                return Positioned(
-                  bottom: bottomOffset,
-                  left: leftOffset,
-                  child: const FeedLockoutButton(),
-                );
-              },
+            Positioned(
+              bottom: lockoutBottom,
+              left: size.width / 2 +
+                  FeedLayout.lockoutCenterOffsetX * sw -
+                  btnW / 2,
+              child: const FeedLockoutButton(),
             ),
           ],
         ),

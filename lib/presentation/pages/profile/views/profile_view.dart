@@ -4,7 +4,8 @@ import 'package:cloudless/presentation/components/profile_description.dart';
 import 'package:cloudless/presentation/components/profile_image/profile_image.dart';
 import 'package:cloudless/presentation/components/username_field.dart';
 import 'package:cloudless/presentation/pages/profile/components/calendar_section/profile_calendar.dart';
-import 'package:cloudless/presentation/pages/profile/components/profile_weekly_stats.dart';
+import 'package:cloudless/presentation/pages/profile/components/profile_tab_toggle.dart';
+import 'package:cloudless/presentation/pages/profile/components/stats_section/profile_stats_view.dart';
 import 'package:cloudless/presentation/pages/profile/profile_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
@@ -12,7 +13,7 @@ import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 
-class ProfileView extends ConsumerWidget with MainLayout, ProfileLayout {
+class ProfileView extends HookConsumerWidget with MainLayout, ProfileLayout {
   const ProfileView({required this.scale, super.key});
 
   final double scale;
@@ -23,6 +24,7 @@ class ProfileView extends ConsumerWidget with MainLayout, ProfileLayout {
     final theme = Theme.of(context);
     final s = scale;
     final scaledAvatarSize = avatarSize * s;
+    final tabIndex = useState<int>(0);
 
     // Pre-compute vertical positions.
     final avatarTop = topPad + avatarTopOffset * s;
@@ -49,24 +51,23 @@ class ProfileView extends ConsumerWidget with MainLayout, ProfileLayout {
       color: MainColors.white,
     );
 
-    // Resolve current user and profile once — children receive data via props
-    // instead of each independently watching the same providers.
+    // Resolve current user and profile once.
     final currentUserAsync = ref.watch(getCurrentUserProvider);
     String? avatarUrl;
     String? username;
     String? biography;
-    int? weeklyLockoutMinutes;
+    String? currentUserId;
     bool profileResolved = false;
 
     currentUserAsync.whenData((userResult) {
       userResult.fold((user) {
+        currentUserId = user.id;
         final profileAsync = ref.watch(getProfileProvider(user.id));
         profileAsync.whenData((profileResult) {
           profileResult.fold((profile) {
             avatarUrl = profile?.avatarUrl;
             username = profile?.username;
             biography = profile?.biography;
-            weeklyLockoutMinutes = profile?.weeklyLockoutMinutes;
             profileResolved = true;
           }, (_) {});
         });
@@ -146,28 +147,42 @@ class ProfileView extends ConsumerWidget with MainLayout, ProfileLayout {
             ),
           ),
 
-          // Weekly lockout stats
+          // Tab toggle (replaces standalone weekly stats position)
           Positioned(
             top: statsTop,
             left: 0,
             right: 0,
             child: Center(
-              child: profileResolved
-                  ? ProfileWeeklyStats(
-                      weeklyLockoutMinutes: weeklyLockoutMinutes,
-                      hasResolvedData: true,
-                    )
-                  : const ProfileWeeklyStats(),
+              child: ProfileTabToggle(
+                selectedIndex: tabIndex.value,
+                onChanged: (i) => tabIndex.value = i,
+                scale: s,
+              ),
             ),
           ),
 
-          // Calendar grid + month navigation
+          // Tab content area
           Positioned(
             top: calTop,
             left: 0,
             right: 0,
             bottom: MediaQuery.of(context).padding.bottom + 8 * s,
-            child: ProfileCalendar(scale: s),
+            child: IndexedStack(
+              index: tabIndex.value,
+              children: [
+                // Calendar tab
+                ProfileCalendar(scale: s),
+                // Stats tab — pad top so it clears the tab toggle
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: (statsTop + 56 * s) - calTop,
+                  ),
+                  child: currentUserId != null
+                      ? ProfileStatsView(userId: currentUserId!, scale: s)
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
           ),
         ],
       ),

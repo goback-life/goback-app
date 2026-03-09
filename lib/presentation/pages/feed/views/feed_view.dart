@@ -335,6 +335,12 @@ class FeedView extends HookConsumerWidget {
     final lockoutCenterFromBottom = FeedLayout.lockoutBottomDistance * s;
 
     final showLoading = feedPosts.isLoading && feedPosts.posts.isEmpty;
+    final hasUnread = ref
+        .watch(unreadNotificationCountProvider(userId: currentUserId))
+        .maybeWhen(
+          data: (r) => r.fold((c) => c > 0, (_) => false),
+          orElse: () => false,
+        );
 
     return Stack(
       children: [
@@ -372,6 +378,7 @@ class FeedView extends HookConsumerWidget {
                           .createdAt
                           .toLocal()
                       : null),
+              hasUnreadNotifications: hasUnread,
             ),
           ),
         ),

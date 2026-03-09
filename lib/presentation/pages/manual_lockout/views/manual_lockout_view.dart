@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:battery_plus/battery_plus.dart';
+import 'package:cloudless/core/features/lockout/data/providers/lockout_live_activity_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
@@ -78,6 +79,7 @@ class ManualLockoutView extends HookConsumerWidget {
       if (isLockoutComplete.value) return;
       isLockoutComplete.value = true;
       countdown.value = '0:00';
+      ref.read(lockoutLiveActivityServiceProvider).endActivity();
 
       // Compute score from battery data
       final storable = ref.read(manualLockoutStorableProvider);

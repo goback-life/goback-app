@@ -1,4 +1,5 @@
 import 'package:battery_plus/battery_plus.dart';
+import 'package:cloudless/core/features/lockout/data/providers/lockout_live_activity_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/models/manual_lockout_model.dart';
@@ -26,6 +27,19 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
         storable: storable,
       );
       remainingDuration = await getRemainingUseCase.execute();
+    }
+
+    // Sync Live Activity with lockout state on app launch / rebuild
+    final liveActivityService = ref.read(lockoutLiveActivityServiceProvider);
+    if (isLockedOut && remainingDuration != null) {
+      final lockoutEnd = await storable.getLockoutEnd();
+      if (lockoutEnd != null) {
+        await liveActivityService.startActivity(
+          lockoutEndTimestamp: lockoutEnd,
+        );
+      }
+    } else {
+      await liveActivityService.endActivity();
     }
 
     return ManualLockoutModel(
@@ -86,6 +100,11 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       );
       await useCase.execute();
 
+      // Start Live Activity countdown on lock screen
+      await ref.read(lockoutLiveActivityServiceProvider).startActivity(
+        lockoutEndTimestamp: DateTime.now().add(duration),
+      );
+
       // Reload state
       final checkUseCase = CheckManualLockoutUseCase(storable: storable);
       final isLockedOut = await checkUseCase.execute();
@@ -136,6 +155,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
 
     state = const AsyncValue.loading();
     try {
+      await ref.read(lockoutLiveActivityServiceProvider).endActivity();
       await useCase.execute();
       state = AsyncValue.data(
         const ManualLockoutModel(
@@ -221,6 +241,11 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
         batteryAtStart: batteryAtStart,
       );
       await useCase.execute();
+
+      // Start Live Activity countdown on lock screen
+      await ref.read(lockoutLiveActivityServiceProvider).startActivity(
+        lockoutEndTimestamp: lockoutEndTime!,
+      );
 
       // Reload state
       final checkUseCase = CheckManualLockoutUseCase(storable: storable);

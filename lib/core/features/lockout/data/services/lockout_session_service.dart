@@ -1,3 +1,5 @@
+import 'package:cloudless/core/features/lockout/data/dtos/lockout_daily_stats_dto.dart';
+import 'package:cloudless/core/features/lockout/data/dtos/lockout_monthly_summary_dto.dart';
 import 'package:cloudless/core/features/lockout/data/dtos/lockout_session_dto.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -236,6 +238,64 @@ class LockoutSessionService {
       logger.error('Failed to get lockout session by ID', exception: e);
       return Result.failure(
         e is Exception ? e : Exception('Failed to get session: $e'),
+      );
+    }
+  }
+
+  /// Gets daily lockout stats for a given week (Mon-Sun).
+  FutureResult<List<LockoutDailyStatsDto>> getDailyStats({
+    required String userId,
+    required DateTime weekStart,
+  }) async {
+    try {
+      final response = await supabase.rpc(
+        'get_lockout_daily_stats',
+        params: {
+          'p_user_id': userId,
+          'p_week_start': '${weekStart.year}-${weekStart.month.toString().padLeft(2, '0')}-${weekStart.day.toString().padLeft(2, '0')}',
+        },
+      );
+
+      final stats = (response as List)
+          .map((json) =>
+              LockoutDailyStatsDto.fromJson(json as Map<String, dynamic>))
+          .toList();
+
+      return Result.success(stats);
+    } catch (e) {
+      logger.error('Failed to get daily lockout stats', exception: e);
+      return Result.failure(
+        e is Exception ? e : Exception('Failed to get daily stats: $e'),
+      );
+    }
+  }
+
+  /// Gets monthly lockout summary for a given year/month.
+  FutureResult<LockoutMonthlySummaryDto?> getMonthlySummary({
+    required String userId,
+    required int year,
+    required int month,
+  }) async {
+    try {
+      final response = await supabase.rpc(
+        'get_lockout_monthly_summary',
+        params: {
+          'p_user_id': userId,
+          'p_year': year,
+          'p_month': month,
+        },
+      );
+
+      final rows = response as List;
+      if (rows.isEmpty) return Result.success(null);
+
+      return Result.success(
+        LockoutMonthlySummaryDto.fromJson(rows.first as Map<String, dynamic>),
+      );
+    } catch (e) {
+      logger.error('Failed to get monthly lockout summary', exception: e);
+      return Result.failure(
+        e is Exception ? e : Exception('Failed to get monthly summary: $e'),
       );
     }
   }

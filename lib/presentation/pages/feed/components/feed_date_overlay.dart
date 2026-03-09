@@ -11,9 +11,14 @@ import 'package:intl/intl.dart';
 /// Uses [GlassVariant.clear] for maximum transparency.
 /// Fixed at top-center of the feed with safe-area padding.
 class FeedDateOverlay extends StatelessWidget {
-  const FeedDateOverlay({required this.displayDate, super.key});
+  const FeedDateOverlay({
+    required this.displayDate,
+    this.hasUnreadNotifications = false,
+    super.key,
+  });
 
   final DateTime? displayDate;
+  final bool hasUnreadNotifications;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +36,9 @@ class FeedDateOverlay extends StatelessWidget {
       config: GlassConfig(
         variant: GlassVariant.clear,
         cornerRadius: FeedLayout.dateOverlayCornerRadius * s,
+        tint: hasUnreadNotifications
+            ? MainColors.red500.withValues(alpha: 0.35)
+            : null,
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),

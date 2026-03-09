@@ -48,6 +48,7 @@ dependencies:
   battery_plus: ^6.0.3
   video_player: ^2.10.0
   video_thumbnail: ^0.5.6
+  live_activities: ^2.4.2
 
 dev_dependencies:
   build_runner: ^2.5.4
