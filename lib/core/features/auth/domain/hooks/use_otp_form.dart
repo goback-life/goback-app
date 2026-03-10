@@ -5,6 +5,7 @@ import 'package:cloudless/core/features/auth/domain/hooks/use_resend_phone_otp.d
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
 import 'package:cloudless/core/features/auth/domain/providers/is_authenticated_provider.dart';
 import 'package:cloudless/core/features/auth/domain/providers/verify_phone_otp_provider.dart';
+import 'package:cloudless/core/features/notification/domain/providers/push_notification_provider.dart';
 import 'package:cloudless/core/features/profile/domain/providers/has_completed_profile_provider.dart';
 import 'package:cloudless/core/features/supabase/data/handlers/common_supabase_exception_ui_handler.dart';
 import 'package:cloudless/presentation/components/alerts/main_alert.dart';
@@ -55,6 +56,9 @@ OtpFormResult useOtpForm(WidgetRef ref, String phoneNumber) {
       ref.invalidate(isAuthenticatedProvider);
       ref.invalidate(getCurrentUserProvider);
       ref.invalidate(hasCompletedProfileProvider);
+
+      // Register FCM token + set up message listeners
+      await ref.read(pushNotificationProvider).initialize();
 
       try {
         final hasCompletedProfileResult = await ref.read(

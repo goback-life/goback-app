@@ -1,5 +1,6 @@
 import 'package:cloudless/core/features/auth/domain/providers/sign_out_provider.dart';
 import 'package:cloudless/core/features/calendar/domain/providers/calendar_posts_cache_provider.dart';
+import 'package:cloudless/core/features/notification/domain/providers/push_notification_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_provider.dart';
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
 import 'package:cloudless/presentation/components/alerts/main_alert.dart';
@@ -35,6 +36,7 @@ class LogoutButton extends HookConsumerWidget with MainLayout, SettingsLayout {
 
         result.fold(
           (success) {
+            ref.read(pushNotificationProvider).unregister();
             calendarCacheNotifier.clearCache();
             feedCacheNotifier.invalidateCache();
             if (context.mounted) {

@@ -21,6 +21,8 @@ class PermissionTypeMapper {
         return handler.Permission.storage;
       case PermissionType.contact:
         return handler.Permission.contacts;
+      case PermissionType.notification:
+        return handler.Permission.notification;
     }
   }
 }

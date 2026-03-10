@@ -1,1 +1,1 @@
-enum PermissionType { camera, gallery, storage, contact }
+enum PermissionType { camera, gallery, storage, contact, notification }
