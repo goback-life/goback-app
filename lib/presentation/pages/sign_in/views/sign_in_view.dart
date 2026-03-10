@@ -3,6 +3,8 @@ import 'package:cloudless/presentation/components/form_field/phone_number_form_f
 import 'package:cloudless/presentation/pages/sign_in/components/sign_in_button.dart';
 import 'package:cloudless/presentation/pages/sign_in/components/sign_in_privacy_checkbox.dart';
 import 'package:cloudless/presentation/pages/sign_in/sign_in_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
+import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_form/dedecube_form.dart';
@@ -32,6 +34,17 @@ class SignInView extends HookConsumerWidget with MainLayout, SignInLayout {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const PhoneNumberFormField(),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'US phone numbers are not currently supported for account creation.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: MainFontFamilies.quicksand,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: MainColors.grey500,
+                          ),
+                        ),
                         SizedBox(height: verticalSpacing),
                         ValueListenableBuilder<bool>(
                           valueListenable: signInResult.isPrivacyAccepted,

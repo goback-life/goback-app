@@ -18,6 +18,7 @@ import 'package:cloudless/presentation/pages/review_circle/review_circle_routabl
 import 'package:cloudless/presentation/pages/settings/settings_routable.dart';
 import 'package:cloudless/presentation/pages/sign_in/sign_in_routable.dart';
 import 'package:cloudless/presentation/pages/visibility_selection/visibility_selection_routable.dart';
+import 'package:cloudless/presentation/pages/tutorial/tutorial_routable.dart';
 import 'package:cloudless/presentation/pages/your_circle/your_circle_routable.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 
@@ -43,4 +44,5 @@ final List<BaseRoutable> routes = [
   const NotificationsRoutable(),
   const FriendsLockedOutRoutable(),
   const VisibilitySelectionRoutable(),
+  const TutorialRoutable(),
 ];

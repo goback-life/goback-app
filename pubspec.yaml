@@ -86,6 +86,7 @@ flutter:
     - assets/fonts/
     - assets/images/svgs/
     - assets/images/svgs_src/
+    - assets/images/tutorial/
     - path: .env
 
   fonts:

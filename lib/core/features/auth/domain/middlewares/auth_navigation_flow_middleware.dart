@@ -17,6 +17,7 @@ import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routa
 import 'package:cloudless/presentation/pages/objective/objective_routable.dart';
 import 'package:cloudless/presentation/pages/otp/otp_routable.dart';
 import 'package:cloudless/presentation/pages/sign_in/sign_in_routable.dart';
+import 'package:cloudless/presentation/pages/tutorial/tutorial_routable.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/widgets.dart';
@@ -91,6 +92,7 @@ class AuthNavigationFlowMiddleware extends Middleware {
     const OtpRoutable(),
     const CreateProfileRoutable(),
     const ManualLockoutRoutable(),
+    const TutorialRoutable(),
   ];
 
   @override

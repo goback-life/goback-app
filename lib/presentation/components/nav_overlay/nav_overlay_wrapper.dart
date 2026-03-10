@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloudless/core/features/auth/domain/providers/is_authenticated_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
+import 'package:cloudless/core/features/onboarding/data/storables/tutorial_completed_storable.dart';
 import 'package:cloudless/core/features/profile/data/storables/profile_completed_storable.dart';
 import 'dart:ui' as ui;
 
@@ -53,12 +54,30 @@ class NavOverlayWrapper extends HookConsumerWidget {
     }, [isAuthenticated]);
     final hasCompletedSignup = isAuthenticated && profileCompleted.value;
 
+    // Check tutorial completion — block overlay during tutorial.
+    final tutorialCompleted = useState(true);
+    useEffect(() {
+      if (!isAuthenticated) return null;
+      void check() {
+        TutorialCompletedStorable().get(defaultValue: true).then((v) {
+          if (v != tutorialCompleted.value) tutorialCompleted.value = v;
+        });
+      }
+      check();
+      final timer = Timer.periodic(
+        const Duration(milliseconds: 500),
+        (_) { if (!tutorialCompleted.value) check(); },
+      );
+      return timer.cancel;
+    }, [isAuthenticated]);
+
     // Check lockout state to disable overlay.
     final lockoutAsync = ref.watch(manualLockoutNotifierProvider);
     final lockoutState = lockoutAsync.valueOrNull;
     final isBlocked = !hasCompletedSignup ||
         lockoutState?.isLockedOut == true ||
-        lockoutState?.isCompletionPending == true;
+        lockoutState?.isCompletionPending == true ||
+        !tutorialCompleted.value;
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,

@@ -13,6 +13,7 @@ import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_p
 import 'package:cloudless/core/features/post/domain/providers/post_action_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_published_notifier_provider.dart';
 import 'package:cloudless/core/features/onboarding/data/storables/onboarding_completed_storable.dart';
+import 'package:cloudless/core/features/onboarding/data/storables/tutorial_completed_storable.dart';
 import 'package:cloudless/presentation/components/main_data_loader.dart';
 import 'package:cloudless/presentation/components/onboarding/onboarding_overlay.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_date_overlay.dart';
@@ -22,6 +23,7 @@ import 'package:cloudless/presentation/pages/feed/components/feed_new_posts_bann
 import 'package:cloudless/presentation/pages/feed/components/feed_posts_list.dart';
 import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
+import 'package:cloudless/presentation/pages/tutorial/tutorial_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_page.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -43,6 +45,22 @@ class FeedView extends HookConsumerWidget {
     final hasCompletedOnboarding = onboardingSnapshot.data ?? true;
     final showOnboarding =
         !hasCompletedOnboarding && !onboardingDismissed.value;
+
+    // Tutorial check — redirect after onboarding is done
+    final tutorialFuture = useMemoized(
+      () => TutorialCompletedStorable().get(defaultValue: false),
+    );
+    final tutorialSnapshot = useFuture(tutorialFuture);
+    final hasCompletedTutorial = tutorialSnapshot.data ?? true;
+
+    useEffect(() {
+      if (hasCompletedOnboarding && !hasCompletedTutorial) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          router.go(const TutorialRoutable());
+        });
+      }
+      return null;
+    }, [hasCompletedOnboarding, hasCompletedTutorial]);
 
     final currentUserAsync = ref.watch(getCurrentUserProvider);
     final scrollController = useScrollController();
@@ -310,6 +328,11 @@ class FeedView extends HookConsumerWidget {
           onDismiss: () async {
             await OnboardingCompletedStorable().set(true);
             onboardingDismissed.value = true;
+            final tutorialDone = await TutorialCompletedStorable()
+                .get(defaultValue: false);
+            if (!tutorialDone) {
+              router.go(const TutorialRoutable());
+            }
           },
         ),
       ],
