@@ -7,9 +7,14 @@ import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 class OtpPage extends HookConsumerWidget with MainLayout, OtpLayout {
-  const OtpPage({required this.phoneNumber, super.key});
+  const OtpPage({
+    required this.phoneNumber,
+    this.email = '',
+    super.key,
+  });
 
   final String phoneNumber;
+  final String email;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,7 +31,9 @@ class OtpPage extends HookConsumerWidget with MainLayout, OtpLayout {
               SizedBox(height: topMargin),
               MainAppBar(title: translator.translate('pages.sign_in.title')),
               SizedBox(height: mainAppBarToTitle),
-              Expanded(child: OtpView(phoneNumber: phoneNumber)),
+              Expanded(
+                child: OtpView(phoneNumber: phoneNumber, email: email),
+              ),
             ],
           ),
         ],

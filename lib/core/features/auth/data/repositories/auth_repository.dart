@@ -73,6 +73,46 @@ class AuthRepository
   }
 
   @override
+  FutureResult<void> signInWithEmail({required String email}) async {
+    return processSupabaseResult<void, void>(
+      request: () => authService.signInWithEmail(email: email),
+      responseMapper: (dto) async {
+        return;
+      },
+      exceptionMapper: SignInExceptionsMapper.fromSupabaseException,
+    );
+  }
+
+  @override
+  Future<Result<bool>> verifyEmailOtp({
+    required String email,
+    required String otp,
+  }) async {
+    return processSupabaseResult<AuthResponse, bool>(
+      request: () => authService.verifyEmailOtp(email: email, otp: otp),
+      responseMapper: (dto) async {
+        if (dto.user == null) {
+          return false;
+        }
+
+        return true;
+      },
+      exceptionMapper: VerifyOtpExceptionsMapper.fromSupabaseException,
+    );
+  }
+
+  @override
+  FutureResult<void> resendEmailOtp({required String email}) async {
+    return processSupabaseResult<void, void>(
+      request: () => authService.resendEmailOtp(email: email),
+      responseMapper: (dto) async {
+        return;
+      },
+      exceptionMapper: ResendOtpExceptionsMapper.fromSupabaseException,
+    );
+  }
+
+  @override
   FutureResult<UserModel> getCurrentUser() async {
     return processSupabaseResult<User?, UserModel>(
       request: () => authService.getCurrentUser(),

@@ -1,5 +1,8 @@
 import 'package:cloudless/core/features/auth/domain/hooks/use_sign_in_form.dart';
+import 'package:cloudless/presentation/components/form_field/input_decoration.dart';
 import 'package:cloudless/presentation/components/form_field/phone_number_form_field.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/sign_in/components/sign_in_button.dart';
 import 'package:cloudless/presentation/pages/sign_in/components/sign_in_privacy_checkbox.dart';
 import 'package:cloudless/presentation/pages/sign_in/sign_in_layout.dart';
@@ -17,8 +20,27 @@ class SignInView extends HookConsumerWidget with MainLayout, SignInLayout {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final signInResult = useSignInForm(ref);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     useLoadingOverlay(signInResult.isSubmitting);
+
+    // Listen to phone number changes to detect US numbers
+    useEffect(() {
+      final phoneControl = signInResult.form.control<String>(
+        SignInFormKey.phoneNumber.value,
+      );
+      final sub = phoneControl.valueChanges.listen((value) {
+        if (value == null) return;
+        final sanitized = value.replaceAll(RegExp(r'[^\d+]'), '');
+        final normalized = sanitized.startsWith('+')
+            ? sanitized
+            : '+$sanitized';
+        signInResult.isUsPhoneNumber.value = normalized.startsWith('+1');
+      });
+      return sub.cancel;
+    }, const []);
 
     return FormerForm(
       form: signInResult.form,
@@ -35,15 +57,33 @@ class SignInView extends HookConsumerWidget with MainLayout, SignInLayout {
                       children: [
                         const PhoneNumberFormField(),
                         const SizedBox(height: 8),
-                        const Text(
-                          'US phone numbers are not currently supported for account creation.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: MainFontFamilies.quicksand,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: MainColors.grey500,
-                          ),
+                        ValueListenableBuilder<bool>(
+                          valueListenable: signInResult.isUsPhoneNumber,
+                          builder: (context, isUs, child) {
+                            if (isUs) {
+                              return Column(
+                                children: [
+                                  const Text(
+                                    'US phone numbers require email verification.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: MainFontFamilies.quicksand,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: MainColors.grey500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _EmailField(
+                                    form: signInResult.form,
+                                    colorScheme: colorScheme,
+                                    textTheme: textTheme,
+                                  ),
+                                ],
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
                         ),
                         SizedBox(height: verticalSpacing),
                         ValueListenableBuilder<bool>(
@@ -84,6 +124,44 @@ class SignInView extends HookConsumerWidget with MainLayout, SignInLayout {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmailField extends StatelessWidget {
+  const _EmailField({
+    required this.form,
+    required this.colorScheme,
+    required this.textTheme,
+  });
+
+  final FormerGroup form;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppGlassContainer(
+      config: const GlassConfig(
+        variant: GlassVariant.regular,
+        cornerRadius: 47,
+        tint: MainColors.accent,
+      ),
+      child: TextField(
+        onChanged: (value) {
+          form.control<String>(SignInFormKey.email.value).updateValue(value);
+        },
+        keyboardType: TextInputType.emailAddress,
+        autocorrect: false,
+        cursorColor: colorScheme.tertiary,
+        style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+        decoration: inputDecoration(context, '').copyWith(
+          hintText: 'Email address',
+          hintStyle: textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
       ),

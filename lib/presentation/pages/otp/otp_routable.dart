@@ -13,7 +13,10 @@ sealed class OtpRoutable extends Routable<OtpRoutable> with _$OtpRoutable {
 
   const OtpRoutable._();
 
-  const factory OtpRoutable({@Default('') String phoneNumber}) = _OtpRoutable;
+  const factory OtpRoutable({
+    @Default('') String phoneNumber,
+    @Default('') String email,
+  }) = _OtpRoutable;
 
   @override
   String get path => '/otp';
@@ -27,6 +30,9 @@ sealed class OtpRoutable extends Routable<OtpRoutable> with _$OtpRoutable {
 
   @override
   Widget buildPage(BuildContext context, OtpRoutable routeData) {
-    return OtpPage(phoneNumber: routeData.phoneNumber);
+    return OtpPage(
+      phoneNumber: routeData.phoneNumber,
+      email: routeData.email,
+    );
   }
 }

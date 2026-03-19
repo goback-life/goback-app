@@ -13,18 +13,28 @@ import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 class OtpView extends HookConsumerWidget with MainLayout, OtpLayout {
-  const OtpView({required this.phoneNumber, super.key});
+  const OtpView({
+    required this.phoneNumber,
+    this.email = '',
+    super.key,
+  });
 
   final String phoneNumber;
+  final String email;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
-    final otpFormResult = useOtpForm(ref, phoneNumber);
+    final isEmailFlow = email.isNotEmpty;
+    final otpFormResult = useOtpForm(ref, phoneNumber, email: email);
 
     useLoadingOverlay(otpFormResult.isSubmitting);
+
+    final displayTarget = isEmailFlow
+        ? email
+        : PhoneNumberFormatter.format(phoneNumber);
 
     return FormerForm(
       form: otpFormResult.form,
@@ -45,7 +55,7 @@ class OtpView extends HookConsumerWidget with MainLayout, OtpLayout {
                       ),
                       SizedBox(height: titleToText),
                       OtpDescription(
-                        number: PhoneNumberFormatter.format(phoneNumber),
+                        number: displayTarget,
                         text: translator.translate('pages.otp.description'),
                       ),
                       SizedBox(height: descriptionToFormField),

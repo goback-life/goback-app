@@ -63,6 +63,46 @@ class AuthService implements AuthServiceContract {
   }
 
   @override
+  FutureResult<void> signInWithEmail({required String email}) async {
+    try {
+      await _supabaseClient.auth.signInWithOtp(email: email);
+
+      return Result.success(null);
+    } on Exception catch (e) {
+      return Result.failure(e);
+    }
+  }
+
+  @override
+  FutureResult<AuthResponse> verifyEmailOtp({
+    required String email,
+    required String otp,
+  }) async {
+    try {
+      final response = await _supabaseClient.auth.verifyOTP(
+        type: OtpType.email,
+        email: email,
+        token: otp,
+      );
+
+      return Result.success(response);
+    } on Exception catch (e) {
+      return Result.failure(e);
+    }
+  }
+
+  @override
+  FutureResult<void> resendEmailOtp({required String email}) async {
+    try {
+      await _supabaseClient.auth.resend(type: OtpType.email, email: email);
+
+      return Result.success(null);
+    } on Exception catch (e) {
+      return Result.failure(e);
+    }
+  }
+
+  @override
   FutureResult<User> getCurrentUser() async {
     try {
       final user = _supabaseClient.auth.currentUser;

@@ -51,6 +51,18 @@ abstract class AuthRepositoryContract {
   /// describing why it couldn't be resent (rate limit, invalid phone, etc.).
   FutureResult<void> resendPhoneOtp({required String phoneNumber});
 
+  /// Starts the sign-in flow for the provided email address (US fallback).
+  FutureResult<void> signInWithEmail({required String email});
+
+  /// Verifies a one-time password (OTP) previously sent to `email`.
+  Future<Result<bool>> verifyEmailOtp({
+    required String email,
+    required String otp,
+  });
+
+  /// Requests the backend to resend an OTP to the given `email`.
+  FutureResult<void> resendEmailOtp({required String email});
+
   /// Marks a local onboarding objective as completed.
   ///
   /// Implementations may persist this flag locally (device-only). If you

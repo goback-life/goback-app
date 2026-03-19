@@ -1,9 +1,11 @@
 import 'package:cloudless/core/features/auth/data/exceptions/auth_access_denied_exception.dart';
 import 'package:cloudless/core/features/auth/data/exceptions/auth_invalid_verification_code_exception.dart';
 import 'package:cloudless/core/features/auth/data/exceptions/auth_user_banned_exception.dart';
+import 'package:cloudless/core/features/auth/domain/hooks/use_resend_email_otp.dart';
 import 'package:cloudless/core/features/auth/domain/hooks/use_resend_phone_otp.dart';
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
 import 'package:cloudless/core/features/auth/domain/providers/is_authenticated_provider.dart';
+import 'package:cloudless/core/features/auth/domain/providers/verify_email_otp_provider.dart';
 import 'package:cloudless/core/features/auth/domain/providers/verify_phone_otp_provider.dart';
 import 'package:cloudless/core/features/notification/domain/providers/push_notification_provider.dart';
 import 'package:cloudless/core/features/notification/domain/providers/scheduled_notification_provider.dart';
@@ -33,8 +35,15 @@ extension OtpFormKeyExtension on OtpFormKey {
   };
 }
 
-OtpFormResult useOtpForm(WidgetRef ref, String phoneNumber) {
-  final resendOtpCallback = useResendPhoneOtp(ref, phoneNumber);
+OtpFormResult useOtpForm(
+  WidgetRef ref,
+  String phoneNumber, {
+  String email = '',
+}) {
+  final isEmailFlow = email.isNotEmpty;
+  final resendOtpCallback = isEmailFlow
+      ? useResendEmailOtp(ref, email)
+      : useResendPhoneOtp(ref, phoneNumber);
 
   final formResult = useForm<bool>(
     controls: {
@@ -48,6 +57,9 @@ OtpFormResult useOtpForm(WidgetRef ref, String phoneNumber) {
     },
     onSubmit: (values) async {
       final code = values[OtpFormKey.otp.value] as String;
+      if (isEmailFlow) {
+        return ref.read(verifyEmailOtpProvider(email, code).future);
+      }
       return ref.read(verifyPhoneOtpProvider(phoneNumber, code).future);
     },
     onSuccess: (success) async {

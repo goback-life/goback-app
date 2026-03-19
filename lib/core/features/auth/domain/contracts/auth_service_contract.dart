@@ -51,6 +51,20 @@ abstract class AuthServiceContract {
   /// describing why it couldn't be resent (rate limit, invalid phone, etc.).
   FutureResult<void> resendPhoneOtp({required String phoneNumber});
 
+  /// Starts the sign-in flow for the provided email address.
+  ///
+  /// Triggers sending a 6-digit OTP code to the given `email`.
+  FutureResult<void> signInWithEmail({required String email});
+
+  /// Verifies a one-time password (OTP) previously sent to `email`.
+  FutureResult<AuthResponse> verifyEmailOtp({
+    required String email,
+    required String otp,
+  });
+
+  /// Requests the backend to resend an OTP to the given `email`.
+  FutureResult<void> resendEmailOtp({required String email});
+
   /// Signs out the current authenticated user.
   ///
   /// Returns a successful [FutureResult] on successful sign-out or a
