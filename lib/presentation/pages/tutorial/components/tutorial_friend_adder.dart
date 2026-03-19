@@ -13,7 +13,6 @@ import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
-import 'package:phone_form_field/phone_form_field.dart';
 
 /// Friend-adding panel for the tutorial lockout phase.
 ///
@@ -182,18 +181,24 @@ class _TabButton extends StatelessWidget {
   }
 }
 
-/// SMS invite tab — phone input + contact list.
+/// SMS invite tab — search contacts by name or phone, tap to send invite.
 class _InviteTab extends HookConsumerWidget {
   const _InviteTab({required this.onFriendAdded});
 
   final VoidCallback onFriendAdded;
+
+  /// Returns true when [input] looks like a phone number (mostly digits).
+  static bool _looksLikePhone(String input) {
+    final digitsOnly = input.replaceAll(RegExp(r'[^\d]'), '');
+    return digitsOnly.length >= 4 && digitsOnly.length / input.length > 0.5;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final getContacts = useContactWithPermission(ref);
     final contactsData = useState<PhoneContactData?>(null);
     final inviteState = useSmsSender(ref);
-    final phoneController = useMemoized(() => PhoneController());
+    final searchQuery = useState('');
 
     // Load contacts on mount
     useEffect(() {
@@ -222,7 +227,6 @@ class _InviteTab extends HookConsumerWidget {
     }, []);
 
     // Track SMS sends to count as friend request sent.
-    // Deferred to post-frame to avoid setState-during-build.
     final prevLoading = useRef(false);
     useEffect(() {
       if (prevLoading.value && !inviteState.isLoading) {
@@ -236,99 +240,84 @@ class _InviteTab extends HookConsumerWidget {
       return null;
     }, [inviteState.isLoading]);
 
-    Future<void> sendToPhone() async {
-      final phone = phoneController.value;
-      if (phone.international.isEmpty) return;
-      final normalized = PhoneNumberNormalizer.normalize(phone.international);
-      if (normalized.isEmpty) return;
-      final contact = ContactModel.fromPhoneNumber(normalized);
-      await inviteState.sendInvite(contact);
-    }
+    // Filter contacts locally by name or phone number.
+    final allContacts = useMemoized(() {
+      final data = contactsData.value;
+      if (data == null) return <ContactModel>[];
+      final list = <ContactModel>[];
+      for (final group in data.groupedContacts.values) {
+        list.addAll(group);
+      }
+      return list;
+    }, [contactsData.value]);
+
+    final filteredContacts = useMemoized(() {
+      final q = searchQuery.value.toLowerCase();
+      if (q.isEmpty) return allContacts;
+      return allContacts.where((c) {
+        return c.displayName.toLowerCase().contains(q) ||
+            c.phoneNumbers.any((p) => p.contains(q));
+      }).toList();
+    }, [allContacts, searchQuery.value]);
+
+    final showPhoneOption =
+        searchQuery.value.isNotEmpty && _looksLikePhone(searchQuery.value);
 
     return Column(
       children: [
-        // Phone input row
-        Row(
-          children: [
-            Expanded(
-              child: SizedBox(
-                height: 48,
-                child: PhoneFormField(
-                  controller: phoneController,
-                  onTapOutside: (_) =>
-                      FocusManager.instance.primaryFocus?.unfocus(),
-                  cursorColor: MainColors.dark,
-                  style: const TextStyle(
-                    color: MainColors.dark,
-                    fontSize: 14,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Phone number',
-                    hintStyle: const TextStyle(
-                      color: MainColors.grey500,
-                      fontSize: 14,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: MainColors.grey300.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: MainColors.grey300.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: MainColors.accent),
-                    ),
-                  ),
-                  countrySelectorNavigator:
-                      const CountrySelectorNavigator.page(),
-                  isCountrySelectionEnabled: true,
-                  isCountryButtonPersistent: true,
-                  countryButtonStyle: const CountryButtonStyle(
-                    showDialCode: true,
-                    showIsoCode: false,
-                    showFlag: true,
-                  ),
+        // Unified search field
+        SizedBox(
+          height: 48,
+          child: TextField(
+            onChanged: (v) => searchQuery.value = v,
+            onTapOutside: (_) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
+            cursorColor: MainColors.dark,
+            style: const TextStyle(color: MainColors.dark, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'Search by name or phone',
+              hintStyle: const TextStyle(
+                color: MainColors.grey500,
+                fontSize: 14,
+              ),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: MainColors.grey500,
+                size: 20,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: MainColors.grey300.withValues(alpha: 0.5),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: inviteState.isLoading ? null : sendToPhone,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: MainColors.accent,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'Send',
-                  style: TextStyle(
-                    fontFamily: MainFontFamilies.quicksand,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: MainColors.white,
-                    decoration: TextDecoration.none,
-                  ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: MainColors.grey300.withValues(alpha: 0.5),
                 ),
               ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: MainColors.accent),
+              ),
             ),
-          ],
+          ),
         ),
         const SizedBox(height: 12),
-        // Contact list
+        // Contact list (with optional "send to number" row)
         Expanded(
-          child: _buildContactList(contactsData.value, inviteState),
+          child: _buildContactList(
+            contactsData.value,
+            filteredContacts,
+            inviteState,
+            showPhoneOption: showPhoneOption,
+            rawQuery: searchQuery.value,
+          ),
         ),
       ],
     );
@@ -336,8 +325,11 @@ class _InviteTab extends HookConsumerWidget {
 
   Widget _buildContactList(
     PhoneContactData? data,
-    InviteSendingState inviteState,
-  ) {
+    List<ContactModel> contacts,
+    InviteSendingState inviteState, {
+    required bool showPhoneOption,
+    required String rawQuery,
+  }) {
     if (data == null) {
       return const Center(
         child: CircularProgressIndicator(color: MainColors.accent),
@@ -358,12 +350,10 @@ class _InviteTab extends HookConsumerWidget {
       );
     }
 
-    final allContacts = <ContactModel>[];
-    for (final group in data.groupedContacts.values) {
-      allContacts.addAll(group);
-    }
+    final phoneOffset = showPhoneOption ? 1 : 0;
+    final totalCount = contacts.length + phoneOffset;
 
-    if (allContacts.isEmpty) {
+    if (totalCount == 0) {
       return const Center(
         child: Text(
           'No contacts found',
@@ -379,9 +369,64 @@ class _InviteTab extends HookConsumerWidget {
 
     return ListView.builder(
       padding: EdgeInsets.zero,
-      itemCount: allContacts.length,
+      itemCount: totalCount,
       itemBuilder: (context, index) {
-        final contact = allContacts[index];
+        // First row: "Send invite to <number>" when input is phone-like
+        if (showPhoneOption && index == 0) {
+          final normalized = PhoneNumberNormalizer.normalize(rawQuery);
+          return GestureDetector(
+            onTap: inviteState.isLoading
+                ? null
+                : () {
+                    final contact = ContactModel.fromPhoneNumber(normalized);
+                    inviteState.sendInvite(contact);
+                  },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: const BoxDecoration(
+                      color: MainColors.accent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.phone,
+                        color: MainColors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Send invite to $normalized',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: MainFontFamilies.quicksand,
+                        fontSize: 14,
+                        color: MainColors.accent,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.send_rounded,
+                    color: MainColors.accent,
+                    size: 18,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        final contact = contacts[index - phoneOffset];
         return GestureDetector(
           onTap: inviteState.isLoading
               ? null

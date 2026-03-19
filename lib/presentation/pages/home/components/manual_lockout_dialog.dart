@@ -27,6 +27,16 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
     final selectedHours = useState<int>(1);
     final selectedMinutes = useState<int>(0);
     final activityController = useTextEditingController();
+    final selectedPreset = useState<String?>(null);
+
+    // Preset activities: key → emoji
+    const presets = {
+      'sport': '\u{1F3C3}',
+      'music': '\u{1F3B5}',
+      'friends': '\u{1F91D}',
+      'relax': '\u{1F9D8}',
+      'studying': '\u{1F4DA}',
+    };
 
     // Calculate total duration
     final totalDuration = Duration(
@@ -121,11 +131,76 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
               ],
             ),
             const SizedBox(height: 24),
-            // Activity text field
+            // Preset activity chips — horizontal scroll
+            SizedBox(
+              height: 36,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.zero,
+                itemCount: presets.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final e = presets.entries.elementAt(index);
+                  final isSelected = selectedPreset.value == e.key;
+                  final label = translator.translate(
+                    'pages.manual_lockout.dialog.activities.${e.key}',
+                  );
+                  return GestureDetector(
+                    onTap: () {
+                      if (isSelected) {
+                        selectedPreset.value = null;
+                        activityController.clear();
+                      } else {
+                        selectedPreset.value = e.key;
+                        activityController.text = label;
+                      }
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? colorScheme.primary.withValues(alpha: 0.15)
+                            : colorScheme.onSurface.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.onSurface.withValues(alpha: 0.15),
+                          width: isSelected ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(e.value, style: const TextStyle(fontSize: 16)),
+                          const SizedBox(width: 6),
+                          Text(
+                            label,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: isSelected
+                                  ? colorScheme.primary
+                                  : colorScheme.onSurface
+                                      .withValues(alpha: 0.7),
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Custom activity text field
             TextField(
               controller: activityController,
               maxLength: 20,
               textAlign: TextAlign.center,
+              onChanged: (_) => selectedPreset.value = null,
               style: textTheme.bodyLarge?.copyWith(
                 color: colorScheme.onSurface,
               ),

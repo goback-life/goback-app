@@ -36,6 +36,10 @@
 	<string>goback . usa il microfono per registrare l'audio dei tuoi video, rendendo i tuoi ricordi ancora più vividi e autentici.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>goback . accede alla tua libreria foto per permetterti di scegliere e condividere i tuoi ricordi preferiti con i tuoi amici più stretti.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>whatsapp</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSSupportsLiveActivities</key>

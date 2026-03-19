@@ -85,17 +85,23 @@ InviteSendingState useSmsSender(WidgetRef ref) {
           '',
         );
         final encodedMessage = Uri.encodeComponent(message);
-        final smsUrl = 'sms:$phoneNumber?body=$encodedMessage';
 
-        final Uri uri = Uri.parse(smsUrl);
+        // Try WhatsApp first, fall back to SMS/iMessage.
         bool launched = false;
-
-        if (await canLaunchUrl(uri)) {
-          launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+        final waPhone = phoneNumber.replaceAll('+', '');
+        final whatsappUri = Uri.parse('whatsapp://send?phone=$waPhone&text=$encodedMessage');
+        if (await canLaunchUrl(whatsappUri)) {
+          launched = await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+        }
+        if (!launched) {
+          final smsUri = Uri.parse('sms:$phoneNumber?body=$encodedMessage');
+          if (await canLaunchUrl(smsUri)) {
+            launched = await launchUrl(smsUri, mode: LaunchMode.externalApplication);
+          }
         }
 
         if (!launched) {
-          logger.error('Cannot launch SMS app');
+          logger.error('Cannot launch WhatsApp or SMS app');
         } else {
           if (context.mounted) {
             MainSnackbar.showSuccess(

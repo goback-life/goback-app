@@ -363,7 +363,7 @@
             "permission_description": "We need access to your contacts to invite your friends to the circle",
             "generating_code": "Generating invite code...",
             "code_generation_failed": "Invite code generation failed. Please try again later.",
-            "sms_message": "Join @{username}'s circle on goback . The code to join is: {code}",
+            "sms_message": "Join @{username}'s circle on goback! Download the app: https://apps.apple.com/us/app/goback/id6755685036 — The code to join is: {code}",
             "phone_number_label": "Phone number",
             "phone_has_account": "This number already has a goback account",
             "phone_no_account": "This number does not have a goback account",
@@ -442,7 +442,14 @@
                 "cancel": "Cancel",
                 "confirm": "Confirm",
                 "error": "Duration must be greater than 1 hour",
-                "activity_hint": "What are you doing?"
+                "activity_hint": "Or type your own...",
+                "activities": {
+                    "sport": "Sport",
+                    "music": "Music",
+                    "friends": "Friends",
+                    "relax": "Relax",
+                    "studying": "Studying"
+                }
             },
             "friends_locked_out": {
                 "title": "Friends offline",

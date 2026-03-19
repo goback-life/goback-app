@@ -363,7 +363,7 @@
             "permission_description": "Abbiamo bisogno dell'accesso ai tuoi contatti per invitare i tuoi amici nella cerchia",
             "generating_code": "Generazione codice di invito...",
             "code_generation_failed": "Generazione del codice di invito fallita. Riprova più tardi.",
-            "sms_message": "Unisciti alla cerchia di @{username} su goback. Il codice per unirti è: {code}",
+            "sms_message": "Unisciti alla cerchia di @{username} su goback! Scarica l'app: https://apps.apple.com/us/app/goback/id6755685036 — Il codice per unirti è: {code}",
             "phone_number_label": "Numero di telefono",
             "phone_has_account": "Questo numero ha già un account goback",
             "phone_no_account": "Questo numero non ha un account goback",
@@ -442,7 +442,14 @@
                 "cancel": "Annulla",
                 "confirm": "Conferma",
                 "error": "La durata deve essere maggiore di 1 ora",
-                "activity_hint": "Cosa stai facendo?"
+                "activity_hint": "Oppure scrivi...",
+                "activities": {
+                    "sport": "Sport",
+                    "music": "Musica",
+                    "friends": "Amici",
+                    "relax": "Relax",
+                    "studying": "Studio"
+                }
             },
             "friends_locked_out": {
                 "title": "Amici offline",
