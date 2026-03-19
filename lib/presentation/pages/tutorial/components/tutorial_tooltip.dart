@@ -17,6 +17,8 @@ class TutorialTooltip extends StatelessWidget {
     this.bottomOffset = 200,
     this.buttonLabel,
     this.textColor,
+    this.secondaryButtonLabel,
+    this.onSecondaryTap,
   });
 
   final String message;
@@ -26,21 +28,31 @@ class TutorialTooltip extends StatelessWidget {
   /// Custom label for the action button. Defaults to "Tap to continue".
   final String? buttonLabel;
 
-  /// Override text color. Defaults to [MainColors.dark].
+  /// Override text color. Defaults to [MainColors.white].
   final Color? textColor;
+
+  /// Optional secondary button (rendered next to the primary button).
+  final String? secondaryButtonLabel;
+  final VoidCallback? onSecondaryTap;
 
   @override
   Widget build(BuildContext context) {
+    final hasSecondary =
+        secondaryButtonLabel != null && onSecondaryTap != null;
+
     return Positioned(
       left: TutorialLayout.tooltipHPadding,
       right: TutorialLayout.tooltipHPadding,
       bottom: bottomOffset,
       child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
+        onTap: hasSecondary ? null : onTap,
+        behavior: hasSecondary
+            ? HitTestBehavior.translucent
+            : HitTestBehavior.opaque,
         child: AppGlassContainer(
           config: const GlassConfig(
             cornerRadius: TutorialLayout.tooltipCornerRadius,
+            tint: MainColors.accent,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -57,33 +69,87 @@ class TutorialTooltip extends StatelessWidget {
                     fontFamily: MainFontFamilies.quicksand,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: textColor ?? MainColors.dark,
+                    color: textColor ?? MainColors.white,
                     decoration: TextDecoration.none,
                     height: 1.5,
                   ),
                 ),
                 if (onTap != null) ...[
                   const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: MainColors.accent,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      buttonLabel ?? 'Tap to continue',
-                      style: const TextStyle(
-                        fontFamily: MainFontFamilies.quicksand,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: MainColors.white,
-                        decoration: TextDecoration.none,
+                  if (hasSecondary)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: onSecondaryTap,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: MainColors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              secondaryButtonLabel!,
+                              style: const TextStyle(
+                                fontFamily: MainFontFamilies.quicksand,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: MainColors.white,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: onTap,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: MainColors.accent,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              buttonLabel ?? 'Tap to continue',
+                              style: const TextStyle(
+                                fontFamily: MainFontFamilies.quicksand,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: MainColors.white,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: MainColors.accent,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        buttonLabel ?? 'Tap to continue',
+                        style: const TextStyle(
+                          fontFamily: MainFontFamilies.quicksand,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: MainColors.white,
+                          decoration: TextDecoration.none,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ],
             ),

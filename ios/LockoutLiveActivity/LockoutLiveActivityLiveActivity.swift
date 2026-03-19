@@ -92,6 +92,15 @@ private struct LockScreenBanner: View {
         }
         .padding()
         .foregroundColor(.white)
+        .background(
+            Image("GobackLogo")
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(height: 40)
+                .foregroundColor(.white)
+                .opacity(0.15)
+        )
         .activityBackgroundTint(.black)
     }
 }
@@ -110,6 +119,12 @@ private struct ExpandedContent: View {
 
     var body: some View {
         VStack(spacing: 4) {
+            Image("GobackLogo")
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(height: 20)
+                .foregroundColor(.white)
             Text("goback.")
                 .font(.system(size: 16, weight: .bold))
             if endDate > Date.now {

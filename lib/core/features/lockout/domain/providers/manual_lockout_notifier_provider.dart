@@ -8,6 +8,7 @@ import 'package:cloudless/core/features/lockout/domain/use_cases/clear_manual_lo
 import 'package:cloudless/core/features/lockout/domain/use_cases/get_lockout_remaining_time_use_case.dart';
 import 'package:cloudless/core/features/lockout/domain/use_cases/join_lockout_use_case.dart';
 import 'package:cloudless/core/features/lockout/domain/use_cases/set_manual_lockout_use_case.dart';
+import 'package:cloudless/core/features/notification/domain/providers/scheduled_notification_provider.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -101,9 +102,15 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       await useCase.execute();
 
       // Start Live Activity countdown on lock screen
+      final lockoutEndTime = DateTime.now().add(duration);
       await ref.read(lockoutLiveActivityServiceProvider).startActivity(
-        lockoutEndTimestamp: DateTime.now().add(duration),
+        lockoutEndTimestamp: lockoutEndTime,
       );
+
+      // Schedule mid-lockout + post-lockout notifications, cancel daily
+      await ref
+          .read(scheduledNotificationProvider)
+          .scheduleLockoutNotifications(lockoutEndTime);
 
       // Reload state
       final checkUseCase = CheckManualLockoutUseCase(storable: storable);
@@ -156,6 +163,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     state = const AsyncValue.loading();
     try {
       await ref.read(lockoutLiveActivityServiceProvider).endActivity();
+      await ref.read(scheduledNotificationProvider).cancelLockoutNotifications();
       await useCase.execute();
       state = AsyncValue.data(
         const ManualLockoutModel(
@@ -246,6 +254,11 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       await ref.read(lockoutLiveActivityServiceProvider).startActivity(
         lockoutEndTimestamp: lockoutEndTime!,
       );
+
+      // Schedule mid-lockout + post-lockout notifications, cancel daily
+      await ref
+          .read(scheduledNotificationProvider)
+          .scheduleLockoutNotifications(lockoutEndTime!);
 
       // Reload state
       final checkUseCase = CheckManualLockoutUseCase(storable: storable);

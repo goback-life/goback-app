@@ -1,7 +1,9 @@
 import 'package:cloudless/core/features/auth/data/handlers/authentication_background_handler.dart';
 import 'package:cloudless/core/features/crashlytics/utilities/crashlytics_startup_service.dart';
+import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/notification/data/handlers/firebase_background_handler.dart';
 import 'package:cloudless/core/features/notification/domain/providers/push_notification_provider.dart';
+import 'package:cloudless/core/features/notification/domain/providers/scheduled_notification_provider.dart';
 import 'package:cloudless/core/features/startup/data/config/startup_config.dart';
 import 'package:cloudless/core/features/supabase/utilities/supabase_startup_service.dart';
 import 'package:cloudless/core/features/timezone/utilities/timezone_startup_service.dart';
@@ -43,6 +45,20 @@ void main() {
       // Initialize FCM for already-authenticated users (app update case)
       if (Supabase.instance.client.auth.currentSession != null) {
         await ref.read(pushNotificationProvider).initialize();
+      }
+    }
+
+    // Scheduled local notifications — production only, after auth
+    if (F.appFlavor == Flavor.production &&
+        Supabase.instance.client.auth.currentSession != null) {
+      final scheduledService = ref.read(scheduledNotificationProvider);
+      await scheduledService.initialize();
+
+      // If mid-lockout, reschedule lockout notifications
+      final storable = ref.read(manualLockoutStorableProvider);
+      final lockoutEnd = await storable.getLockoutEnd();
+      if (lockoutEnd != null && DateTime.now().isBefore(lockoutEnd)) {
+        await scheduledService.scheduleLockoutNotifications(lockoutEnd);
       }
     }
 

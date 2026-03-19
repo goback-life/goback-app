@@ -6,6 +6,7 @@ import 'package:cloudless/core/features/auth/domain/providers/get_current_user_p
 import 'package:cloudless/core/features/auth/domain/providers/is_authenticated_provider.dart';
 import 'package:cloudless/core/features/auth/domain/providers/verify_phone_otp_provider.dart';
 import 'package:cloudless/core/features/notification/domain/providers/push_notification_provider.dart';
+import 'package:cloudless/core/features/notification/domain/providers/scheduled_notification_provider.dart';
 import 'package:cloudless/core/features/profile/domain/providers/has_completed_profile_provider.dart';
 import 'package:cloudless/core/features/supabase/data/handlers/common_supabase_exception_ui_handler.dart';
 import 'package:cloudless/presentation/components/alerts/main_alert.dart';
@@ -59,6 +60,9 @@ OtpFormResult useOtpForm(WidgetRef ref, String phoneNumber) {
 
       // Register FCM token + set up message listeners
       await ref.read(pushNotificationProvider).initialize();
+
+      // Schedule daily local notifications
+      await ref.read(scheduledNotificationProvider).initialize();
 
       try {
         final hasCompletedProfileResult = await ref.read(
