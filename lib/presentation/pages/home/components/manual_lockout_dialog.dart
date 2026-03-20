@@ -30,8 +30,8 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final selectedHours = useState<int>(0);
-    final selectedMinutes = useState<int>(15);
+    final selectedHours = useState<int>(1);
+    final selectedMinutes = useState<int>(0);
     final activityController = useTextEditingController();
     final selectedPreset = useState<String?>(null);
 
@@ -90,13 +90,14 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                   height: 150,
                   child: CupertinoPicker(
                     scrollController: FixedExtentScrollController(
-                      initialItem: selectedHours.value,
+                      initialItem: selectedHours.value - 1,
                     ),
                     itemExtent: 40,
                     onSelectedItemChanged: (index) {
-                      selectedHours.value = index;
+                      selectedHours.value = index + 1;
                     },
-                    children: List.generate(10, (index) {
+                    children: List.generate(9, (index) {
+                      index += 1;
                       return Center(
                         child: Text(
                           '$index ${index == 1 ? 'hr' : 'hrs'}',

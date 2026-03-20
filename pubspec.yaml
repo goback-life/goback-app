@@ -2,7 +2,7 @@ name: cloudless
 description: "A Flutter app for sharing temporary content in private circles."
 publish_to: "none"
 
-version: 1.1.4+1
+version: 1.1.4+2
 
 environment:
   sdk: ^3.8.1
