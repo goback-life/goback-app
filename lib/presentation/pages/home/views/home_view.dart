@@ -14,6 +14,7 @@ import 'package:cloudless/core/features/post/domain/providers/post_action_notifi
 import 'package:cloudless/core/features/post/domain/providers/post_published_notifier_provider.dart';
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
 import 'package:cloudless/core/features/onboarding/data/storables/onboarding_completed_storable.dart';
+import 'package:cloudless/core/features/onboarding/data/storables/tutorial_completed_storable.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/background_image.dart';
 import 'package:cloudless/presentation/components/main_data_loader.dart';
@@ -39,9 +40,16 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final onboardingDismissed = useState(false);
-    final onboardingFuture = useMemoized(
-      () => OnboardingCompletedStorable().get(defaultValue: false),
-    );
+    final onboardingFuture = useMemoized(() async {
+      final value = await OnboardingCompletedStorable().tryGet();
+      if (value == null) {
+        // Existing user — auto-complete onboarding & tutorial
+        await OnboardingCompletedStorable().set(true);
+        await TutorialCompletedStorable().set(true);
+        return true;
+      }
+      return value;
+    });
     final onboardingSnapshot = useFuture(onboardingFuture);
     final hasCompletedOnboarding =
         onboardingSnapshot.data ?? true;

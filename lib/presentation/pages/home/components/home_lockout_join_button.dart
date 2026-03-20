@@ -1,4 +1,5 @@
 import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
+import 'package:cloudless/presentation/pages/home/components/dnd_prompt_dialog.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_join_lockout_post.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
@@ -116,6 +117,9 @@ class HomeLockoutJoinButton extends HookConsumerWidget
           throw error;
         },
       );
+
+      await DndPromptDialog.showIfNeeded(context);
+      if (!context.mounted) return;
 
       // Join the lockout using session ID
       await lockoutNotifier.joinLockout(lockoutSessionId);

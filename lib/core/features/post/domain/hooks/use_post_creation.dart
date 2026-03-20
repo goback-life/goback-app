@@ -244,7 +244,10 @@ PostCreationResult usePostCreation(WidgetRef ref) {
             );
             return Result.failure(Exception(e.toString()));
           } finally {
-            isLoading.value = false;
+            // Guard: widget may have been disposed by lockout cleanup
+            try {
+              isLoading.value = false;
+            } catch (_) {}
             // Always unlock, even if an error occurred
             lockNotifier.unlock(user.id);
           }

@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:cloudless/core/features/profile/data/exceptions/profile_username_not_available_exception.dart';
+import 'package:cloudless/core/features/onboarding/data/storables/onboarding_completed_storable.dart';
+import 'package:cloudless/core/features/onboarding/data/storables/tutorial_completed_storable.dart';
 import 'package:cloudless/core/features/profile/data/storables/profile_completed_storable.dart';
 import 'package:cloudless/core/features/profile/domain/enums/profile_form_item.dart';
 import 'package:cloudless/core/features/profile/domain/providers/check_username_availability_provider.dart';
@@ -111,6 +113,10 @@ CreateProfileFormResult useCreateProfileForm(WidgetRef ref) {
       // Set local flag that profile has been completed
       final profileCompletedStorable = ProfileCompletedStorable();
       await profileCompletedStorable.set(true);
+
+      // Mark new user as needing onboarding (explicitly false so tryGet != null)
+      await OnboardingCompletedStorable().set(false);
+      await TutorialCompletedStorable().set(false);
 
       router.go(const HomeRoutable());
     },

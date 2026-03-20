@@ -5,6 +5,7 @@ import 'package:cloudless/presentation/components/profile_image/profile_image.da
 import 'package:cloudless/presentation/components/username_field.dart';
 import 'package:cloudless/presentation/pages/profile/components/calendar_section/profile_calendar.dart';
 import 'package:cloudless/presentation/pages/profile/components/profile_tab_toggle.dart';
+import 'package:cloudless/presentation/pages/profile/components/stats_section/activity_bubble_cloud.dart';
 import 'package:cloudless/presentation/pages/profile/components/stats_section/profile_stats_view.dart';
 import 'package:cloudless/presentation/pages/profile/profile_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
@@ -178,7 +179,23 @@ class ProfileView extends HookConsumerWidget with MainLayout, ProfileLayout {
                     top: (statsTop + 56 * s) - calTop,
                   ),
                   child: currentUserId != null
-                      ? ProfileStatsView(userId: currentUserId!, scale: s)
+                      ? ProfileStatsView(
+                          userId: currentUserId!,
+                          scale: s,
+                          username: username ?? '',
+                        )
+                      : const SizedBox.shrink(),
+                ),
+                // Hobbies tab
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: (statsTop + 56 * s) - calTop,
+                  ),
+                  child: currentUserId != null
+                      ? ActivityBubbleCloud(
+                          userId: currentUserId!,
+                          scale: s,
+                        )
                       : const SizedBox.shrink(),
                 ),
               ],

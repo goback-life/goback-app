@@ -13,7 +13,9 @@
       "WebFetch(domain:localhost)",
       "Bash(curl:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Add V1 feed page with squircle posts, glass overlays, and new design system\n\nNew feed page at lib/presentation/pages/feed/ with WhatsApp-style staggered\nlayout, superellipse \\(squircle\\) post clipping, liquid glass lockout button,\nglass date overlay, and new posts banner. Adds Quicksand + Lilita One fonts\nand V1 colour palette \\(dark, accent\\).\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:pub.dev)",
+      "Bash(python3:*)"
     ]
   }
 }

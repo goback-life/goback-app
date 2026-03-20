@@ -12,6 +12,8 @@ import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart'
 import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_action_notifier_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_published_notifier_provider.dart';
+import 'package:cloudless/core/features/share/domain/providers/pending_share_provider.dart';
+import 'package:cloudless/presentation/components/share_card/share_post_dialog.dart';
 import 'package:cloudless/core/features/onboarding/data/storables/onboarding_completed_storable.dart';
 import 'package:cloudless/core/features/onboarding/data/storables/tutorial_completed_storable.dart';
 import 'package:cloudless/presentation/components/main_data_loader.dart';
@@ -36,20 +38,30 @@ class FeedView extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Onboarding overlay — shown once per storable version
+    // Onboarding overlay — shown once per storable version.
+    // tryGet() returns null if the key was never set (existing user before
+    // onboarding was added) vs false (new user who just created profile).
     final onboardingDismissed = useState(false);
-    final onboardingFuture = useMemoized(
-      () => OnboardingCompletedStorable().get(defaultValue: false),
-    );
+    final onboardingFuture = useMemoized(() async {
+      final value = await OnboardingCompletedStorable().tryGet();
+      if (value == null) {
+        // Existing user — auto-complete onboarding & tutorial
+        await OnboardingCompletedStorable().set(true);
+        await TutorialCompletedStorable().set(true);
+        return true;
+      }
+      return value;
+    });
     final onboardingSnapshot = useFuture(onboardingFuture);
     final hasCompletedOnboarding = onboardingSnapshot.data ?? true;
     final showOnboarding =
         !hasCompletedOnboarding && !onboardingDismissed.value;
 
     // Tutorial check — redirect after onboarding is done
-    final tutorialFuture = useMemoized(
-      () => TutorialCompletedStorable().get(defaultValue: false),
-    );
+    final tutorialFuture = useMemoized(() async {
+      final value = await TutorialCompletedStorable().tryGet();
+      return value ?? true; // null = existing user, skip tutorial
+    });
     final tutorialSnapshot = useFuture(tutorialFuture);
     final hasCompletedTutorial = tutorialSnapshot.data ?? true;
 
@@ -113,6 +125,28 @@ class FeedView extends HookConsumerWidget {
       check();
       return null;
     }, []);
+
+    // -- Pending share dialog (deferred from post creation) --
+    final pendingShare = ref.watch(pendingShareProvider);
+    useEffect(() {
+      if (pendingShare != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          ref.read(pendingShareProvider.notifier).state = null;
+          await Future<void>.delayed(const Duration(milliseconds: 400));
+          if (context.mounted) {
+            await SharePostDialog.show(
+              context,
+              ref,
+              lockoutId: pendingShare.lockoutId,
+              authorId: pendingShare.authorId,
+              imagePath: pendingShare.imagePath,
+              description: pendingShare.description,
+            );
+          }
+        });
+      }
+      return null;
+    }, [pendingShare]);
 
     // -- Memorable post selection prompt --
     useEffect(() {

@@ -449,6 +449,12 @@
                     "friends": "Friends",
                     "relax": "Relax",
                     "studying": "Studying"
+                },
+                "dnd_prompt": {
+                    "title": "go distraction-free",
+                    "body": "Turn on Do Not Disturb for the full goback experience. You'll still receive goback notifications.",
+                    "dismiss": "Don't remind me",
+                    "confirm": "Got it"
                 }
             },
             "friends_locked_out": {

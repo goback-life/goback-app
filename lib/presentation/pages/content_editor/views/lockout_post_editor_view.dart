@@ -3,11 +3,12 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
+import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout_post_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_creation.dart';
 import 'package:cloudless/presentation/components/alerts/main_alert.dart';
-import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
+import 'package:cloudless/core/features/share/domain/providers/pending_share_provider.dart';
 import 'package:cloudless/presentation/components/squircle_clipper.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
 import 'package:cloudless/presentation/pages/visibility_selection/visibility_selection_routable.dart';
@@ -194,26 +195,37 @@ class LockoutPostEditorView extends HookConsumerWidget {
     if (isProcessing.value) return;
     isProcessing.value = true;
 
-    // Publish with any exclusions set via restrict visibility
+    // Capture EVERYTHING before publish — lockout cleanup inside the hook
+    // disposes this widget (and its ref) before the call returns.
+    final shareNotifier = ref.read(pendingShareProvider.notifier);
+    final lockoutId = ref.read(pendingLockoutPostProvider);
+    final userId = ref.read(getCurrentUserProvider).whenOrNull(
+      data: (r) => r.fold((u) => u.id, (_) => null),
+    );
+    final imagePath = contentCreation.data.firstFrame?.path ??
+        contentCreation.mainImage?.path;
+    final description = contentCreation.data.description;
+
     final result = await contentCreation.publishPostWithExclusions(
       contentCreation.data.excludedUserIds,
     );
-    isProcessing.value = false;
 
-    if (result != null && context.mounted) {
+    if (context.mounted) isProcessing.value = false;
+
+    if (result != null) {
+      final succeeded = result.fold((_) => true, (_) => false);
+      if (succeeded && lockoutId != null && userId != null) {
+        shareNotifier.state = (
+          lockoutId: lockoutId,
+          authorId: userId,
+          imagePath: imagePath,
+          description: description,
+        );
+      }
       result.fold(
-        (post) {
-          MainSnackbar.showSuccess(
-            context,
-            translator.translate(
-              'pages.publish_content.snackbar.success_message',
-            ),
-          );
-          if (context.mounted) {
-            router.go(const HomeRoutable());
-          }
-        },
+        (_) => router.go(const HomeRoutable()),
         (error) {
+          if (!context.mounted) return;
           MainAlert.showError(
             context: context,
             title: translator.translate(

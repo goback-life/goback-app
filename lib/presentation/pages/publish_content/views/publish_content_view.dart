@@ -1,3 +1,4 @@
+import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_member_exclusion.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_creation.dart';
@@ -12,6 +13,8 @@ import 'package:cloudless/presentation/components/main_member/main_member_item.d
 import 'package:cloudless/presentation/components/main_member/main_members_list.dart';
 import 'package:cloudless/presentation/components/main_search_bar.dart';
 import 'package:cloudless/presentation/components/parent_post_preview/parent_post_preview.dart';
+import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout_post_provider.dart';
+import 'package:cloudless/core/features/share/domain/providers/pending_share_provider.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
 import 'package:cloudless/presentation/pages/publish_content/components/publish_content_button.dart';
 import 'package:cloudless/presentation/pages/publish_content/publish_content_layout.dart';
@@ -166,41 +169,73 @@ class PublishContentView extends HookConsumerWidget
                               .excludedMembers
                               .toList();
 
+                          // Capture before publish — ref may be
+                          // disposed by lockout cleanup inside hook.
+                          final shareNotifier =
+                              ref.read(pendingShareProvider.notifier);
+                          final lockoutId =
+                              ref.read(pendingLockoutPostProvider);
+                          final userId = ref
+                              .read(getCurrentUserProvider)
+                              .whenOrNull(
+                                data: (r) =>
+                                    r.fold((u) => u.id, (_) => null),
+                              );
+                          final imagePath =
+                              contentCreation.data.firstFrame?.path ??
+                                  contentCreation.mainImage?.path;
+                          final description =
+                              contentCreation.data.description;
+
                           final result = await contentCreation
                               .publishPostWithExclusions(excludedUsersList);
 
-                          isProcessing.value = false;
+                          if (context.mounted) {
+                            isProcessing.value = false;
+                          }
 
-                          if (result != null && context.mounted) {
-                            result.fold(
-                              (post) {
-                                final successKey = postCreationData.isEditing
-                                    ? 'pages.publish_content.snackbar.update_success_message'
-                                    : 'pages.publish_content.snackbar.success_message';
+                          if (result != null) {
+                            final succeeded = result.fold(
+                                (_) => true, (_) => false);
 
+                            if (succeeded) {
+                              if (context.mounted) {
+                                final successKey =
+                                    postCreationData.isEditing
+                                        ? 'pages.publish_content.snackbar.update_success_message'
+                                        : 'pages.publish_content.snackbar.success_message';
                                 MainSnackbar.showSuccess(
                                   context,
                                   translator.translate(successKey),
                                 );
+                              }
 
-                                if (context.mounted) {
-                                  router.go(const HomeRoutable());
-                                }
-                              },
-                              (error) {
-                                final errorKey = postCreationData.isEditing
-                                    ? 'components.alert.post_error.update_error_message'
-                                    : 'components.alert.post_error.error_message';
-
-                                MainAlert.showError(
-                                  context: context,
-                                  title: translator.translate(
-                                    'components.alert.post_error.title',
-                                  ),
-                                  content: translator.translate(errorKey),
+                              if (!postCreationData.isEditing &&
+                                  lockoutId != null &&
+                                  userId != null) {
+                                shareNotifier.state = (
+                                  lockoutId: lockoutId,
+                                  authorId: userId,
+                                  imagePath: imagePath,
+                                  description: description,
                                 );
-                              },
-                            );
+                              }
+
+                              router.go(const HomeRoutable());
+                            } else if (context.mounted) {
+                              final errorKey =
+                                  postCreationData.isEditing
+                                      ? 'components.alert.post_error.update_error_message'
+                                      : 'components.alert.post_error.error_message';
+                              MainAlert.showError(
+                                context: context,
+                                title: translator.translate(
+                                  'components.alert.post_error.title',
+                                ),
+                                content:
+                                    translator.translate(errorKey),
+                              );
+                            }
                           }
                         }
                       : null,

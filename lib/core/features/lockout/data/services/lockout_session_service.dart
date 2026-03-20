@@ -1,3 +1,4 @@
+import 'package:cloudless/core/features/lockout/data/dtos/lockout_activity_stats_dto.dart';
 import 'package:cloudless/core/features/lockout/data/dtos/lockout_daily_stats_dto.dart';
 import 'package:cloudless/core/features/lockout/data/dtos/lockout_monthly_summary_dto.dart';
 import 'package:cloudless/core/features/lockout/data/dtos/lockout_session_dto.dart';
@@ -266,6 +267,30 @@ class LockoutSessionService {
       logger.error('Failed to get daily lockout stats', exception: e);
       return Result.failure(
         e is Exception ? e : Exception('Failed to get daily stats: $e'),
+      );
+    }
+  }
+
+  /// Gets activity stats aggregated by action_text over the rolling 28-day window.
+  FutureResult<List<LockoutActivityStatsDto>> getActivityStats({
+    required String userId,
+  }) async {
+    try {
+      final response = await supabase.rpc(
+        'get_lockout_activity_stats',
+        params: {'p_user_id': userId},
+      );
+
+      final stats = (response as List)
+          .map((json) =>
+              LockoutActivityStatsDto.fromJson(json as Map<String, dynamic>))
+          .toList();
+
+      return Result.success(stats);
+    } catch (e) {
+      logger.error('Failed to get lockout activity stats', exception: e);
+      return Result.failure(
+        e is Exception ? e : Exception('Failed to get activity stats: $e'),
       );
     }
   }

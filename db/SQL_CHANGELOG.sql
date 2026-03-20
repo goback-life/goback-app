@@ -1068,3 +1068,54 @@ $$;
 -- ===== REVERT 007 =====
 -- Reverts to the version without the directive (will re-introduce the bug):
 -- Re-run the APPLY block from Change 004 without #variable_conflict.
+
+
+-- ############################################################################
+-- CHANGE 008: Migration 015 - Activity Stats for Hobbies Bubble Cloud
+-- Applied to: stage
+-- Date: 2026-03-19
+-- Source: db/migrations/015_activity_stats.sql
+-- ############################################################################
+
+-- ===== APPLY =====
+
+ALTER TABLE lockout_completed_log ADD COLUMN action_text TEXT;
+
+-- Patch complete_lockout_session to persist action_text in the log
+-- (full function body in db/migrations/015_activity_stats.sql section 2)
+
+-- Patch update_lockout_weekly_stats to persist action_text in the log
+-- (full function body in db/migrations/015_activity_stats.sql section 3)
+
+-- New RPC: get_lockout_activity_stats
+CREATE OR REPLACE FUNCTION get_lockout_activity_stats(p_user_id UUID)
+RETURNS TABLE(action_text TEXT, total_minutes INT, session_count INT)
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
+#variable_conflict use_column
+DECLARE
+  v_cutoff DATE := (CURRENT_DATE - INTERVAL '27 days')::date;
+BEGIN
+  RETURN QUERY
+  SELECT
+    l.action_text,
+    COALESCE(SUM(l.duration_minutes), 0)::int AS total_minutes,
+    COUNT(*)::int AS session_count
+  FROM lockout_completed_log l
+  WHERE l.user_id = p_user_id
+    AND l.session_date >= v_cutoff
+    AND l.action_text IS NOT NULL
+  GROUP BY l.action_text
+  ORDER BY total_minutes DESC;
+END;
+$$;
+
+-- ===== REVERT 008 =====
+-- Run these in order to undo Change 008:
+--
+-- DROP FUNCTION IF EXISTS get_lockout_activity_stats(UUID);
+-- ALTER TABLE lockout_completed_log DROP COLUMN IF EXISTS action_text;
+--
+-- NOTE: You will need to restore complete_lockout_session and
+-- update_lockout_weekly_stats from db/migrations/013_lockout_stats.sql.

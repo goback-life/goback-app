@@ -41,6 +41,12 @@ class ProfileTabToggle extends StatelessWidget {
               onTap: () => onChanged(1),
               scale: scale,
             ),
+            _Pill(
+              label: 'Hobbies',
+              isSelected: selectedIndex == 2,
+              onTap: () => onChanged(2),
+              scale: scale,
+            ),
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
+import 'package:cloudless/presentation/pages/home/components/dnd_prompt_dialog.dart';
 import 'package:cloudless/presentation/pages/home/components/manual_lockout_dialog.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
@@ -30,6 +31,9 @@ class HomeLockoutButton extends HookConsumerWidget
         if (result == null || !context.mounted) {
           return;
         }
+
+        await DndPromptDialog.showIfNeeded(context);
+        if (!context.mounted) return;
 
         try {
           // Set lockout (post will be created after lockout ends)

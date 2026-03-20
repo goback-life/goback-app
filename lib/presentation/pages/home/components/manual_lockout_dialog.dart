@@ -11,8 +11,14 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
   static Future<({Duration duration, String? actionText})?> show(
     BuildContext context,
   ) {
+    // Prefer the passed context; fall back to the root navigator if it lacks
+    // a Navigator ancestor (can happen after hot restart with FeedView).
+    final hasNavigator = Navigator.maybeOf(context) != null;
+    final dialogContext =
+        hasNavigator ? context : startupNavigatorKey.currentContext!;
     return showDialog<({Duration duration, String? actionText})>(
-      context: context,
+      context: dialogContext,
+      useRootNavigator: hasNavigator,
       barrierDismissible: true,
       builder: (context) => const ManualLockoutDialog(),
     );
@@ -24,8 +30,8 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final selectedHours = useState<int>(1);
-    final selectedMinutes = useState<int>(0);
+    final selectedHours = useState<int>(0);
+    final selectedMinutes = useState<int>(15);
     final activityController = useTextEditingController();
     final selectedPreset = useState<String?>(null);
 
@@ -44,7 +50,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
       minutes: selectedMinutes.value,
     );
 
-    // Validate: must be >= 1 hour
+    // Validate: must be >= 60 min
     final isValid = totalDuration.inMinutes >= 60;
 
     return Dialog(
@@ -84,17 +90,16 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                   height: 150,
                   child: CupertinoPicker(
                     scrollController: FixedExtentScrollController(
-                      initialItem: selectedHours.value - 1,
+                      initialItem: selectedHours.value,
                     ),
                     itemExtent: 40,
                     onSelectedItemChanged: (index) {
-                      selectedHours.value = index + 1;
+                      selectedHours.value = index;
                     },
-                    children: List.generate(9, (index) {
-                      final hours = index + 1;
+                    children: List.generate(10, (index) {
                       return Center(
                         child: Text(
-                          '$hours ${hours == 1 ? 'hr' : 'hrs'}',
+                          '$index ${index == 1 ? 'hr' : 'hrs'}',
                           style: textTheme.bodyLarge?.copyWith(
                             color: colorScheme.onSurface,
                           ),

@@ -9,6 +9,7 @@ import 'package:cloudless/core/features/supabase/utilities/supabase_startup_serv
 import 'package:cloudless/core/features/timezone/utilities/timezone_startup_service.dart';
 import 'package:cloudless/flavors.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -24,6 +25,12 @@ void main() {
     isSuccess,
   ) async {
     logger.info('App initialization completed');
+
+    // Ensure Firebase is initialized (survives hot restart where Dart state resets)
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp();
+    }
+
     await CrashlyticsStartupService.initialize(ref);
 
     TimezoneStartupService.initialize();
