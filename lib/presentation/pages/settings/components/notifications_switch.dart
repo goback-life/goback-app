@@ -36,10 +36,6 @@ class NotificationSwitch extends HookConsumerWidget
       return null;
     }, [value]);
 
-    // void toggle() {
-    //   onChanged?.call(!value);
-    // }
-
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
@@ -74,7 +70,6 @@ class NotificationSwitch extends HookConsumerWidget
           ),
         );
       },
-      // ),
     );
   }
 }

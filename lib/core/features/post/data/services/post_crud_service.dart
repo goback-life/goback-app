@@ -159,45 +159,41 @@ class PostCrudService {
     return PostDto.fromJson(response);
   }
 
-  /// Updates an existing post.
-  Future<PostDto> updatePost({
-    required String postId,
-    String? description,
-    String? thumbnailUrl,
-    int? thumbnailWidth,
-    int? thumbnailHeight,
-    ContentType? contentType,
-    List<String>? excludedUserIds,
-  }) async {
-    final Map<String, dynamic> updates = {};
-
-    if (description != null) {
-      updates['description'] = description;
-    }
-    if (thumbnailUrl != null) {
-      updates['thumbnail_url'] = thumbnailUrl;
-    }
-    if (thumbnailWidth != null) {
-      updates['thumbnail_width'] = thumbnailWidth;
-    }
-    if (thumbnailHeight != null) {
-      updates['thumbnail_height'] = thumbnailHeight;
-    }
-    if (contentType != null) {
-      updates['content_type'] = contentType.name.toLowerCase();
-    }
-    if (excludedUserIds != null) {
-      updates['excluded_user_ids'] = excludedUserIds;
-    }
-
+  /// Updates a post with arbitrary data fields and returns the updated post.
+  Future<PostDto> updatePostData(
+    String postId,
+    Map<String, dynamic> updateData,
+  ) async {
     final response = await _supabaseClient
         .from('posts')
-        .update(updates)
+        .update(updateData)
         .eq('id', postId)
         .select()
         .single();
 
     return PostDto.fromJson(response);
+  }
+
+  /// Deletes all post_media records for a post.
+  Future<void> deletePostMediaRecords(String postId) async {
+    await _supabaseClient.from('post_media').delete().eq('post_id', postId);
+  }
+
+  /// Deletes all post_tags records for a post.
+  Future<void> deletePostTagRecords(String postId) async {
+    await _supabaseClient.from('post_tags').delete().eq('post_id', postId);
+  }
+
+  /// Fetches a single field from a post by ID.
+  Future<Map<String, dynamic>> getPostField(
+    String postId,
+    String field,
+  ) async {
+    return _supabaseClient
+        .from('posts')
+        .select(field)
+        .eq('id', postId)
+        .single();
   }
 
   /// Updates the thumbnail URL of a post.
@@ -218,13 +214,5 @@ class PostCrudService {
   /// Deletes a post from the database.
   Future<void> deletePost(String postId) async {
     await _supabaseClient.from('posts').delete().eq('id', postId);
-  }
-
-  /// Hides a post (soft delete).
-  Future<void> hidePost(String postId) async {
-    await _supabaseClient
-        .from('posts')
-        .update({'hidden_at': DateTime.now().toIso8601String()})
-        .eq('id', postId);
   }
 }

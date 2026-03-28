@@ -5,9 +5,10 @@ import 'package:cloudless/core/features/lockout/domain/models/lockout_session_mo
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
-import 'package:cloudless/presentation/pages/manual_lockout/components/friend_locked_out_item.dart';
 import 'package:cloudless/presentation/pages/home/components/dnd_prompt_dialog.dart';
+import 'package:cloudless/presentation/pages/manual_lockout/components/friend_locked_out_item.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/join_lockout_dialog.dart';
+import 'package:cloudless/presentation/pages/manual_lockout/components/lockout_lifecycle_observer.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
@@ -68,7 +69,7 @@ class FriendsLockedOutList extends HookConsumerWidget {
 
     // Refresh on app resume
     useEffect(() {
-      final observer = _LifecycleObserver((lifecycleState) {
+      final observer = LockoutLifecycleObserver((lifecycleState) {
         if (lifecycleState == AppLifecycleState.resumed) {
           cacheNotifier.refresh();
         }
@@ -207,7 +208,11 @@ class FriendsLockedOutList extends HookConsumerWidget {
     final shouldJoin = await JoinLockoutDialog.show(context, session);
     if (shouldJoin != true || !context.mounted) return;
 
-    await DndPromptDialog.showIfNeeded(context);
+    try {
+      await DndPromptDialog.showIfNeeded(context);
+    } catch (_) {
+      // DnD prompt is non-critical; proceed with join
+    }
     if (!context.mounted) return;
 
     try {
@@ -227,13 +232,3 @@ class FriendsLockedOutList extends HookConsumerWidget {
   }
 }
 
-class _LifecycleObserver extends WidgetsBindingObserver {
-  _LifecycleObserver(this.onStateChange);
-
-  final void Function(AppLifecycleState) onStateChange;
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    onStateChange(state);
-  }
-}

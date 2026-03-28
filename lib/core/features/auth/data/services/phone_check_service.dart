@@ -8,8 +8,7 @@ class PhoneCheckService {
 
   final SupabaseClient _supabaseClient;
 
-  /// Checks which phone numbers exist in auth.users
-  /// Returns a Set of normalized phone numbers that exist in the database
+  /// Returns normalized phone numbers that exist in auth.users.
   FutureResult<Set<String>> checkPhoneNumbersExist(
     List<String> phoneNumbers,
   ) async {
@@ -45,4 +44,3 @@ class PhoneCheckService {
     }
   }
 }
-

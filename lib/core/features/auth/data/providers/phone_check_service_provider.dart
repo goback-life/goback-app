@@ -10,4 +10,3 @@ PhoneCheckService phoneCheckService(Ref ref) {
   final supabaseClient = ref.watch(supabaseClientProvider);
   return PhoneCheckService(supabaseClient: supabaseClient);
 }
-

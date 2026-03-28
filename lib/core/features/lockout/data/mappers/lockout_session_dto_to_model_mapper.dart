@@ -25,8 +25,4 @@ class LockoutSessionDtoToModelMapper
       avatarUrl: dto.avatarUrl,
     );
   }
-
-  List<LockoutSessionModel> mapDtoList(List<LockoutSessionDto> dtos) {
-    return dtos.map(mapDto).toList();
-  }
 }

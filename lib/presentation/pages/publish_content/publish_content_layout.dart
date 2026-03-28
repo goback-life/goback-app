@@ -15,17 +15,5 @@ mixin PublishContentLayout on MainLayout {
 
   double get titleToImage => 20.0;
 
-  double get contentHeight => 20.0;
-
-  double get imageHeight => 278.0;
-
-  double get borderRadius => 4.0;
-
-  double get imageToEdit => 16.0;
-
-  double get viewMinHeightOffset => 220.0;
-
-  double get viewMinHeightOffsetWithMembers => 240.0;
-
   double get membersListSearchToList => 32.0;
 }

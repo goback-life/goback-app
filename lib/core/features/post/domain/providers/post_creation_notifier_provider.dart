@@ -88,10 +88,6 @@ class PostCreationNotifier extends _$PostCreationNotifier {
     state = state.copyWith(thumbnailPath: thumbnail?.path);
   }
 
-  void updatePostType(ContentType postType) {
-    state = state.copyWith(contentType: postType);
-  }
-
   void updateContentType(ContentType contentType) {
     state = state.copyWith(contentType: contentType);
   }

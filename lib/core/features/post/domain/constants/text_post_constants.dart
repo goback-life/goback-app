@@ -6,4 +6,3 @@ class TextPostConstants {
   /// This matches the database constraint: char_length(description) <= 500
   static const int maxTextPostLength = 500;
 }
-

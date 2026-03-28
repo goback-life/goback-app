@@ -1,18 +1,13 @@
-import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
-import 'package:cloudless/core/features/connection/domain/providers/is_user_connected_provider.dart';
 import 'package:cloudless/core/features/post/domain/models/post_reaction_model.dart';
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/main_member/main_member_item.dart';
-import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
-import 'package:cloudless/presentation/pages/external_profile/external_profile_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
-import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
+import 'package:cloudless/presentation/pages/post_detail/utilities/post_detail_navigation.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
-import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 class PostDetailReactionsListModal extends HookConsumerWidget
@@ -98,32 +93,6 @@ class PostDetailReactionsListModal extends HookConsumerWidget
     );
   }
 
-  void _navigateToUserProfile(WidgetRef ref, String userId) async {
-    final currentUserAsync = ref.read(getCurrentUserProvider);
-    final isCurrentUser =
-        currentUserAsync.whenOrNull(
-          data: (userResult) =>
-              userResult.fold((user) => user.id == userId, (error) => false),
-        ) ??
-        false;
-
-    if (isCurrentUser) {
-      router.push(const ProfileRoutable());
-    } else {
-      final connectionResult = await ref.read(
-        isUserConnectedProvider(userId).future,
-      );
-      final isConnected = connectionResult.fold((isConnected) => isConnected, (
-        error,
-      ) {
-        return false;
-      });
-
-      if (isConnected) {
-        router.push(CircleProfileRoutable(userId: userId));
-      } else {
-        router.push(ExternalProfileRoutable(userId: userId));
-      }
-    }
-  }
+  void _navigateToUserProfile(WidgetRef ref, String userId) =>
+      PostDetailNavigation.navigateToUserProfile(ref, userId, '');
 }

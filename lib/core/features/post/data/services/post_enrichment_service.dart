@@ -76,5 +76,4 @@ class PostEnrichmentService {
       postData['video_url'] = null;
     }
   }
-
 }

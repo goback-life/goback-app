@@ -118,7 +118,11 @@ class HomeLockoutJoinButton extends HookConsumerWidget
         },
       );
 
-      await DndPromptDialog.showIfNeeded(context);
+      try {
+        await DndPromptDialog.showIfNeeded(context);
+      } catch (_) {
+        // DnD prompt is non-critical; proceed with join
+      }
       if (!context.mounted) return;
 
       // Join the lockout using session ID

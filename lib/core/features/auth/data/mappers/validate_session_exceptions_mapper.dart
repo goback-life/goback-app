@@ -14,7 +14,6 @@ class ValidateSessionExceptionsMapper {
         case 'session_not_found':
           return AuthSessionNotFoundException(e.code);
         case 'invalid_grant':
-          return AuthRefreshTokenNotFoundException(e.code);
         case 'refresh_token_not_found':
           return AuthRefreshTokenNotFoundException(e.code);
         default:

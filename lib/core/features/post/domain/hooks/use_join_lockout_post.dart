@@ -96,4 +96,3 @@ Future<Result<PostModel>?> useJoinLockoutPost(
     return Result.failure(e is Exception ? e : Exception(e.toString()));
   }
 }
-

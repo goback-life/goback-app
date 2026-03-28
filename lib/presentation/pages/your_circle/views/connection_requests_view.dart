@@ -1,20 +1,18 @@
 import 'package:cloudless/core/features/connection/domain/hooks/use_circle_members.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_connection_requests.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_search_users.dart';
-import 'package:cloudless/core/features/connection/domain/models/connection_request_model.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_outgoing_requests_provider.dart';
 import 'package:cloudless/core/features/connection/domain/providers/search_users_provider.dart';
-import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
+import 'package:cloudless/presentation/pages/your_circle/components/connection_request_tiles.dart';
 import 'package:cloudless/presentation/pages/your_circle/your_circle_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 const _kMaxCircleSize = 150;
 
@@ -141,7 +139,7 @@ class _SearchResults extends StatelessWidget {
       itemCount: searchData.results.length,
       itemBuilder: (context, index) {
         final (profile, status) = searchData.results[index];
-        return _SearchResultTile(
+        return SearchResultTile(
           profile: profile,
           status: status,
           isCircleFull: isCircleFull,
@@ -156,7 +154,6 @@ class _SearchResults extends StatelessWidget {
     requestsData.send(receiverId).then((result) {
       result.fold(
         (value) {
-          // Refresh search results to update status
           ref.invalidate(searchUsersProvider(searchData.query));
           ref.invalidate(getOutgoingRequestsProvider);
           if (value == 'auto_accepted') {
@@ -173,136 +170,6 @@ class _SearchResults extends StatelessWidget {
     // Actually, for incoming requests shown in search, we need the request ID.
     // The search RPC only returns status, not the request ID.
     // For accept, the user should use the notification. Here we just show status.
-  }
-}
-
-class _SearchResultTile extends StatelessWidget {
-  const _SearchResultTile({
-    required this.profile,
-    required this.status,
-    required this.onConnect,
-    required this.onAccept,
-    required this.isCircleFull,
-  });
-
-  final ProfileModel profile;
-  final ConnectionStatus status;
-  final VoidCallback onConnect;
-  final VoidCallback onAccept;
-  final bool isCircleFull;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          // Avatar
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: MainColors.accent.withValues(alpha: 0.2),
-            backgroundImage:
-                profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
-                    ? NetworkImage(profile.avatarUrl!)
-                    : null,
-            child: profile.avatarUrl == null || profile.avatarUrl!.isEmpty
-                ? Text(
-                    profile.username.isNotEmpty
-                        ? profile.username[0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(
-                      fontFamily: MainFontFamilies.quicksand,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: MainColors.white,
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(width: 12),
-          // Username
-          Expanded(
-            child: Text(
-              profile.username,
-              style: const TextStyle(
-                fontFamily: MainFontFamilies.quicksand,
-                fontWeight: FontWeight.w500,
-                fontSize: 18,
-                color: MainColors.white,
-                letterSpacing: -0.5,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          // Action button
-          _buildActionButton(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton() {
-    final disabledColor = MainColors.white.withValues(alpha: 0.3);
-    switch (status) {
-      case ConnectionStatus.none:
-        return _SmallActionButton(
-          label: isCircleFull ? 'Full' : 'Connect',
-          color: isCircleFull ? disabledColor : MainColors.accent,
-          onTap: isCircleFull ? null : onConnect,
-        );
-      case ConnectionStatus.pendingOutgoing:
-        return _SmallActionButton(
-          label: 'Pending',
-          color: disabledColor,
-        );
-      case ConnectionStatus.pendingIncoming:
-        return _SmallActionButton(
-          label: isCircleFull ? 'Full' : 'Accept',
-          color: isCircleFull ? disabledColor : MainColors.accent,
-          onTap: isCircleFull ? null : onAccept,
-        );
-      case ConnectionStatus.connected:
-        return _SmallActionButton(
-          label: 'Connected',
-          color: disabledColor,
-        );
-    }
-  }
-}
-
-class _SmallActionButton extends StatelessWidget {
-  const _SmallActionButton({
-    required this.label,
-    required this.color,
-    this.onTap,
-  });
-
-  final String label;
-  final Color color;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontFamily: MainFontFamilies.quicksand,
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-            color: color,
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -352,9 +219,9 @@ class _RequestsIdle extends StatelessWidget {
       padding: EdgeInsets.only(left: 24, right: 24, bottom: bottomPad + 16),
       children: [
         if (hasIncoming) ...[
-          _SectionHeader(label: 'Incoming'),
+          RequestSectionHeader(label: 'Incoming'),
           for (final request in requestsData.incomingRequests)
-            _IncomingRequestTile(
+            IncomingRequestTile(
               request: request,
               isCircleFull: isCircleFull,
               onAccept: () => requestsData.respond(
@@ -369,200 +236,14 @@ class _RequestsIdle extends StatelessWidget {
         ],
         if (hasOutgoing) ...[
           if (hasIncoming) const SizedBox(height: 8),
-          _SectionHeader(label: 'Sent'),
+          RequestSectionHeader(label: 'Sent'),
           for (final request in requestsData.outgoingRequests)
-            _OutgoingRequestTile(
+            OutgoingRequestTile(
               request: request,
               onCancel: () => requestsData.cancel(request.requestId),
             ),
         ],
       ],
     );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12, top: 4),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: MainFontFamilies.quicksand,
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-          color: MainColors.white.withValues(alpha: 0.4),
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
-}
-
-class _IncomingRequestTile extends StatelessWidget {
-  const _IncomingRequestTile({
-    required this.request,
-    required this.onAccept,
-    required this.onDeny,
-    required this.isCircleFull,
-  });
-
-  final ConnectionRequestModel request;
-  final VoidCallback onAccept;
-  final VoidCallback onDeny;
-  final bool isCircleFull;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: MainColors.accent.withValues(alpha: 0.2),
-            backgroundImage: request.profile.avatarUrl != null &&
-                    request.profile.avatarUrl!.isNotEmpty
-                ? NetworkImage(request.profile.avatarUrl!)
-                : null,
-            child: request.profile.avatarUrl == null ||
-                    request.profile.avatarUrl!.isEmpty
-                ? Text(
-                    request.profile.username.isNotEmpty
-                        ? request.profile.username[0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(
-                      fontFamily: MainFontFamilies.quicksand,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: MainColors.white,
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              request.profile.username,
-              style: const TextStyle(
-                fontFamily: MainFontFamilies.quicksand,
-                fontWeight: FontWeight.w500,
-                fontSize: 18,
-                color: MainColors.white,
-                letterSpacing: -0.5,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          _SmallActionButton(
-            label: isCircleFull ? 'Full' : 'Accept',
-            color: isCircleFull
-                ? MainColors.white.withValues(alpha: 0.3)
-                : MainColors.accent,
-            onTap: isCircleFull ? null : onAccept,
-          ),
-          const SizedBox(width: 8),
-          _SmallActionButton(
-            label: 'Deny',
-            color: MainColors.white.withValues(alpha: 0.3),
-            onTap: onDeny,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _OutgoingRequestTile extends StatelessWidget {
-  const _OutgoingRequestTile({
-    required this.request,
-    required this.onCancel,
-  });
-
-  final ConnectionRequestModel request;
-  final VoidCallback onCancel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: MainColors.accent.withValues(alpha: 0.2),
-            backgroundImage: request.profile.avatarUrl != null &&
-                    request.profile.avatarUrl!.isNotEmpty
-                ? NetworkImage(request.profile.avatarUrl!)
-                : null,
-            child: request.profile.avatarUrl == null ||
-                    request.profile.avatarUrl!.isEmpty
-                ? Text(
-                    request.profile.username.isNotEmpty
-                        ? request.profile.username[0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(
-                      fontFamily: MainFontFamilies.quicksand,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: MainColors.white,
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  request.profile.username,
-                  style: const TextStyle(
-                    fontFamily: MainFontFamilies.quicksand,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18,
-                    color: MainColors.white,
-                    letterSpacing: -0.5,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  _formatRelativeTime(request.createdAt),
-                  style: TextStyle(
-                    fontFamily: MainFontFamilies.quicksand,
-                    fontSize: 13,
-                    color: MainColors.white.withValues(alpha: 0.4),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: onCancel,
-            child: Icon(
-              Icons.close,
-              size: 20,
-              color: MainColors.white.withValues(alpha: 0.4),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatRelativeTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final local = dateTime.toLocal();
-    final diff = now.difference(local);
-
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inHours < 48) return 'Yesterday';
-    return DateFormat.MMMd().format(local);
   }
 }

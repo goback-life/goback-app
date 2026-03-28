@@ -1,21 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
 import 'package:cloudless/core/features/comment/domain/hooks/use_post_comments.dart';
 import 'package:cloudless/core/features/comment/domain/models/post_comment_model.dart';
-import 'package:cloudless/core/features/connection/domain/providers/is_user_connected_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_mention_autocomplete.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/core/features/storage/data/providers/signed_url_provider.dart';
 import 'package:cloudless/core/features/supabase/utilities/supabase_buckets.dart';
-import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
-import 'package:cloudless/presentation/pages/external_profile/external_profile_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_overlay_input.dart';
-
-import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
+import 'package:cloudless/presentation/pages/post_detail/utilities/post_detail_navigation.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
-import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -125,7 +119,8 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     final mentionedIds = useState<List<String>>([]);
     final descExpanded = useState(false);
 
-    void navigateToUser(String userId) => _navigateToTaggedUser(ref, userId);
+    void navigateToUser(String userId) =>
+        PostDetailNavigation.navigateToUserProfile(ref, userId, '');
     void navigateToMention(String username) {
       final user = allUsers.where((u) => u.username == username).firstOrNull;
       if (user != null) navigateToUser(user.id);
@@ -354,30 +349,6 @@ class PostDetailOverlayContent extends HookConsumerWidget {
               ),
             ))
         .toList();
-  }
-
-  Future<void> _navigateToTaggedUser(WidgetRef ref, String userId) async {
-    if (userId.isEmpty) return;
-    final currentUserAsync = ref.read(getCurrentUserProvider);
-    final isSelf = currentUserAsync.whenOrNull(
-          data: (r) => r.fold((u) => u.id == userId, (_) => false),
-        ) ??
-        false;
-    if (isSelf) {
-      router.push(const ProfileRoutable());
-      return;
-    }
-    final result =
-        await ref.read(isUserConnectedProvider(userId).future);
-    final isConnected = result.fold((v) => v, (error) {
-      logger.error('Failed to check user connection', exception: error);
-      return false;
-    });
-    if (isConnected) {
-      router.push(CircleProfileRoutable(userId: userId));
-    } else {
-      router.push(ExternalProfileRoutable(userId: userId));
-    }
   }
 
   List<PostCommentModel> _extractComments(PostCommentsResult result) {

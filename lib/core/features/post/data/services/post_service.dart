@@ -199,17 +199,6 @@ class PostService implements PostServiceContract {
     );
   }
 
-  /// Creates a draft post in the database.
-  ///
-  /// **Timezone Handling:**
-  /// When a post is created, the current timestamp (`created_at`) is automatically
-  /// stored by the database in UTC timezone. This timestamp is used for:
-  /// - Sorting posts in the feed (chronological order)
-  /// - Determining which posts to fetch based on date ranges
-  /// - Displaying the post creation time to users
-  ///
-  /// The displayed time is converted to the user's local timezone when shown in
-  /// the UI through the data mapping and formatting layers.
   @override
   Future<PostDto> createDraftPost({
     required String authorId,
@@ -322,7 +311,7 @@ class PostService implements PostServiceContract {
         updateData['thumbnail_width'] = thumbnailWidth;
         updateData['thumbnail_height'] = thumbnailHeight;
 
-        await supabaseClient.from('post_media').delete().eq('post_id', postId);
+        await _crudService.deletePostMediaRecords(postId);
         await addPostMedia(
           postId: postId,
           mediaUrls: videoUrls,
@@ -354,7 +343,7 @@ class PostService implements PostServiceContract {
         updateData['thumbnail_width'] = thumbnailWidth;
         updateData['thumbnail_height'] = thumbnailHeight;
 
-        await supabaseClient.from('post_media').delete().eq('post_id', postId);
+        await _crudService.deletePostMediaRecords(postId);
 
         if (contentType != ContentType.image) {
           await addPostMedia(
@@ -365,12 +354,7 @@ class PostService implements PostServiceContract {
         }
       }
     } else if (newThumbnailFile != null && contentType == ContentType.video) {
-      final currentPost = await supabaseClient
-          .from('posts')
-          .select('thumbnail_url')
-          .eq('id', postId)
-          .single();
-
+      final currentPost = await _crudService.getPostField(postId, 'thumbnail_url');
       final oldThumbnailUrl = currentPost['thumbnail_url'] as String?;
 
       if (oldThumbnailUrl != null && oldThumbnailUrl.isNotEmpty) {
@@ -386,23 +370,15 @@ class PostService implements PostServiceContract {
       updateData['thumbnail_url'] = thumbnailUrl;
     }
 
-    final postResponse = await supabaseClient
-        .from('posts')
-        .update(updateData)
-        .eq('id', postId)
-        .select()
-        .single();
+    final updatedPost = await _crudService.updatePostData(postId, updateData);
 
-    await supabaseClient.from('post_tags').delete().eq('post_id', postId);
-
+    await _crudService.deletePostTagRecords(postId);
     if (taggedUserIds.isNotEmpty) {
       await addPostTags(postId: postId, taggedUserIds: taggedUserIds);
     }
-
-    // Update exclusions directly on the post (stored as UUID[] array)
     await setPostExclusions(postId: postId, excludedUserIds: excludedUserIds);
 
-    return PostDto.fromJson(postResponse);
+    return updatedPost;
   }
 
   @override
@@ -467,16 +443,6 @@ class PostService implements PostServiceContract {
     );
   }
 
-  /// Retrieves feed posts for a user.
-  ///
-  /// **Timezone Handling:**
-  /// Posts are retrieved based on their `published_at` timestamp which is stored
-  /// in UTC timezone in the database. The sorting and filtering of posts is
-  /// performed in UTC to ensure consistent ordering across all users regardless
-  /// of their timezone.
-  ///
-  /// When posts are displayed in the UI, the `published_at` timestamp is converted
-  /// to the user's local timezone through the data mapping layer.
   @override
   Future<FeedResponseDto> getFeedPosts({
     required String userId,

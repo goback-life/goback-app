@@ -13,99 +13,56 @@ class CrashlyticsService implements CrashlyticsServiceContract {
     Object exception,
     StackTrace? stackTrace, {
     String? reason,
-  }) async {
-    try {
-      await _crashlytics.recordError(
-        exception,
-        stackTrace,
-        reason: reason,
-        fatal: false,
-      );
-
-      logger.warning(
-        'Non-fatal error recorded to Crashlytics',
-        exception: exception,
-        stackTrace: stackTrace,
-      );
-    } catch (e, s) {
-      logger.error(
-        'Failed to record error to Crashlytics',
-        exception: e,
-        stackTrace: s,
-      );
-    }
-  }
+  }) => _guard('record error', () async {
+    await _crashlytics.recordError(
+      exception,
+      stackTrace,
+      reason: reason,
+      fatal: false,
+    );
+    logger.warning(
+      'Non-fatal error recorded to Crashlytics',
+      exception: exception,
+      stackTrace: stackTrace,
+    );
+  });
 
   @override
   Future<void> recordFatalError(
     Object exception,
     StackTrace stackTrace, {
     String? reason,
-  }) async {
-    try {
-      await _crashlytics.recordError(
-        exception,
-        stackTrace,
-        reason: reason,
-        fatal: true,
-      );
-
-      logger.error(
-        'Fatal error recorded to Crashlytics',
-        exception: exception,
-        stackTrace: stackTrace,
-      );
-    } catch (e, s) {
-      logger.error(
-        'Failed to record fatal error to Crashlytics',
-        exception: e,
-        stackTrace: s,
-      );
-    }
-  }
+  }) => _guard('record fatal error', () async {
+    await _crashlytics.recordError(
+      exception,
+      stackTrace,
+      reason: reason,
+      fatal: true,
+    );
+    logger.error(
+      'Fatal error recorded to Crashlytics',
+      exception: exception,
+      stackTrace: stackTrace,
+    );
+  });
 
   @override
-  Future<void> setCustomKey(String key, Object value) async {
-    try {
-      await _crashlytics.setCustomKey(key, value);
-
-      logger.info('Custom key set in Crashlytics: $key = $value');
-    } catch (e, s) {
-      logger.error(
-        'Failed to set custom key in Crashlytics',
-        exception: e,
-        stackTrace: s,
-      );
-    }
-  }
+  Future<void> setCustomKey(String key, Object value) =>
+      _guard('set custom key', () async {
+        await _crashlytics.setCustomKey(key, value);
+        logger.info('Custom key set in Crashlytics: $key = $value');
+      });
 
   @override
-  Future<void> setUserIdentifier(String userId) async {
-    try {
-      await _crashlytics.setUserIdentifier(userId);
-
-      logger.info('User identifier set in Crashlytics: $userId');
-    } catch (e, s) {
-      logger.error(
-        'Failed to set user identifier in Crashlytics',
-        exception: e,
-        stackTrace: s,
-      );
-    }
-  }
+  Future<void> setUserIdentifier(String userId) =>
+      _guard('set user identifier', () async {
+        await _crashlytics.setUserIdentifier(userId);
+        logger.info('User identifier set in Crashlytics: $userId');
+      });
 
   @override
-  Future<void> log(String message) async {
-    try {
-      await _crashlytics.log(message);
-    } catch (e, s) {
-      logger.error(
-        'Failed to log message to Crashlytics',
-        exception: e,
-        stackTrace: s,
-      );
-    }
-  }
+  Future<void> log(String message) =>
+      _guard('log message', () => _crashlytics.log(message));
 
   @override
   Future<bool> isCrashlyticsCollectionEnabled() async {
@@ -122,14 +79,20 @@ class CrashlyticsService implements CrashlyticsServiceContract {
   }
 
   @override
-  Future<void> setCrashlyticsCollectionEnabled({required bool enabled}) async {
-    try {
-      await _crashlytics.setCrashlyticsCollectionEnabled(enabled);
+  Future<void> setCrashlyticsCollectionEnabled({required bool enabled}) =>
+      _guard('set Crashlytics collection status', () async {
+        await _crashlytics.setCrashlyticsCollectionEnabled(enabled);
+        logger.info(
+          'Crashlytics collection ${enabled ? 'enabled' : 'disabled'}',
+        );
+      });
 
-      logger.info('Crashlytics collection ${enabled ? 'enabled' : 'disabled'}');
+  Future<void> _guard(String operation, Future<void> Function() action) async {
+    try {
+      await action();
     } catch (e, s) {
       logger.error(
-        'Failed to set Crashlytics collection status',
+        'Failed to $operation in Crashlytics',
         exception: e,
         stackTrace: s,
       );

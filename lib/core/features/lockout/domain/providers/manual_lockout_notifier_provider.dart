@@ -2,6 +2,7 @@ import 'package:battery_plus/battery_plus.dart';
 import 'package:cloudless/core/features/lockout/data/providers/lockout_live_activity_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
+import 'package:cloudless/core/features/lockout/data/storables/manual_lockout_storable.dart';
 import 'package:cloudless/core/features/lockout/domain/models/manual_lockout_model.dart';
 import 'package:cloudless/core/features/lockout/domain/use_cases/check_manual_lockout_use_case.dart';
 import 'package:cloudless/core/features/lockout/domain/use_cases/clear_manual_lockout_use_case.dart';
@@ -19,20 +20,11 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
   @override
   Future<ManualLockoutModel> build() async {
     final storable = ref.watch(manualLockoutStorableProvider);
-    final checkUseCase = CheckManualLockoutUseCase(storable: storable);
-    final isLockedOut = await checkUseCase.execute();
-
-    Duration? remainingDuration;
-    if (isLockedOut) {
-      final getRemainingUseCase = GetLockoutRemainingTimeUseCase(
-        storable: storable,
-      );
-      remainingDuration = await getRemainingUseCase.execute();
-    }
+    final currentState = await _readLockoutState(storable);
 
     // Sync Live Activity with lockout state on app launch / rebuild
     final liveActivityService = ref.read(lockoutLiveActivityServiceProvider);
-    if (isLockedOut && remainingDuration != null) {
+    if (currentState.isLockedOut) {
       final lockoutEnd = await storable.getLockoutEnd();
       if (lockoutEnd != null) {
         await liveActivityService.startActivity(
@@ -43,10 +35,35 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       await liveActivityService.endActivity();
     }
 
+    return currentState;
+  }
+
+  /// Reads lockout check + remaining time from storable into a model.
+  Future<ManualLockoutModel> _readLockoutState(
+    ManualLockoutStorable storable,
+  ) async {
+    final isLockedOut =
+        await CheckManualLockoutUseCase(storable: storable).execute();
+
+    Duration? remainingDuration;
+    if (isLockedOut) {
+      remainingDuration =
+          await GetLockoutRemainingTimeUseCase(storable: storable).execute();
+    }
+
     return ManualLockoutModel(
       isLockedOut: isLockedOut && remainingDuration != null,
       remainingDuration: remainingDuration,
     );
+  }
+
+  /// Captures battery level, returning null on failure.
+  Future<int?> _captureBattery() async {
+    try {
+      return await Battery().batteryLevel;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Sets a lockout for the given duration.
@@ -65,13 +82,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     state = const AsyncValue.loading();
     String? sessionId;
 
-    // Capture battery level at lockout start
-    int? batteryAtStart;
-    try {
-      batteryAtStart = await Battery().batteryLevel;
-    } catch (_) {
-      // Permission denied or unavailable - score will be null
-    }
+    final batteryAtStart = await _captureBattery();
 
     try {
       // Create session in database first
@@ -93,13 +104,12 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
 
       // Store locally with session ID for post creation after lockout ends
       logger.info('Storing lockout locally with sessionId: $sessionId');
-      final useCase = SetManualLockoutUseCase(
+      await SetManualLockoutUseCase(
         storable: storable,
         duration: duration,
         sessionId: sessionId,
         batteryAtStart: batteryAtStart,
-      );
-      await useCase.execute();
+      ).execute();
 
       // Start Live Activity countdown on lock screen
       final lockoutEndTime = DateTime.now().add(duration);
@@ -112,24 +122,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
           .read(scheduledNotificationProvider)
           .scheduleLockoutNotifications(lockoutEndTime);
 
-      // Reload state
-      final checkUseCase = CheckManualLockoutUseCase(storable: storable);
-      final isLockedOut = await checkUseCase.execute();
-
-      Duration? remainingDuration;
-      if (isLockedOut) {
-        final getRemainingUseCase = GetLockoutRemainingTimeUseCase(
-          storable: storable,
-        );
-        remainingDuration = await getRemainingUseCase.execute();
-      }
-
-      state = AsyncValue.data(
-        ManualLockoutModel(
-          isLockedOut: isLockedOut && remainingDuration != null,
-          remainingDuration: remainingDuration,
-        ),
-      );
+      state = AsyncValue.data(await _readLockoutState(storable));
 
       logger.info('Manual lockout set for ${duration.inHours} hours');
       return sessionId;
@@ -184,8 +177,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
 
   Future<Duration?> getRemainingTime() async {
     final storable = ref.read(manualLockoutStorableProvider);
-    final useCase = GetLockoutRemainingTimeUseCase(storable: storable);
-    return await useCase.execute();
+    return await GetLockoutRemainingTimeUseCase(storable: storable).execute();
   }
 
   /// Joins an existing lockout session by session ID.
@@ -195,13 +187,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     final storable = ref.read(manualLockoutStorableProvider);
     final sessionService = ref.read(lockoutSessionServiceProvider);
 
-    // Capture battery level at lockout start
-    int? batteryAtStart;
-    try {
-      batteryAtStart = await Battery().batteryLevel;
-    } catch (_) {
-      // Permission denied or unavailable - score will be null
-    }
+    final batteryAtStart = await _captureBattery();
 
     state = const AsyncValue.loading();
     try {
@@ -242,13 +228,12 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       }
 
       // Store locally with session ID for same-lockout detection
-      final useCase = JoinLockoutUseCase(
+      await JoinLockoutUseCase(
         storable: storable,
         lockoutEndTime: lockoutEndTime!,
         lockoutSessionId: lockoutSessionId,
         batteryAtStart: batteryAtStart,
-      );
-      await useCase.execute();
+      ).execute();
 
       // Start Live Activity countdown on lock screen
       await ref.read(lockoutLiveActivityServiceProvider).startActivity(
@@ -260,24 +245,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
           .read(scheduledNotificationProvider)
           .scheduleLockoutNotifications(lockoutEndTime!);
 
-      // Reload state
-      final checkUseCase = CheckManualLockoutUseCase(storable: storable);
-      final isLockedOut = await checkUseCase.execute();
-
-      Duration? remainingDuration;
-      if (isLockedOut) {
-        final getRemainingUseCase = GetLockoutRemainingTimeUseCase(
-          storable: storable,
-        );
-        remainingDuration = await getRemainingUseCase.execute();
-      }
-
-      state = AsyncValue.data(
-        ManualLockoutModel(
-          isLockedOut: isLockedOut && remainingDuration != null,
-          remainingDuration: remainingDuration,
-        ),
-      );
+      state = AsyncValue.data(await _readLockoutState(storable));
 
       logger.info('Joined lockout session $lockoutSessionId');
     } catch (error, stackTrace) {
@@ -293,31 +261,20 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
 
   Future<void> refresh() async {
     final storable = ref.read(manualLockoutStorableProvider);
-    final checkUseCase = CheckManualLockoutUseCase(storable: storable);
-    final isLockedOut = await checkUseCase.execute();
 
     final wasLockedOut = state.value?.isLockedOut ?? false;
     final wasCompletionPending = state.value?.isCompletionPending ?? false;
 
-    Duration? remainingDuration;
-    if (isLockedOut) {
-      final getRemainingUseCase = GetLockoutRemainingTimeUseCase(
-        storable: storable,
-      );
-      remainingDuration = await getRemainingUseCase.execute();
-    }
-
-    final nowLocked = isLockedOut && remainingDuration != null;
+    final currentState = await _readLockoutState(storable);
 
     state = AsyncValue.data(
       ManualLockoutModel(
-        isLockedOut: nowLocked,
-        remainingDuration: remainingDuration,
-        // Timer just expired → completion pending (until share/skip)
+        isLockedOut: currentState.isLockedOut,
+        remainingDuration: currentState.remainingDuration,
+        // Timer just expired -> completion pending (until share/skip)
         isCompletionPending:
-            wasCompletionPending || (wasLockedOut && !nowLocked),
+            wasCompletionPending || (wasLockedOut && !currentState.isLockedOut),
       ),
     );
   }
 }
-

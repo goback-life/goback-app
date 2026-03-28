@@ -44,6 +44,7 @@ class LockoutShareCard extends StatelessWidget {
     return Container(
       width: 360,
       height: 450,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: MainColors.dark,
         borderRadius: BorderRadius.circular(24),
@@ -161,6 +162,7 @@ class LockoutShareCard extends StatelessWidget {
     return Container(
       width: 360,
       height: 450,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: MainColors.dark,
         borderRadius: BorderRadius.circular(24),

@@ -85,6 +85,34 @@ class ContentEditorSelectedMedia extends HookConsumerWidget
     return const SizedBox();
   }
 
+  /// Writes flipped bytes to [file], invalidates caches, and notifies via [onImageFlipped].
+  Future<void> _applyFlip(List<int> bytes, File file) async {
+    await file.writeAsBytes(bytes, flush: true);
+    await file.setLastModified(DateTime.now());
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    PaintingBinding.instance.imageCache.clear();
+    PaintingBinding.instance.imageCache.clearLiveImages();
+    if (onImageFlipped != null) {
+      await onImageFlipped!(file);
+    }
+  }
+
+  /// Shows [FullScreenImage] with flip handlers wired to [file].
+  void _showFullScreenWithFlip(
+    BuildContext context, {
+    required ImageProvider image,
+    required bool showFlipMenu,
+    required File file,
+  }) {
+    FullScreenImage.show(
+      context: context,
+      image: image,
+      showFlipMenu: showFlipMenu,
+      onFlipHorizontal: showFlipMenu ? (bytes) => _applyFlip(bytes, file) : null,
+      onFlipVertical: showFlipMenu ? (bytes) => _applyFlip(bytes, file) : null,
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -134,213 +162,52 @@ class ContentEditorSelectedMedia extends HookConsumerWidget
                 videoUrl: mediaFile?.path ?? videoUrl!,
               );
             } else if (mediaFile != null) {
-              // Evict cached image to force refresh
               final imageProvider = FileImage(mediaFile!);
               await imageProvider.evict();
-              if (!context.mounted) {
-                return;
-              }
+              if (!context.mounted) return;
 
-              FullScreenImage.show(
-                context: context,
+              _showFullScreenWithFlip(
+                context,
                 image: imageProvider,
                 showFlipMenu: showFlipMenu,
-                onFlipHorizontal: showFlipMenu
-                    ? (bytes) async {
-                        // Save flipped bytes to file
-                        await mediaFile!.writeAsBytes(bytes, flush: true);
-
-                        // Force file timestamp update to invalidate native decoder cache
-                        await mediaFile!.setLastModified(DateTime.now());
-
-                        // Wait for OS to flush file to disk
-                        await Future<void>.delayed(
-                          const Duration(milliseconds: 200),
-                        );
-
-                        // Clear Flutter image cache to force reload
-                        PaintingBinding.instance.imageCache.clear();
-                        PaintingBinding.instance.imageCache.clearLiveImages();
-
-                        // Call onImageFlipped with the updated file
-                        if (onImageFlipped != null) {
-                          await onImageFlipped!(mediaFile!);
-                        }
-                      }
-                    : null,
-                onFlipVertical: showFlipMenu
-                    ? (bytes) async {
-                        // Save flipped bytes to file
-                        await mediaFile!.writeAsBytes(bytes, flush: true);
-
-                        // Force file timestamp update to invalidate native decoder cache
-                        await mediaFile!.setLastModified(DateTime.now());
-
-                        // Wait for OS to flush file to disk
-                        await Future<void>.delayed(
-                          const Duration(milliseconds: 200),
-                        );
-
-                        // Clear Flutter image cache to force reload
-                        PaintingBinding.instance.imageCache.clear();
-                        PaintingBinding.instance.imageCache.clearLiveImages();
-
-                        // Call onImageFlipped with the updated file
-                        if (onImageFlipped != null) {
-                          await onImageFlipped!(mediaFile!);
-                        }
-                      }
-                    : null,
+                file: mediaFile!,
               );
             } else if (imageUrl != null) {
-              // Download image first if not already downloaded, then show fullscreen
               if (downloadedFile.value == null && showFlipMenu) {
-                // Download and wait for completion
                 await downloadImageIfNeeded();
-                if (!context.mounted) {
-                  return;
-                }
+                if (!context.mounted) return;
 
                 if (downloadedFile.value != null) {
-                  // Evict cached image to force refresh
                   final imageProvider = FileImage(downloadedFile.value!);
                   await imageProvider.evict();
-                  if (!context.mounted) {
-                    return;
-                  }
+                  if (!context.mounted) return;
 
-                  FullScreenImage.show(
-                    context: context,
+                  _showFullScreenWithFlip(
+                    context,
                     image: imageProvider,
                     showFlipMenu: showFlipMenu,
-                    onFlipHorizontal: (bytes) async {
-                      // Save flipped bytes to downloaded file
-                      await downloadedFile.value!.writeAsBytes(
-                        bytes,
-                        flush: true,
-                      );
-
-                      // Force file timestamp update to invalidate native decoder cache
-                      await downloadedFile.value!.setLastModified(
-                        DateTime.now(),
-                      );
-
-                      // Wait for OS to flush file to disk
-                      await Future<void>.delayed(
-                        const Duration(milliseconds: 200),
-                      );
-
-                      // Clear Flutter image cache to force reload
-                      PaintingBinding.instance.imageCache.clear();
-                      PaintingBinding.instance.imageCache.clearLiveImages();
-
-                      // Call onImageFlipped and update downloadedFile
-                      if (onImageFlipped != null) {
-                        await onImageFlipped!(downloadedFile.value!);
-                      }
-                    },
-                    onFlipVertical: (bytes) async {
-                      // Save flipped bytes to downloaded file
-                      await downloadedFile.value!.writeAsBytes(
-                        bytes,
-                        flush: true,
-                      );
-
-                      // Force file timestamp update to invalidate native decoder cache
-                      await downloadedFile.value!.setLastModified(
-                        DateTime.now(),
-                      );
-
-                      // Wait for OS to flush file to disk
-                      await Future<void>.delayed(
-                        const Duration(milliseconds: 200),
-                      );
-
-                      // Clear Flutter image cache to force reload
-                      PaintingBinding.instance.imageCache.clear();
-                      PaintingBinding.instance.imageCache.clearLiveImages();
-
-                      // Call onImageFlipped and update downloadedFile
-                      if (onImageFlipped != null) {
-                        await onImageFlipped!(downloadedFile.value!);
-                      }
-                    },
+                    file: downloadedFile.value!,
                   );
                 } else {
-                  // Download failed, show without flip menu
-                  if (!context.mounted) {
-                    return;
-                  }
+                  if (!context.mounted) return;
                   FullScreenImage.show(
                     context: context,
                     image: CachedNetworkImageProvider(imageUrl!),
                   );
                 }
               } else if (downloadedFile.value != null) {
-                // Evict cached image to force refresh
                 final imageProvider = FileImage(downloadedFile.value!);
                 await imageProvider.evict();
-                if (!context.mounted) {
-                  return;
-                }
+                if (!context.mounted) return;
 
-                FullScreenImage.show(
-                  context: context,
+                _showFullScreenWithFlip(
+                  context,
                   image: imageProvider,
                   showFlipMenu: showFlipMenu,
-                  onFlipHorizontal: (bytes) async {
-                    // Save flipped bytes to downloaded file
-                    await downloadedFile.value!.writeAsBytes(
-                      bytes,
-                      flush: true,
-                    );
-
-                    // Force file timestamp update to invalidate native decoder cache
-                    await downloadedFile.value!.setLastModified(DateTime.now());
-
-                    // Wait for OS to flush file to disk
-                    await Future<void>.delayed(
-                      const Duration(milliseconds: 200),
-                    );
-
-                    // Clear Flutter image cache to force reload
-                    PaintingBinding.instance.imageCache.clear();
-                    PaintingBinding.instance.imageCache.clearLiveImages();
-
-                    // Call onImageFlipped and update downloadedFile
-                    if (onImageFlipped != null) {
-                      await onImageFlipped!(downloadedFile.value!);
-                    }
-                  },
-                  onFlipVertical: (bytes) async {
-                    // Save flipped bytes to downloaded file
-                    await downloadedFile.value!.writeAsBytes(
-                      bytes,
-                      flush: true,
-                    );
-
-                    // Force file timestamp update to invalidate native decoder cache
-                    await downloadedFile.value!.setLastModified(DateTime.now());
-
-                    // Wait for OS to flush file to disk
-                    await Future<void>.delayed(
-                      const Duration(milliseconds: 200),
-                    );
-
-                    // Clear Flutter image cache to force reload
-                    PaintingBinding.instance.imageCache.clear();
-                    PaintingBinding.instance.imageCache.clearLiveImages();
-
-                    // Call onImageFlipped and update downloadedFile
-                    if (onImageFlipped != null) {
-                      await onImageFlipped!(downloadedFile.value!);
-                    }
-                  },
+                  file: downloadedFile.value!,
                 );
               } else {
-                if (!context.mounted) {
-                  return;
-                }
+                if (!context.mounted) return;
                 FullScreenImage.show(
                   context: context,
                   image: CachedNetworkImageProvider(imageUrl!),

@@ -6,12 +6,9 @@ import 'package:cloudless/core/features/connection/domain/hooks/use_circle_membe
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/notification/domain/providers/unread_notification_count_provider.dart';
-import 'package:cloudless/core/features/post/domain/enums/post_action_type.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_feed_posts/use_feed_posts.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_provider.dart';
-import 'package:cloudless/core/features/post/domain/providers/post_action_notifier_provider.dart';
-import 'package:cloudless/core/features/post/domain/providers/post_published_notifier_provider.dart';
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
 import 'package:cloudless/core/features/onboarding/data/storables/onboarding_completed_storable.dart';
 import 'package:cloudless/core/features/onboarding/data/storables/tutorial_completed_storable.dart';
@@ -26,13 +23,13 @@ import 'package:cloudless/presentation/pages/home/components/home_lockout_button
 import 'package:cloudless/presentation/pages/home/components/home_new_posts_banner.dart';
 import 'package:cloudless/presentation/pages/home/components/home_scroll_indicator.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
+import 'package:cloudless/presentation/pages/home/hooks/use_home_scroll_state.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_page.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 
 class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
   const HomeView({super.key});
@@ -43,7 +40,6 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     final onboardingFuture = useMemoized(() async {
       final value = await OnboardingCompletedStorable().tryGet();
       if (value == null) {
-        // Existing user — auto-complete onboarding & tutorial
         await OnboardingCompletedStorable().set(true);
         await TutorialCompletedStorable().set(true);
         return true;
@@ -51,28 +47,15 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
       return value;
     });
     final onboardingSnapshot = useFuture(onboardingFuture);
-    final hasCompletedOnboarding =
-        onboardingSnapshot.data ?? true;
+    final hasCompletedOnboarding = onboardingSnapshot.data ?? true;
 
     final currentUserAsync = ref.watch(getCurrentUserProvider);
-    final scrollController = useScrollController();
-
-    // Initialize isAtTop based on actual scroll position (not always true)
-    final isAtTop = useState(
-      !scrollController.hasClients || scrollController.offset < 10,
-    );
-
-    final isAtBottom = useState(false);
-
-    // Track if user has actively scrolled (to distinguish from initial position)
-    final hasUserScrolled = useState(false);
 
     final userId = useMemoized(() {
-      final id = currentUserAsync.whenOrNull(
+      return currentUserAsync.whenOrNull(
         data: (userResult) =>
             userResult.fold((user) => user.id, (error) => null),
       );
-      return id;
     }, [currentUserAsync]);
 
     final feedPosts = useFeedPosts(ref, userId: userId ?? '');
@@ -81,280 +64,23 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
     final circleMembersData = useCircleMembers(ref);
 
-    // Preload feed in background or perform full rebuild if needed
-    useEffect(() {
-      if (userId != null && userId.isNotEmpty) {
-        final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
+    // Scroll state (extracted hook)
+    final scrollState = useHomeScrollState(ref, feedPosts: feedPosts);
 
-        // Check if full rebuild is needed (cold start or >6 hours since last validation)
-        Future.microtask(() {
-          final needsRebuild = cacheNotifier.needsFullRebuild;
-          if (needsRebuild) {
-            cacheNotifier.fullCacheRebuild(userId);
-          } else {
-            cacheNotifier.preloadFeed(userId);
-          }
-        });
-
-        // Periodic memory cleanup of expired posts (every 30 minutes)
-        // Note: Filtering happens in getter, this just removes from state
-        final cleanupTimer = Timer.periodic(const Duration(minutes: 30), (_) {
-          cacheNotifier.removeExpiredPosts();
-        });
-
-        return cleanupTimer.cancel;
-      }
-      return null;
-    }, [userId]);
+    // Feed cache preload / periodic cleanup
+    _useFeedCacheLifecycle(ref, userId: userId);
 
     // Check for completed lockout that hasn't been posted yet
-    useEffect(() {
-      Future<void> checkPendingLockout() async {
-        final storable = ref.read(manualLockoutStorableProvider);
-        final lockoutEnd = await storable.getLockoutEnd();
-        final isLockedOut = await storable.isLockedOut();
-
-        // If there was a lockout (has end time) and it has ended, redirect to complete screen
-        // This handles both cases: with and without sessionId
-        if (lockoutEnd != null && !isLockedOut) {
-          final sessionId = await storable.getLockoutSessionId();
-          router.go(const ManualLockoutRoutable());
-        }
-      }
-      checkPendingLockout();
-      return null;
-    }, []);
-
-    // Track when app was last active for signed URL refresh
-    final lastActiveTime = useRef<DateTime>(DateTime.now());
+    _usePendingLockoutCheck(ref);
 
     // Refresh data when app resumes from background
-    // This replaces aggressive polling - data is fetched in parallel on resume
-    useAppResumeRefresh(
-      onResume: () async {
-        // Refresh circle members (avatars fetched in parallel)
-        ref.invalidate(getCircleMembersProvider);
-        // Refresh notification count and feed
-        if (userId != null && userId.isNotEmpty) {
-          ref.invalidate(unreadNotificationCountProvider(userId: userId));
+    _useAppResumeRefresh(ref, userId: userId);
 
-          // Always refresh feed on app resume to get new/deleted posts
-          final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
-          await cacheNotifier.refresh(userId);
-          await cacheNotifier.checkForDeletions(userId);
+    // Periodic refresh for new posts (every 60s)
+    _usePeriodicFeedRefresh(ref, userId: userId);
 
-          // Check if we need to refresh signed URLs (backgrounded > 3 hours)
-          final backgroundDuration =
-              DateTime.now().difference(lastActiveTime.value);
-          if (backgroundDuration > const Duration(hours: 3)) {
-            await cacheNotifier.reEnrichCachedPosts();
-          }
-        }
-        lastActiveTime.value = DateTime.now();
-      },
-    );
-
-    // Periodic refresh for new posts while app is open (every 60 seconds)
-    useEffect(() {
-      if (userId != null && userId.isNotEmpty) {
-        final timer = Timer.periodic(const Duration(seconds: 60), (_) async {
-          final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
-          await cacheNotifier.refresh(userId);
-          await cacheNotifier.checkForDeletions(userId);
-        });
-        return timer.cancel;
-      }
-      return null;
-    }, [userId]);
-
-    // Refresh unread notification count on app resume and with light polling (60s)
-    // Push notifications will handle time-critical alerts when implemented
-    useEffect(() {
-      if (userId != null && userId.isNotEmpty) {
-        // Light polling at 60s interval (will be replaced by push notifications later)
-        final timer = Timer.periodic(const Duration(seconds: 60), (_) {
-          ref.invalidate(unreadNotificationCountProvider(userId: userId));
-        });
-
-        return timer.cancel;
-      }
-      return null;
-    }, [userId]);
-
-    // Listen to scroll position
-    useEffect(
-      () {
-        void onScroll() {
-          try {
-            if (!scrollController.hasClients) return;
-            final atTop = scrollController.offset < 10;
-
-            final maxScroll = scrollController.position.maxScrollExtent;
-            final currentScroll = scrollController.offset;
-            final atBottom = maxScroll - currentScroll < 100;
-
-            // Mark that user has scrolled away from top
-            if (!atTop && !hasUserScrolled.value) {
-              hasUserScrolled.value = true;
-            }
-
-            if (isAtBottom.value != atBottom) {
-              isAtBottom.value = atBottom;
-            }
-
-            if (isAtTop.value != atTop) {
-              isAtTop.value = atTop;
-
-              // If user scrolled to top and there are new posts, reset the counter
-              // because they can see the new posts now
-              if (atTop && feedPosts.newPostsCount > 0) {
-                feedPosts.loadNewPosts(); // This resets the counter
-              }
-
-              // Reset hasUserScrolled when user returns to top
-              // So that if new posts arrive while at top, banner won't show
-              if (atTop && hasUserScrolled.value) {
-                hasUserScrolled.value = false;
-              }
-            }
-          } catch (e) {
-            // Controller may be attached to multiple scroll views or disposed
-            // Ignore the error and skip the update
-          }
-        }
-
-        void checkScrollPosition() {
-          if (scrollController.hasClients) {
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              try {
-                if (scrollController.hasClients && scrollController.offset < 10) {
-                  if (!isAtTop.value) {
-                    isAtTop.value = true;
-                    hasUserScrolled.value = false;
-                  }
-                }
-              } catch (e) {
-                // Controller may be attached to multiple scroll views or disposed
-                // Ignore the error and skip the update
-              }
-            });
-          }
-        }
-
-        scrollController.addListener(onScroll);
-
-        checkScrollPosition();
-
-        return () => scrollController.removeListener(onScroll);
-      },
-      [scrollController],
-    ); // Removed feedPosts.newPostsCount dependency to avoid stale closure
-
-    useEffect(() {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        try {
-          if (scrollController.hasClients) {
-            final offset = scrollController.offset;
-            if (offset < 10) {
-              if (!isAtTop.value) {
-                isAtTop.value = true;
-                hasUserScrolled.value = false;
-              }
-            }
-          }
-        } catch (e) {
-          // Controller may be attached to multiple scroll views or disposed
-          // Ignore the error and skip the update
-        }
-      });
-      return null;
-    }, [feedPosts.posts.length]);
-
-    // Hide banner if new posts arrive while user is NOT at top
-    // OR if user has never scrolled (still at initial position)
-    useEffect(() {
-      // Check actual scroll position, not just isAtTop state
-      final actuallyAtTop =
-          scrollController.hasClients && scrollController.offset < 10;
-
-      // Hide banner if:
-      // 1. User is not at top (scrolled down)
-      // 2. OR user has never scrolled (still at initial position after app start/reload)
-      if (feedPosts.newPostsCount > 0 &&
-          (!actuallyAtTop || !hasUserScrolled.value)) {
-        feedPosts.loadNewPosts(); // Silently reset the counter
-      }
-      return null;
-    }, [feedPosts.newPostsCount, isAtTop.value, hasUserScrolled.value]);
-
-    // Listen to post action events to auto-scroll to top ONLY on create (not update)
-    final postActionEvent = ref.watch(postActionNotifierProvider);
-
-    useEffect(() {
-      if (postActionEvent != null) {
-        // Scroll to top ONLY when a new post is created, NOT when updated
-        if (postActionEvent.action == PostActionType.create &&
-            scrollController.hasClients) {
-          scrollController
-              .animateTo(
-                0,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              )
-              .then((_) {
-                isAtTop.value = true;
-                hasUserScrolled.value = false;
-              });
-        }
-      }
-      return null;
-    }, [postActionEvent?.timestamp.millisecondsSinceEpoch]);
-
-    final postPublishedFlag = ref.watch(postPublishedNotifierProvider);
-
-    useEffect(() {
-      if (postPublishedFlag != null && scrollController.hasClients) {
-        scrollController
-            .animateTo(
-              0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            )
-            .then((_) {
-              isAtTop.value = true;
-              hasUserScrolled.value = false;
-            });
-      }
-      return null;
-    }, [postPublishedFlag?.millisecondsSinceEpoch]);
-
-    void onBannerTap() {
-      feedPosts.loadNewPosts();
-
-      scrollController
-          .animateTo(
-            0,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          )
-          .then((_) {
-            isAtTop.value = true;
-            hasUserScrolled.value = false;
-          });
-    }
-
-    void onScrollToBottom() {
-      scrollController
-          .animateTo(
-            0,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          )
-          .then((_) {
-            isAtTop.value = true;
-            hasUserScrolled.value = false;
-          });
-    }
+    // Periodic notification count refresh (every 60s)
+    _usePeriodicNotificationRefresh(ref, userId: userId);
 
     final showOnboarding =
         !hasCompletedOnboarding && !onboardingDismissed.value;
@@ -362,39 +88,27 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     final homeContent = MainDataLoader(
       provider: currentUserAsync,
       useScaffold: false,
-      onRetry: () {
-        ref.invalidate(getCurrentUserProvider);
-      },
+      onRetry: () => ref.invalidate(getCurrentUserProvider),
       builder: (context, user) {
         final profileAsync = ref.watch(getProfileProvider(user.id));
-
-        // Check if profile is loaded (we need it for empty state)
-        final isProfileLoading = profileAsync.isLoading;
-
-        if (isProfileLoading) {
+        if (profileAsync.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // Build home content with current data
-        // Show feed if it has posts OR if it has finished loading (even if empty)
-        // Only show circle actions if we know for sure there are no members (not just if loading)
-        final hasFeedReady = feedPosts.posts.isNotEmpty || (!feedPosts.isLoading && feedPosts.posts.isEmpty);
+        final hasFeedReady = feedPosts.posts.isNotEmpty ||
+            (!feedPosts.isLoading && feedPosts.posts.isEmpty);
         final hasCircleMembers = circleMembersData.allUsers.isNotEmpty;
-        final knowsNoCircleMembers = !circleMembersData.isLoading && circleMembersData.allUsers.isEmpty;
+        final knowsNoCircleMembers =
+            !circleMembersData.isLoading && circleMembersData.allUsers.isEmpty;
 
         return _buildHomeContent(
           context,
-          ref,
           feedPosts,
           userId!,
-          hasFeedReady || hasCircleMembers, // Show feed if ready OR if we have members
+          hasFeedReady || hasCircleMembers,
           circleMembersData.isLoading,
-          knowsNoCircleMembers, // Only show circle actions if we know there are no members
-          scrollController,
-          onBannerTap,
-          onScrollToBottom,
-          isAtTop.value,
-          isAtBottom.value,
+          knowsNoCircleMembers,
+          scrollState,
           isRefreshingFeed,
           topPostDate,
         );
@@ -418,17 +132,12 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
   Widget _buildHomeContent(
     BuildContext context,
-    WidgetRef ref,
     FeedPostsResult feedPosts,
     String currentUserId,
     bool showFeed,
     bool circleMembersLoading,
     bool knowsNoCircleMembers,
-    ScrollController scrollController,
-    VoidCallback onNewPostsBannerTap,
-    VoidCallback onScrollToBottom,
-    bool isAtTop,
-    bool isAtBottom,
+    HomeScrollState scrollState,
     ValueNotifier<bool> isRefreshingFeed,
     ValueNotifier<DateTime?> topPostDate,
   ) {
@@ -442,8 +151,8 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
                 ? _buildFeedContent(
                     feedPosts: feedPosts,
                     currentUserId: currentUserId,
-                    scrollController: scrollController,
-                    onPostTap: (post) => _navigateToPostDetail(context, post),
+                    scrollController: scrollState.scrollController,
+                    onPostTap: (post) => PostDetailPage.show(context, post: post),
                     onRefreshStateChanged: (isRefreshing) {
                       if (isRefreshingFeed.value != isRefreshing) {
                         isRefreshingFeed.value = isRefreshing;
@@ -454,11 +163,12 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
                     },
                   )
                 : _buildCircleActionsContent(
-                    isLoading: circleMembersLoading && !knowsNoCircleMembers,
+                    isLoading:
+                        circleMembersLoading && !knowsNoCircleMembers,
                     currentUserId: currentUserId,
                   ),
 
-            if (!isAtTop)
+            if (!scrollState.isAtTop)
               Positioned(
                 top:
                     (MediaQuery.of(context).size.height -
@@ -466,9 +176,9 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
                         2 -
                     scrollIndicatorSize / 2,
                 right: scrollIndicatorMarginRight,
-                child: HomeScrollIndicator(onTap: onScrollToBottom),
+                child: HomeScrollIndicator(onTap: scrollState.onScrollToBottom),
               ),
-            if (!isAtTop && feedPosts.newPostsCount > 0)
+            if (!scrollState.isAtTop && feedPosts.newPostsCount > 0)
               Positioned(
                 top:
                     (MediaQuery.of(context).size.height -
@@ -478,9 +188,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
                 right: newPostsBannerMarginRight,
                 child: HomeNewPostsBanner(
                   newPostsCount: feedPosts.newPostsCount,
-                  onTap: () {
-                    onNewPostsBannerTap();
-                  },
+                  onTap: scrollState.onBannerTap,
                 ),
               ),
 
@@ -502,15 +210,12 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
               ),
             ),
 
-            // Lockout button - bottom left
-            // Always show when feed view is active (even if empty) - this is the entry point
             if (showFeed)
               Positioned(
                 bottom: bottomMargin + navBarHeight,
                 left: horizontalPadding,
                 child: const HomeLockoutButton(),
               ),
-
           ],
         ),
       ),
@@ -520,14 +225,12 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
   Widget _buildFeedContent({
     required FeedPostsResult feedPosts,
     required String currentUserId,
-    required ScrollController scrollController,
+    required ScrollController? scrollController,
     required void Function(FeedPostModel) onPostTap,
     required void Function(bool) onRefreshStateChanged,
     required void Function(DateTime?) onTopPostDateChanged,
   }) {
-    final showLoading = feedPosts.isLoading && feedPosts.posts.isEmpty;
-
-    if (showLoading) {
+    if (feedPosts.isLoading && feedPosts.posts.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -537,9 +240,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
       isLoading: feedPosts.isLoading,
       isLoadingMore: feedPosts.isLoadingMore,
       hasNextPage: feedPosts.hasNextPage,
-      onLoadMore: () {
-        feedPosts.loadMore();
-      },
+      onLoadMore: feedPosts.loadMore,
       onRefresh: feedPosts.refresh,
       scrollController: scrollController,
       onPostTap: onPostTap,
@@ -555,16 +256,102 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    
+
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: horizontalPadding,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: HomeCircleActionsWidget(userId: currentUserId),
     );
   }
+}
 
-  void _navigateToPostDetail(BuildContext context, FeedPostModel post) {
-    PostDetailPage.show(context, post: post);
-  }
+// ── Private hook-style helpers (called from build, preserve hook order) ──────
+
+void _useFeedCacheLifecycle(WidgetRef ref, {required String? userId}) {
+  useEffect(() {
+    if (userId != null && userId.isNotEmpty) {
+      final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
+
+      Future.microtask(() {
+        if (cacheNotifier.needsFullRebuild) {
+          cacheNotifier.fullCacheRebuild(userId);
+        } else {
+          cacheNotifier.preloadFeed(userId);
+        }
+      });
+
+      final cleanupTimer = Timer.periodic(const Duration(minutes: 30), (_) {
+        cacheNotifier.removeExpiredPosts();
+      });
+
+      return cleanupTimer.cancel;
+    }
+    return null;
+  }, [userId]);
+}
+
+void _usePendingLockoutCheck(WidgetRef ref) {
+  useEffect(() {
+    Future<void> check() async {
+      final storable = ref.read(manualLockoutStorableProvider);
+      final lockoutEnd = await storable.getLockoutEnd();
+      final isLockedOut = await storable.isLockedOut();
+
+      if (lockoutEnd != null && !isLockedOut) {
+        final sessionId = await storable.getLockoutSessionId();
+        router.go(const ManualLockoutRoutable());
+      }
+    }
+    check();
+    return null;
+  }, []);
+}
+
+void _useAppResumeRefresh(WidgetRef ref, {required String? userId}) {
+  final lastActiveTime = useRef<DateTime>(DateTime.now());
+
+  useAppResumeRefresh(
+    onResume: () async {
+      ref.invalidate(getCircleMembersProvider);
+      if (userId != null && userId.isNotEmpty) {
+        ref.invalidate(unreadNotificationCountProvider(userId: userId));
+
+        final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
+        await cacheNotifier.refresh(userId);
+        await cacheNotifier.checkForDeletions(userId);
+
+        final backgroundDuration =
+            DateTime.now().difference(lastActiveTime.value);
+        if (backgroundDuration > const Duration(hours: 3)) {
+          await cacheNotifier.reEnrichCachedPosts();
+        }
+      }
+      lastActiveTime.value = DateTime.now();
+    },
+  );
+}
+
+void _usePeriodicFeedRefresh(WidgetRef ref, {required String? userId}) {
+  useEffect(() {
+    if (userId != null && userId.isNotEmpty) {
+      final timer = Timer.periodic(const Duration(seconds: 60), (_) async {
+        final cacheNotifier = ref.read(feedPostsCacheProvider.notifier);
+        await cacheNotifier.refresh(userId);
+        await cacheNotifier.checkForDeletions(userId);
+      });
+      return timer.cancel;
+    }
+    return null;
+  }, [userId]);
+}
+
+void _usePeriodicNotificationRefresh(WidgetRef ref, {required String? userId}) {
+  useEffect(() {
+    if (userId != null && userId.isNotEmpty) {
+      final timer = Timer.periodic(const Duration(seconds: 60), (_) {
+        ref.invalidate(unreadNotificationCountProvider(userId: userId));
+      });
+      return timer.cancel;
+    }
+    return null;
+  }, [userId]);
 }

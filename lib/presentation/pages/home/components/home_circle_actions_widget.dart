@@ -8,7 +8,7 @@ import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 class HomeCircleActionsWidget extends HookConsumerWidget
-    with MainLayout, HomeLayout, HomeLayout {
+    with MainLayout, HomeLayout {
   const HomeCircleActionsWidget({required this.userId, super.key});
 
   final String userId;

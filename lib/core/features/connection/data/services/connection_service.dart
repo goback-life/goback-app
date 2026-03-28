@@ -266,24 +266,14 @@ class ConnectionService implements ConnectionServiceContract {
   FutureResult<bool> removeConnection(String userId) async {
     try {
       final currentUserId = supabase.auth.currentUser!.id;
-
-      // Order UUIDs to match the friendship_ordered constraint (user_a_id < user_b_id)
-      final String userA;
-      final String userB;
-      if (currentUserId.compareTo(userId) < 0) {
-        userA = currentUserId;
-        userB = userId;
-      } else {
-        userA = userId;
-        userB = currentUserId;
-      }
+      final orderedIds = _orderUserIds(currentUserId, userId);
 
       // Direct DELETE - RLS policy allows users to delete their own friendships
       await supabase
           .from('friendships')
           .delete()
-          .eq('user_a_id', userA)
-          .eq('user_b_id', userB);
+          .eq('user_a_id', orderedIds.$1)
+          .eq('user_b_id', orderedIds.$2);
 
       return Result.success(true);
     } on PostgrestException catch (e) {

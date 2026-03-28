@@ -11,6 +11,7 @@ import 'package:cloudless/presentation/components/form_field/input_decoration.da
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/main_search_bar.dart';
+import 'package:cloudless/presentation/pages/invite_to_circle/components/account_status_dot.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/components/invite_to_circle_contact_list.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/hooks/use_sms_launch.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/invite_to_circle_layout.dart';
@@ -78,14 +79,11 @@ class InviteToCircleView extends HookConsumerWidget
     // Create filtered contacts based on search query
     final filteredContactsData = useMemoized(() {
       final originalData = contactsData.value;
-      if (originalData == null) {
-        return null;
-      }
+      if (originalData == null) return null;
 
-      // If no search query, return original data but with working updateSearchQuery
-      if (searchQuery.value.isEmpty) {
+      PhoneContactData withContacts(Map<String, List<ContactModel>> contacts) {
         return PhoneContactData(
-          groupedContacts: originalData.groupedContacts,
+          groupedContacts: contacts,
           searchQuery: searchQuery.value,
           updateSearchQuery: (query) => searchQuery.value = query,
           isLoading: originalData.isLoading,
@@ -95,30 +93,22 @@ class InviteToCircleView extends HookConsumerWidget
         );
       }
 
-      // Filter contacts based on search query
-      final filteredGroups = <String, List<ContactModel>>{};
-      final query = searchQuery.value.toLowerCase();
+      if (searchQuery.value.isEmpty) {
+        return withContacts(originalData.groupedContacts);
+      }
 
+      final query = searchQuery.value.toLowerCase();
+      final filteredGroups = <String, List<ContactModel>>{};
       for (final entry in originalData.groupedContacts.entries) {
         final filteredContacts = entry.value.where((contact) {
           return contact.displayName.toLowerCase().contains(query) ||
               contact.phoneNumbers.any((phone) => phone.contains(query));
         }).toList();
-
         if (filteredContacts.isNotEmpty) {
           filteredGroups[entry.key] = filteredContacts;
         }
       }
-
-      return PhoneContactData(
-        groupedContacts: filteredGroups,
-        searchQuery: searchQuery.value,
-        updateSearchQuery: (query) => searchQuery.value = query,
-        isLoading: originalData.isLoading,
-        hasPermission: originalData.hasPermission,
-        isEmpty: originalData.isEmpty,
-        error: originalData.error,
-      );
+      return withContacts(filteredGroups);
     }, [contactsData.value, searchQuery.value]);
 
     useEffect(() {
@@ -344,16 +334,7 @@ class InviteToCircleView extends HookConsumerWidget
                   SizedBox(height: 4),
                   Row(
                     children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: typedPhoneHasAccount
-                              ? MainColors.accent
-                              : MainColors.white.withValues(alpha: 0.5),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
+                      AccountStatusDot(hasAccount: typedPhoneHasAccount),
                       SizedBox(width: 6),
                       Text(
                         translator.translate(

@@ -127,16 +127,4 @@ class NotificationService implements NotificationServiceContract {
       rethrow;
     }
   }
-
-  /// Helper method to parse JSONB arrays from PostgreSQL RPC response.
-  List<String> _parseJsonbArray(dynamic value) {
-    if (value == null) return [];
-    if (value is List) {
-      return value
-          .map((e) => e?.toString() ?? '')
-          .where((s) => s.isNotEmpty)
-          .toList();
-    }
-    return [];
-  }
 }

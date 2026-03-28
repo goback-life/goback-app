@@ -45,8 +45,11 @@ struct LockoutLiveActivityLiveActivity: Widget {
                     )
                 }
             } compactLeading: {
-                Text("gb")
-                    .font(.system(size: 14, weight: .bold))
+                Image("GobackLogo")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundColor(.white)
             } compactTrailing: {
                 CountdownText(
                     appGroupId: context.state.appGroupId,
@@ -66,6 +69,8 @@ struct LockoutLiveActivityLiveActivity: Widget {
 
 // MARK: - Lock Screen Banner
 
+private let accentBlue = Color(red: 89/255, green: 142/255, blue: 181/255)
+
 private struct LockScreenBanner: View {
     let appGroupId: String
     let context: ActivityViewContext<LiveActivitiesAppAttributes>
@@ -78,30 +83,26 @@ private struct LockScreenBanner: View {
 
     var body: some View {
         HStack {
-            Text("goback.")
-                .font(.system(size: 20, weight: .bold))
-            Spacer()
-            if endDate > Date.now {
-                Text(timerInterval: Date.now...endDate, countsDown: true)
-                    .font(.system(size: 20, weight: .medium, design: .monospaced))
-                    .multilineTextAlignment(.trailing)
-            } else {
-                Text("0:00")
-                    .font(.system(size: 20, weight: .medium, design: .monospaced))
-            }
-        }
-        .padding()
-        .foregroundColor(.white)
-        .background(
             Image("GobackLogo")
-                .renderingMode(.template)
+                .renderingMode(.original)
                 .resizable()
                 .scaledToFit()
                 .frame(height: 40)
-                .foregroundColor(.white)
-                .opacity(0.15)
-        )
-        .activityBackgroundTint(.black)
+            Spacer()
+            if endDate > Date.now {
+                Text(timerInterval: Date.now...endDate, countsDown: true)
+                    .font(.system(size: 22, weight: .medium, design: .monospaced))
+                    .multilineTextAlignment(.trailing)
+            } else {
+                Text("0:00")
+                    .font(.system(size: 22, weight: .medium, design: .monospaced))
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 24)
+        .foregroundColor(accentBlue)
+        .activityBackgroundTint(.white.opacity(1))
+        .activitySystemActionForegroundColor(accentBlue)
     }
 }
 
@@ -118,19 +119,18 @@ private struct ExpandedContent: View {
     }
 
     var body: some View {
-        VStack(spacing: 4) {
+        HStack {
             Image("GobackLogo")
                 .renderingMode(.template)
                 .resizable()
                 .scaledToFit()
-                .frame(height: 20)
+                .frame(height: 28)
                 .foregroundColor(.white)
-            Text("goback.")
-                .font(.system(size: 16, weight: .bold))
+            Spacer()
             if endDate > Date.now {
                 Text(timerInterval: Date.now...endDate, countsDown: true)
                     .font(.system(size: 24, weight: .medium, design: .monospaced))
-                    .multilineTextAlignment(.center)
+                    .multilineTextAlignment(.trailing)
             } else {
                 Text("0:00")
                     .font(.system(size: 24, weight: .medium, design: .monospaced))

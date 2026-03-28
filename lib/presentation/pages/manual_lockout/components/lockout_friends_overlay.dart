@@ -1,11 +1,11 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
-import 'dart:ui' as ui;
-
+import 'package:cloudless/presentation/pages/manual_lockout/components/lockout_lifecycle_observer.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -57,7 +57,7 @@ class LockoutFriendsOverlay extends HookConsumerWidget {
 
     // Refresh on app resume
     useEffect(() {
-      final observer = _LifecycleObserver((state) {
+      final observer = LockoutLifecycleObserver((state) {
         if (state == AppLifecycleState.resumed) {
           cacheNotifier.refresh();
         }
@@ -297,13 +297,3 @@ class _FriendOverlayItem extends StatelessWidget {
   }
 }
 
-class _LifecycleObserver extends WidgetsBindingObserver {
-  _LifecycleObserver(this.onStateChange);
-
-  final void Function(AppLifecycleState) onStateChange;
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    onStateChange(state);
-  }
-}

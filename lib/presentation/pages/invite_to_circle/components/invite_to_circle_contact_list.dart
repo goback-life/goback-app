@@ -97,40 +97,37 @@ class InviteToCircleContactList extends HookConsumerWidget
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12.0),
-                          border: Border.all(
-                            color: colorScheme.surfaceContainerHighest,
-                          ),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12.0),
+                        border: Border.all(
+                          color: colorScheme.surfaceContainerHighest,
                         ),
-                        child: Column(
-                          children: [
-                            for (int i = 0; i < contacts.length; i++) ...[
-                              InviteToCircleContactItem(
-                                contact: contacts[i],
-                                onTap: () => onContactTap(contacts[i]),
-                                hasAccount: contacts[i].primaryPhoneNumber != null
-                                    ? phoneAccountMap[PhoneNumberNormalizer.normalize(
-                                        contacts[i].primaryPhoneNumber!,
-                                      )] ?? false
-                                    : false,
+                      ),
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < contacts.length; i++) ...[
+                            InviteToCircleContactItem(
+                              contact: contacts[i],
+                              onTap: () => onContactTap(contacts[i]),
+                              hasAccount: contacts[i].primaryPhoneNumber != null
+                                  ? phoneAccountMap[PhoneNumberNormalizer.normalize(
+                                      contacts[i].primaryPhoneNumber!,
+                                    )] ?? false
+                                  : false,
+                            ),
+                            if (i < contacts.length - 1)
+                              Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: colorScheme.surfaceContainerHighest,
+                                indent:
+                                    horizontalPadding +
+                                    40.0 +
+                                    horizontalPadding,
                               ),
-                              if (i < contacts.length - 1)
-                                Divider(
-                                  height: 1,
-                                  thickness: 1,
-                                  color: colorScheme.surfaceContainerHighest,
-                                  indent:
-                                      horizontalPadding +
-                                      40.0 +
-                                      horizontalPadding,
-                                ),
-                            ],
                           ],
-                        ),
+                        ],
                       ),
                     ),
                   ],

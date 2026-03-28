@@ -24,18 +24,6 @@ mixin SupabaseResultProcessor implements SupabaseResultProcessorContract {
     'cooldown',
   };
 
-  /// Executes a Supabase request with unified error handling and response mapping.
-  ///
-  /// Type parameters:
-  /// - [R]: Raw response type from Supabase
-  /// - [T]: Target mapped type
-  ///
-  /// Parameters:
-  /// - [request]: Function that executes the Supabase call
-  /// - [responseMapper]: Transforms successful response [R] to target type [T]
-  /// - [exceptionMapper]: Maps Supabase exceptions to domain exceptions
-  /// - [onBefore]: Optional pre-request callback
-  /// - [onAfter]: Optional post-request callback (always executed)
   @override
   FutureResult<T> processSupabaseResult<R, T>({
     required FutureResult<R> Function() request,
@@ -48,54 +36,36 @@ mixin SupabaseResultProcessor implements SupabaseResultProcessorContract {
 
     try {
       final result = await request();
-      return await _processResult(result, responseMapper, exceptionMapper);
+      return switch (result) {
+        Success(value: final data) => await _mapSuccess(data, responseMapper),
+        Failure(error: final error) => _mapFailure<T>(error, exceptionMapper),
+      };
     } catch (exception) {
-      return Failure(_handleUnexpectedException(exception));
+      return Failure(_wrapUnexpected(exception));
     } finally {
       onAfter?.call();
     }
   }
 
-  /// Processes the result from the Supabase request
-  Future<Result<T>> _processResult<R, T>(
-    Result<R> result,
-    Future<T> Function(R) responseMapper,
-    Exception Function(Exception) exceptionMapper,
-  ) async {
-    return switch (result) {
-      Success(value: final data) => await _mapSuccessfulResponse(
-        data,
-        responseMapper,
-      ),
-      Failure(error: final error) => _mapFailedResponse<T>(
-        error,
-        exceptionMapper,
-      ),
-    };
-  }
-
-  /// Maps a successful response to the target type
-  Future<Result<T>> _mapSuccessfulResponse<R, T>(
+  Future<Result<T>> _mapSuccess<R, T>(
     R data,
     Future<T> Function(R) mapper,
   ) async {
     try {
-      final mappedData = await mapper(data);
-      return Success(mappedData);
+      return Success(await mapper(data));
     } catch (exception) {
-      return Failure(_handleUnexpectedException(exception));
+      return Failure(_wrapUnexpected(exception));
     }
   }
 
-  /// Maps a failed response using the appropriate exception handler
-  Result<T> _mapFailedResponse<T>(
+  Result<T> _mapFailure<T>(
     Object error,
     Exception Function(Exception) exceptionMapper,
   ) {
-    // Check for wrapped network errors first (e.g., AuthRetryableFetchException
-    // that contains SocketException or host lookup failures)
+    // Detect wrapped network errors (e.g. AuthRetryableFetchException
+    // containing SocketException or host lookup failures)
     if (error is Exception) {
-      final message = _extractExceptionMessage(error);
+      final message = _extractMessage(error);
       if (message.contains('SocketException') ||
           message.toLowerCase().contains('failed host lookup')) {
         return const Failure(NetworkConnectionException());
@@ -103,16 +73,16 @@ mixin SupabaseResultProcessor implements SupabaseResultProcessorContract {
     }
 
     return switch (error) {
-      // Critical auth errors
-      AuthException(statusCode: '401') => Failure(_mapCriticalAuthError(error)),
-      AuthException(statusCode: '403') => Failure(_mapCriticalAuthError(error)),
-
-      // Rate limiting - handled centrally
+      AuthException(statusCode: '401') => Failure(
+        AuthSessionExpiredException(error.statusCode),
+      ),
+      AuthException(statusCode: '403') => Failure(
+        AuthAccessDeniedException(error.statusCode),
+      ),
       AuthException(statusCode: '429') => const Failure(
         TooManyRequestsException('Too many authentication requests'),
       ),
 
-      // JWT/Session errors (common across all features)
       PostgrestException(code: 'PGRST301') => const Failure(
         AuthSessionExpiredException('PGRST301'),
       ),
@@ -120,110 +90,31 @@ mixin SupabaseResultProcessor implements SupabaseResultProcessorContract {
         AuthAuthenticationRequiredException('PGRST302'),
       ),
 
-      // Network and connectivity exceptions
       SocketException() => const Failure(NetworkConnectionException()),
-
       TimeoutException() => const Failure(RequestTimeoutException()),
 
-      // Supabase-specific exceptions - delegate to feature mappers
-      AuthApiException() => _handleSupabaseException<T>(
-        error as Exception,
-        exceptionMapper,
-      ),
-      PostgrestException() => _handleSupabaseException<T>(
-        error as Exception,
-        exceptionMapper,
-      ),
-      AuthException() => _handleSupabaseException<T>(
-        error as Exception,
-        exceptionMapper,
-      ),
-      StorageException() => _handleSupabaseException<T>(
-        error as Exception,
-        exceptionMapper,
-      ),
+      // Supabase-specific exceptions: check rate limits then delegate
+      AuthApiException() ||
+      PostgrestException() ||
+      AuthException() ||
+      StorageException() =>
+        _handleSupabaseException<T>(error as Exception, exceptionMapper),
 
-      // Other known exceptions
       Exception() => Failure(error),
-
-      // Unknown error types
       _ => Failure(UnhandledException('Unknown error occurred', cause: error)),
     };
   }
 
-  /// Maps critical auth errors that are common across all features
-  Exception _mapCriticalAuthError(Object error) {
-    if (error is AuthException) {
-      switch (error.statusCode) {
-        case '401':
-          return AuthSessionExpiredException(error.statusCode);
-        case '403':
-          return AuthAccessDeniedException(error.statusCode);
-        default:
-          return UnhandledException(
-            'Auth error: ${error.message}',
-            code: error.statusCode,
-            cause: error,
-          );
-      }
-    }
-
-    return UnhandledException('Authentication failed', cause: error);
-  }
-
-  /// Checks if the exception is related to rate limiting
-  bool _isRateLimitingException(Exception exception) {
-    // Check AuthException and AuthApiException status code first
-    if (exception is AuthException) {
-      return exception.statusCode == '429';
-    }
-
-    if (exception is AuthApiException) {
-      // AuthApiException doesn't have statusCode, so check message
-      final message = exception.message.toLowerCase();
-      return _rateLimitPatterns.any((pattern) => message.contains(pattern));
-    }
-
-    // For other exceptions, check message patterns
-    final message = _extractExceptionMessage(exception).toLowerCase();
-    return _rateLimitPatterns.any((pattern) => message.contains(pattern));
-  }
-
-  /// Handles Supabase-specific exceptions with rate limit detection
   Result<T> _handleSupabaseException<T>(
     Exception exception,
     Exception Function(Exception) exceptionMapper,
   ) {
-    // Check for rate limiting patterns first
     if (_isRateLimitingException(exception)) {
-      final message = _extractExceptionMessage(exception);
-      return Failure(TooManyRequestsException(message));
+      return Failure(TooManyRequestsException(_extractMessage(exception)));
     }
-
-    // Delegate to feature-specific mapper
-    return _mapExceptionSafely<T>(exception, exceptionMapper);
-  }
-
-  /// Extracts the message from various Supabase exception types
-  String _extractExceptionMessage(Exception exception) {
-    return switch (exception) {
-      AuthApiException(message: final message) => message,
-      AuthException(message: final message) => message,
-      PostgrestException(message: final message) => message,
-      StorageException(message: final message) => message,
-      _ => exception.toString(),
-    };
-  }
-
-  /// Safely maps an exception using the provided mapper
-  Result<T> _mapExceptionSafely<T>(
-    Exception exception,
-    Exception Function(Exception) exceptionMapper,
-  ) {
     try {
-      final mappedException = exceptionMapper(exception);
-      return Failure(mappedException);
-    } catch (mappingException) {
+      return Failure(exceptionMapper(exception));
+    } catch (_) {
       return Failure(
         UnhandledException(
           'Error occurred during exception mapping',
@@ -233,8 +124,27 @@ mixin SupabaseResultProcessor implements SupabaseResultProcessorContract {
     }
   }
 
-  /// Handles unexpected exceptions that occur during processing
-  Exception _handleUnexpectedException(Object exception) {
+  bool _isRateLimitingException(Exception exception) {
+    // AuthException (non-API) has statusCode
+    if (exception is AuthException && exception is! AuthApiException) {
+      return exception.statusCode == '429';
+    }
+    // AuthApiException and others: check message patterns
+    final message = _extractMessage(exception).toLowerCase();
+    return _rateLimitPatterns.any(message.contains);
+  }
+
+  String _extractMessage(Exception exception) {
+    return switch (exception) {
+      AuthApiException(message: final m) => m,
+      AuthException(message: final m) => m,
+      PostgrestException(message: final m) => m,
+      StorageException(message: final m) => m,
+      _ => exception.toString(),
+    };
+  }
+
+  Exception _wrapUnexpected(Object exception) {
     return exception is Exception
         ? exception
         : UnhandledException('Unexpected error occurred', cause: exception);

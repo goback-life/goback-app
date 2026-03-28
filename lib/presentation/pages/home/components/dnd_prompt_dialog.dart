@@ -7,9 +7,13 @@ class DndPromptDialog extends HookWidget {
   const DndPromptDialog({super.key});
 
   static Future<void> showIfNeeded(BuildContext context) async {
-    final dismissed = await DndPromptDismissedStorable()
-        .get(defaultValue: false);
-    if (dismissed || !context.mounted) return;
+    try {
+      final dismissed = await DndPromptDismissedStorable()
+          .get(defaultValue: false);
+      if (dismissed || !context.mounted) return;
+    } catch (_) {
+      if (!context.mounted) return;
+    }
 
     await showDialog<void>(
       context: context,

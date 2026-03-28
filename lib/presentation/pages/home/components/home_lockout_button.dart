@@ -22,28 +22,27 @@ class HomeLockoutButton extends HookConsumerWidget
 
     return GestureDetector(
       onTap: () async {
-        // Pre-fetch friends locked out while user selects duration
-        // This ensures data is cached by the time lockout screen loads
         ref.read(friendsLockedOutCacheProvider.notifier).ensureFresh();
 
-        // Show time selection dialog
         final result = await ManualLockoutDialog.show(context);
         if (result == null || !context.mounted) {
           return;
         }
 
-        await DndPromptDialog.showIfNeeded(context);
+        try {
+          await DndPromptDialog.showIfNeeded(context);
+        } catch (_) {
+          // DnD prompt is non-critical; proceed with lockout
+        }
         if (!context.mounted) return;
 
         try {
-          // Set lockout (post will be created after lockout ends)
           final lockoutNotifier = ref.read(manualLockoutNotifierProvider.notifier);
           await lockoutNotifier.setLockout(
             result.duration,
             actionText: result.actionText,
           );
 
-          // Navigate to lockout screen
           if (context.mounted) {
             router.go(const ManualLockoutRoutable());
           }

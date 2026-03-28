@@ -5,6 +5,7 @@ import 'package:cloudless/core/features/lockout/domain/models/lockout_session_mo
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
+import 'package:cloudless/presentation/pages/manual_lockout/components/lockout_lifecycle_observer.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
@@ -41,7 +42,7 @@ class FriendsLockedOutView extends HookConsumerWidget {
 
     // Refresh on app resume.
     useEffect(() {
-      final observer = _LifecycleObserver((state) {
+      final observer = LockoutLifecycleObserver((state) {
         if (state == AppLifecycleState.resumed) {
           cacheNotifier.refresh();
         }
@@ -271,13 +272,3 @@ class _FriendItem extends HookConsumerWidget with MainLayout {
   }
 }
 
-class _LifecycleObserver extends WidgetsBindingObserver {
-  _LifecycleObserver(this.onStateChange);
-
-  final void Function(AppLifecycleState) onStateChange;
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    onStateChange(state);
-  }
-}

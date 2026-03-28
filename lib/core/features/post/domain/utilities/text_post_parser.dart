@@ -120,4 +120,3 @@ class TextPostParser {
     return text.replaceFirst(originalUrl, markdownLink);
   }
 }
-

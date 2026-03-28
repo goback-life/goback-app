@@ -32,38 +32,6 @@ sealed class AggregatedNotificationDto with _$AggregatedNotificationDto {
     @JsonKey(name: 'post_content_type') String? postContentType,
   }) = _AggregatedNotificationDto;
 
-  /// Creates DTO from RPC response JSON, handling JSONB array conversions
-  factory AggregatedNotificationDto.fromRpcJson(Map<String, dynamic> json) {
-    // Convert JSONB arrays (List<dynamic>) to List<String>
-    List<String> parseJsonbArray(dynamic value) {
-      if (value == null) return [];
-      if (value is List) {
-        return value.map((e) => e?.toString() ?? '').where((s) => s.isNotEmpty).toList();
-      }
-      return [];
-    }
-
-    final actorIds = parseJsonbArray(json['actor_ids']);
-    final actorUsernames = parseJsonbArray(json['actor_usernames']);
-    final actorAvatarUrls = json['actor_avatar_urls'] != null
-        ? parseJsonbArray(json['actor_avatar_urls'])
-        : null;
-
-    return AggregatedNotificationDto(
-      notificationType: json['notification_type'] as String,
-      referenceId: json['reference_id'] as String?,
-      latestActorId: json['latest_actor_id'] as String?,
-      actorIds: actorIds,
-      actorUsernames: actorUsernames,
-      actorAvatarUrls: actorAvatarUrls,
-      actorCount: json['actor_count'] as int? ?? actorIds.length,
-      updatedAt: json['updated_at'] as String,
-      isRead: json['is_read'] as bool? ?? false,
-      postThumbnailUrl: json['post_thumbnail_url'] as String?,
-      postContentType: json['post_content_type'] as String?,
-    );
-  }
-
   factory AggregatedNotificationDto.fromJson(Map<String, dynamic> json) =>
       _$AggregatedNotificationDtoFromJson(json);
 }

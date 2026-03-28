@@ -24,4 +24,3 @@ class LinkPreviewModel {
   final String? imageUrl;
   final String? siteName;
 }
-

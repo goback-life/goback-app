@@ -3,6 +3,7 @@ import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/presentation/components/main_member/main_member_item.dart';
 import 'package:cloudless/presentation/components/text/linkable_text.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/markdown_link_formatter.dart';
+import 'package:cloudless/presentation/pages/content_editor/components/mention_helpers.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/dedecube_presentation.dart';
@@ -34,69 +35,18 @@ class ContentEditorTextPost extends HookWidget {
     final mentionQuery = useState<String?>(null);
     final mentionStartIndex = useState<int?>(null);
 
-    // Detect @ mentions in text
-    void detectMentions(String text, int cursorPosition) {
-      // Find the last @ before cursor
-      final textBeforeCursor = text.substring(0, cursorPosition);
-      final lastAtIndex = textBeforeCursor.lastIndexOf('@');
-      
-      if (lastAtIndex == -1) {
-        mentionQuery.value = null;
-        mentionStartIndex.value = null;
-        return;
-      }
+    final filteredUsers = useMemoized(
+      () => filterMentionUsers(mentionQuery.value, allUsers),
+      [mentionQuery.value, allUsers],
+    );
 
-      // Check if there's a space after @ (meaning mention is complete)
-      final textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-      if (textAfterAt.contains(' ')) {
-        mentionQuery.value = null;
-        mentionStartIndex.value = null;
-        return;
-      }
-
-      mentionStartIndex.value = lastAtIndex;
-      mentionQuery.value = textAfterAt.toLowerCase();
-    }
-
-    // Filter users based on mention query
-    final filteredUsers = useMemoized(() {
-      if (mentionQuery.value == null) {
-        return <ProfileModel>[];
-      }
-
-      final query = mentionQuery.value!;
-      if (query.isEmpty) {
-        return allUsers.take(10).toList();
-      }
-
-      return allUsers
-          .where((user) =>
-              user.username.toLowerCase().startsWith(query))
-          .take(10)
-          .toList();
-    }, [mentionQuery.value, allUsers]);
-
-    // Insert username at mention position
-    void insertMention(ProfileModel user) {
+    void onMentionSelected(ProfileModel user) {
       if (mentionStartIndex.value == null) return;
-
-      final text = controller.text;
-      final start = mentionStartIndex.value!;
-      final cursorPos = controller.selection.baseOffset;
-      
-      // Find where the mention ends (cursor position or next space)
-      final textAfterAt = text.substring(start + 1, cursorPos);
-      final end = start + 1 + textAfterAt.length;
-
-      // Replace @query with @username
-      final newText = text.replaceRange(start, end, '@${user.username} ');
-      controller.value = TextEditingValue(
-        text: newText,
-        selection: TextSelection.collapsed(
-          offset: start + user.username.length + 2, // +2 for @ and space
-        ),
+      final newText = insertMention(
+        controller: controller,
+        user: user,
+        mentionStartIndex: mentionStartIndex.value!,
       );
-
       mentionQuery.value = null;
       mentionStartIndex.value = null;
       onChanged(newText);
@@ -104,8 +54,7 @@ class ContentEditorTextPost extends HookWidget {
 
     useEffect(() {
       void listener() {
-        final newLength = controller.text.length;
-        currentChars.value = newLength;
+        currentChars.value = controller.text.length;
         onChanged(controller.text);
       }
 
@@ -213,11 +162,15 @@ class ContentEditorTextPost extends HookWidget {
                             );
                             return;
                           }
-                          // Check mentions after text changes (use post-frame to get updated selection)
                           if (focusNode.hasFocus) {
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               if (focusNode.hasFocus) {
-                                detectMentions(controller.text, controller.selection.baseOffset);
+                                final result = detectMention(
+                                  controller.text,
+                                  controller.selection.baseOffset,
+                                );
+                                mentionQuery.value = result.query;
+                                mentionStartIndex.value = result.startIndex;
                               }
                             });
                           }
@@ -250,7 +203,7 @@ class ContentEditorTextPost extends HookWidget {
                           return MainMemberItem(
                             member: user,
                             action: MemberItemAction.none,
-                            onTap: () => insertMention(user),
+                            onTap: () => onMentionSelected(user),
                           );
                         },
                       ),

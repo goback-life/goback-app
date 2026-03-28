@@ -1,14 +1,16 @@
 import 'package:cloudless/core/features/calendar/data/dtos/calendar_post_dto.dart';
 import 'package:cloudless/core/features/calendar/domain/models/calendar_post_model.dart';
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
+import 'package:cloudless/core/mappers/dto_to_model_mapper_contract.dart';
 
-class CalendarPostDtoToModelMapper {
+class CalendarPostDtoToModelMapper
+    extends DtoToModelMapperContract<CalendarPostDto, CalendarPostModel> {
+  @override
   CalendarPostModel mapDto(CalendarPostDto dto) {
     final taggedUsernames =
         dto.taggedUsernames?.split(',').map((e) => e.trim()).toList() ?? [];
     final taggedUserIds =
         dto.taggedUserIds?.split(',').map((e) => e.trim()).toList() ?? [];
-    final excludedUserIds = dto.excludedUserIds ?? [];
 
     final contentType = ContentType.values.firstWhere(
       (e) => e.name.toLowerCase() == dto.contentType.toLowerCase(),
@@ -30,7 +32,7 @@ class CalendarPostDtoToModelMapper {
       updatedAt: DateTime.tryParse(dto.updatedAt) ?? DateTime.now(),
       taggedUsernames: taggedUsernames,
       taggedUserIds: taggedUserIds,
-      excludedUserIds: excludedUserIds,
+      excludedUserIds: dto.excludedUserIds ?? [],
       isAuthorConnected: dto.isAuthorConnected,
       isOwnPost: dto.isOwnPost,
       publishedAt: DateTime.tryParse(dto.publishedAt) ?? DateTime.now(),
@@ -40,9 +42,5 @@ class CalendarPostDtoToModelMapper {
           ? DateTime.tryParse(dto.calendarSavedAt!)
           : null,
     );
-  }
-
-  List<CalendarPostModel> mapDtoList(List<CalendarPostDto> dtos) {
-    return dtos.map(mapDto).toList();
   }
 }

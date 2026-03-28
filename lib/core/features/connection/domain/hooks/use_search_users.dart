@@ -1,9 +1,5 @@
-import 'package:cloudless/core/features/connection/domain/models/connection_request_model.dart';
 import 'package:cloudless/core/features/connection/domain/providers/search_users_provider.dart';
-import 'package:cloudless/core/models/profile_model.dart';
 import 'package:dedecube_core/dedecube_core.dart';
-
-typedef SearchUserResult = (ProfileModel, ConnectionStatus);
 
 class SearchUsersData {
   const SearchUsersData({

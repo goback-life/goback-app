@@ -12,6 +12,3 @@ Future<Result<Set<String>>> checkPhoneNumbers(
   final service = ref.watch(phoneCheckServiceProvider);
   return service.checkPhoneNumbersExist(phoneNumbers);
 }
-
-
-

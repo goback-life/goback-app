@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:cloudless/core/features/post/data/dtos/feed_post_dto.dart';
 import 'package:cloudless/core/features/post/data/dtos/feed_response_dto.dart';
 import 'package:cloudless/core/features/post/data/services/post_enrichment_service.dart';
@@ -27,22 +25,15 @@ class PostQueryService {
     int pageSize = 15,
     DateTime? cursor,
   }) async {
-    late dynamic feedResponse;
+    final params = <String, dynamic>{
+      'p_page_size': pageSize,
+    };
 
-    try {
-      final params = <String, dynamic>{
-        'p_page_size': pageSize,
-      };
-
-      if (cursor != null) {
-        params['p_cursor'] = cursor.toIso8601String();
-      }
-
-      feedResponse = await supabaseClient.rpc('get_user_feed', params: params);
-    } catch (e) {
-      rethrow;
+    if (cursor != null) {
+      params['p_cursor'] = cursor.toIso8601String();
     }
 
+    final feedResponse = await supabaseClient.rpc('get_user_feed', params: params);
     final feedList = feedResponse as List;
     final postDataList = feedList
         .map((json) => json as Map<String, dynamic>)

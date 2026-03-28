@@ -1,8 +1,8 @@
 import 'package:cloudless/presentation/components/profile_image/profile_image.dart';
+import 'package:cloudless/presentation/pages/invite_to_circle/components/account_status_dot.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/invite_to_circle_layout.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/models/contact_model.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
-import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:flutter/material.dart';
 
 class InviteToCircleContactItem extends StatelessWidget
@@ -46,16 +46,7 @@ class InviteToCircleContactItem extends StatelessWidget
                 children: [
                   Row(
                     children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: hasAccount
-                              ? MainColors.accent
-                              : MainColors.white.withValues(alpha: 0.5),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
+                      AccountStatusDot(hasAccount: hasAccount),
                       SizedBox(width: 6),
                       Expanded(
                         child: Text(

@@ -21,7 +21,6 @@ class FeedPostsCache extends _$FeedPostsCache {
   static const _deletionCheckBatchSize = 50;
   String? _currentUserId;
   bool _isBackgroundLoading = false;
-  DateTime? _lastEnrichedAt;
   DateTime? _lastFullValidation;
   int _deletionCheckOffset = 0;
 
@@ -112,27 +111,49 @@ class FeedPostsCache extends _$FeedPostsCache {
     _loadNextBatch(userId);
   }
 
+  /// Deduplicates response posts against cache, appends them, and enforces
+  /// the max cache size. Returns the deduplicated new posts (empty if none).
+  List<FeedPostModel> _appendAndTruncate(
+    List<FeedPostModel> responsePosts,
+    bool hasNextPage,
+  ) {
+    final existingIds = state.posts.map((p) => p.id).toSet();
+    final newPosts =
+        responsePosts.where((p) => !existingIds.contains(p.id)).toList();
+    if (newPosts.isEmpty) {
+      state = state.copyWith(hasNextPage: false, fullyLoaded: true);
+      return [];
+    }
+
+    var allPosts = [...state.posts, ...newPosts];
+    final reachedLimit = allPosts.length >= _maxCachedPosts;
+    if (reachedLimit) {
+      allPosts = allPosts.take(_maxCachedPosts).toList();
+    }
+
+    state = state.copyWith(
+      posts: allPosts,
+      oldestPostTimestamp: allPosts.last.createdAt,
+      hasNextPage: hasNextPage && !reachedLimit,
+      fullyLoaded: !hasNextPage || reachedLimit,
+    );
+    return newPosts;
+  }
+
   /// Loads the next batch of posts in background.
   Future<void> _loadNextBatch(String userId) async {
     if (!_isBackgroundLoading) return;
-    if (state.fullyLoaded) {
-      _isBackgroundLoading = false;
-      state = state.copyWith(isPreloading: false);
-      return;
-    }
-    if (state.posts.length >= _maxCachedPosts) {
+    if (state.fullyLoaded || state.posts.length >= _maxCachedPosts) {
       _isBackgroundLoading = false;
       state = state.copyWith(isPreloading: false, fullyLoaded: true);
       return;
     }
 
-    final cursor = state.oldestPostTimestamp;
-
     final result = await ref.read(
       getFeedPostsProvider(
         userId: userId,
         pageSize: _backgroundBatchSize,
-        cursor: cursor,
+        cursor: state.oldestPostTimestamp,
       ).future,
     );
 
@@ -148,42 +169,17 @@ class FeedPostsCache extends _$FeedPostsCache {
           return;
         }
 
-        // Filter duplicates
-        final existingIds = state.posts.map((p) => p.id).toSet();
-        final newPosts = response.posts
-            .where((p) => !existingIds.contains(p.id))
-            .toList();
-
+        final newPosts = _appendAndTruncate(response.posts, response.hasNextPage);
         if (newPosts.isEmpty) {
           _isBackgroundLoading = false;
-          state = state.copyWith(
-            isPreloading: false,
-            hasNextPage: false,
-            fullyLoaded: true,
-          );
+          state = state.copyWith(isPreloading: false);
           return;
         }
 
-        // Append new posts and update state (progressive UI update)
-        var allPosts = [...state.posts, ...newPosts];
+        final continueLoading = state.hasNextPage && !state.fullyLoaded;
+        state = state.copyWith(isPreloading: continueLoading);
 
-        // Enforce max cache size
-        final reachedLimit = allPosts.length >= _maxCachedPosts;
-        if (reachedLimit) {
-          allPosts = allPosts.take(_maxCachedPosts).toList();
-        }
-
-        state = state.copyWith(
-          posts: allPosts,
-          oldestPostTimestamp: allPosts.last.createdAt,
-          hasNextPage: response.hasNextPage && !reachedLimit,
-          fullyLoaded: !response.hasNextPage || reachedLimit,
-          isPreloading: response.hasNextPage && !reachedLimit,
-        );
-
-        // Continue loading if more available
-        if (response.hasNextPage && !reachedLimit) {
-          // Small delay to avoid overwhelming the server
+        if (continueLoading) {
           Future.delayed(const Duration(milliseconds: 100), () {
             _loadNextBatch(userId);
           });
@@ -198,19 +194,17 @@ class FeedPostsCache extends _$FeedPostsCache {
     );
   }
 
-  /// Loads more posts immediately (called when user scrolls faster than background loading).
-  /// Returns true if more posts were loaded.
+  /// Loads more posts immediately (called when user scrolls near end).
   Future<bool> loadMorePostsNow(String userId, {int count = 30}) async {
-    if (state.fullyLoaded) return false;
-    if (state.posts.length >= _maxCachedPosts) return false;
-
-    final cursor = state.oldestPostTimestamp;
+    if (state.fullyLoaded || state.posts.length >= _maxCachedPosts) {
+      return false;
+    }
 
     final result = await ref.read(
       getFeedPostsProvider(
         userId: userId,
         pageSize: count,
-        cursor: cursor,
+        cursor: state.oldestPostTimestamp,
       ).future,
     );
 
@@ -220,32 +214,7 @@ class FeedPostsCache extends _$FeedPostsCache {
           state = state.copyWith(hasNextPage: false, fullyLoaded: true);
           return false;
         }
-
-        // Filter duplicates
-        final existingIds = state.posts.map((p) => p.id).toSet();
-        final newPosts = response.posts
-            .where((p) => !existingIds.contains(p.id))
-            .toList();
-
-        if (newPosts.isEmpty) {
-          state = state.copyWith(hasNextPage: false, fullyLoaded: true);
-          return false;
-        }
-
-        var allPosts = [...state.posts, ...newPosts];
-        final reachedLimit = allPosts.length >= _maxCachedPosts;
-        if (reachedLimit) {
-          allPosts = allPosts.take(_maxCachedPosts).toList();
-        }
-
-        state = state.copyWith(
-          posts: allPosts,
-          oldestPostTimestamp: allPosts.last.createdAt,
-          hasNextPage: response.hasNextPage && !reachedLimit,
-          fullyLoaded: !response.hasNextPage || reachedLimit,
-        );
-
-        return newPosts.isNotEmpty;
+        return _appendAndTruncate(response.posts, response.hasNextPage).isNotEmpty;
       },
       (error) => false,
     );
@@ -285,39 +254,19 @@ class FeedPostsCache extends _$FeedPostsCache {
           return;
         }
 
-        // Find posts newer than our newest cached post
+        // Find new posts not already in cache
+        final existingIds = state.posts.map((p) => p.id).toSet();
         final newestCached = state.newestPostTimestamp;
-        if (newestCached == null) {
-          // No timestamp reference, merge all non-duplicate posts
-          final existingIds = state.posts.map((p) => p.id).toSet();
-          final newPosts =
-              response.posts.where((p) => !existingIds.contains(p.id)).toList();
-          if (newPosts.isNotEmpty) {
-            var allPosts = [...newPosts, ...state.posts];
-            if (allPosts.length > _maxCachedPosts) {
-              allPosts = allPosts.take(_maxCachedPosts).toList();
-            }
-            state = state.copyWith(
-              posts: allPosts,
-              newestPostTimestamp: allPosts.first.createdAt,
-              lastFetchedAt: DateTime.now(),
-            );
-          }
-          return;
-        }
-
         final newPosts = response.posts
-            .where((p) => p.createdAt.isAfter(newestCached))
-            .where((p) => !state.posts.any((cached) => cached.id == p.id))
+            .where((p) => !existingIds.contains(p.id))
+            .where((p) => newestCached == null || p.createdAt.isAfter(newestCached))
             .toList();
 
         if (newPosts.isNotEmpty) {
-          // Prepend new posts
           var allPosts = [...newPosts, ...state.posts];
           if (allPosts.length > _maxCachedPosts) {
             allPosts = allPosts.take(_maxCachedPosts).toList();
           }
-
           state = state.copyWith(
             posts: allPosts,
             newestPostTimestamp: allPosts.first.createdAt,
@@ -515,7 +464,6 @@ class FeedPostsCache extends _$FeedPostsCache {
   /// Called on cold start or after 6 hours of active use.
   Future<void> fullCacheRebuild(String userId) async {
     _lastFullValidation = DateTime.now();
-    _lastEnrichedAt = DateTime.now();
     _deletionCheckOffset = 0;
     invalidateCache();
     await loadInitialPosts(userId);
@@ -527,36 +475,13 @@ class FeedPostsCache extends _$FeedPostsCache {
     if (state.posts.isEmpty) return;
     if (_currentUserId == null || _currentUserId!.isEmpty) return;
 
-    _lastEnrichedAt = DateTime.now();
-
     // Re-enrich by invalidating and refetching
     // This ensures fresh signed URLs for all media
     final userId = _currentUserId!;
     await _checkForNewPostsInBackground(userId);
   }
 
-  /// Returns the time the cache was last enriched with fresh URLs.
-  DateTime? get lastEnrichedAt => _lastEnrichedAt;
-
-  /// Legacy method for compatibility - updates cache with posts.
-  void updateCache(List<FeedPostModel> posts, {bool? hasNextPage}) {
-    final truncatedPosts = posts.length > _maxCachedPosts
-        ? posts.take(_maxCachedPosts).toList()
-        : posts;
-    state = state.copyWith(
-      posts: truncatedPosts,
-      lastFetchedAt: DateTime.now(),
-      newestPostTimestamp: truncatedPosts.isNotEmpty ? truncatedPosts.first.createdAt : null,
-      oldestPostTimestamp: truncatedPosts.isNotEmpty ? truncatedPosts.last.createdAt : null,
-      hasNextPage: hasNextPage ?? state.hasNextPage,
-      initialLoadComplete: true,
-    );
-  }
-
-  /// Legacy compatibility
-  bool get isCacheValid => state.initialLoadComplete && state.posts.isNotEmpty;
-
-  /// Legacy method - now calls loadInitialPosts which handles background loading.
+  /// Calls loadInitialPosts which handles background loading.
   Future<void> preloadFeed(String userId) async {
     await loadInitialPosts(userId);
   }

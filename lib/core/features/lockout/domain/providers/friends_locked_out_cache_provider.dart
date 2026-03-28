@@ -72,17 +72,19 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
   /// Returns true if a fetch is currently in progress.
   bool get isFetching => state.isFetching;
 
-  /// Fetch friends locked out if cache is stale. Non-blocking.
-  void ensureFresh() {
-    // Reset stuck fetch flag after timeout
-    final fetchStuck = state.isFetching &&
+  /// Resets the fetching flag if a previous fetch appears stuck.
+  void _resetStuckFetch() {
+    if (state.isFetching &&
         _fetchStartedAt != null &&
-        DateTime.now().difference(_fetchStartedAt!) > _fetchTimeout;
-    if (fetchStuck) {
+        DateTime.now().difference(_fetchStartedAt!) > _fetchTimeout) {
       state = state.copyWith(isFetching: false);
       _fetchStartedAt = null;
     }
+  }
 
+  /// Fetch friends locked out if cache is stale. Non-blocking.
+  void ensureFresh() {
+    _resetStuckFetch();
     if (!isCacheValid && !state.isFetching) {
       _fetchInBackground();
     }
@@ -90,15 +92,7 @@ class FriendsLockedOutCache extends _$FriendsLockedOutCache {
 
   /// Force refresh, bypassing cache TTL. Non-blocking.
   void refresh() {
-    // Reset stuck fetch flag after timeout
-    final fetchStuck = state.isFetching &&
-        _fetchStartedAt != null &&
-        DateTime.now().difference(_fetchStartedAt!) > _fetchTimeout;
-    if (fetchStuck) {
-      state = state.copyWith(isFetching: false);
-      _fetchStartedAt = null;
-    }
-
+    _resetStuckFetch();
     if (!state.isFetching) {
       _fetchInBackground();
     }

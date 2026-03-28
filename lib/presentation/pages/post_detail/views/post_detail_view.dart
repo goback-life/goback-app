@@ -208,15 +208,8 @@ class PostDetailView extends HookConsumerWidget
 
         final isToday = postDate.isAtSameMomentAs(today);
 
-        if (!isToday && isCurrentUserPost) {
-          return false;
-        }
-
-        if (!isToday && !isCurrentUserPost) {
-          return true;
-        }
-
-        return true;
+        // Own past calendar posts can't be menu-actioned
+        return isToday || !isCurrentUserPost;
       },
       [
         postId,
@@ -327,18 +320,7 @@ class PostDetailView extends HookConsumerWidget
                       PostDetailMedia(post: post),
                       SizedBox(height: sectionSpacing),
                     ],
-                    // For text posts, show description first (it contains the text content)
-                    if (post.contentType == ContentType.text &&
-                        post.description?.isNotEmpty == true) ...[
-                      PostDetailDescription(
-                        description: post.description!,
-                        contentType: post.contentType,
-                      ),
-                      SizedBox(height: sectionSpacing),
-                    ],
-                    // Show description for non-text posts (text posts already shown above)
-                    if (post.contentType != ContentType.text &&
-                        post.description?.isNotEmpty == true) ...[
+                    if (post.description?.isNotEmpty == true) ...[
                       PostDetailDescription(
                         description: post.description!,
                         contentType: post.contentType,

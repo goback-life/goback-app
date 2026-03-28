@@ -4,7 +4,9 @@ import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
+import 'package:cloudless/presentation/pages/home/components/dnd_prompt_dialog.dart';
 import 'package:cloudless/presentation/pages/home/components/manual_lockout_dialog.dart';
+import 'package:cloudless/presentation/pages/manual_lockout/components/lockout_cutout_painter.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -141,6 +143,13 @@ class FeedLockoutButton extends HookConsumerWidget {
     if (result == null || !context.mounted) return;
 
     try {
+      await DndPromptDialog.showIfNeeded(context);
+    } catch (_) {
+      // DnD prompt is non-critical; proceed with lockout
+    }
+    if (!context.mounted) return;
+
+    try {
       final notifier = ref.read(manualLockoutNotifierProvider.notifier);
       await notifier.setLockout(
         result.duration,
@@ -159,39 +168,10 @@ class FeedLockoutButton extends HookConsumerWidget {
   }
 }
 
-// -- SVG path: left-pointing rounded triangle (viewBox 0 0 86 102) --
-
-Path _trianglePath(Size size) {
-  final sx = size.width / 86.0;
-  final sy = size.height / 102.0;
-
-  return Path()
-    ..moveTo(10.0244 * sx, 55.1414 * sy)
-    ..cubicTo(
-      1.42744 * sx, 48.7205 * sy,
-      2.1564 * sx, 35.6124 * sy,
-      11.4122 * sx, 30.1843 * sy,
-    )
-    ..lineTo(59.3289 * sx, 2.0836 * sy)
-    ..cubicTo(
-      69.3286 * sx, -3.7807 * sy,
-      81.917 * sx, 3.43033 * sy,
-      81.917 * sx, 15.0227 * sy,
-    )
-    ..lineTo(81.917 * sx, 78.9116 * sy)
-    ..cubicTo(
-      81.917 * sx, 91.2584 * sy,
-      67.8333 * sx, 98.3179 * sy,
-      57.941 * sx, 90.9295 * sy,
-    )
-    ..lineTo(10.0244 * sx, 55.1414 * sy)
-    ..close();
-}
-
 /// Clips to the triangle shape for [BackdropFilter].
 class _TriangleClipper extends CustomClipper<Path> {
   @override
-  Path getClip(Size size) => _trianglePath(size);
+  Path getClip(Size size) => lockoutTrianglePath(size);
 
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
@@ -201,7 +181,7 @@ class _TriangleClipper extends CustomClipper<Path> {
 class _ShadowPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final path = _trianglePath(size);
+    final path = lockoutTrianglePath(size);
     final paint = Paint()
       ..color = const Color(0xFF191919).withValues(alpha: 0.25)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
@@ -230,7 +210,7 @@ class _GlassOverlayPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final path = _trianglePath(size);
+    final path = lockoutTrianglePath(size);
     final bounds = path.getBounds();
 
     if (!nativeMode) {

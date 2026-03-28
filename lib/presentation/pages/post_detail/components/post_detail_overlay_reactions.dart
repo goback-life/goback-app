@@ -4,16 +4,11 @@ import 'package:cloudless/core/features/post/domain/hooks/use_mention_autocomple
 import 'package:cloudless/core/features/post/domain/hooks/use_post_reactions.dart';
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
 import 'package:cloudless/core/features/post/domain/models/post_reaction_model.dart';
+import 'package:cloudless/presentation/pages/post_detail/components/post_detail_reaction_picker_modal.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
-
-const _kReactionEmojis = [
-  '\u{1F600}', '\u{1F61C}', '\u{1F60E}', '\u{1F914}',
-  '\u{1F92C}', '\u{1F974}', '\u{1F525}', '\u{1F602}',
-  '\u{1F60D}', '\u{1F62E}',
-];
 
 /// Arranges entries so the highest count sits in the middle,
 /// with decreasing counts alternating left and right.
@@ -287,7 +282,7 @@ class _EmojiPickerSheet extends StatelessWidget {
                 spacing: 12 * scale,
                 runSpacing: 12 * scale,
                 alignment: WrapAlignment.center,
-                children: _kReactionEmojis
+                children: PostDetailReactionPickerModal.availableEmojis
                     .map((emoji) => GestureDetector(
                           onTap: () => onSelected(emoji),
                           child: Text(emoji,

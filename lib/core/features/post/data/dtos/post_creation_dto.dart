@@ -50,17 +50,8 @@ sealed class PostCreationDto with _$PostCreationDto {
 
   bool get isValid {
     if (description.length > 200) return false;
-    if (isEditing) {
-      if (isText) {
-        return description.isNotEmpty && !hasMainImage;
-      }
-      return hasMainImage;
-    } else {
-      if (isText) {
-        return description.isNotEmpty && !hasMainImage;
-      }
-      return hasMainImage;
-    }
+    if (isText) return description.isNotEmpty && !hasMainImage;
+    return hasMainImage;
   }
 
   bool get isEditing => postId != null;

@@ -80,14 +80,11 @@ class CommonSupabaseExceptionUIHandler
     required BuildContext context,
     required String titleKey,
     required String contentKey,
-    String? extra,
   }) {
-    final title = translator.translate(titleKey);
-    final contentBase = translator.translate(contentKey);
-    final content = (extra == null || extra.trim().isEmpty)
-        ? contentBase
-        : '$contentBase\n\n$extra';
-
-    MainAlert.showError(context: context, title: title, content: content);
+    MainAlert.showError(
+      context: context,
+      title: translator.translate(titleKey),
+      content: translator.translate(contentKey),
+    );
   }
 }
