@@ -41,9 +41,9 @@ class LockoutFriendsOverlay extends HookConsumerWidget {
       return null;
     }, [cacheState.activeLockouts.length]);
 
-    // Refresh data when overlay opens
+    // Refresh data when overlay opens (deferred to avoid modifying provider during build)
     useEffect(() {
-      cacheNotifier.refresh();
+      Future.microtask(() => cacheNotifier.refresh());
       return null;
     }, const []);
 
