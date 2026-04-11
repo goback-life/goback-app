@@ -1,0 +1,9 @@
+# iOS
+app_identifier("com.goback.app")
+apple_id("gobackspa@gmail.com")        # replace with your Apple ID
+itc_team_id("QB78GSBHZJ")            # App Store Connect team ID
+team_id("QB78GSBHZJ")          # Apple Developer team ID
+
+# Android
+json_key_file("fastlane/google-play-key.json")  # service account key
+package_name("com.example.cloudless")           # TODO: update to com.goback.app

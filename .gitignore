@@ -72,3 +72,13 @@ fastlane/metadata
 .crashlytics
 
 tmpclaude*
+# Framework — generated/runtime
+logs/
+PROMPT.md
+.ralph/
+fastlane/google-play-key.json
+vendor/bundle/
+fastlane/report.xml
+
+# Worktrees (stored outside repo root — just in case)
+goback-worktrees/

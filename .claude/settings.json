@@ -1,0 +1,67 @@
+{
+  "env": {
+    "CLAUDE_CODE_EFFORT_LEVEL": "max",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(fvm:*)",
+      "Bash(dart:*)",
+      "Bash(flutter:*)",
+      "Bash(supabase:*)",
+      "Bash(ralph:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(fastlane:*)",
+      "Bash(brew:*)",
+      "Bash(npm:*)",
+      "Bash(python3:*)",
+      "Bash(iconv:*)",
+      "Bash(ls:*)",
+      "Bash(curl:*)",
+      "mcp__ide__getDiagnostics",
+      "mcp__figma-mcp__get_design_context",
+      "mcp__figma-mcp__get_screenshot",
+      "mcp__figma-mcp__get_metadata",
+      "WebFetch(domain:localhost)",
+      "WebFetch(domain:pub.dev)",
+      "WebSearch"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/goback/Documents/goback-app-lockv1/.claude/hooks/block_env.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 /Users/goback/Documents/goback-app-lockv1/.claude/hooks/migration_guard.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 /Users/goback/Documents/goback-app-lockv1/.claude/hooks/test_reminder.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/goback/Documents/goback-app-lockv1/.claude/hooks/dart_format.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 /Users/goback/Documents/goback-app-lockv1/.claude/hooks/flutter_analyze.py"
+          }
+        ]
+      }
+    ]
+  }
+}

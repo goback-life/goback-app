@@ -1,0 +1,130 @@
+default_platform(:ios)
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+def build_number_from_git
+  sh("git rev-list --count HEAD").strip.to_i
+end
+
+def flutter_build_number
+  build_number_from_git
+end
+
+# ── iOS ──────────────────────────────────────────────────────────────────────
+
+platform :ios do
+
+  desc "Build stage flavor and upload to TestFlight internal track"
+  lane :beta do
+    build_number = flutter_build_number
+
+    # Increment build number
+    increment_build_number(
+      build_number: build_number,
+      xcodeproj: "ios/Runner.xcodeproj"
+    )
+
+    # App Store Connect API auth (no password needed)
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: true,
+    )
+
+    # Build stage flavor
+    sh("fvm flutter build ipa --flavor stage --release --export-method app-store")
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      api_key: api_key,
+      ipa: "build/ios/ipa/cloudless.ipa",
+      app_identifier: "com.dedecube.stage.cloudless",
+      distribute_external: false,
+      notify_external_testers: false,
+      changelog: sh("git log -1 --pretty=%B").strip,
+    )
+
+    UI.success("Uploaded build #{build_number} to TestFlight internal ✓")
+  end
+
+  desc "Build production and submit to App Store for review"
+  lane :release do
+    build_number = flutter_build_number
+
+    increment_build_number(
+      build_number: build_number,
+      xcodeproj: "ios/Runner.xcodeproj"
+    )
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: true,
+    )
+
+    sh("fvm flutter build ipa --flavor production --release --export-method app-store")
+
+    upload_to_app_store(
+      api_key: api_key,
+      ipa: "build/ios/ipa/cloudless.ipa",
+      app_identifier: "com.goback.app",
+      submit_for_review: false,  # set true when ready to auto-submit
+      automatic_release: false,
+      skip_metadata: true,
+      skip_screenshots: true,
+    )
+
+    UI.success("Uploaded production build #{build_number} to App Store ✓")
+  end
+
+end
+
+# ── Android ──────────────────────────────────────────────────────────────────
+
+platform :android do
+
+  desc "Build stage flavor and upload to Play Store internal track"
+  lane :beta do
+    build_number = flutter_build_number
+
+    sh("fvm flutter build appbundle --flavor stage --release")
+
+    upload_to_play_store(
+      track: "internal",
+      aab: "build/app/outputs/bundle/stageRelease/app-stage-release.aab",
+      version_code: build_number,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      json_key_data: ENV["GOOGLE_PLAY_JSON_KEY"],
+    )
+
+    UI.success("Uploaded Android stage build #{build_number} to Play Store internal ✓")
+  end
+
+  desc "Build production and submit to Play Store production track"
+  lane :release do
+    build_number = flutter_build_number
+
+    sh("fvm flutter build appbundle --flavor production --release")
+
+    upload_to_play_store(
+      track: "production",
+      aab: "build/app/outputs/bundle/productionRelease/app-production-release.aab",
+      version_code: build_number,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      json_key_data: ENV["GOOGLE_PLAY_JSON_KEY"],
+    )
+
+    UI.success("Uploaded Android production build #{build_number} to Play Store ✓")
+  end
+
+end
