@@ -25,8 +25,9 @@ class NotificationRepository
     DateTime? cursor,
   }) async {
     return processSupabaseResult<
-        List<AggregatedNotificationDto>,
-        List<AggregatedNotificationModel>>(
+      List<AggregatedNotificationDto>,
+      List<AggregatedNotificationModel>
+    >(
       request: () async {
         final dtos = await notificationService.getAggregatedNotifications(
           userId: userId,
@@ -88,4 +89,3 @@ class NotificationRepository
     );
   }
 }
-

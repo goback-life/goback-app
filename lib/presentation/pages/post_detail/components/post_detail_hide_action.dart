@@ -42,7 +42,9 @@ class PostDetailHideAction extends HookConsumerWidget
             SizedBox(
               width: menuIconSize,
               height: menuIconSize,
-              child: Assets.svg.hidePost.render(colorFilter: theme.colorScheme.onSurface.asSrcIn),
+              child: Assets.svg.hidePost.render(
+                colorFilter: theme.colorScheme.onSurface.asSrcIn,
+              ),
             ),
             SizedBox(width: menuIconSpacing),
             Text(

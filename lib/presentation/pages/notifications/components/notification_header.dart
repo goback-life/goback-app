@@ -6,10 +6,7 @@ import 'package:flutter/material.dart';
 
 class NotificationHeader extends HookConsumerWidget
     with MainLayout, NotificationsLayout {
-  const NotificationHeader({
-    super.key,
-    required this.onMarkAllAsRead,
-  });
+  const NotificationHeader({super.key, required this.onMarkAllAsRead});
 
   final VoidCallback onMarkAllAsRead;
 
@@ -41,4 +38,3 @@ class NotificationHeader extends HookConsumerWidget
     );
   }
 }
-

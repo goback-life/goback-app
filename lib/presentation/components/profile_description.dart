@@ -34,13 +34,11 @@ class ProfileDescription extends HookConsumerWidget {
     } else if (profileId != null) {
       final profileAsync = ref.watch(getProfileProvider(profileId!));
       profileAsync.when(
-        data: (result) => result.fold(
-          (profile) => resolvedBio = profile?.biography,
-          (error) {
-            logger.error('Profile error', exception: error);
-            isError = true;
-          },
-        ),
+        data: (result) =>
+            result.fold((profile) => resolvedBio = profile?.biography, (error) {
+              logger.error('Profile error', exception: error);
+              isError = true;
+            }),
         loading: () => isLoading = true,
         error: (error, stack) {
           logger.error('Profile async error', exception: error);

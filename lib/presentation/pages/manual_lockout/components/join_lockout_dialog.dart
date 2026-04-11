@@ -37,64 +37,66 @@ class JoinLockoutDialog extends StatelessWidget with MainLayout {
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              translator.translate(
-                'pages.manual_lockout.friends_locked_out.join_dialog.title',
-                context: context,
-                arguments: {'username': session.username ?? ''},
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                translator.translate(
+                  'pages.manual_lockout.friends_locked_out.join_dialog.title',
+                  context: context,
+                  arguments: {'username': session.username ?? ''},
+                ),
+                style: textTheme.titleLarge?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
+                textAlign: TextAlign.center,
               ),
-              style: textTheme.titleLarge?.copyWith(color: colorScheme.onSurface),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              translator.translate(
-                'pages.manual_lockout.friends_locked_out.join_dialog.description',
-                context: context,
-                arguments: {'time': timeRemaining},
+              const SizedBox(height: 16),
+              Text(
+                translator.translate(
+                  'pages.manual_lockout.friends_locked_out.join_dialog.description',
+                  context: context,
+                  arguments: {'time': timeRemaining},
+                ),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.8),
+                ),
+                textAlign: TextAlign.center,
               ),
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface.withValues(alpha: 0.8),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            Row(
-              children: [
-                Expanded(
-                  child: CallToAction.secondary.outlined(
-                    action: () => Navigator.of(context).pop(false),
-                    label: Text(
-                      translator.translate(
-                        'pages.manual_lockout.friends_locked_out.join_dialog.cancel',
-                      ),
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurface,
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: CallToAction.secondary.outlined(
+                      action: () => Navigator.of(context).pop(false),
+                      label: Text(
+                        translator.translate(
+                          'pages.manual_lockout.friends_locked_out.join_dialog.cancel',
+                        ),
+                        style: textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: CallToAction.primary.filled(
-                    action: () => Navigator.of(context).pop(true),
-                    label: Text(
-                      translator.translate(
-                        'pages.manual_lockout.friends_locked_out.join_dialog.confirm',
-                      ),
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.primary,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: CallToAction.primary.filled(
+                      action: () => Navigator.of(context).pop(true),
+                      label: Text(
+                        translator.translate(
+                          'pages.manual_lockout.friends_locked_out.join_dialog.confirm',
+                        ),
+                        style: textTheme.titleMedium?.copyWith(
+                          color: colorScheme.primary,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

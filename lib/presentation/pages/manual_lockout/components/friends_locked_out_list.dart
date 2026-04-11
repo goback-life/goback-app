@@ -47,6 +47,7 @@ class FriendsLockedOutList extends HookConsumerWidget {
           currentSessionId.value = id;
         });
       }
+
       fetchSessionId();
       return null;
     }, [cacheState.activeLockouts.length]);
@@ -153,7 +154,9 @@ class FriendsLockedOutList extends HookConsumerWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            translator.translate('pages.manual_lockout.friends_locked_out.title'),
+            translator.translate(
+              'pages.manual_lockout.friends_locked_out.title',
+            ),
             style: textTheme.titleSmall?.copyWith(
               color: colorScheme.surface.withValues(alpha: 0.8),
             ),
@@ -190,10 +193,8 @@ class FriendsLockedOutList extends HookConsumerWidget {
   ) async {
     // Check if user is already locked out before showing dialog
     final lockoutState = ref.read(manualLockoutNotifierProvider);
-    final isAlreadyLockedOut = lockoutState.whenOrNull(
-          data: (state) => state.isLockedOut,
-        ) ??
-        false;
+    final isAlreadyLockedOut =
+        lockoutState.whenOrNull(data: (state) => state.isLockedOut) ?? false;
 
     if (isAlreadyLockedOut) {
       if (context.mounted) {
@@ -222,13 +223,17 @@ class FriendsLockedOutList extends HookConsumerWidget {
       logger.error('Error joining lockout', exception: e);
       if (context.mounted) {
         // Check for "already locked out" error from RPC
-        final errorMessage = e.toString().contains('already in an active lockout')
-            ? translator.translate('pages.home.lockout_join_error_already_locked')
-            : translator.translate('pages.manual_lockout.friends_locked_out.error');
+        final errorMessage =
+            e.toString().contains('already in an active lockout')
+            ? translator.translate(
+                'pages.home.lockout_join_error_already_locked',
+              )
+            : translator.translate(
+                'pages.manual_lockout.friends_locked_out.error',
+              );
 
         MainSnackbar.showError(context, errorMessage);
       }
     }
   }
 }
-

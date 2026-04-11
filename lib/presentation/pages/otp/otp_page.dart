@@ -7,11 +7,7 @@ import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 class OtpPage extends HookConsumerWidget with MainLayout, OtpLayout {
-  const OtpPage({
-    required this.phoneNumber,
-    this.email = '',
-    super.key,
-  });
+  const OtpPage({required this.phoneNumber, this.email = '', super.key});
 
   final String phoneNumber;
   final String email;

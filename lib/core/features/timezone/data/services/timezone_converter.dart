@@ -14,7 +14,9 @@ class TimezoneConverter implements TimezoneConverterContract {
     final tzDateTime = tz.TZDateTime.from(utc, tz.getLocation(ianaTimezone));
     return {
       'dateTime': tzDateTime,
-      'offset': Duration(milliseconds: tzDateTime.timeZoneOffset.inMilliseconds),
+      'offset': Duration(
+        milliseconds: tzDateTime.timeZoneOffset.inMilliseconds,
+      ),
       'abbreviation': tzDateTime.timeZoneName,
     };
   }

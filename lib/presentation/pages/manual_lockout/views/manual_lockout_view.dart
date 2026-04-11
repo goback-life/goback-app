@@ -29,8 +29,9 @@ class ManualLockoutView extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surface = Theme.of(context).colorScheme.surface;
-    final bgColor =
-        surface.computeLuminance() < 0.5 ? MainColors.white : MainColors.dark;
+    final bgColor = surface.computeLuminance() < 0.5
+        ? MainColors.white
+        : MainColors.dark;
 
     final lockoutStateAsync = ref.watch(manualLockoutNotifierProvider);
     final countdown = useState('');
@@ -52,9 +53,10 @@ class ManualLockoutView extends HookConsumerWidget {
       ),
     );
     final completionTextOpacity = useAnimation(
-      Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(parent: textFadeCtrl, curve: Curves.easeIn),
-      ),
+      Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(CurvedAnimation(parent: textFadeCtrl, curve: Curves.easeIn)),
     );
 
     // Post creation hook for share flow
@@ -108,10 +110,7 @@ class ManualLockoutView extends HookConsumerWidget {
         final sid = sessionId.value;
         if (score != null && sid.isNotEmpty) {
           final sessionService = ref.read(lockoutSessionServiceProvider);
-          await sessionService.updateScore(
-            sessionId: sid,
-            score: score,
-          );
+          await sessionService.updateScore(sessionId: sid, score: score);
         }
       }
 
@@ -132,10 +131,7 @@ class ManualLockoutView extends HookConsumerWidget {
 
         timer?.cancel();
         timer = Timer.periodic(const Duration(seconds: 1), (_) {
-          ref
-              .read(manualLockoutNotifierProvider.notifier)
-              .refresh()
-              .then((_) {
+          ref.read(manualLockoutNotifierProvider.notifier).refresh().then((_) {
             final updated = ref.read(manualLockoutNotifierProvider);
             updated.whenData((state) {
               if (state.isLockedOut && state.remainingDuration != null) {
@@ -404,10 +400,7 @@ class _CutoutPainter extends CustomPainter {
       )..layout();
 
       final scoreY = size.height * 0.68;
-      scoreTp.paint(
-        canvas,
-        Offset((size.width - scoreTp.width) / 2, scoreY),
-      );
+      scoreTp.paint(canvas, Offset((size.width - scoreTp.width) / 2, scoreY));
 
       // Label: "score / 100 | time"
       final labelTp = TextPainter(
@@ -460,14 +453,8 @@ class _CutoutPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       )..layout();
 
-      shareTp.paint(
-        canvas,
-        Offset((size.width - shareTp.width) / 2, shareY),
-      );
-      skipTp.paint(
-        canvas,
-        Offset((size.width - skipTp.width) / 2, skipY),
-      );
+      shareTp.paint(canvas, Offset((size.width - shareTp.width) / 2, shareY));
+      skipTp.paint(canvas, Offset((size.width - skipTp.width) / 2, skipY));
     }
 
     canvas.restore();
@@ -492,21 +479,30 @@ Path _trianglePath(Size size) {
   return Path()
     ..moveTo(10.0244 * sx, 55.1414 * sy)
     ..cubicTo(
-      1.42744 * sx, 48.7205 * sy,
-      2.1564 * sx, 35.6124 * sy,
-      11.4122 * sx, 30.1843 * sy,
+      1.42744 * sx,
+      48.7205 * sy,
+      2.1564 * sx,
+      35.6124 * sy,
+      11.4122 * sx,
+      30.1843 * sy,
     )
     ..lineTo(59.3289 * sx, 2.0836 * sy)
     ..cubicTo(
-      69.3286 * sx, -3.7807 * sy,
-      81.917 * sx, 3.43033 * sy,
-      81.917 * sx, 15.0227 * sy,
+      69.3286 * sx,
+      -3.7807 * sy,
+      81.917 * sx,
+      3.43033 * sy,
+      81.917 * sx,
+      15.0227 * sy,
     )
     ..lineTo(81.917 * sx, 78.9116 * sy)
     ..cubicTo(
-      81.917 * sx, 91.2584 * sy,
-      67.8333 * sx, 98.3179 * sy,
-      57.941 * sx, 90.9295 * sy,
+      81.917 * sx,
+      91.2584 * sy,
+      67.8333 * sx,
+      98.3179 * sy,
+      57.941 * sx,
+      90.9295 * sy,
     )
     ..lineTo(10.0244 * sx, 55.1414 * sy)
     ..close();

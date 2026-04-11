@@ -34,9 +34,5 @@ AggregatedNotificationsResult useAggregatedNotifications(
     );
   }
 
-  return (
-    notifications: notifications,
-    refresh: refresh,
-  );
+  return (notifications: notifications, refresh: refresh);
 }
-

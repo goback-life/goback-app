@@ -14,11 +14,9 @@ class _CallToActionStyledChild extends StatelessWidget {
     final theme = context.theme;
 
     return DefaultTextStyle(
-      style: DefaultTextStyle.of(context).style.merge(
-            theme.textTheme.labelMedium!.copyWith(
-              color: foreground,
-            ),
-          ),
+      style: DefaultTextStyle.of(
+        context,
+      ).style.merge(theme.textTheme.labelMedium!.copyWith(color: foreground)),
       child: IconTheme(
         data: IconTheme.of(context).copyWith(color: foreground),
         child: child,

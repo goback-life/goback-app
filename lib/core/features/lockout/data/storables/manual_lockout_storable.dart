@@ -10,12 +10,14 @@ class ManualLockoutStorable extends Storable<Map> {
   StorageType get storageType => StorageType.simple;
 
   Future<Map<String, dynamic>> getLockoutData() async {
-    final data = await get(defaultValue: <String, dynamic>{
-      'lockoutEndTimestamp': null,
-      'lockoutStartTimestamp': null,
-      'lockoutSessionId': null,
-      'batteryAtStart': null,
-    });
+    final data = await get(
+      defaultValue: <String, dynamic>{
+        'lockoutEndTimestamp': null,
+        'lockoutStartTimestamp': null,
+        'lockoutSessionId': null,
+        'batteryAtStart': null,
+      },
+    );
     final result = Map<String, dynamic>.from(data);
     logger.info('$_tag getLockoutData: $result');
     return result;
@@ -82,4 +84,3 @@ class ManualLockoutStorable extends Storable<Map> {
     });
   }
 }
-

@@ -24,10 +24,7 @@ class TutorialSearchField extends StatelessWidget {
         style: const TextStyle(color: MainColors.dark, fontSize: 14),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(
-            color: MainColors.grey500,
-            fontSize: 14,
-          ),
+          hintStyle: const TextStyle(color: MainColors.grey500, fontSize: 14),
           prefixIcon: const Icon(
             Icons.search,
             color: MainColors.grey500,

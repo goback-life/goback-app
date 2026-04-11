@@ -89,14 +89,22 @@ InviteSendingState useSmsSender(WidgetRef ref) {
         // Try WhatsApp first, fall back to SMS/iMessage.
         bool launched = false;
         final waPhone = phoneNumber.replaceAll('+', '');
-        final whatsappUri = Uri.parse('whatsapp://send?phone=$waPhone&text=$encodedMessage');
+        final whatsappUri = Uri.parse(
+          'whatsapp://send?phone=$waPhone&text=$encodedMessage',
+        );
         if (await canLaunchUrl(whatsappUri)) {
-          launched = await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+          launched = await launchUrl(
+            whatsappUri,
+            mode: LaunchMode.externalApplication,
+          );
         }
         if (!launched) {
           final smsUri = Uri.parse('sms:$phoneNumber?body=$encodedMessage');
           if (await canLaunchUrl(smsUri)) {
-            launched = await launchUrl(smsUri, mode: LaunchMode.externalApplication);
+            launched = await launchUrl(
+              smsUri,
+              mode: LaunchMode.externalApplication,
+            );
           }
         }
 

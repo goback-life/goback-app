@@ -4,16 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Widget to display link preview cards (like Twitter/X).
-/// 
+///
 /// **Future Implementation:**
 /// This is a placeholder structure for future link preview functionality.
 /// When link preview fetching is implemented, this component will display
 /// preview cards with image, title, description, and site name.
 class LinkPreviewCard extends HookWidget {
-  const LinkPreviewCard({
-    required this.linkPreview,
-    super.key,
-  });
+  const LinkPreviewCard({required this.linkPreview, super.key});
 
   final LinkPreviewModel linkPreview;
 
@@ -36,9 +33,7 @@ class LinkPreviewCard extends HookWidget {
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: colorScheme.outline.withOpacity(0.2),
-          ),
+          border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
         ),
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -75,4 +70,3 @@ class LinkPreviewCard extends HookWidget {
     );
   }
 }
-

@@ -46,7 +46,9 @@ class AccountSection extends HookConsumerWidget
         SizedBox(height: phoneNumberToDeleteAccount),
 
         SettingsMenuItem(
-          icon: Assets.svg.deleteIcon.render(colorFilter: colorScheme.onSurface.asSrcIn),
+          icon: Assets.svg.deleteIcon.render(
+            colorFilter: colorScheme.onSurface.asSrcIn,
+          ),
           title: translator.translate('pages.settings.delete_data'),
           onTap: () => _showDeleteAccountAlert(context, ref, deleteAccount),
         ),

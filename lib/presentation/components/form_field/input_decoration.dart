@@ -7,7 +7,9 @@ InputDecoration inputDecoration(BuildContext context, String? key) {
 
   return InputDecoration(
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    labelStyle: textTheme.titleSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+    labelStyle: textTheme.titleSmall?.copyWith(
+      color: colorScheme.onSurfaceVariant,
+    ),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
       borderSide: const BorderSide(color: Colors.transparent),

@@ -31,4 +31,3 @@ sealed class NotificationsRoutable extends Routable<NotificationsRoutable>
     return const NotificationsPage();
   }
 }
-

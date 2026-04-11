@@ -95,16 +95,18 @@ class CommentService implements CommentServiceContract {
 
       final profile = response['profiles'] as Map<String, dynamic>?;
 
-      return Result.success(PostCommentDto.fromJson({
-        'id': response['id'],
-        'post_id': response['post_id'],
-        'author_id': response['author_id'],
-        'author_username': profile?['username'] ?? 'Unknown',
-        'author_avatar_url': profile?['avatar_url'],
-        'content': response['content'],
-        'created_at': response['created_at'],
-        'deleted_at': response['deleted_at'],
-      }));
+      return Result.success(
+        PostCommentDto.fromJson({
+          'id': response['id'],
+          'post_id': response['post_id'],
+          'author_id': response['author_id'],
+          'author_username': profile?['username'] ?? 'Unknown',
+          'author_avatar_url': profile?['avatar_url'],
+          'content': response['content'],
+          'created_at': response['created_at'],
+          'deleted_at': response['deleted_at'],
+        }),
+      );
     } catch (e) {
       logger.error('Failed to create comment', exception: e);
       return Result.failure(

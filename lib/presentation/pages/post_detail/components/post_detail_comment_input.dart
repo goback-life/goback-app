@@ -5,14 +5,16 @@ import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 
-class PostDetailCommentInput extends HookConsumerWidget with MainLayout, PostDetailLayout {
+class PostDetailCommentInput extends HookConsumerWidget
+    with MainLayout, PostDetailLayout {
   const PostDetailCommentInput({
     required this.onSubmit,
     required this.isSubmitting,
     super.key,
   });
 
-  final Future<void> Function(String content, {List<String>? mentionedUserIds}) onSubmit;
+  final Future<void> Function(String content, {List<String>? mentionedUserIds})
+  onSubmit;
   final bool isSubmitting;
 
   @override
@@ -30,6 +32,7 @@ class PostDetailCommentInput extends HookConsumerWidget with MainLayout, PostDet
       void listener() {
         isEmpty.value = controller.text.trim().isEmpty;
       }
+
       controller.addListener(listener);
       return () => controller.removeListener(listener);
     }, [controller]);
@@ -40,9 +43,15 @@ class PostDetailCommentInput extends HookConsumerWidget with MainLayout, PostDet
 
       // Parse mentions from the text and combine with manually selected mentions
       final parsedMentions = mentionState.parseMentions(text);
-      final allMentions = <String>{...collectedMentions.value, ...parsedMentions}.toList();
+      final allMentions = <String>{
+        ...collectedMentions.value,
+        ...parsedMentions,
+      }.toList();
 
-      await onSubmit(text, mentionedUserIds: allMentions.isNotEmpty ? allMentions : null);
+      await onSubmit(
+        text,
+        mentionedUserIds: allMentions.isNotEmpty ? allMentions : null,
+      );
       controller.clear();
       collectedMentions.value = [];
     }
@@ -52,9 +61,7 @@ class PostDetailCommentInput extends HookConsumerWidget with MainLayout, PostDet
       decoration: BoxDecoration(
         color: colorScheme.surface,
         border: Border(
-          top: BorderSide(
-            color: colorScheme.outline.withValues(alpha: 0.1),
-          ),
+          top: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
         ),
       ),
       child: SafeArea(
@@ -64,9 +71,7 @@ class PostDetailCommentInput extends HookConsumerWidget with MainLayout, PostDet
           children: [
             Expanded(
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: commentInputMaxHeight,
-                ),
+                constraints: BoxConstraints(maxHeight: commentInputMaxHeight),
                 child: MentionTextField(
                   controller: controller,
                   allUsers: mentionState.allUsers,

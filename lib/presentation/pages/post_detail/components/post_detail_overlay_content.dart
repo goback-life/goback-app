@@ -66,13 +66,15 @@ TextSpan _parseMentions(
       children.add(TextSpan(text: text.substring(lastEnd, match.start)));
     }
     final username = match.group(1)!;
-    children.add(TextSpan(
-      text: match.group(0),
-      style: base.copyWith(fontWeight: FontWeight.w700),
-      recognizer: onMentionTap != null
-          ? (TapGestureRecognizer()..onTap = () => onMentionTap(username))
-          : null,
-    ));
+    children.add(
+      TextSpan(
+        text: match.group(0),
+        style: base.copyWith(fontWeight: FontWeight.w700),
+        recognizer: onMentionTap != null
+            ? (TapGestureRecognizer()..onTap = () => onMentionTap(username))
+            : null,
+      ),
+    );
     lastEnd = match.end;
   }
   if (lastEnd < text.length) {
@@ -125,6 +127,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
       final user = allUsers.where((u) => u.username == username).firstOrNull;
       if (user != null) navigateToUser(user.id);
     }
+
     // Generate signed avatar URLs directly from Supabase Storage
     final authorIds = <String>{
       post.authorId,
@@ -147,15 +150,20 @@ class PostDetailOverlayContent extends HookConsumerWidget {
 
     // Only author + description for initial rest position
     var visibleH = avatarH;
-    final hasDesc =
-        post.description != null && post.description!.isNotEmpty;
+    final hasDesc = post.description != null && post.description!.isNotEmpty;
     if (hasDesc) {
       final dp = TextPainter(
-        text: TextSpan(text: post.description!, style: TextStyle(
-          fontFamily: MainFontFamilies.quicksand, fontWeight: FontWeight.w400,
-          fontSize: 15.0 * scale, letterSpacing: -0.9 * scale,
-        )),
-        maxLines: descExpanded.value ? null : 5, textDirection: TextDirection.ltr,
+        text: TextSpan(
+          text: post.description!,
+          style: TextStyle(
+            fontFamily: MainFontFamilies.quicksand,
+            fontWeight: FontWeight.w400,
+            fontSize: 15.0 * scale,
+            letterSpacing: -0.9 * scale,
+          ),
+        ),
+        maxLines: descExpanded.value ? null : 5,
+        textDirection: TextDirection.ltr,
       )..layout(maxWidth: contentWidth);
       visibleH += 12 * scale + dp.size.height;
     }
@@ -165,10 +173,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
       if (text.isNotEmpty &&
           !commentsResult.isSubmitting &&
           commentsResult.canAddMore) {
-        commentsResult.addComment(
-          text,
-          mentionedUserIds: mentionedIds.value,
-        );
+        commentsResult.addComment(text, mentionedUserIds: mentionedIds.value);
         textController.clear();
         mentionedIds.value = [];
       }
@@ -177,16 +182,19 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardH = constraints.maxHeight;
-        final bottomPad = (cardH - squircleBottom - authorGap - visibleH)
-            .clamp(0.0, cardH);
+        final bottomPad = (cardH - squircleBottom - authorGap - visibleH).clamp(
+          0.0,
+          cardH,
+        );
         // Spacer = squircleBottom so topmost content clears the pinned image
         final scrollEndH = squircleBottom + 15 * scale;
 
         return ListView(
           controller: scrollController,
           reverse: true,
-          padding: EdgeInsets.symmetric(horizontal: contentHPad)
-              .copyWith(bottom: bottomPad),
+          padding: EdgeInsets.symmetric(
+            horizontal: contentHPad,
+          ).copyWith(bottom: bottomPad),
           children: [
             _buildVisibleBlock(
               hasDesc,
@@ -233,8 +241,10 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     String? authorAvatarUrl,
   }) {
     final descStyle = TextStyle(
-      fontFamily: MainFontFamilies.quicksand, fontWeight: FontWeight.w400,
-      fontSize: 15.0 * scale, color: MainColors.white,
+      fontFamily: MainFontFamilies.quicksand,
+      fontWeight: FontWeight.w400,
+      fontSize: 15.0 * scale,
+      color: MainColors.white,
       letterSpacing: -0.9 * scale,
     );
     return Column(
@@ -268,15 +278,24 @@ class PostDetailOverlayContent extends HookConsumerWidget {
 
   Widget _buildLimitMessage() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12 * scale, vertical: 8 * scale),
+      padding: EdgeInsets.symmetric(
+        horizontal: 12 * scale,
+        vertical: 8 * scale,
+      ),
       decoration: BoxDecoration(
         color: MainColors.accent.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(15 * scale)),
+        borderRadius: BorderRadius.circular(15 * scale),
+      ),
       child: Text(
         'Comment limit reached ($kMaxCommentsPerUserPerPost/$kMaxCommentsPerUserPerPost). Delete a comment to add more.',
-        style: TextStyle(fontFamily: MainFontFamilies.quicksand,
-          fontWeight: FontWeight.w400, fontSize: 12.0 * scale,
-          color: MainColors.white.withValues(alpha: 0.6))));
+        style: TextStyle(
+          fontFamily: MainFontFamilies.quicksand,
+          fontWeight: FontWeight.w400,
+          fontSize: 12.0 * scale,
+          color: MainColors.white.withValues(alpha: 0.6),
+        ),
+      ),
+    );
   }
 
   Widget _buildAuthorRow({String? resolvedAvatarUrl}) {
@@ -284,32 +303,36 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     final gap = 10.0 * scale;
     final fontSize = 21.5 * scale;
     final ls = -1.29 * scale;
-    return Row(children: [
-      SizedBox(
-        width: avatarSize,
-        height: avatarSize,
-        child: ClipOval(
-          child: _cachedAvatar(
-              resolvedAvatarUrl ?? post.authorAvatarUrl, avatarSize,
-              name: post.authorUsername),
-        ),
-      ),
-      SizedBox(width: gap),
-      Flexible(
-        child: Text(
-          post.authorUsername ?? 'Unknown',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontFamily: MainFontFamilies.quicksand,
-            fontWeight: FontWeight.w400,
-            fontSize: fontSize,
-            color: MainColors.white,
-            letterSpacing: ls,
+    return Row(
+      children: [
+        SizedBox(
+          width: avatarSize,
+          height: avatarSize,
+          child: ClipOval(
+            child: _cachedAvatar(
+              resolvedAvatarUrl ?? post.authorAvatarUrl,
+              avatarSize,
+              name: post.authorUsername,
+            ),
           ),
         ),
-      ),
-    ]);
+        SizedBox(width: gap),
+        Flexible(
+          child: Text(
+            post.authorUsername ?? 'Unknown',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: MainFontFamilies.quicksand,
+              fontWeight: FontWeight.w400,
+              fontSize: fontSize,
+              color: MainColors.white,
+              letterSpacing: ls,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildThoughtsHeader() {
@@ -336,25 +359,26 @@ class PostDetailOverlayContent extends HookConsumerWidget {
   }) {
     if (comments.isEmpty) return [];
     return comments
-        .map((c) => Padding(
-              padding: EdgeInsets.only(bottom: 16 * scale),
-              child: _CommentRow(
-                comment: c,
-                scale: scale,
-                canDelete: commentsResult.isOwnComment(c),
-                onDelete: () => commentsResult.deleteComment(c.id),
-                onAuthorTap: () => onUserTap(c.authorId),
-                onMentionTap: onMentionTap,
-                resolvedAvatarUrl: resolveAvatar(c.authorId),
-              ),
-            ))
+        .map(
+          (c) => Padding(
+            padding: EdgeInsets.only(bottom: 16 * scale),
+            child: _CommentRow(
+              comment: c,
+              scale: scale,
+              canDelete: commentsResult.isOwnComment(c),
+              onDelete: () => commentsResult.deleteComment(c.id),
+              onAuthorTap: () => onUserTap(c.authorId),
+              onMentionTap: onMentionTap,
+              resolvedAvatarUrl: resolveAvatar(c.authorId),
+            ),
+          ),
+        )
         .toList();
   }
 
   List<PostCommentModel> _extractComments(PostCommentsResult result) {
     return result.comments.whenOrNull(
-          data: (r) =>
-              r.fold((list) => list, (_) => <PostCommentModel>[]),
+          data: (r) => r.fold((list) => list, (_) => <PostCommentModel>[]),
         ) ??
         [];
   }

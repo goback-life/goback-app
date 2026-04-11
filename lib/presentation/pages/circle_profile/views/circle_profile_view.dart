@@ -80,9 +80,9 @@ class CircleProfileView extends HookConsumerWidget
 
         final profileToUse =
             fetchedProfile != null &&
-                    fetchedProfile.phoneNumber?.isNotEmpty == true
-                ? fetchedProfile
-                : cachedProfile ?? fetchedProfile;
+                fetchedProfile.phoneNumber?.isNotEmpty == true
+            ? fetchedProfile
+            : cachedProfile ?? fetchedProfile;
 
         return SizedBox.expand(
           child: Stack(
@@ -111,8 +111,9 @@ class CircleProfileView extends HookConsumerWidget
                 right: 0,
                 child: Theme(
                   data: theme.copyWith(
-                    textTheme:
-                        theme.textTheme.copyWith(titleLarge: usernameStyle),
+                    textTheme: theme.textTheme.copyWith(
+                      titleLarge: usernameStyle,
+                    ),
                   ),
                   child: UsernameField(profileId: userId),
                 ),
@@ -128,8 +129,9 @@ class CircleProfileView extends HookConsumerWidget
                     width: bioMaxWidth * s,
                     child: Theme(
                       data: theme.copyWith(
-                        textTheme:
-                            theme.textTheme.copyWith(bodyMedium: bioStyle),
+                        textTheme: theme.textTheme.copyWith(
+                          bodyMedium: bioStyle,
+                        ),
                       ),
                       child: ProfileDescription(profileId: userId),
                     ),
@@ -144,8 +146,7 @@ class CircleProfileView extends HookConsumerWidget
                 right: 0,
                 child: Center(
                   child: ProfileWeeklyStats(
-                    weeklyLockoutMinutes:
-                        profileToUse?.weeklyLockoutMinutes,
+                    weeklyLockoutMinutes: profileToUse?.weeklyLockoutMinutes,
                     hasResolvedData: true,
                   ),
                 ),

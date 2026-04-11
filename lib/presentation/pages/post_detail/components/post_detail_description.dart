@@ -74,9 +74,7 @@ class PostDetailDescription extends HookWidget
                 description,
                 maxLines: showFullText.value
                     ? null
-                    : (isLongText.value
-                        ? descriptionMaxLines.toInt()
-                        : null),
+                    : (isLongText.value ? descriptionMaxLines.toInt() : null),
                 overflow: showFullText.value ? null : TextOverflow.ellipsis,
               ),
             ),

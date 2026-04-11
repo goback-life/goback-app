@@ -36,7 +36,10 @@ class MainAppBar extends HookConsumerWidget with MainLayout, MainAppBarLayout {
             child: Assets.svg.back.render(
               height: iconSize,
               width: iconSize,
-              colorFilter: ColorFilter.mode(colorScheme.onSurface, BlendMode.srcIn),
+              colorFilter: ColorFilter.mode(
+                colorScheme.onSurface,
+                BlendMode.srcIn,
+              ),
             ),
           ),
         ),

@@ -68,7 +68,8 @@ FeedPostsResult useFeedPosts(
     isMounted.value = true;
     Timer? deletionTimer;
 
-    final shouldLoad = userId != lastUserId.value ||
+    final shouldLoad =
+        userId != lastUserId.value ||
         !hasInitialized.value ||
         (cacheNotifier.currentUserId != userId);
 
@@ -77,7 +78,8 @@ FeedPostsResult useFeedPosts(
       hasInitialized.value = true;
 
       // Check if cache already has posts for this user
-      if (cacheNotifier.currentUserId == userId && cacheState.initialLoadComplete) {
+      if (cacheNotifier.currentUserId == userId &&
+          cacheState.initialLoadComplete) {
         // Already have posts, check for new ones and deletions
         isLoading.value = false; // Ensure not loading
         cacheNotifier.refresh(userId);
@@ -86,16 +88,19 @@ FeedPostsResult useFeedPosts(
         // Need to load initial posts
         isLoading.value = cacheNotifier.posts.isEmpty;
 
-        cacheNotifier.loadInitialPosts(userId).then((loadedPosts) {
-          if (isMounted.value) {
-            isLoading.value = false;
-          }
-        }).catchError((error) {
-          if (isMounted.value) {
-            isLoading.value = false;
-            errorMessage.value = error.toString();
-          }
-        });
+        cacheNotifier
+            .loadInitialPosts(userId)
+            .then((loadedPosts) {
+              if (isMounted.value) {
+                isLoading.value = false;
+              }
+            })
+            .catchError((error) {
+              if (isMounted.value) {
+                isLoading.value = false;
+                errorMessage.value = error.toString();
+              }
+            });
       }
 
       // Poll for deletions every 30 seconds (staggered to cover all posts)
@@ -126,7 +131,9 @@ FeedPostsResult useFeedPosts(
         case PostActionType.create:
           if (postActionEvent.postId != null) {
             // Fetch the new post and add to cache
-            cacheNotifier.fetchAndAddPost(postActionEvent.postId!).then((added) {
+            cacheNotifier.fetchAndAddPost(postActionEvent.postId!).then((
+              added,
+            ) {
               if (!added) {
                 // Fallback: refresh to find the new post
                 cacheNotifier.refresh(userId);
@@ -183,16 +190,19 @@ FeedPostsResult useFeedPosts(
 
     isLoadingMore.value = true;
 
-    cacheNotifier.loadMorePostsNow(userId).then((loaded) {
-      if (isMounted.value) {
-        isLoadingMore.value = false;
-      }
-    }).catchError((error) {
-      if (isMounted.value) {
-        isLoadingMore.value = false;
-        errorMessage.value = error.toString();
-      }
-    });
+    cacheNotifier
+        .loadMorePostsNow(userId)
+        .then((loaded) {
+          if (isMounted.value) {
+            isLoadingMore.value = false;
+          }
+        })
+        .catchError((error) {
+          if (isMounted.value) {
+            isLoadingMore.value = false;
+            errorMessage.value = error.toString();
+          }
+        });
   }
 
   /// Refreshes the feed - checks for new posts.

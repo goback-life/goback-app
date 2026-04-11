@@ -16,4 +16,3 @@ class ManualLockoutPage extends HookConsumerWidget {
     );
   }
 }
-

@@ -109,8 +109,7 @@ class ProfileView extends HookConsumerWidget with MainLayout, ProfileLayout {
             right: 0,
             child: Theme(
               data: theme.copyWith(
-                textTheme:
-                    theme.textTheme.copyWith(titleLarge: usernameStyle),
+                textTheme: theme.textTheme.copyWith(titleLarge: usernameStyle),
               ),
               child: profileResolved
                   ? UsernameField(username: username ?? '')
@@ -132,17 +131,14 @@ class ProfileView extends HookConsumerWidget with MainLayout, ProfileLayout {
                 width: bioMaxWidth * s,
                 child: Theme(
                   data: theme.copyWith(
-                    textTheme:
-                        theme.textTheme.copyWith(bodyMedium: bioStyle),
+                    textTheme: theme.textTheme.copyWith(bodyMedium: bioStyle),
                   ),
                   child: profileResolved
                       ? ProfileDescription(
                           showFullDescription: true,
                           biography: biography,
                         )
-                      : const ProfileDescription(
-                          showFullDescription: true,
-                        ),
+                      : const ProfileDescription(showFullDescription: true),
                 ),
               ),
             ),
@@ -175,9 +171,7 @@ class ProfileView extends HookConsumerWidget with MainLayout, ProfileLayout {
                 ProfileCalendar(scale: s),
                 // Stats tab — pad top so it clears the tab toggle
                 Padding(
-                  padding: EdgeInsets.only(
-                    top: (statsTop + 56 * s) - calTop,
-                  ),
+                  padding: EdgeInsets.only(top: (statsTop + 56 * s) - calTop),
                   child: currentUserId != null
                       ? ProfileStatsView(
                           userId: currentUserId!,
@@ -188,14 +182,9 @@ class ProfileView extends HookConsumerWidget with MainLayout, ProfileLayout {
                 ),
                 // Hobbies tab
                 Padding(
-                  padding: EdgeInsets.only(
-                    top: (statsTop + 56 * s) - calTop,
-                  ),
+                  padding: EdgeInsets.only(top: (statsTop + 56 * s) - calTop),
                   child: currentUserId != null
-                      ? ActivityBubbleCloud(
-                          userId: currentUserId!,
-                          scale: s,
-                        )
+                      ? ActivityBubbleCloud(userId: currentUserId!, scale: s)
                       : const SizedBox.shrink(),
                 ),
               ],

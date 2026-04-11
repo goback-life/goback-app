@@ -19,7 +19,7 @@ class ConnectionRequestsData {
   final bool isLoading;
   final Future<Result<String>> Function(String receiverId) send;
   final Future<Result<void>> Function(String requestId, {required bool accept})
-      respond;
+  respond;
   final Future<Result<void>> Function(String requestId) cancel;
   final void Function() refresh;
 }
@@ -30,10 +30,8 @@ ConnectionRequestsData useConnectionRequests(WidgetRef ref) {
 
   final outgoingRequests = useMemoized(() {
     return asyncOutgoing.when(
-      data: (result) => result.fold(
-        (list) => list,
-        (_) => <ConnectionRequestModel>[],
-      ),
+      data: (result) =>
+          result.fold((list) => list, (_) => <ConnectionRequestModel>[]),
       loading: () => <ConnectionRequestModel>[],
       error: (_, __) => <ConnectionRequestModel>[],
     );
@@ -41,10 +39,8 @@ ConnectionRequestsData useConnectionRequests(WidgetRef ref) {
 
   final incomingRequests = useMemoized(() {
     return asyncIncoming.when(
-      data: (result) => result.fold(
-        (list) => list,
-        (_) => <ConnectionRequestModel>[],
-      ),
+      data: (result) =>
+          result.fold((list) => list, (_) => <ConnectionRequestModel>[]),
       loading: () => <ConnectionRequestModel>[],
       error: (_, __) => <ConnectionRequestModel>[],
     );
@@ -65,10 +61,7 @@ ConnectionRequestsData useConnectionRequests(WidgetRef ref) {
     return result;
   }, [ref]);
 
-  final respond = useCallback((
-    String requestId, {
-    required bool accept,
-  }) async {
+  final respond = useCallback((String requestId, {required bool accept}) async {
     final result = await ref.read(
       respondToConnectionRequestProvider(requestId, accept: accept).future,
     );

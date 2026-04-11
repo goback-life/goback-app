@@ -31,4 +31,3 @@ sealed class ReviewCircleRoutable extends Routable<ReviewCircleRoutable>
     return const ReviewCirclePage();
   }
 }
-

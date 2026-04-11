@@ -16,10 +16,7 @@ class DeviceTokenService {
     try {
       final response = await supabase.rpc(
         'register_device_token',
-        params: {
-          'p_token': token,
-          'p_platform': platform,
-        },
+        params: {'p_token': token, 'p_platform': platform},
       );
 
       final result = response as Map<String, dynamic>;

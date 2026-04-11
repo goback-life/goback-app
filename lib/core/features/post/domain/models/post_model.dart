@@ -25,8 +25,10 @@ sealed class PostModel with _$PostModel {
     required DateTime publishedAt,
     required String publishedTimezone,
     String? description,
+
     /// Reference to lockout_sessions table if this is a lockout post
     String? lockoutId,
+
     /// When this post was saved to calendar (null if not saved)
     DateTime? calendarSavedAt,
     @Default([]) List<MediaItemModel> mediaItems,

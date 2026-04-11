@@ -26,10 +26,13 @@ sealed class CalendarPostDto with _$CalendarPostDto {
     @JsonKey(name: 'video_url') String? videoUrl,
     @JsonKey(name: 'tagged_usernames') String? taggedUsernames,
     @JsonKey(name: 'tagged_user_ids') String? taggedUserIds,
+
     /// Excluded user IDs as UUID[] array
     @JsonKey(name: 'excluded_user_ids') List<String>? excludedUserIds,
+
     /// The lockout session ID this post was created from
     @JsonKey(name: 'lockout_id') String? lockoutId,
+
     /// When the post was saved to calendar (legacy, now optional)
     @JsonKey(name: 'calendar_saved_at') String? calendarSavedAt,
   }) = _CalendarPostDto;

@@ -30,7 +30,9 @@ class LogoutButton extends HookConsumerWidget with MainLayout, SettingsLayout {
       try {
         isLoading.value = true;
 
-        final calendarCacheNotifier = ref.read(calendarPostsCacheProvider.notifier);
+        final calendarCacheNotifier = ref.read(
+          calendarPostsCacheProvider.notifier,
+        );
         final feedCacheNotifier = ref.read(feedPostsCacheProvider.notifier);
 
         final result = await ref.read(signOutProvider.future);

@@ -76,7 +76,8 @@ class YourCircleView extends HookConsumerWidget
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: EdgeInsets.only(
-                  bottom: (removeMode.value
+                  bottom:
+                      (removeMode.value
                           ? removeButtonHeight
                           : searchPillHeight) +
                       bottomBarBottomPadding +
@@ -91,9 +92,8 @@ class YourCircleView extends HookConsumerWidget
                     profile: profile,
                     isRemoveMode: removeMode.value,
                     isSelected: selectedIds.value.contains(profile.id),
-                    onTap: () => router.push(
-                      CircleProfileRoutable(userId: profile.id),
-                    ),
+                    onTap: () =>
+                        router.push(CircleProfileRoutable(userId: profile.id)),
                     onSwipeDelete: () => _confirmRemove(
                       context,
                       profile.username,
@@ -139,8 +139,7 @@ class YourCircleView extends HookConsumerWidget
                       children: [
                         YourCircleSearchPill(
                           searchQuery: circleMembersData.searchQuery,
-                          onSearchChanged:
-                              circleMembersData.updateSearchQuery,
+                          onSearchChanged: circleMembersData.updateSearchQuery,
                           controller: searchController,
                         ),
                         const Spacer(),

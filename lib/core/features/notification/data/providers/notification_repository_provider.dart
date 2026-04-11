@@ -14,4 +14,3 @@ NotificationRepositoryContract notificationRepository(Ref ref) {
     mapper: AggregatedNotificationDtoToModelMapper(),
   );
 }
-

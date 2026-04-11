@@ -95,8 +95,7 @@ class LockoutLineChart extends HookWidget {
 
     // Tooltip text
     String? tooltipText;
-    if (highlightIndex.value >= 0 &&
-        highlightIndex.value < dailyStats.length) {
+    if (highlightIndex.value >= 0 && highlightIndex.value < dailyStats.length) {
       final stat = dailyStats[highlightIndex.value];
       if (stat.minutes > 0) {
         final parts = <String>[
@@ -185,9 +184,15 @@ class LockoutLineChart extends HookWidget {
         // Day labels
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-              .map((d) => Text(d, style: labelStyle))
-              .toList(),
+          children: [
+            'M',
+            'T',
+            'W',
+            'T',
+            'F',
+            'S',
+            'S',
+          ].map((d) => Text(d, style: labelStyle)).toList(),
         ),
 
         // Tooltip

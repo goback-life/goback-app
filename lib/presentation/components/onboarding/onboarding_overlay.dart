@@ -123,8 +123,9 @@ class _OnboardingOverlayState extends State<OnboardingOverlay> {
                               (i) => Container(
                                 width: i == _currentStep ? 24 : 8,
                                 height: 8,
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 4),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(4),
                                   color: i == _currentStep

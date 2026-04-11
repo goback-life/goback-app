@@ -16,4 +16,3 @@ class MarkAllNotificationsAsReadUseCase
     return await repository.markAllNotificationsAsRead(userId: userId);
   }
 }
-

@@ -18,4 +18,3 @@ abstract class NotificationRepositoryContract {
 
   Future<Result<int>> getUnreadCount({required String userId});
 }
-

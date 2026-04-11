@@ -19,7 +19,8 @@ mixin HomeLayout on MainLayout {
   double get feedPostCurrentUserMarginRight => 16.0;
 
   // Feed Posts List
-  double get feedPostsListBottomPadding => 135.0; // Increased to account for bottom buttons (60px height + 84px position + 36px spacing)
+  double get feedPostsListBottomPadding =>
+      135.0; // Increased to account for bottom buttons (60px height + 84px position + 36px spacing)
   double get feedPostsListScrollTrigger => 200.0;
 
   // Date Badge

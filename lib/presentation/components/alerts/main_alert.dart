@@ -148,13 +148,12 @@ class MainAlert extends StatelessWidget with MainLayout, MainAlertLayout {
                   ...switch ((secondaryButtonText, onSecondaryPressed)) {
                     (final String s, final VoidCallback p) => [
                       switch (primaryButtonType) {
-                        CallToActionType.primary =>
-                          CallToAction.primary.filled(
-                            action: onPrimaryPressed,
-                            label: Text(primaryButtonText),
-                            horizontalMargin: horizontalMargin,
-                            height: height,
-                          ),
+                        CallToActionType.primary => CallToAction.primary.filled(
+                          action: onPrimaryPressed,
+                          label: Text(primaryButtonText),
+                          horizontalMargin: horizontalMargin,
+                          height: height,
+                        ),
                         CallToActionType.danger => CallToAction.danger.filled(
                           action: onPrimaryPressed,
                           label: Text(primaryButtonText),

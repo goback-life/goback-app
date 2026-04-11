@@ -47,9 +47,7 @@ SignInFormResult useSignInForm(WidgetRef ref) {
       if (digitsOnly.length < 7) {
         throw FormatException('Invalid phone number: $rawPhone');
       }
-      phoneNumberValue = sanitized.startsWith('+')
-          ? sanitized
-          : '+$sanitized';
+      phoneNumberValue = sanitized.startsWith('+') ? sanitized : '+$sanitized';
 
       final isUs = phoneNumberValue!.startsWith('+1');
 
@@ -63,9 +61,7 @@ SignInFormResult useSignInForm(WidgetRef ref) {
         );
         return result;
       } else {
-        final result = await ref.read(
-          signInProvider(phoneNumberValue!).future,
-        );
+        final result = await ref.read(signInProvider(phoneNumberValue!).future);
         return result;
       }
     },
@@ -86,10 +82,7 @@ SignInFormResult useSignInForm(WidgetRef ref) {
           .handleSupabaseException(context: ref.context, exception: error);
 
       if (!handled) {
-        logger.error(
-          'Sign in failed: unknown error',
-          exception: error,
-        );
+        logger.error('Sign in failed: unknown error', exception: error);
         MainAlert.showGenericError(context: ref.context);
       }
     },

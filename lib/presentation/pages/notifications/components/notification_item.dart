@@ -44,9 +44,9 @@ class NotificationItem extends HookConsumerWidget
         child: Text(
           'T',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface.withOpacity(0.7),
-              ),
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface.withOpacity(0.7),
+          ),
         ),
       );
     }
@@ -181,9 +181,7 @@ class NotificationItem extends HookConsumerWidget
           borderRadius: BorderRadius.circular(notificationItemBorderRadius),
           border: Border(
             left: BorderSide(
-              color: isUnread
-                  ? MainColors.accent
-                  : Colors.transparent,
+              color: isUnread ? MainColors.accent : Colors.transparent,
               width: notificationUnreadBorderWidth,
             ),
           ),
@@ -215,8 +213,9 @@ class NotificationItem extends HookConsumerWidget
                   Text(
                     _getNotificationText(context, notification),
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight:
-                          isUnread ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: isUnread
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -228,8 +227,7 @@ class NotificationItem extends HookConsumerWidget
                       color: colorScheme.onSurface.withOpacity(0.6),
                     ),
                   ),
-                  if (notification.type ==
-                          NotificationType.connectionRequest &&
+                  if (notification.type == NotificationType.connectionRequest &&
                       (onAccept != null || onDeny != null)) ...[
                     const SizedBox(height: 8),
                     Row(

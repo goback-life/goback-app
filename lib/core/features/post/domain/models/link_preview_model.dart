@@ -1,12 +1,12 @@
 /// Model for link preview metadata.
-/// 
+///
 /// This model represents metadata extracted from a URL for display
 /// as a preview card (like Twitter/X link previews).
-/// 
+///
 /// **Future Implementation:**
 /// This structure is created now for future compatibility when link
 /// preview fetching is implemented.
-/// 
+///
 /// Note: This is a simple class for now. When link previews are fully
 /// implemented, this can be converted to a freezed model.
 class LinkPreviewModel {

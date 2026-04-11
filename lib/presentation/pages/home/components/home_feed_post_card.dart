@@ -81,13 +81,18 @@ class HomeFeedPostCard extends HookConsumerWidget
                     children: [
                       isText
                           ? _buildTextPost(
-                              context, theme, colorScheme, textTheme,
-                              isTextExpanded.value)
+                              context,
+                              theme,
+                              colorScheme,
+                              textTheme,
+                              isTextExpanded.value,
+                            )
                           : AspectRatio(
                               aspectRatio: aspectRatio,
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(
-                                    feedPostImageRadius),
+                                  feedPostImageRadius,
+                                ),
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
@@ -95,40 +100,38 @@ class HomeFeedPostCard extends HookConsumerWidget
                                       imageUrl: displayImageUrl,
                                       fit: BoxFit.cover,
                                       fadeInDuration: const Duration(
-                                          milliseconds: 200),
+                                        milliseconds: 200,
+                                      ),
                                       fadeOutDuration: const Duration(
-                                          milliseconds: 100),
-                                      memCacheWidth:
-                                          (feedPostWidth * 2).toInt(),
-                                      memCacheHeight: ((feedPostWidth * 2) /
-                                              aspectRatio)
+                                        milliseconds: 100,
+                                      ),
+                                      memCacheWidth: (feedPostWidth * 2)
                                           .toInt(),
+                                      memCacheHeight:
+                                          ((feedPostWidth * 2) / aspectRatio)
+                                              .toInt(),
                                       placeholder: (context, url) => Stack(
                                         children: [
-                                          Container(
-                                              color: colorScheme.surface),
+                                          Container(color: colorScheme.surface),
                                           Positioned(
                                             top: placeholderPadding,
                                             left: placeholderPadding,
                                             child: isVideo
-                                                ? Assets.svg
-                                                    .placeholderVideo
-                                                    .render()
-                                                : Assets.svg
-                                                    .placeholderImage
-                                                    .render(),
+                                                ? Assets.svg.placeholderVideo
+                                                      .render()
+                                                : Assets.svg.placeholderImage
+                                                      .render(),
                                           ),
                                         ],
                                       ),
                                       errorWidget: (context, url, error) =>
-                                          Container(
-                                              color: colorScheme.surface),
+                                          Container(color: colorScheme.surface),
                                     ),
                                     if (isVideo)
                                       Center(
                                         child: Assets.svg.play.render(
-                                          colorFilter: colorScheme.primary
-                                              .asSrcIn,
+                                          colorFilter:
+                                              colorScheme.primary.asSrcIn,
                                         ),
                                       ),
                                   ],
@@ -159,7 +162,9 @@ class HomeFeedPostCard extends HookConsumerWidget
                     // Calculate post preview height
                     final postHeight = isText
                         ? _calculateTextPostHeight(
-                            post.description ?? '', textTheme)
+                            post.description ?? '',
+                            textTheme,
+                          )
                         : feedPostWidth / aspectRatio;
                     return HomeLockoutJoinButton(
                       post: post,
@@ -175,7 +180,8 @@ class HomeFeedPostCard extends HookConsumerWidget
   }
 
   double _calculateTextPostHeight(String text, TextTheme textTheme) {
-    final textStyle = textTheme.bodyMedium?.copyWith(color: MainColors.dark) ??
+    final textStyle =
+        textTheme.bodyMedium?.copyWith(color: MainColors.dark) ??
         const TextStyle(color: MainColors.dark);
     final textPainter = TextPainter(
       text: TextSpan(text: text, style: textStyle),
@@ -187,7 +193,8 @@ class HomeFeedPostCard extends HookConsumerWidget
   }
 
   bool _isTextLong(String text, TextTheme textTheme) {
-    final textStyle = textTheme.bodyMedium?.copyWith(color: MainColors.dark) ??
+    final textStyle =
+        textTheme.bodyMedium?.copyWith(color: MainColors.dark) ??
         const TextStyle(color: MainColors.dark);
     final textPainter = TextPainter(
       text: TextSpan(text: text, style: textStyle),
@@ -206,7 +213,8 @@ class HomeFeedPostCard extends HookConsumerWidget
     bool isExpanded,
   ) {
     final text = post.description ?? '';
-    final textStyle = textTheme.bodyMedium?.copyWith(color: MainColors.dark) ??
+    final textStyle =
+        textTheme.bodyMedium?.copyWith(color: MainColors.dark) ??
         const TextStyle(color: MainColors.dark);
 
     return AnimatedSize(
@@ -236,9 +244,12 @@ class HomeFeedPostCard extends HookConsumerWidget
 
   Future<void> _navigateToUserProfile(WidgetRef ref) async {
     final currentUserAsync = ref.read(getCurrentUserProvider);
-    final isCurrentUser = currentUserAsync.whenOrNull(
-          data: (userResult) =>
-              userResult.fold((user) => user.id == post.authorId, (error) => false),
+    final isCurrentUser =
+        currentUserAsync.whenOrNull(
+          data: (userResult) => userResult.fold(
+            (user) => user.id == post.authorId,
+            (error) => false,
+          ),
         ) ??
         false;
 

@@ -104,8 +104,10 @@ Future<void> profileFormOnFailure(
 ) async {
   logger.error('Profile form failed', exception: error);
 
-  final handled = CommonSupabaseExceptionUIHandler()
-      .handleSupabaseException(context: ref.context, exception: error);
+  final handled = CommonSupabaseExceptionUIHandler().handleSupabaseException(
+    context: ref.context,
+    exception: error,
+  );
 
   if (!handled) {
     switch (error) {

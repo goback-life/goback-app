@@ -1,8 +1,7 @@
 import 'package:cloudless/core/features/notification/domain/contracts/notification_repository_contract.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 
-class MarkNotificationsAsReadUseCase
-    implements UseCaseContract<Result<void>> {
+class MarkNotificationsAsReadUseCase implements UseCaseContract<Result<void>> {
   const MarkNotificationsAsReadUseCase({
     required this.repository,
     required this.userId,
@@ -24,4 +23,3 @@ class MarkNotificationsAsReadUseCase
     );
   }
 }
-

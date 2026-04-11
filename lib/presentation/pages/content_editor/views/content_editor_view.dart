@@ -54,13 +54,14 @@ class ContentEditorView extends HookConsumerWidget
         final mentionedUserIds = description.isNotEmpty
             ? TextPostParser.parseMentions(description, allUsers)
             : <String>[];
-        
+
         // Only update if different to avoid infinite loops
         final currentTagged = contentCreation.data.taggedUserIds;
-        final isDifferent = mentionedUserIds.length != currentTagged.length ||
+        final isDifferent =
+            mentionedUserIds.length != currentTagged.length ||
             !mentionedUserIds.every((id) => currentTagged.contains(id)) ||
             !currentTagged.every((id) => mentionedUserIds.contains(id));
-        
+
         if (isDifferent) {
           contentCreation.updateTaggedUsers(mentionedUserIds);
         }
@@ -78,73 +79,74 @@ class ContentEditorView extends HookConsumerWidget
           CustomSpace.vertical(titleToImage),
           Expanded(
             child: CustomScrollView(
-                  controller: scrollController,
-                  slivers: [
-                    SliverList(
-                      delegate: SliverChildListDelegate([
-                        SizedBox(height: verticalSpacing),
+              controller: scrollController,
+              slivers: [
+                SliverList(
+                  delegate: SliverChildListDelegate([
+                    SizedBox(height: verticalSpacing),
 
-                        // Show media selection only for non-text posts
-                        if (contentCreation.data.contentType != ContentType.text &&
-                            (contentCreation.mainImage != null ||
-                                contentCreation.data.existingImageUrl != null ||
-                                contentCreation.data.existingVideoUrl != null))
-                          CustomPadding(
-                            horizontal: horizontalPadding,
-                            bottom: mediaToDescription,
-                            child: ContentEditorSelectedMedia(
-                              mediaFile: contentCreation.mainImage,
-                              firstFrameFile: contentCreation.data.firstFrame,
-                              thumbnailFile: contentCreation.thumbnail,
-                              imageUrl: contentCreation.data.existingImageUrl,
-                              videoUrl: contentCreation.data.existingVideoUrl,
-                              thumbnailUrl:
-                                  contentCreation.data.existingThumbnailUrl,
-                              contentType: contentCreation.data.contentType,
-                              onEdit: showMediaPicker,
-                              onEditThumbnail: contentCreation.data.isVideo
-                                  ? showThumbnailPicker
-                                  : null,
-                              onImageFlipped: contentCreation.updateImage,
-                              isExtractingThumbnail: isExtractingThumbnail,
-                            ),
-                          ),
-
-                        // Show text editor for text posts, description for media posts
-                        CustomPadding(
-                          horizontal: horizontalPadding,
-                          bottom: verticalSpacing,
-                          child: contentCreation.data.contentType == ContentType.text
-                              ? ContentEditorTextPost(
-                                  initialText: contentCreation.data.description,
-                                  onChanged: contentCreation.updateDescription,
-                                  allUsers: allUsers,
-                                )
-                              : ContentEditorPostDescription(
-                                  initialText: contentCreation.data.description,
-                                  onChanged: contentCreation.updateDescription,
-                                  allUsers: allUsers,
-                                ),
-                        ),
-                      ]),
-                    ),
-
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      fillOverscroll: true,
-                      child: CustomAlign.bottomCenter(
-                        child: SafeArea(
-                          top: false,
-                          child: CustomPadding(
-                            horizontal: horizontalPadding,
-                            bottom: bottomMargin,
-                            child: const ContentEditorButton(),
-                          ),
+                    // Show media selection only for non-text posts
+                    if (contentCreation.data.contentType != ContentType.text &&
+                        (contentCreation.mainImage != null ||
+                            contentCreation.data.existingImageUrl != null ||
+                            contentCreation.data.existingVideoUrl != null))
+                      CustomPadding(
+                        horizontal: horizontalPadding,
+                        bottom: mediaToDescription,
+                        child: ContentEditorSelectedMedia(
+                          mediaFile: contentCreation.mainImage,
+                          firstFrameFile: contentCreation.data.firstFrame,
+                          thumbnailFile: contentCreation.thumbnail,
+                          imageUrl: contentCreation.data.existingImageUrl,
+                          videoUrl: contentCreation.data.existingVideoUrl,
+                          thumbnailUrl:
+                              contentCreation.data.existingThumbnailUrl,
+                          contentType: contentCreation.data.contentType,
+                          onEdit: showMediaPicker,
+                          onEditThumbnail: contentCreation.data.isVideo
+                              ? showThumbnailPicker
+                              : null,
+                          onImageFlipped: contentCreation.updateImage,
+                          isExtractingThumbnail: isExtractingThumbnail,
                         ),
                       ),
+
+                    // Show text editor for text posts, description for media posts
+                    CustomPadding(
+                      horizontal: horizontalPadding,
+                      bottom: verticalSpacing,
+                      child:
+                          contentCreation.data.contentType == ContentType.text
+                          ? ContentEditorTextPost(
+                              initialText: contentCreation.data.description,
+                              onChanged: contentCreation.updateDescription,
+                              allUsers: allUsers,
+                            )
+                          : ContentEditorPostDescription(
+                              initialText: contentCreation.data.description,
+                              onChanged: contentCreation.updateDescription,
+                              allUsers: allUsers,
+                            ),
                     ),
-                  ],
+                  ]),
                 ),
+
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  fillOverscroll: true,
+                  child: CustomAlign.bottomCenter(
+                    child: SafeArea(
+                      top: false,
+                      child: CustomPadding(
+                        horizontal: horizontalPadding,
+                        bottom: bottomMargin,
+                        child: const ContentEditorButton(),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -79,14 +79,20 @@ class LockoutCompleteView extends HookConsumerWidget
                     child: ElevatedButton(
                       onPressed: () {
                         // Set pending lockout for content editor (if we have a session ID)
-                        logger.info('LockoutComplete: lockoutSessionId = $lockoutSessionId');
+                        logger.info(
+                          'LockoutComplete: lockoutSessionId = $lockoutSessionId',
+                        );
                         if (lockoutSessionId.isNotEmpty) {
                           ref
                               .read(pendingLockoutPostProvider.notifier)
                               .setLockoutId(lockoutSessionId);
-                          logger.info('LockoutComplete: Set pending lockout ID');
+                          logger.info(
+                            'LockoutComplete: Set pending lockout ID',
+                          );
                         } else {
-                          logger.warning('LockoutComplete: lockoutSessionId is empty');
+                          logger.warning(
+                            'LockoutComplete: lockoutSessionId is empty',
+                          );
                         }
                         // Open media picker, then navigate to content editor
                         postCreationInit.selectMainImage();
@@ -100,7 +106,9 @@ class LockoutCompleteView extends HookConsumerWidget
                         ),
                       ),
                       child: Text(
-                        translator.translate('pages.lockout_complete.share_button'),
+                        translator.translate(
+                          'pages.lockout_complete.share_button',
+                        ),
                         style: textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -117,7 +125,9 @@ class LockoutCompleteView extends HookConsumerWidget
                       // Pass user's actual start time (important for joiners)
                       if (lockoutSessionId.isNotEmpty) {
                         final userStartedAt = await storable.getLockoutStart();
-                        final sessionService = ref.read(lockoutSessionServiceProvider);
+                        final sessionService = ref.read(
+                          lockoutSessionServiceProvider,
+                        );
                         await sessionService.completeSessionWithoutPost(
                           lockoutSessionId,
                           userStartedAt: userStartedAt,
@@ -129,7 +139,9 @@ class LockoutCompleteView extends HookConsumerWidget
                       router.go(const HomeRoutable());
                     },
                     child: Text(
-                      translator.translate('pages.lockout_complete.skip_button'),
+                      translator.translate(
+                        'pages.lockout_complete.skip_button',
+                      ),
                       style: textTheme.bodyLarge?.copyWith(
                         color: colorScheme.surface.withValues(alpha: 0.7),
                       ),

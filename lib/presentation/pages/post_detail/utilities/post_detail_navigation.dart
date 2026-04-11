@@ -43,5 +43,4 @@ class PostDetailNavigation with MainLayout {
       }
     }
   }
-
 }

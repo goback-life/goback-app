@@ -107,8 +107,7 @@ class _ReceiveCodeCard extends HookConsumerWidget {
         result.fold(
           (validation) => validation.when(
             valid: (profile) {
-              creatorName.value =
-                  profile['username'] as String? ?? 'Unknown';
+              creatorName.value = profile['username'] as String? ?? 'Unknown';
               cardState.value = _CardState.confirmed;
             },
             invalid: (msg) {

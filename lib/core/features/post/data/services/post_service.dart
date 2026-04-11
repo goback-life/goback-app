@@ -43,12 +43,11 @@ class PostService implements PostServiceContract {
       PostReportService(supabaseClient: supabaseClient);
 
   PostQueryService get _queryService => PostQueryService(
-        supabaseClient: supabaseClient,
-        enrichmentService: _enrichmentService,
-      );
+    supabaseClient: supabaseClient,
+    enrichmentService: _enrichmentService,
+  );
 
-  PostCrudService get _crudService =>
-      PostCrudService(supabaseClient);
+  PostCrudService get _crudService => PostCrudService(supabaseClient);
 
   @override
   Future<PostDto> createPostWithMedia({
@@ -354,7 +353,10 @@ class PostService implements PostServiceContract {
         }
       }
     } else if (newThumbnailFile != null && contentType == ContentType.video) {
-      final currentPost = await _crudService.getPostField(postId, 'thumbnail_url');
+      final currentPost = await _crudService.getPostField(
+        postId,
+        'thumbnail_url',
+      );
       final oldThumbnailUrl = currentPost['thumbnail_url'] as String?;
 
       if (oldThumbnailUrl != null && oldThumbnailUrl.isNotEmpty) {
@@ -424,10 +426,7 @@ class PostService implements PostServiceContract {
     required String postId,
     required String userId,
   }) async {
-    return _reportService.hasUserReportedPost(
-      postId: postId,
-      userId: userId,
-    );
+    return _reportService.hasUserReportedPost(postId: postId, userId: userId);
   }
 
   @override

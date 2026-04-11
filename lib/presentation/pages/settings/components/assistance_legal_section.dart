@@ -40,7 +40,9 @@ class AssistanceLegalSection extends HookConsumerWidget
         SizedBox(height: titleSectionToElement),
 
         SettingsMenuItem(
-          icon: Assets.svg.assistance.render(colorFilter: colorScheme.onSurface.asSrcIn),
+          icon: Assets.svg.assistance.render(
+            colorFilter: colorScheme.onSurface.asSrcIn,
+          ),
           title: translator.translate('pages.settings.assistance'),
           onTap: openAssistanceUrl,
         ),
@@ -48,7 +50,9 @@ class AssistanceLegalSection extends HookConsumerWidget
         SizedBox(height: verticalSpacing),
 
         SettingsMenuItem(
-          icon: Assets.svg.privacyPolicy.render(colorFilter: colorScheme.onSurface.asSrcIn),
+          icon: Assets.svg.privacyPolicy.render(
+            colorFilter: colorScheme.onSurface.asSrcIn,
+          ),
           title: translator.translate('pages.settings.privacy_policy'),
           onTap: openPrivacyPolicyUrl,
         ),
@@ -56,7 +60,9 @@ class AssistanceLegalSection extends HookConsumerWidget
         SizedBox(height: verticalSpacing),
 
         SettingsMenuItem(
-          icon: Assets.svg.termsConditions.render(colorFilter: colorScheme.onSurface.asSrcIn),
+          icon: Assets.svg.termsConditions.render(
+            colorFilter: colorScheme.onSurface.asSrcIn,
+          ),
           title: translator.translate('pages.settings.terms_conditions'),
           onTap: openTermsOfServiceUrl,
         ),

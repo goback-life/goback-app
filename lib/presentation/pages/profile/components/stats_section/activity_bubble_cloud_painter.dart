@@ -125,12 +125,14 @@ class ActivityBubbleCloudPainter extends CustomPainter {
     for (var i = 0; i < bubbles.length; i++) {
       final sqrtVal = sqrt(bubbles[i].totalMinutes.toDouble());
       final radius = max(minRadius, (sqrtVal / sqrtMax) * maxRadius);
-      packed.add(_PackedBubble(
-        bubble: bubbles[i],
-        radius: radius,
-        center: Offset.zero,
-        color: _kPalette[i % _kPalette.length],
-      ));
+      packed.add(
+        _PackedBubble(
+          bubble: bubbles[i],
+          radius: radius,
+          center: Offset.zero,
+          color: _kPalette[i % _kPalette.length],
+        ),
+      );
     }
 
     // Sort largest first

@@ -60,8 +60,9 @@ class AuthNavigationFlowMiddleware extends Middleware {
               _logoutDebounce?.cancel();
               _logoutDebounce = Timer(_logoutDebounceDuration, () {
                 // Re-check auth state after debounce — if it recovered, skip.
-                final stillUnauthenticated =
-                    !container.read(isAuthenticatedProvider);
+                final stillUnauthenticated = !container.read(
+                  isAuthenticatedProvider,
+                );
                 if (!stillUnauthenticated) return;
 
                 container

@@ -25,4 +25,3 @@ class GetLockoutRemainingTimeUseCase implements UseCaseContract<Duration?> {
     return lockoutEnd.difference(now);
   }
 }
-

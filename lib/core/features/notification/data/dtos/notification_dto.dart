@@ -27,4 +27,3 @@ sealed class NotificationDto with _$NotificationDto {
   factory NotificationDto.fromJson(Map<String, dynamic> json) =>
       _$NotificationDtoFromJson(json);
 }
-

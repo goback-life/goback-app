@@ -113,7 +113,8 @@ class CircleProfilePage extends HookConsumerWidget
           // Actions dropdown
           if (isMenuVisible.value)
             Positioned(
-              top: MediaQuery.of(context).padding.top +
+              top:
+                  MediaQuery.of(context).padding.top +
                   hamburgerTopOffset * s +
                   40,
               right: hamburgerRightOffset * s,

@@ -8,10 +8,7 @@ import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 class HomeDateBadge extends StatelessWidget with MainLayout, HomeLayout {
-  const HomeDateBadge({
-    this.displayDate,
-    super.key,
-  });
+  const HomeDateBadge({this.displayDate, super.key});
 
   /// The date to display. If null, shows today's date.
   final DateTime? displayDate;

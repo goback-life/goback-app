@@ -26,10 +26,7 @@ import 'package:flutter/material.dart';
 /// Matches Figma node 157:113. Publishes directly to full circle
 /// (no member selection screen).
 class LockoutPostEditorView extends HookConsumerWidget {
-  const LockoutPostEditorView({
-    required this.contentCreation,
-    super.key,
-  });
+  const LockoutPostEditorView({required this.contentCreation, super.key});
 
   final PostCreationResult contentCreation;
 
@@ -46,20 +43,23 @@ class LockoutPostEditorView extends HookConsumerWidget {
     final userId = currentUser.whenOrNull(
       data: (r) => r.fold((u) => u.id, (_) => null),
     );
-    final profileAsync =
-        userId != null ? ref.watch(getProfileProvider(userId)) : null;
+    final profileAsync = userId != null
+        ? ref.watch(getProfileProvider(userId))
+        : null;
 
-    final username = profileAsync?.whenOrNull(
+    final username =
+        profileAsync?.whenOrNull(
           data: (r) => r.fold((p) => p?.username, (_) => null),
         ) ??
         '';
     final avatarUrl = profileAsync?.whenOrNull(
-          data: (r) => r.fold((p) => p?.avatarUrl, (_) => null),
-        );
+      data: (r) => r.fold((p) => p?.avatarUrl, (_) => null),
+    );
 
     // Watch circle members for total count (used by restrict visibility)
     final circleMembersAsync = ref.watch(getCircleMembersProvider);
-    final totalMemberCount = circleMembersAsync.whenOrNull(
+    final totalMemberCount =
+        circleMembersAsync.whenOrNull(
           data: (r) => r.fold((members) => members.length, (_) => 0),
         ) ??
         0;
@@ -103,9 +103,7 @@ class LockoutPostEditorView extends HookConsumerWidget {
                             child: SizedBox(
                               width: 296 * s,
                               height: 296 * s,
-                              child: ClipSquircle(
-                                child: _buildMediaPreview(),
-                              ),
+                              child: ClipSquircle(child: _buildMediaPreview()),
                             ),
                           ),
 
@@ -150,7 +148,8 @@ class LockoutPostEditorView extends HookConsumerWidget {
 
                   // Restrict visibility link
                   _RestrictVisibilityLink(
-                    visibleCount: totalMemberCount -
+                    visibleCount:
+                        totalMemberCount -
                         contentCreation.data.excludedUserIds.length,
                     hasExclusions:
                         contentCreation.data.excludedUserIds.isNotEmpty,
@@ -199,10 +198,11 @@ class LockoutPostEditorView extends HookConsumerWidget {
     // disposes this widget (and its ref) before the call returns.
     final shareNotifier = ref.read(pendingShareProvider.notifier);
     final lockoutId = ref.read(pendingLockoutPostProvider);
-    final userId = ref.read(getCurrentUserProvider).whenOrNull(
-      data: (r) => r.fold((u) => u.id, (_) => null),
-    );
-    final imagePath = contentCreation.data.firstFrame?.path ??
+    final userId = ref
+        .read(getCurrentUserProvider)
+        .whenOrNull(data: (r) => r.fold((u) => u.id, (_) => null));
+    final imagePath =
+        contentCreation.data.firstFrame?.path ??
         contentCreation.mainImage?.path;
     final description = contentCreation.data.description;
 
@@ -222,21 +222,16 @@ class LockoutPostEditorView extends HookConsumerWidget {
           description: description,
         );
       }
-      result.fold(
-        (_) => router.go(const HomeRoutable()),
-        (error) {
-          if (!context.mounted) return;
-          MainAlert.showError(
-            context: context,
-            title: translator.translate(
-              'components.alert.post_error.title',
-            ),
-            content: translator.translate(
-              'components.alert.post_error.error_message',
-            ),
-          );
-        },
-      );
+      result.fold((_) => router.go(const HomeRoutable()), (error) {
+        if (!context.mounted) return;
+        MainAlert.showError(
+          context: context,
+          title: translator.translate('components.alert.post_error.title'),
+          content: translator.translate(
+            'components.alert.post_error.error_message',
+          ),
+        );
+      });
     }
   }
 }
@@ -269,8 +264,7 @@ class _AvatarRow extends StatelessWidget {
                     fit: BoxFit.cover,
                     width: avatarSize,
                     height: avatarSize,
-                    placeholder: (_, __) =>
-                        Container(color: MainColors.dark),
+                    placeholder: (_, __) => Container(color: MainColors.dark),
                     errorWidget: (_, __, ___) =>
                         Container(color: MainColors.dark),
                   )
@@ -316,6 +310,7 @@ class _DescriptionInput extends HookWidget {
         currentChars.value = controller.text.length;
         onChanged(controller.text);
       }
+
       controller.addListener(listener);
       return () => controller.removeListener(listener);
     }, [controller]);
@@ -338,9 +333,7 @@ class _DescriptionInput extends HookWidget {
             letterSpacing: -0.9 * scale,
           ),
           decoration: InputDecoration(
-            hintText: translator.translate(
-              'pages.content_editor.hint_text',
-            ),
+            hintText: translator.translate('pages.content_editor.hint_text'),
             hintStyle: TextStyle(
               fontFamily: MainFontFamilies.quicksand,
               fontWeight: FontWeight.w400,
@@ -446,9 +439,7 @@ class _RestrictVisibilityLink extends StatelessWidget {
             fontFamily: MainFontFamilies.quicksand,
             fontWeight: FontWeight.w400,
             fontSize: 14 * scale,
-            color: MainColors.dark.withValues(
-              alpha: hasExclusions ? 0.8 : 0.6,
-            ),
+            color: MainColors.dark.withValues(alpha: hasExclusions ? 0.8 : 0.6),
             letterSpacing: -0.84 * scale,
           ),
         ),

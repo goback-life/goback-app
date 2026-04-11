@@ -112,9 +112,7 @@ JoinCircleFormResult useJoinCircleForm(WidgetRef ref) {
           content: Text(
             translator.translate('pages.join_circle.error.circle_size_limit'),
           ),
-          primaryButtonText: translator.translate(
-            'pages.your_circle.title',
-          ),
+          primaryButtonText: translator.translate('pages.your_circle.title'),
           secondaryButtonText: translator.translate(
             'components.alert.join_circle.cancel',
           ),

@@ -17,13 +17,16 @@ part 'aggregated_notification_dto.g.dart';
 sealed class AggregatedNotificationDto with _$AggregatedNotificationDto {
   const factory AggregatedNotificationDto({
     @JsonKey(name: 'notification_type') required String notificationType,
+
     /// Reference ID (post_id, lockout_session_id, etc.) depending on type
     @JsonKey(name: 'reference_id') String? referenceId,
+
     /// Latest actor ID for display
     @JsonKey(name: 'latest_actor_id') String? latestActorId,
     @JsonKey(name: 'actor_ids') required List<String> actorIds,
     @JsonKey(name: 'actor_usernames') required List<String> actorUsernames,
     @JsonKey(name: 'actor_avatar_urls') List<String>? actorAvatarUrls,
+
     /// Number of actors for this notification group
     @JsonKey(name: 'actor_count') required int actorCount,
     @JsonKey(name: 'updated_at') required String updatedAt,
@@ -35,4 +38,3 @@ sealed class AggregatedNotificationDto with _$AggregatedNotificationDto {
   factory AggregatedNotificationDto.fromJson(Map<String, dynamic> json) =>
       _$AggregatedNotificationDtoFromJson(json);
 }
-

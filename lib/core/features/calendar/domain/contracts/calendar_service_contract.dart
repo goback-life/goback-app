@@ -38,7 +38,9 @@ abstract class CalendarServiceContract {
   FutureResult<void> unsavePostFromCalendar(String postId);
 
   /// Gets pending posts for selection (unsaved lockout posts within 72h).
-  Future<List<PendingSelectionPostDto>> getPendingSelectionPosts({DateTime? date});
+  Future<List<PendingSelectionPostDto>> getPendingSelectionPosts({
+    DateTime? date,
+  });
 
   /// Checks if user has pending posts for selection.
   Future<bool> hasPendingSelection({DateTime? date});

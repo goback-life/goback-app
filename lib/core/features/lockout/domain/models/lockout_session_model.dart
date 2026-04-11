@@ -19,6 +19,7 @@ sealed class LockoutSessionModel with _$LockoutSessionModel {
     String? locationName,
     String? postId,
     DateTime? createdAt,
+
     /// Friends who joined this lockout session (user IDs)
     @Default([]) List<String> participants,
     // Denormalized from RPC for display:

@@ -105,11 +105,8 @@ class CalendarGrid extends StatelessWidget with MainLayout, ProfileLayout {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: weekDays
           .map(
-            (dayData) => CalendarDay(
-              dayData: dayData,
-              scale: scale,
-              onTap: onDayTap,
-            ),
+            (dayData) =>
+                CalendarDay(dayData: dayData, scale: scale, onTap: onDayTap),
           )
           .toList(),
     );

@@ -26,7 +26,8 @@ class FriendLockedOutItem extends StatelessWidget {
     final textTheme = theme.textTheme;
 
     final timeRemaining = _formatTimeRemaining(session.endsAt);
-    final hasActivity = session.actionText != null && session.actionText!.isNotEmpty;
+    final hasActivity =
+        session.actionText != null && session.actionText!.isNotEmpty;
 
     return GestureDetector(
       onTap: onTap,
@@ -93,7 +94,8 @@ class FriendLockedOutItem extends StatelessWidget {
           height: _avatarSize,
           fit: BoxFit.cover,
           placeholder: (_, __) => _buildFallbackAvatar(colorScheme, textTheme),
-          errorWidget: (_, __, ___) => _buildFallbackAvatar(colorScheme, textTheme),
+          errorWidget: (_, __, ___) =>
+              _buildFallbackAvatar(colorScheme, textTheme),
         ),
       );
     }

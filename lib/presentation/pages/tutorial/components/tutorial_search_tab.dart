@@ -25,10 +25,7 @@ class TutorialSearchTab extends HookConsumerWidget {
       final result = await ref.read(
         sendConnectionRequestProvider(userId).future,
       );
-      result.fold(
-        (_) => onFriendAdded(),
-        (_) {},
-      );
+      result.fold((_) => onFriendAdded(), (_) {});
 
       sendingIds.value = {...sendingIds.value}..remove(userId);
     }
@@ -50,8 +47,7 @@ class TutorialSearchTab extends HookConsumerWidget {
                   itemCount: search.results.length,
                   itemBuilder: (context, index) {
                     final (profile, status) = search.results[index];
-                    final isSending =
-                        sendingIds.value.contains(profile.id);
+                    final isSending = sendingIds.value.contains(profile.id);
                     final isAlreadyConnected =
                         status == ConnectionStatus.connected;
                     final isPending =

@@ -6,10 +6,7 @@ import 'package:flutter/material.dart';
 ///
 /// No score, no completion text — tutorial only shows countdown.
 class TutorialCutoutPainter extends CustomPainter {
-  TutorialCutoutPainter({
-    required this.bgColor,
-    required this.countdown,
-  });
+  TutorialCutoutPainter({required this.bgColor, required this.countdown});
 
   final Color bgColor;
   final String countdown;
@@ -84,21 +81,30 @@ Path _trianglePath(Size size) {
   return Path()
     ..moveTo(10.0244 * sx, 55.1414 * sy)
     ..cubicTo(
-      1.42744 * sx, 48.7205 * sy,
-      2.1564 * sx, 35.6124 * sy,
-      11.4122 * sx, 30.1843 * sy,
+      1.42744 * sx,
+      48.7205 * sy,
+      2.1564 * sx,
+      35.6124 * sy,
+      11.4122 * sx,
+      30.1843 * sy,
     )
     ..lineTo(59.3289 * sx, 2.0836 * sy)
     ..cubicTo(
-      69.3286 * sx, -3.7807 * sy,
-      81.917 * sx, 3.43033 * sy,
-      81.917 * sx, 15.0227 * sy,
+      69.3286 * sx,
+      -3.7807 * sy,
+      81.917 * sx,
+      3.43033 * sy,
+      81.917 * sx,
+      15.0227 * sy,
     )
     ..lineTo(81.917 * sx, 78.9116 * sy)
     ..cubicTo(
-      81.917 * sx, 91.2584 * sy,
-      67.8333 * sx, 98.3179 * sy,
-      57.941 * sx, 90.9295 * sy,
+      81.917 * sx,
+      91.2584 * sy,
+      67.8333 * sx,
+      98.3179 * sy,
+      57.941 * sx,
+      90.9295 * sy,
     )
     ..lineTo(10.0244 * sx, 55.1414 * sy)
     ..close();

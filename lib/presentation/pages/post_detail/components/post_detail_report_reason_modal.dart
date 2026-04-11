@@ -27,9 +27,7 @@ class PostDetailReportReasonModal extends StatelessWidget
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(modalBorderRadius),
       ),
-      insetPadding: EdgeInsets.symmetric(
-        horizontal: modalHorizontalPadding,
-      ),
+      insetPadding: EdgeInsets.symmetric(horizontal: modalHorizontalPadding),
       child: AppGlassContainer(
         config: GlassConfig(
           variant: GlassVariant.regular,

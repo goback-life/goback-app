@@ -31,6 +31,7 @@ class TutorialView extends HookWidget {
           phase.value = TutorialPhase.feed;
         }
       }
+
       restore();
       return null;
     }, []);
@@ -50,11 +51,11 @@ class TutorialView extends HookWidget {
 
     return switch (phase.value!) {
       TutorialPhase.feed => TutorialFeedPhase(
-          onStartLockout: transitionToLockout,
-        ),
+        onStartLockout: transitionToLockout,
+      ),
       TutorialPhase.lockout => TutorialLockoutPhase(
-          onComplete: completeTutorial,
-        ),
+        onComplete: completeTutorial,
+      ),
     };
   }
 }

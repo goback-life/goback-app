@@ -59,9 +59,7 @@ class ActivityBubbleCloud extends HookConsumerWidget {
     // Convert DTOs to bubbles with emoji resolution
     final bubbles = activities.map((stat) {
       final presetKey = labelToKey[stat.actionText];
-      final emoji = presetKey != null
-          ? _kPresets[presetKey]!
-          : _kDefaultEmoji;
+      final emoji = presetKey != null ? _kPresets[presetKey]! : _kDefaultEmoji;
       return ActivityBubble(
         label: stat.actionText,
         emoji: emoji,

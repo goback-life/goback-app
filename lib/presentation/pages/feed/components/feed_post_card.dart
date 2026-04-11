@@ -51,8 +51,7 @@ class FeedPostCard extends HookConsumerWidget {
         right: isCurrentUser ? rightInset : 0,
       ),
       child: Align(
-        alignment:
-            isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
+        alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
         child: SizedBox(
           width: squircleSize,
           child: Column(
@@ -76,14 +75,13 @@ class FeedPostCard extends HookConsumerWidget {
                               height: squircleSize,
                               memCacheWidth: (squircleSize * 2).toInt(),
                               fadeInDuration: const Duration(milliseconds: 200),
-                              fadeOutDuration:
-                                  const Duration(milliseconds: 100),
-                              placeholder: (_, __) => Container(
-                                color: MainColors.dark,
+                              fadeOutDuration: const Duration(
+                                milliseconds: 100,
                               ),
-                              errorWidget: (_, __, ___) => Container(
-                                color: MainColors.dark,
-                              ),
+                              placeholder: (_, __) =>
+                                  Container(color: MainColors.dark),
+                              errorWidget: (_, __, ___) =>
+                                  Container(color: MainColors.dark),
                             )
                           : Container(color: MainColors.dark),
                     ),
@@ -110,7 +108,8 @@ class FeedPostCard extends HookConsumerWidget {
                         width: avatarSize,
                         height: avatarSize,
                         child: ClipOval(
-                          child: (post.authorAvatarUrl != null &&
+                          child:
+                              (post.authorAvatarUrl != null &&
                                   post.authorAvatarUrl!.isNotEmpty)
                               ? CachedNetworkImage(
                                   imageUrl: post.authorAvatarUrl!,
@@ -157,7 +156,8 @@ class FeedPostCard extends HookConsumerWidget {
 
   Future<void> _navigateToUserProfile(WidgetRef ref) async {
     final currentUserAsync = ref.read(getCurrentUserProvider);
-    final isSelf = currentUserAsync.whenOrNull(
+    final isSelf =
+        currentUserAsync.whenOrNull(
           data: (r) => r.fold((u) => u.id == post.authorId, (_) => false),
         ) ??
         false;

@@ -58,19 +58,19 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final result = usePostReactions(ref, postId);
-    final currentUserId = ref.watch(getCurrentUserProvider).whenOrNull(
-          data: (r) => r.fold((u) => u.id, (_) => null),
-        );
+    final currentUserId = ref
+        .watch(getCurrentUserProvider)
+        .whenOrNull(data: (r) => r.fold((u) => u.id, (_) => null));
 
-    final members = ref.watch(getCircleMembersProvider).whenOrNull(
-          data: (r) => r.fold((list) => list, (_) => null),
-        );
+    final members = ref
+        .watch(getCircleMembersProvider)
+        .whenOrNull(data: (r) => r.fold((list) => list, (_) => null));
     final allUsers = useMentionAutocomplete(ref).allUsers;
     // Current user's profile for self-lookup (not in circle members list)
     final currentProfile = currentUserId != null
-        ? ref.watch(getProfileProvider(currentUserId!)).whenOrNull(
-              data: (r) => r.fold((p) => p, (_) => null),
-            )
+        ? ref
+              .watch(getProfileProvider(currentUserId!))
+              .whenOrNull(data: (r) => r.fold((p) => p, (_) => null))
         : null;
     String resolveName(String userId) {
       // Check current user first (not in circle members)
@@ -86,12 +86,11 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
       return userId.substring(0, 8);
     }
 
-    final reactions = result.reactions.whenOrNull(
-          data: (r) => r.fold(
-            (list) => list,
-            (_) => <PostReactionModel>[],
-          ),
-        ) as List<PostReactionModel>? ??
+    final reactions =
+        result.reactions.whenOrNull(
+              data: (r) => r.fold((list) => list, (_) => <PostReactionModel>[]),
+            )
+            as List<PostReactionModel>? ??
         <PostReactionModel>[];
 
     // Group by emoji and center-sort
@@ -108,30 +107,30 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
     final addW = 32.0 * scale;
 
     Widget addButton() => GestureDetector(
-          onTap: readOnly ? null : () => _showPicker(context, result),
-          child: Container(
-            width: addW,
-            height: pillH,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(pillRadius),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 0.5,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                '+',
-                style: TextStyle(
-                  fontSize: 18 * scale,
-                  color: MainColors.white,
-                  fontWeight: FontWeight.w300,
-                ),
-              ),
+      onTap: readOnly ? null : () => _showPicker(context, result),
+      child: Container(
+        width: addW,
+        height: pillH,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(pillRadius),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.3),
+            width: 0.5,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            '+',
+            style: TextStyle(
+              fontSize: 18 * scale,
+              color: MainColors.white,
+              fontWeight: FontWeight.w300,
             ),
           ),
-        );
+        ),
+      ),
+    );
 
     Widget buildPill(MapEntry<String, List<PostReactionModel>> entry) {
       final emoji = entry.key;
@@ -149,8 +148,7 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
           }
         },
         onLongPress: () {
-          final names =
-              list.map((r) => resolveName(r.userId)).toList();
+          final names = list.map((r) => resolveName(r.userId)).toList();
           _showReactors(context, emoji, names);
         },
         child: Container(
@@ -200,8 +198,9 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
                     scrollDirection: Axis.horizontal,
                     physics: const BouncingScrollPhysics(),
                     child: ConstrainedBox(
-                      constraints:
-                          BoxConstraints(minWidth: constraints.maxWidth),
+                      constraints: BoxConstraints(
+                        minWidth: constraints.maxWidth,
+                      ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -210,10 +209,7 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
                             if (i > 0) SizedBox(width: gap),
                             buildPill(arranged[i]),
                           ],
-                          if (!readOnly) ...[
-                            SizedBox(width: gap),
-                            addButton(),
-                          ],
+                          if (!readOnly) ...[SizedBox(width: gap), addButton()],
                         ],
                       ),
                     ),
@@ -239,19 +235,12 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
     );
   }
 
-  void _showReactors(
-    BuildContext context,
-    String emoji,
-    List<String> names,
-  ) {
+  void _showReactors(BuildContext context, String emoji, List<String> names) {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) => _ReactorListSheet(
-        emoji: emoji,
-        names: names,
-        scale: scale,
-      ),
+      builder: (_) =>
+          _ReactorListSheet(emoji: emoji, names: names, scale: scale),
     );
   }
 }
@@ -265,14 +254,14 @@ class _EmojiPickerSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:
-          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
         padding: EdgeInsets.all(16 * scale),
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A1A),
-          borderRadius:
-              BorderRadius.vertical(top: Radius.circular(20 * scale)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20 * scale)),
         ),
         child: SafeArea(
           child: Column(
@@ -283,11 +272,15 @@ class _EmojiPickerSheet extends StatelessWidget {
                 runSpacing: 12 * scale,
                 alignment: WrapAlignment.center,
                 children: PostDetailReactionPickerModal.availableEmojis
-                    .map((emoji) => GestureDetector(
-                          onTap: () => onSelected(emoji),
-                          child: Text(emoji,
-                              style: TextStyle(fontSize: 28 * scale)),
-                        ))
+                    .map(
+                      (emoji) => GestureDetector(
+                        onTap: () => onSelected(emoji),
+                        child: Text(
+                          emoji,
+                          style: TextStyle(fontSize: 28 * scale),
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
               SizedBox(height: 12 * scale),
@@ -347,8 +340,7 @@ class _ReactorListSheet extends StatelessWidget {
       padding: EdgeInsets.all(16 * scale),
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(20 * scale)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20 * scale)),
       ),
       child: SafeArea(
         child: Column(

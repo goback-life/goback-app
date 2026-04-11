@@ -97,8 +97,10 @@ mixin SupabaseResultProcessor implements SupabaseResultProcessorContract {
       AuthApiException() ||
       PostgrestException() ||
       AuthException() ||
-      StorageException() =>
-        _handleSupabaseException<T>(error as Exception, exceptionMapper),
+      StorageException() => _handleSupabaseException<T>(
+        error as Exception,
+        exceptionMapper,
+      ),
 
       Exception() => Failure(error),
       _ => Failure(UnhandledException('Unknown error occurred', cause: error)),

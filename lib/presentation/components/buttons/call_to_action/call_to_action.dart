@@ -86,7 +86,8 @@ class CallToAction extends StatelessWidget {
         : theme.getActiveColors(context, themeData, mode);
 
     final isDisabled = action == null;
-    final hasBorder = mode == CallToActionMode.outlined ||
+    final hasBorder =
+        mode == CallToActionMode.outlined ||
         mode == CallToActionMode.filledOutlined;
     final isTransparent = mode == CallToActionMode.empty;
     final radius = borderRadius.topLeft.x;
@@ -178,10 +179,7 @@ class CallToAction extends StatelessWidget {
       duration: duration,
       curve: curve,
       margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
-      child: AppGlassContainer(
-        config: glassConfig,
-        child: content,
-      ),
+      child: AppGlassContainer(config: glassConfig, child: content),
     );
   }
 

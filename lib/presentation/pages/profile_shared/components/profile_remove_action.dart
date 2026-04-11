@@ -32,7 +32,9 @@ class ProfileRemoveAction extends StatelessWidget
             SizedBox(
               width: menuIconSize,
               height: menuIconSize,
-              child: Assets.svg.removeFriend.render(colorFilter: colorScheme.onSurface.asSrcIn),
+              child: Assets.svg.removeFriend.render(
+                colorFilter: colorScheme.onSurface.asSrcIn,
+              ),
             ),
             SizedBox(width: menuIconSpacing),
             Text(

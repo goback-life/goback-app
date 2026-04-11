@@ -55,8 +55,11 @@ mixin FeedLayout {
   /// Max width available for the display name text.
   static double nameMaxWidth(double screenWidth) {
     final s = screenWidth / _ref;
-    return (squircleSize - avatarInsetFromSquircle - avatarSize -
-            avatarToNameGap - nameTrailingMargin) *
+    return (squircleSize -
+            avatarInsetFromSquircle -
+            avatarSize -
+            avatarToNameGap -
+            nameTrailingMargin) *
         s;
   }
 }

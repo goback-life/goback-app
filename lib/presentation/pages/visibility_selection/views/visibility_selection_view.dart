@@ -15,10 +15,7 @@ import 'package:flutter/material.dart';
 
 class VisibilitySelectionView extends HookConsumerWidget
     with MainLayout, VisibilitySelectionLayout {
-  const VisibilitySelectionView({
-    required this.members,
-    super.key,
-  });
+  const VisibilitySelectionView({required this.members, super.key});
 
   final List<ConnectionMemberModel> members;
 
@@ -153,29 +150,27 @@ class VisibilitySelectionView extends HookConsumerWidget
       // Member tiles for this letter
       widgets.add(
         SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              final profile = entry.value[index];
-              final isSelected =
-                  memberExclusion.selectedMembers.contains(profile.id);
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final profile = entry.value[index];
+            final isSelected = memberExclusion.selectedMembers.contains(
+              profile.id,
+            );
 
-              return GestureDetector(
-                onLongPress: () => memberExclusion.selectOnly(profile.id),
-                child: YourCircleFriendTile(
-                  profile: profile,
-                  isRemoveMode: true,
-                  isSelected: isSelected,
-                  onTap: () {},
-                  onSwipeDelete: () {},
-                  onToggle: () => memberExclusion.toggleMemberSelection(
-                    profile.id,
-                    selected: !isSelected,
-                  ),
+            return GestureDetector(
+              onLongPress: () => memberExclusion.selectOnly(profile.id),
+              child: YourCircleFriendTile(
+                profile: profile,
+                isRemoveMode: true,
+                isSelected: isSelected,
+                onTap: () {},
+                onSwipeDelete: () {},
+                onToggle: () => memberExclusion.toggleMemberSelection(
+                  profile.id,
+                  selected: !isSelected,
                 ),
-              );
-            },
-            childCount: entry.value.length,
-          ),
+              ),
+            );
+          }, childCount: entry.value.length),
         ),
       );
     }
@@ -270,10 +265,7 @@ class _GlassPill extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AppGlassContainer(
-        config: GlassConfig(
-          cornerRadius: radius,
-          interactive: true,
-        ),
+        config: GlassConfig(cornerRadius: radius, interactive: true),
         child: Container(
           height: height,
           padding: const EdgeInsets.symmetric(horizontal: 20),

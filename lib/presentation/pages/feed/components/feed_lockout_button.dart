@@ -55,13 +55,17 @@ class FeedLockoutButton extends HookConsumerWidget {
     final glowValue = useAnimation(
       TweenSequence<double>([
         TweenSequenceItem(
-          tween: Tween(begin: 0.0, end: 1.0)
-              .chain(CurveTween(curve: Curves.easeOutCubic)),
+          tween: Tween(
+            begin: 0.0,
+            end: 1.0,
+          ).chain(CurveTween(curve: Curves.easeOutCubic)),
           weight: 300,
         ),
         TweenSequenceItem(
-          tween: Tween(begin: 1.0, end: 0.0)
-              .chain(CurveTween(curve: Curves.easeInOutSine)),
+          tween: Tween(
+            begin: 1.0,
+            end: 0.0,
+          ).chain(CurveTween(curve: Curves.easeInOutSine)),
           weight: 800,
         ),
       ]).animate(glowController),
@@ -151,10 +155,7 @@ class FeedLockoutButton extends HookConsumerWidget {
 
     try {
       final notifier = ref.read(manualLockoutNotifierProvider.notifier);
-      await notifier.setLockout(
-        result.duration,
-        actionText: result.actionText,
-      );
+      await notifier.setLockout(result.duration, actionText: result.actionText);
       if (context.mounted) {
         router.go(const ManualLockoutRoutable());
       }
@@ -249,10 +250,7 @@ class _GlassOverlayPainter extends CustomPainter {
           ..shader = ui.Gradient.radial(
             Offset(bounds.left + bounds.width * 0.18, bounds.center.dy * 1.1),
             bounds.width * 0.40,
-            [
-              Colors.black.withValues(alpha: 0.10),
-              Colors.transparent,
-            ],
+            [Colors.black.withValues(alpha: 0.10), Colors.transparent],
           ),
       );
 
@@ -266,10 +264,7 @@ class _GlassOverlayPainter extends CustomPainter {
           ..shader = ui.Gradient.linear(
             Offset(bounds.center.dx, bounds.top),
             Offset(bounds.center.dx, bounds.center.dy),
-            [
-              Colors.white.withValues(alpha: 0.06),
-              Colors.transparent,
-            ],
+            [Colors.white.withValues(alpha: 0.06), Colors.transparent],
           ),
       );
 
@@ -309,10 +304,7 @@ class _GlassOverlayPainter extends CustomPainter {
         ..shader = ui.Gradient.radial(
           Offset(bounds.right * 0.82, bounds.bottom * 0.88),
           causticRadius,
-          [
-            Colors.white.withValues(alpha: causticAlpha),
-            Colors.transparent,
-          ],
+          [Colors.white.withValues(alpha: causticAlpha), Colors.transparent],
         ),
     );
   }

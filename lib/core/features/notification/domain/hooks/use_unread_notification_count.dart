@@ -9,4 +9,3 @@ AsyncValue<Result<int>> useUnreadNotificationCount(
 }) {
   return ref.watch(unreadNotificationCountProvider(userId: userId));
 }
-

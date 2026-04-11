@@ -67,45 +67,48 @@ class StatsShareCard extends StatelessWidget {
             Expanded(
               child: CustomPaint(
                 size: Size.infinite,
-                painter: LockoutLineChartPainter(
-                  dailyMinutes: dailyMinutes,
-                ),
+                painter: LockoutLineChartPainter(dailyMinutes: dailyMinutes),
               ),
             ),
             const SizedBox(height: 2),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                  .map((d) => Text(
-                        d,
-                        style: TextStyle(
-                          fontFamily: MainFontFamilies.quicksand,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 10,
-                          color: MainColors.white.withValues(alpha: 0.5),
-                        ),
-                      ))
+                  .map(
+                    (d) => Text(
+                      d,
+                      style: TextStyle(
+                        fontFamily: MainFontFamilies.quicksand,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 10,
+                        color: MainColors.white.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
             const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
-                    child:
-                        _StatTile(label: 'Total Hours', value: totalHours)),
+                  child: _StatTile(label: 'Total Hours', value: totalHours),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
-                    child: _StatTile(label: 'Avg Score', value: avgScore)),
+                  child: _StatTile(label: 'Avg Score', value: avgScore),
+                ),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
-                    child: _StatTile(label: 'Sessions', value: sessions)),
+                  child: _StatTile(label: 'Sessions', value: sessions),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
-                    child: _StatTile(label: 'Longest', value: longest)),
+                  child: _StatTile(label: 'Longest', value: longest),
+                ),
               ],
             ),
             const SizedBox(height: 12),

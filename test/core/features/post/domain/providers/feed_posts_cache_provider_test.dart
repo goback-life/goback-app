@@ -31,10 +31,7 @@ void main() {
     group('posts getter - 24-hour expiration filtering', () {
       test('returns only posts within 24 hours', () {
         final cache = container.read(feedPostsCacheProvider.notifier);
-        final testData = createPostsWithExpiry(
-          validCount: 3,
-          expiredCount: 2,
-        );
+        final testData = createPostsWithExpiry(validCount: 3, expiredCount: 2);
 
         // Add all posts to cache (valid + expired)
         for (final post in testData.all) {
@@ -65,9 +62,7 @@ void main() {
         // Post at 23h 59m should be visible
         final justValidPost = createFakePost(
           id: 'just-valid',
-          publishedAt: now.subtract(
-            const Duration(hours: 23, minutes: 59),
-          ),
+          publishedAt: now.subtract(const Duration(hours: 23, minutes: 59)),
         );
 
         cache.addPost(boundaryPost);
@@ -85,10 +80,12 @@ void main() {
 
         // Add only expired posts
         for (var i = 0; i < 5; i++) {
-          cache.addPost(createFakePost(
-            id: 'expired-$i',
-            publishedAt: now.subtract(Duration(hours: 25 + i)),
-          ));
+          cache.addPost(
+            createFakePost(
+              id: 'expired-$i',
+              publishedAt: now.subtract(Duration(hours: 25 + i)),
+            ),
+          );
         }
 
         expect(cache.posts, isEmpty);
@@ -100,10 +97,12 @@ void main() {
 
         // Add only valid posts
         for (var i = 0; i < 5; i++) {
-          cache.addPost(createFakePost(
-            id: 'valid-$i',
-            publishedAt: now.subtract(Duration(hours: 1 + i)),
-          ));
+          cache.addPost(
+            createFakePost(
+              id: 'valid-$i',
+              publishedAt: now.subtract(Duration(hours: 1 + i)),
+            ),
+          );
         }
 
         expect(cache.posts.length, equals(5));
@@ -114,10 +113,12 @@ void main() {
         final now = DateTime.now();
 
         // Add a post that's 23 hours old
-        cache.addPost(createFakePost(
-          id: 'soon-expiring',
-          publishedAt: now.subtract(const Duration(hours: 23)),
-        ));
+        cache.addPost(
+          createFakePost(
+            id: 'soon-expiring',
+            publishedAt: now.subtract(const Duration(hours: 23)),
+          ),
+        );
 
         // Verify getter returns fresh computation
         final posts1 = cache.posts;
@@ -131,50 +132,50 @@ void main() {
         expect(identical(posts1, posts2), isFalse);
       });
 
-      test('getter filters directly from current state - proves instant expiration', () {
-        // This test proves the REQUIREMENT: "instant expiration"
-        // If we used a timer-based approach, adding an expired post would
-        // show in the getter until the next timer tick. With getter-based
-        // filtering, it's filtered immediately.
+      test(
+        'getter filters directly from current state - proves instant expiration',
+        () {
+          // This test proves the REQUIREMENT: "instant expiration"
+          // If we used a timer-based approach, adding an expired post would
+          // show in the getter until the next timer tick. With getter-based
+          // filtering, it's filtered immediately.
 
-        final cache = container.read(feedPostsCacheProvider.notifier);
-        final now = DateTime.now();
+          final cache = container.read(feedPostsCacheProvider.notifier);
+          final now = DateTime.now();
 
-        // Add a valid post first
-        final validPost = createFakePost(
-          id: 'valid',
-          publishedAt: now.subtract(const Duration(hours: 12)),
-        );
-        cache.addPost(validPost);
+          // Add a valid post first
+          final validPost = createFakePost(
+            id: 'valid',
+            publishedAt: now.subtract(const Duration(hours: 12)),
+          );
+          cache.addPost(validPost);
 
-        // Getter shows 1 post
-        expect(cache.posts.length, equals(1));
+          // Getter shows 1 post
+          expect(cache.posts.length, equals(1));
 
-        // Now add an expired post directly to the cache
-        final expiredPost = createFakePost(
-          id: 'expired',
-          publishedAt: now.subtract(const Duration(hours: 30)),
-        );
-        cache.addPost(expiredPost);
+          // Now add an expired post directly to the cache
+          final expiredPost = createFakePost(
+            id: 'expired',
+            publishedAt: now.subtract(const Duration(hours: 30)),
+          );
+          cache.addPost(expiredPost);
 
-        // State has 2 posts (no filtering at state level)
-        final rawState = container.read(feedPostsCacheProvider);
-        expect(rawState.posts.length, equals(2));
+          // State has 2 posts (no filtering at state level)
+          final rawState = container.read(feedPostsCacheProvider);
+          expect(rawState.posts.length, equals(2));
 
-        // But getter IMMEDIATELY filters to 1 post - no timer delay
-        // This is the key behavior: filtering happens on READ, not on a schedule
-        expect(cache.posts.length, equals(1));
-        expect(cache.posts.first.id, equals('valid'));
-      });
+          // But getter IMMEDIATELY filters to 1 post - no timer delay
+          // This is the key behavior: filtering happens on READ, not on a schedule
+          expect(cache.posts.length, equals(1));
+          expect(cache.posts.first.id, equals('valid'));
+        },
+      );
     });
 
     group('removeExpiredPosts - memory cleanup', () {
       test('removes expired posts from state', () {
         final cache = container.read(feedPostsCacheProvider.notifier);
-        final testData = createPostsWithExpiry(
-          validCount: 3,
-          expiredCount: 2,
-        );
+        final testData = createPostsWithExpiry(validCount: 3, expiredCount: 2);
 
         // Add all posts
         for (final post in testData.all) {
@@ -199,10 +200,12 @@ void main() {
 
         // Add only valid posts
         for (var i = 0; i < 3; i++) {
-          cache.addPost(createFakePost(
-            id: 'valid-$i',
-            publishedAt: now.subtract(Duration(hours: 1 + i)),
-          ));
+          cache.addPost(
+            createFakePost(
+              id: 'valid-$i',
+              publishedAt: now.subtract(Duration(hours: 1 + i)),
+            ),
+          );
         }
 
         final stateBefore = container.read(feedPostsCacheProvider);
@@ -266,10 +269,12 @@ void main() {
 
         // Add some posts
         for (var i = 0; i < 5; i++) {
-          cache.addPost(createFakePost(
-            id: 'post-$i',
-            publishedAt: now.subtract(Duration(hours: i)),
-          ));
+          cache.addPost(
+            createFakePost(
+              id: 'post-$i',
+              publishedAt: now.subtract(Duration(hours: i)),
+            ),
+          );
         }
 
         expect(container.read(feedPostsCacheProvider).posts.length, equals(5));
@@ -284,10 +289,7 @@ void main() {
 
         // Use updateCache which sets initialLoadComplete = true
         cache.updateCache([
-          createFakePost(
-            id: 'test',
-            publishedAt: DateTime.now(),
-          ),
+          createFakePost(id: 'test', publishedAt: DateTime.now()),
         ]);
 
         expect(
@@ -329,10 +331,7 @@ void main() {
         final cache = container.read(feedPostsCacheProvider.notifier);
         final now = DateTime.now();
 
-        final post = createFakePost(
-          id: 'unique',
-          publishedAt: now,
-        );
+        final post = createFakePost(id: 'unique', publishedAt: now);
 
         cache.addPost(post);
         cache.addPost(post); // Try to add again
@@ -346,10 +345,12 @@ void main() {
 
         // Add more than max cache size (200)
         for (var i = 0; i < 210; i++) {
-          cache.addPost(createFakePost(
-            id: 'post-$i',
-            publishedAt: now.subtract(Duration(minutes: i)),
-          ));
+          cache.addPost(
+            createFakePost(
+              id: 'post-$i',
+              publishedAt: now.subtract(Duration(minutes: i)),
+            ),
+          );
         }
 
         // Should be capped at 200
@@ -361,10 +362,7 @@ void main() {
         final cache = container.read(feedPostsCacheProvider.notifier);
         final now = DateTime.now();
 
-        final post = createFakePost(
-          id: 'newest',
-          publishedAt: now,
-        );
+        final post = createFakePost(id: 'newest', publishedAt: now);
 
         cache.addPost(post);
 
@@ -421,21 +419,27 @@ void main() {
         final now = DateTime.now();
 
         cache.addPost(createFakePost(id: 'first', publishedAt: now));
-        cache.addPost(createFakePost(
-          id: 'second',
-          publishedAt: now.subtract(const Duration(hours: 1)),
-        ));
-        cache.addPost(createFakePost(
-          id: 'third',
-          publishedAt: now.subtract(const Duration(hours: 2)),
-        ));
+        cache.addPost(
+          createFakePost(
+            id: 'second',
+            publishedAt: now.subtract(const Duration(hours: 1)),
+          ),
+        );
+        cache.addPost(
+          createFakePost(
+            id: 'third',
+            publishedAt: now.subtract(const Duration(hours: 2)),
+          ),
+        );
 
         // Update middle post
-        cache.updatePost(createFakePost(
-          id: 'second',
-          publishedAt: now.subtract(const Duration(hours: 1)),
-          authorUsername: 'updated',
-        ));
+        cache.updatePost(
+          createFakePost(
+            id: 'second',
+            publishedAt: now.subtract(const Duration(hours: 1)),
+            authorUsername: 'updated',
+          ),
+        );
 
         final posts = cache.posts;
         expect(posts[0].id, equals('third')); // Newest added first
@@ -451,10 +455,12 @@ void main() {
         final now = DateTime.now();
 
         cache.addPost(createFakePost(id: 'keep', publishedAt: now));
-        cache.addPost(createFakePost(
-          id: 'remove',
-          publishedAt: now.subtract(const Duration(hours: 1)),
-        ));
+        cache.addPost(
+          createFakePost(
+            id: 'remove',
+            publishedAt: now.subtract(const Duration(hours: 1)),
+          ),
+        );
 
         cache.removePost('remove');
 
@@ -485,9 +491,7 @@ void main() {
         final cache = container.read(feedPostsCacheProvider.notifier);
         final now = DateTime.now();
 
-        cache.updateCache([
-          createFakePost(id: 'test', publishedAt: now),
-        ]);
+        cache.updateCache([createFakePost(id: 'test', publishedAt: now)]);
 
         expect(cache.isCacheValid, isTrue);
       });
@@ -496,9 +500,7 @@ void main() {
         final cache = container.read(feedPostsCacheProvider.notifier);
         final now = DateTime.now();
 
-        cache.updateCache([
-          createFakePost(id: 'test', publishedAt: now),
-        ]);
+        cache.updateCache([createFakePost(id: 'test', publishedAt: now)]);
         expect(cache.isCacheValid, isTrue);
 
         cache.invalidateCache();
@@ -536,7 +538,9 @@ void main() {
         final state = container.read(feedPostsCacheProvider);
         expect(state.lastFetchedAt, isNotNull);
         expect(
-          state.lastFetchedAt!.isAfter(before.subtract(const Duration(seconds: 1))),
+          state.lastFetchedAt!.isAfter(
+            before.subtract(const Duration(seconds: 1)),
+          ),
           isTrue,
         );
       });
@@ -589,10 +593,9 @@ void main() {
       test('returns false after updateCache with hasNextPage false', () {
         final cache = container.read(feedPostsCacheProvider.notifier);
 
-        cache.updateCache(
-          [createFakePost(id: 'test', publishedAt: DateTime.now())],
-          hasNextPage: false,
-        );
+        cache.updateCache([
+          createFakePost(id: 'test', publishedAt: DateTime.now()),
+        ], hasNextPage: false);
 
         expect(cache.hasMorePosts, isFalse);
       });

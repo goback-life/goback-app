@@ -30,9 +30,7 @@ class ProfileReportReasonModal extends StatelessWidget
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(modalBorderRadius),
         ),
-        insetPadding: EdgeInsets.symmetric(
-          horizontal: modalHorizontalPadding,
-        ),
+        insetPadding: EdgeInsets.symmetric(horizontal: modalHorizontalPadding),
         child: Container(
           width: double.infinity,
           padding: EdgeInsets.symmetric(

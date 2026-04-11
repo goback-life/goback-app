@@ -40,9 +40,7 @@ void main() {
 
     // Push notifications — production only
     if (F.appFlavor == Flavor.production) {
-      FirebaseMessaging.onBackgroundMessage(
-        firebaseMessagingBackgroundHandler,
-      );
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
       await FirebaseMessaging.instance.requestPermission(
         alert: true,
         badge: true,

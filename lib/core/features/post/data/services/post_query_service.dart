@@ -25,15 +25,16 @@ class PostQueryService {
     int pageSize = 15,
     DateTime? cursor,
   }) async {
-    final params = <String, dynamic>{
-      'p_page_size': pageSize,
-    };
+    final params = <String, dynamic>{'p_page_size': pageSize};
 
     if (cursor != null) {
       params['p_cursor'] = cursor.toIso8601String();
     }
 
-    final feedResponse = await supabaseClient.rpc('get_user_feed', params: params);
+    final feedResponse = await supabaseClient.rpc(
+      'get_user_feed',
+      params: params,
+    );
     final feedList = feedResponse as List;
     final postDataList = feedList
         .map((json) => json as Map<String, dynamic>)
@@ -43,7 +44,9 @@ class PostQueryService {
     // 15 concurrent × 3 URLs each = 45 peak concurrent, reduces enrichment latency ~60%
     await _enrichPostsWithRateLimit(postDataList, concurrency: 15);
 
-    final posts = postDataList.map((data) => FeedPostDto.fromJson(data)).toList();
+    final posts = postDataList
+        .map((data) => FeedPostDto.fromJson(data))
+        .toList();
 
     final hasNextPage = posts.length >= pageSize;
 

@@ -52,8 +52,9 @@ class FeedPostsList extends HookConsumerWidget {
 
     // Sort: newest first (index 0 = newest, displayed at bottom in reversed list)
     final sortedPosts = useMemoized(
-      () => List<FeedPostModel>.from(posts)
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+      () =>
+          List<FeedPostModel>.from(posts)
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
       [posts],
     );
 
@@ -90,10 +91,10 @@ class FeedPostsList extends HookConsumerWidget {
           DateTime topDate;
           if (pos.maxScrollExtent > pos.minScrollExtent) {
             final range = pos.maxScrollExtent - pos.minScrollExtent;
-            final progress =
-                (pos.pixels - pos.minScrollExtent) / range;
-            final idx =
-                (progress * (current.length - 1)).clamp(0.0, current.length - 1.0).round();
+            final progress = (pos.pixels - pos.minScrollExtent) / range;
+            final idx = (progress * (current.length - 1))
+                .clamp(0.0, current.length - 1.0)
+                .round();
             topDate = current[idx].createdAt.toLocal();
           } else {
             topDate = current.first.createdAt.toLocal();
@@ -137,22 +138,24 @@ class FeedPostsList extends HookConsumerWidget {
           logger.info('Pull-to-refresh triggered');
           isRefreshingRef.value = true;
           onRefreshStateChanged?.call(true);
-          onRefresh().then((_) {
-            logger.info('Pull-to-refresh complete');
-            Future.delayed(const Duration(milliseconds: 50), () {
-              if (mountedRef.value) {
-                isRefreshingRef.value = false;
-                onRefreshStateChanged?.call(false);
-              }
-            });
-          }).catchError((_) {
-            Future.delayed(const Duration(milliseconds: 50), () {
-              if (mountedRef.value) {
-                isRefreshingRef.value = false;
-                onRefreshStateChanged?.call(false);
-              }
-            });
-          });
+          onRefresh()
+              .then((_) {
+                logger.info('Pull-to-refresh complete');
+                Future.delayed(const Duration(milliseconds: 50), () {
+                  if (mountedRef.value) {
+                    isRefreshingRef.value = false;
+                    onRefreshStateChanged?.call(false);
+                  }
+                });
+              })
+              .catchError((_) {
+                Future.delayed(const Duration(milliseconds: 50), () {
+                  if (mountedRef.value) {
+                    isRefreshingRef.value = false;
+                    onRefreshStateChanged?.call(false);
+                  }
+                });
+              });
         }
         return false;
       },
@@ -163,7 +166,8 @@ class FeedPostsList extends HookConsumerWidget {
           parent: BouncingScrollPhysics(),
         ),
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).padding.bottom +
+          bottom:
+              MediaQuery.of(context).padding.bottom +
               FeedLayout.feedBottomPadding * s,
           top: MediaQuery.of(context).padding.top + 50 * s,
         ),

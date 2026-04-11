@@ -47,10 +47,7 @@ Future<List<CalendarPostModel>?> _fetchMonths(
     final results = await Future.wait(futures);
     final allPosts = <CalendarPostModel>[];
     for (final result in results) {
-      result.fold(
-        (posts) => allPosts.addAll(posts),
-        (error) {},
-      );
+      result.fold((posts) => allPosts.addAll(posts), (error) {});
     }
     return allPosts;
   } catch (e) {
@@ -73,8 +70,7 @@ Future<void> preloadCalendarCache(WidgetRef ref) async {
 
   final now = DateTime.now();
   final months = [
-    for (var i = 0; i < _kPreloadMonths; i++)
-      DateTime(now.year, now.month - i),
+    for (var i = 0; i < _kPreloadMonths; i++) DateTime(now.year, now.month - i),
   ];
 
   final allPosts = await _fetchMonths(ref, userId, months);
@@ -173,15 +169,11 @@ class ProfileCalendar extends HookConsumerWidget
         if (details.primaryVelocity! > 0) {
           ref
               .read(calendarMonthNotifierProvider.notifier)
-              .setMonth(
-                DateTime(selectedMonth.year, selectedMonth.month - 1),
-              );
+              .setMonth(DateTime(selectedMonth.year, selectedMonth.month - 1));
         } else if (details.primaryVelocity! < 0 && canGoNext) {
           ref
               .read(calendarMonthNotifierProvider.notifier)
-              .setMonth(
-                DateTime(selectedMonth.year, selectedMonth.month + 1),
-              );
+              .setMonth(DateTime(selectedMonth.year, selectedMonth.month + 1));
         }
       },
       behavior: HitTestBehavior.opaque,
@@ -226,10 +218,7 @@ class ProfileCalendar extends HookConsumerWidget
                     ref
                         .read(calendarMonthNotifierProvider.notifier)
                         .setMonth(
-                          DateTime(
-                            selectedMonth.year,
-                            selectedMonth.month + 1,
-                          ),
+                          DateTime(selectedMonth.year, selectedMonth.month + 1),
                         );
                   }
                 : null,
@@ -315,22 +304,26 @@ class ProfileCalendar extends HookConsumerWidget
       final cache = ref.read(calendarPostsCacheProvider);
       final gridS = _gridStart(selectedMonth);
       final gridE = _gridEnd(selectedMonth);
-      final cacheCovers = cacheNotifier.currentUserId == targetUserId &&
+      final cacheCovers =
+          cacheNotifier.currentUserId == targetUserId &&
           cache.any(
             (p) =>
-                !DateTime(p.publishedAt.year, p.publishedAt.month,
-                        p.publishedAt.day)
-                    .isBefore(gridS) &&
-                !DateTime(p.publishedAt.year, p.publishedAt.month,
-                        p.publishedAt.day)
-                    .isAfter(gridE),
+                !DateTime(
+                  p.publishedAt.year,
+                  p.publishedAt.month,
+                  p.publishedAt.day,
+                ).isBefore(gridS) &&
+                !DateTime(
+                  p.publishedAt.year,
+                  p.publishedAt.month,
+                  p.publishedAt.day,
+                ).isAfter(gridE),
           );
       if (cacheCovers) return; // Cache already has data for this range.
 
       // Only fetch the single selected month (preloadCalendarCache already
       // covers the initial 3-month window on startup).
-      final allPosts =
-          await _fetchMonths(ref, targetUserId, [selectedMonth]);
+      final allPosts = await _fetchMonths(ref, targetUserId, [selectedMonth]);
       if (allPosts == null || !isMounted()) return;
 
       ref
@@ -343,8 +336,7 @@ class ProfileCalendar extends HookConsumerWidget
           );
       // Display is updated by the display effect reacting to cache change.
     } else {
-      final allPosts =
-          await _fetchMonths(ref, targetUserId, [selectedMonth]);
+      final allPosts = await _fetchMonths(ref, targetUserId, [selectedMonth]);
       if (allPosts == null || !isMounted()) return;
 
       final postsByDay = <String, CalendarPostModel>{};

@@ -27,6 +27,7 @@ sealed class LockoutSessionDto with _$LockoutSessionDto {
     @JsonKey(name: 'location_name') String? locationName,
     @JsonKey(name: 'post_id') String? postId,
     @JsonKey(name: 'created_at') String? createdAt,
+
     /// Friends who joined this lockout session (UUID array)
     @Default([]) List<String> participants,
     // Denormalized from RPC join:

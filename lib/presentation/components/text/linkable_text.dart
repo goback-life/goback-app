@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Widget that renders text with clickable URLs and markdown links.
-/// 
+///
 /// Automatically detects:
 /// - Markdown links [alias](url) - renders as clickable alias text
 /// - Regular URLs - renders as clickable links
@@ -35,10 +35,7 @@ class LinkableText extends HookWidget {
     if (start < end && end <= text.length) {
       final textSegment = text.substring(start, end);
       if (textSegment.isNotEmpty) {
-        spans.add(TextSpan(
-          text: textSegment,
-          style: style,
-        ));
+        spans.add(TextSpan(text: textSegment, style: style));
       }
     }
   }
@@ -47,7 +44,8 @@ class LinkableText extends HookWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final defaultStyle = style ?? theme.textTheme.bodyMedium ?? const TextStyle();
+    final defaultStyle =
+        style ?? theme.textTheme.bodyMedium ?? const TextStyle();
     // Use tertiary color (blue) for links since primary is white
     final linkColor = colorScheme.tertiary;
     // Create link style that ensures text is visible and clickable
@@ -66,13 +64,13 @@ class LinkableText extends HookWidget {
     // Priority: Markdown links > Regular URLs
     final spans = useMemoized(() {
       final result = <TextSpan>[];
-      
+
       // Track which parts of text are already processed
       final processedRanges = <({int start, int end})>[];
 
       // First, process markdown links [alias](url)
       final markdownLinkPattern = RegExp(r'\[([^\]]+)\]\(([^)]+)\)');
-      
+
       for (final match in markdownLinkPattern.allMatches(text)) {
         final alias = match.group(1)!;
         final url = match.group(2)!;
@@ -90,10 +88,11 @@ class LinkableText extends HookWidget {
         }
 
         // Add the markdown link as clickable alias
-        final urlWithProtocol = url.startsWith('http://') || url.startsWith('https://')
+        final urlWithProtocol =
+            url.startsWith('http://') || url.startsWith('https://')
             ? url
             : 'https://$url';
-        
+
         final recognizer = TapGestureRecognizer()
           ..onTap = () async {
             try {
@@ -109,12 +108,10 @@ class LinkableText extends HookWidget {
               // Silently fail if URL can't be launched
             }
           };
-        
-        result.add(TextSpan(
-          text: alias,
-          style: linkStyle,
-          recognizer: recognizer,
-        ));
+
+        result.add(
+          TextSpan(text: alias, style: linkStyle, recognizer: recognizer),
+        );
 
         processedRanges.add((start: start, end: end));
       }
@@ -130,9 +127,10 @@ class LinkableText extends HookWidget {
         final end = match.end;
 
         // Check if this URL is inside a processed range
-        final isInProcessedRange = processedRanges.any((range) =>
-            start >= range.start && end <= range.end);
-        
+        final isInProcessedRange = processedRanges.any(
+          (range) => start >= range.start && end <= range.end,
+        );
+
         if (isInProcessedRange) continue;
 
         // Add text before this URL
@@ -145,10 +143,11 @@ class LinkableText extends HookWidget {
 
         // Add the URL as a clickable span
         final url = match.group(0)!;
-        final urlWithProtocol = url.startsWith('http://') || url.startsWith('https://')
+        final urlWithProtocol =
+            url.startsWith('http://') || url.startsWith('https://')
             ? url
             : 'https://$url';
-        
+
         final recognizer = TapGestureRecognizer()
           ..onTap = () async {
             try {
@@ -164,12 +163,10 @@ class LinkableText extends HookWidget {
               // Silently fail if URL can't be launched
             }
           };
-        
-        result.add(TextSpan(
-          text: url,
-          style: linkStyle,
-          recognizer: recognizer,
-        ));
+
+        result.add(
+          TextSpan(text: url, style: linkStyle, recognizer: recognizer),
+        );
 
         processedRanges.add((start: start, end: end));
       }
@@ -216,4 +213,3 @@ class LinkableText extends HookWidget {
     );
   }
 }
-

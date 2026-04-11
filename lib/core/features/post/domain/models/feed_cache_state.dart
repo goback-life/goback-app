@@ -15,10 +15,13 @@ sealed class FeedCacheState with _$FeedCacheState {
     DateTime? newestPostTimestamp,
     @Default(true) bool hasNextPage,
     @Default(false) bool isPreloading,
+
     /// Number of posts currently being loaded in background
     @Default(0) int backgroundLoadingCount,
+
     /// Whether initial load (first page) is complete
     @Default(false) bool initialLoadComplete,
+
     /// Whether all available posts have been loaded
     @Default(false) bool fullyLoaded,
   }) = _FeedCacheState;

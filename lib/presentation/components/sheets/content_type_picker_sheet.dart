@@ -56,7 +56,9 @@ class ContentTypePickerSheet extends HookConsumerWidget
             ),
             SizedBox(height: verticalSpacing),
             Text(
-              translator.translate('components.content_type_picker_sheet.title'),
+              translator.translate(
+                'components.content_type_picker_sheet.title',
+              ),
               style: theme.textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
@@ -73,14 +75,12 @@ class ContentTypePickerSheet extends HookConsumerWidget
               label: translator.translate(
                 'components.content_type_picker_sheet.media',
               ),
-              onTap: () => Navigator.of(context).pop(ContentTypeSelection.media),
+              onTap: () =>
+                  Navigator.of(context).pop(ContentTypeSelection.media),
             ),
             _buildActionButton(
               context,
-              icon: Icon(
-                Icons.text_fields,
-                color: colorScheme.primary,
-              ),
+              icon: Icon(Icons.text_fields, color: colorScheme.primary),
               label: translator.translate(
                 'components.content_type_picker_sheet.text',
               ),
@@ -108,4 +108,3 @@ class ContentTypePickerSheet extends HookConsumerWidget
     );
   }
 }
-

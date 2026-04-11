@@ -21,11 +21,7 @@ class CalendarService implements CalendarServiceContract {
   }) async {
     final response = await supabaseClient.rpc(
       'get_user_lockout_calendar',
-      params: {
-        'p_target_user_id': userId,
-        'p_year': year,
-        'p_month': month,
-      },
+      params: {'p_target_user_id': userId, 'p_year': year, 'p_month': month},
     );
 
     if (response is! List || response.isEmpty) {
@@ -96,7 +92,9 @@ class CalendarService implements CalendarServiceContract {
       if (result['success'] == true) {
         return Result.success(null);
       } else {
-        return Result.failure(Exception(result['error'] ?? 'Failed to unsave post'));
+        return Result.failure(
+          Exception(result['error'] ?? 'Failed to unsave post'),
+        );
       }
     } catch (e) {
       logger.error('Failed to unsave post from calendar', exception: e);
@@ -105,7 +103,9 @@ class CalendarService implements CalendarServiceContract {
   }
 
   @override
-  Future<List<PendingSelectionPostDto>> getPendingSelectionPosts({DateTime? date}) async {
+  Future<List<PendingSelectionPostDto>> getPendingSelectionPosts({
+    DateTime? date,
+  }) async {
     try {
       final params = <String, dynamic>{};
       if (date != null) {
@@ -122,7 +122,9 @@ class CalendarService implements CalendarServiceContract {
       }
 
       final postFutures = response.map((json) async {
-        final postJson = Map<String, dynamic>.from(json as Map<String, dynamic>);
+        final postJson = Map<String, dynamic>.from(
+          json as Map<String, dynamic>,
+        );
         // Enrich thumbnail with signed URL
         final thumbnailUrl = postJson['thumbnail_url'] as String?;
         if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
@@ -168,22 +170,28 @@ class CalendarService implements CalendarServiceContract {
     final futures = <Future<void>>[];
 
     // Avatar URL
-    futures.add(_fetchAvatarUrl(authorId).then((url) {
-      postJson['author_avatar_url'] = url;
-    }));
+    futures.add(
+      _fetchAvatarUrl(authorId).then((url) {
+        postJson['author_avatar_url'] = url;
+      }),
+    );
 
     // Thumbnail URL
     if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
-      futures.add(_fetchMediaUrl(thumbnailUrl).then((url) {
-        postJson['thumbnail_url'] = url;
-      }));
+      futures.add(
+        _fetchMediaUrl(thumbnailUrl).then((url) {
+          postJson['thumbnail_url'] = url;
+        }),
+      );
     }
 
     // Video URL
     if (videoUrl != null && videoUrl.isNotEmpty) {
-      futures.add(_fetchMediaUrl(videoUrl).then((url) {
-        postJson['video_url'] = url;
-      }));
+      futures.add(
+        _fetchMediaUrl(videoUrl).then((url) {
+          postJson['video_url'] = url;
+        }),
+      );
     }
 
     await Future.wait(futures);

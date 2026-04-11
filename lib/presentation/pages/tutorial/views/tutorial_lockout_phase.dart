@@ -30,7 +30,9 @@ class TutorialLockoutPhase extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final subStep = useState(0); // 0 = explanation, 1 = friend adding, 2 = share prompt
+    final subStep = useState(
+      0,
+    ); // 0 = explanation, 1 = friend adding, 2 = share prompt
     final remainingSeconds = useState(120);
     final friendsAdded = useState(0);
 
@@ -62,8 +64,9 @@ class TutorialLockoutPhase extends HookConsumerWidget {
     }, [remainingSeconds.value, friendsAdded.value, subStep.value]);
 
     final surface = Theme.of(context).colorScheme.surface;
-    final bgColor =
-        surface.computeLuminance() < 0.5 ? MainColors.white : MainColors.dark;
+    final bgColor = surface.computeLuminance() < 0.5
+        ? MainColors.white
+        : MainColors.dark;
     final screenHeight = MediaQuery.of(context).size.height;
 
     final minutes = remainingSeconds.value ~/ 60;
@@ -128,24 +131,20 @@ class TutorialLockoutPhase extends HookConsumerWidget {
                   'Now you can share a photo of what you did.',
               buttonLabel: 'Share your goback',
               onTap: () async {
-                final sessionService =
-                    ref.read(lockoutSessionServiceProvider);
+                final sessionService = ref.read(lockoutSessionServiceProvider);
                 final result = await sessionService.createSession(
                   duration: const Duration(minutes: 2),
                 );
-                result.fold(
-                  (session) {
-                    ref
-                        .read(pendingLockoutPostProvider.notifier)
-                        .setLockoutId(session.id);
-                    // Mark tutorial done without navigating — widget must stay
-                    // mounted so the media picker → content editor flow works.
-                    TutorialCompletedStorable().set(true);
-                    TutorialPhaseStorable().remove();
-                    postCreationInit.selectMainImage();
-                  },
-                  (_) => onComplete(),
-                );
+                result.fold((session) {
+                  ref
+                      .read(pendingLockoutPostProvider.notifier)
+                      .setLockoutId(session.id);
+                  // Mark tutorial done without navigating — widget must stay
+                  // mounted so the media picker → content editor flow works.
+                  TutorialCompletedStorable().set(true);
+                  TutorialPhaseStorable().remove();
+                  postCreationInit.selectMainImage();
+                }, (_) => onComplete());
               },
               secondaryButtonLabel: 'Skip',
               onSecondaryTap: onComplete,

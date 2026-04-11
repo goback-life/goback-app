@@ -2,10 +2,7 @@ import 'package:cloudless/core/features/auth/domain/contracts/auth_repository_co
 import 'package:dedecube_core/dedecube_core.dart';
 
 class SignInWithEmailUseCase implements UseCaseContract<Result<void>> {
-  const SignInWithEmailUseCase({
-    required this.email,
-    required this.repository,
-  });
+  const SignInWithEmailUseCase({required this.email, required this.repository});
 
   final String email;
   final AuthRepositoryContract repository;

@@ -25,14 +25,20 @@ class ProfileWeeklyStats extends HookConsumerWidget {
     final textTheme = theme.textTheme;
 
     if (hasResolvedData) {
-      return _buildDisplay(context, weeklyLockoutMinutes, textTheme, colorScheme);
+      return _buildDisplay(
+        context,
+        weeklyLockoutMinutes,
+        textTheme,
+        colorScheme,
+      );
     }
 
     final currentUserAsync = ref.watch(getCurrentUserProvider);
 
     return currentUserAsync.when(
       data: (userResult) => userResult.fold(
-        (user) => _buildWithProfile(context, ref, user.id, textTheme, colorScheme),
+        (user) =>
+            _buildWithProfile(context, ref, user.id, textTheme, colorScheme),
         (_) => const SizedBox.shrink(),
       ),
       loading: () => const SizedBox(height: 18),
@@ -72,7 +78,9 @@ class ProfileWeeklyStats extends HookConsumerWidget {
   ) {
     final String displayText;
     if (weeklyLockoutMinutes == null || weeklyLockoutMinutes == 0) {
-      displayText = translator.translate('pages.profile.weekly_stats.no_lockouts');
+      displayText = translator.translate(
+        'pages.profile.weekly_stats.no_lockouts',
+      );
     } else {
       final hours = (weeklyLockoutMinutes / 60).toStringAsFixed(2);
       displayText = translator.translate(

@@ -37,7 +37,7 @@ class ReviewCircleView extends HookConsumerWidget
       }
 
       final count = selectedMembers.value.length;
-      
+
       final shouldProceed = await MainAlert.showFull<bool>(
         context: context,
         title: translator.translate('pages.review_circle.confirmation_title'),
@@ -69,17 +69,16 @@ class ReviewCircleView extends HookConsumerWidget
 
       for (final userId in selectedMembers.value) {
         try {
-          final result = await ref.read(removeConnectionProvider(userId).future);
-          result.fold(
-            (success) {
-              if (success) {
-                successCount++;
-              } else {
-                failureCount++;
-              }
-            },
-            (_) => failureCount++,
+          final result = await ref.read(
+            removeConnectionProvider(userId).future,
           );
+          result.fold((success) {
+            if (success) {
+              successCount++;
+            } else {
+              failureCount++;
+            }
+          }, (_) => failureCount++);
         } catch (e) {
           failureCount++;
         }
@@ -102,7 +101,9 @@ class ReviewCircleView extends HookConsumerWidget
       } else if (successCount > 0) {
         MainAlert.showFull(
           context: context,
-          title: translator.translate('pages.review_circle.partial_success_title'),
+          title: translator.translate(
+            'pages.review_circle.partial_success_title',
+          ),
           content: Text(
             translator.translate(
               'pages.review_circle.partial_success_content',
@@ -112,7 +113,9 @@ class ReviewCircleView extends HookConsumerWidget
               },
             ),
           ),
-          primaryButtonText: translator.translate('components.alert.confirm_button'),
+          primaryButtonText: translator.translate(
+            'components.alert.confirm_button',
+          ),
           onPrimaryPressed: () => router.pop(),
         );
       } else {
@@ -151,7 +154,8 @@ class ReviewCircleView extends HookConsumerWidget
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: EdgeInsets.symmetric(vertical: viewVerticalPadding),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -177,9 +181,7 @@ class ReviewCircleView extends HookConsumerWidget
                 ),
               ),
               Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: bottomButtonPadding,
-                ),
+                padding: EdgeInsets.symmetric(vertical: bottomButtonPadding),
                 child: CallToAction.primary.filled(
                   action: selectedMembers.value.isNotEmpty && !isRemoving.value
                       ? handleBulkRemove
@@ -189,7 +191,9 @@ class ReviewCircleView extends HookConsumerWidget
                         ? translator.translate(
                             'pages.review_circle.remove_button_disabled',
                           )
-                        : translator.translate('pages.review_circle.remove_button'),
+                        : translator.translate(
+                            'pages.review_circle.remove_button',
+                          ),
                     style: textTheme.labelLarge?.copyWith(
                       color: selectedMembers.value.isEmpty
                           ? colorScheme.onSurface.withValues(alpha: 0.38)
@@ -205,4 +209,3 @@ class ReviewCircleView extends HookConsumerWidget
     );
   }
 }
-

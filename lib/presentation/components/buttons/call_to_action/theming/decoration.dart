@@ -6,12 +6,11 @@ extension CTAThemeToDecoration on CallToActionTheme {
     required bool active,
     required CallToActionMode mode,
     required BorderRadius borderRadius,
-  }) =>
-      CallToAction.decoration(
-        mode: mode,
-        borderRadius: borderRadius,
-        colors: active
-            ? getActiveColors(context, context.theme, mode)
-            : getInactiveColors(context, context.theme, mode),
-      );
+  }) => CallToAction.decoration(
+    mode: mode,
+    borderRadius: borderRadius,
+    colors: active
+        ? getActiveColors(context, context.theme, mode)
+        : getInactiveColors(context, context.theme, mode),
+  );
 }

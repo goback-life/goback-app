@@ -7,7 +7,8 @@ part 'objective_routable.freezed.dart';
 part 'objective_routable.g.dart';
 
 @freezed
-sealed class ObjectiveRoutable extends Routable<ObjectiveRoutable> with _$ObjectiveRoutable {
+sealed class ObjectiveRoutable extends Routable<ObjectiveRoutable>
+    with _$ObjectiveRoutable {
   factory ObjectiveRoutable.fromJson(Map<String, dynamic> json) =>
       _$ObjectiveRoutableFromJson(json);
 

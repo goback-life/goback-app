@@ -8,4 +8,3 @@ part 'manual_lockout_storable_provider.g.dart';
 ManualLockoutStorable manualLockoutStorable(Ref ref) {
   return ManualLockoutStorable();
 }
-

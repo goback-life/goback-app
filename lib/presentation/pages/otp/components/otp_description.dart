@@ -16,7 +16,9 @@ class OtpDescription extends StatelessWidget {
       textAlign: TextAlign.center,
       text: TextSpan(
         text: text,
-        style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+        style: textTheme.bodyMedium?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
         children: [
           TextSpan(
             text: number,

@@ -37,8 +37,7 @@ class TutorialTooltip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasSecondary =
-        secondaryButtonLabel != null && onSecondaryTap != null;
+    final hasSecondary = secondaryButtonLabel != null && onSecondaryTap != null;
 
     return Positioned(
       left: TutorialLayout.tooltipHPadding,
@@ -55,10 +54,7 @@ class TutorialTooltip extends StatelessWidget {
             tint: MainColors.accent,
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 28,
-              vertical: 24,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

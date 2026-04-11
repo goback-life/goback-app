@@ -95,7 +95,10 @@ PostCreationResult usePostCreation(WidgetRef ref) {
     if (!postCreationData.isEditing && pendingLockoutId == null) {
       logger.warning('Post creation blocked: no lockout session');
       return Result.failure(
-        const PostException('Post creation requires lockout session', 'lockout_required'),
+        const PostException(
+          'Post creation requires lockout session',
+          'lockout_required',
+        ),
       );
     }
 
@@ -121,14 +124,20 @@ PostCreationResult usePostCreation(WidgetRef ref) {
 
             // Check if this is a lockout post
             final pendingLockoutId = ref.read(pendingLockoutPostProvider);
-            logger.info('Creating post with pendingLockoutId: $pendingLockoutId');
+            logger.info(
+              'Creating post with pendingLockoutId: $pendingLockoutId',
+            );
 
             // Auto-tag lockout participants when creating a lockout post
-            var finalTaggedUserIds = List<String>.from(postCreationData.taggedUserIds);
+            var finalTaggedUserIds = List<String>.from(
+              postCreationData.taggedUserIds,
+            );
             String? lockoutOwnerId;
             if (pendingLockoutId != null) {
               final sessionService = ref.read(lockoutSessionServiceProvider);
-              final sessionResult = await sessionService.getSessionById(pendingLockoutId);
+              final sessionResult = await sessionService.getSessionById(
+                pendingLockoutId,
+              );
               sessionResult.fold(
                 (session) {
                   if (session != null) {
@@ -137,7 +146,9 @@ PostCreationResult usePostCreation(WidgetRef ref) {
                     if (!finalTaggedUserIds.contains(session.userId) &&
                         session.userId != user.id) {
                       finalTaggedUserIds.add(session.userId);
-                      logger.info('Auto-tagged lockout owner: ${session.userId}');
+                      logger.info(
+                        'Auto-tagged lockout owner: ${session.userId}',
+                      );
                     }
                     // Tag all participants (joiners)
                     for (final participantId in session.participants) {
@@ -147,21 +158,26 @@ PostCreationResult usePostCreation(WidgetRef ref) {
                       }
                     }
                     if (session.participants.isNotEmpty) {
-                      logger.info('Auto-tagged ${session.participants.length} lockout participants');
+                      logger.info(
+                        'Auto-tagged ${session.participants.length} lockout participants',
+                      );
                     }
                   }
                 },
-                (error) => logger.warning('Failed to fetch lockout participants: $error'),
+                (error) => logger.warning(
+                  'Failed to fetch lockout participants: $error',
+                ),
               );
             }
 
             // Shorten URLs in description for text posts (convert to markdown with domain alias)
-            final description = postCreationData.contentType == ContentType.text &&
+            final description =
+                postCreationData.contentType == ContentType.text &&
                     postCreationData.description.isNotEmpty
                 ? UrlShortener.shortenUrlsInText(postCreationData.description)
                 : (postCreationData.description.isEmpty
-                    ? null
-                    : postCreationData.description);
+                      ? null
+                      : postCreationData.description);
 
             final postData = PostDataModel(
               postId: postCreationData.postId,
@@ -194,19 +210,26 @@ PostCreationResult usePostCreation(WidgetRef ref) {
 
                 // Link post to lockout session and update weekly stats
                 if (pendingLockoutId != null) {
-                  final sessionService = ref.read(lockoutSessionServiceProvider);
+                  final sessionService = ref.read(
+                    lockoutSessionServiceProvider,
+                  );
                   final storable = ref.read(manualLockoutStorableProvider);
                   final userStartedAt = await storable.getLockoutStart();
 
                   // Only session owner sets post_id; joiners link via posts.lockout_id
                   if (lockoutOwnerId == user.id) {
-                    final updateResult = await sessionService.updateSessionPostId(
-                      sessionId: pendingLockoutId,
-                      postId: post.id,
-                    );
+                    final updateResult = await sessionService
+                        .updateSessionPostId(
+                          sessionId: pendingLockoutId,
+                          postId: post.id,
+                        );
                     updateResult.fold(
-                      (_) => logger.info('Linked post ${post.id} to lockout session $pendingLockoutId'),
-                      (error) => logger.warning('Failed to link post to lockout session: $error'),
+                      (_) => logger.info(
+                        'Linked post ${post.id} to lockout session $pendingLockoutId',
+                      ),
+                      (error) => logger.warning(
+                        'Failed to link post to lockout session: $error',
+                      ),
                     );
                   }
 
@@ -218,13 +241,19 @@ PostCreationResult usePostCreation(WidgetRef ref) {
 
                   ref.read(pendingLockoutPostProvider.notifier).clear();
                   await storable.clearLockout();
-                  await ref.read(manualLockoutNotifierProvider.notifier).clearLockout();
+                  await ref
+                      .read(manualLockoutNotifierProvider.notifier)
+                      .clearLockout();
                 }
 
                 if (postCreationData.isEditing) {
-                  ref.read(postActionNotifierProvider.notifier).notifyPostUpdated();
+                  ref
+                      .read(postActionNotifierProvider.notifier)
+                      .notifyPostUpdated();
                 } else {
-                  ref.read(postActionNotifierProvider.notifier).notifyPostCreated(postId: post.id);
+                  ref
+                      .read(postActionNotifierProvider.notifier)
+                      .notifyPostCreated(postId: post.id);
                 }
               },
               (error) async {

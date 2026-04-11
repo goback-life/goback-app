@@ -17,4 +17,3 @@ abstract class NotificationServiceContract {
 
   Future<int> getUnreadCount({required String userId});
 }
-

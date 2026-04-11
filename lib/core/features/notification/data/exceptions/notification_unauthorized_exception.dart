@@ -3,4 +3,3 @@ import 'package:cloudless/core/features/notification/domain/exceptions/notificat
 class NotificationUnauthorizedException extends NotificationException {
   const NotificationUnauthorizedException([super.message, super.code]);
 }
-

@@ -21,9 +21,7 @@ class NotificationsPage extends HookConsumerWidget
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(height: topMargin),
-          MainAppBar(
-            title: translator.translate('pages.notifications.title'),
-          ),
+          MainAppBar(title: translator.translate('pages.notifications.title')),
           SizedBox(height: titleToImage),
           const Expanded(child: NotificationsView()),
         ],
@@ -31,4 +29,3 @@ class NotificationsPage extends HookConsumerWidget
     );
   }
 }
-

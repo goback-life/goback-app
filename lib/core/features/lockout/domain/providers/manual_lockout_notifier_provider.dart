@@ -42,13 +42,15 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
   Future<ManualLockoutModel> _readLockoutState(
     ManualLockoutStorable storable,
   ) async {
-    final isLockedOut =
-        await CheckManualLockoutUseCase(storable: storable).execute();
+    final isLockedOut = await CheckManualLockoutUseCase(
+      storable: storable,
+    ).execute();
 
     Duration? remainingDuration;
     if (isLockedOut) {
-      remainingDuration =
-          await GetLockoutRemainingTimeUseCase(storable: storable).execute();
+      remainingDuration = await GetLockoutRemainingTimeUseCase(
+        storable: storable,
+      ).execute();
     }
 
     return ManualLockoutModel(
@@ -94,13 +96,10 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
         locationName: locationName,
       );
 
-      sessionResult.fold(
-        (session) {
-          sessionId = session.id;
-          logger.info('Lockout session created with ID: $sessionId');
-        },
-        (error) => logger.warning('Failed to create DB session: $error'),
-      );
+      sessionResult.fold((session) {
+        sessionId = session.id;
+        logger.info('Lockout session created with ID: $sessionId');
+      }, (error) => logger.warning('Failed to create DB session: $error'));
 
       // Store locally with session ID for post creation after lockout ends
       logger.info('Storing lockout locally with sessionId: $sessionId');
@@ -113,9 +112,9 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
 
       // Start Live Activity countdown on lock screen
       final lockoutEndTime = DateTime.now().add(duration);
-      await ref.read(lockoutLiveActivityServiceProvider).startActivity(
-        lockoutEndTimestamp: lockoutEndTime,
-      );
+      await ref
+          .read(lockoutLiveActivityServiceProvider)
+          .startActivity(lockoutEndTimestamp: lockoutEndTime);
 
       // Schedule mid-lockout + post-lockout notifications, cancel daily
       await ref
@@ -142,10 +141,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
   /// for the post-creation hook to read later.
   void dismissCompletion() {
     state = AsyncValue.data(
-      const ManualLockoutModel(
-        isLockedOut: false,
-        isCompletionPending: false,
-      ),
+      const ManualLockoutModel(isLockedOut: false, isCompletionPending: false),
     );
   }
 
@@ -156,7 +152,9 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     state = const AsyncValue.loading();
     try {
       await ref.read(lockoutLiveActivityServiceProvider).endActivity();
-      await ref.read(scheduledNotificationProvider).cancelLockoutNotifications();
+      await ref
+          .read(scheduledNotificationProvider)
+          .cancelLockoutNotifications();
       await useCase.execute();
       state = AsyncValue.data(
         const ManualLockoutModel(
@@ -192,7 +190,9 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     state = const AsyncValue.loading();
     try {
       // Get session details to determine end time
-      final sessionResult = await sessionService.getSessionById(lockoutSessionId);
+      final sessionResult = await sessionService.getSessionById(
+        lockoutSessionId,
+      );
       DateTime? lockoutEndTime;
       Exception? sessionError;
 
@@ -204,12 +204,9 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
             final joinResult = await sessionService.joinSession(
               sessionId: lockoutSessionId,
             );
-            joinResult.fold(
-              (_) {},
-              (error) {
-                sessionError = error;
-              },
-            );
+            joinResult.fold((_) {}, (error) {
+              sessionError = error;
+            });
           }
         },
         (error) async {
@@ -236,9 +233,9 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       ).execute();
 
       // Start Live Activity countdown on lock screen
-      await ref.read(lockoutLiveActivityServiceProvider).startActivity(
-        lockoutEndTimestamp: lockoutEndTime!,
-      );
+      await ref
+          .read(lockoutLiveActivityServiceProvider)
+          .startActivity(lockoutEndTimestamp: lockoutEndTime!);
 
       // Schedule mid-lockout + post-lockout notifications, cancel daily
       await ref

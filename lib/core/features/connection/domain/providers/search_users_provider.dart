@@ -16,21 +16,18 @@ Future<Result<List<SearchUserResult>>> searchUsers(
   final service = ref.watch(connectionServiceProvider);
   final result = await service.searchUsers(query);
 
-  return result.fold(
-    (rows) {
-      final results = rows.map((row) {
-        final profile = ProfileModel(
-          id: row['user_id'] as String,
-          username: row['username'] as String,
-          avatarUrl: row['avatar_url'] as String?,
-        );
-        final status = ConnectionStatus.fromString(
-          row['connection_status'] as String? ?? 'none',
-        );
-        return (profile, status);
-      }).toList();
-      return Result.success(results);
-    },
-    (error) => Result.failure(error),
-  );
+  return result.fold((rows) {
+    final results = rows.map((row) {
+      final profile = ProfileModel(
+        id: row['user_id'] as String,
+        username: row['username'] as String,
+        avatarUrl: row['avatar_url'] as String?,
+      );
+      final status = ConnectionStatus.fromString(
+        row['connection_status'] as String? ?? 'none',
+      );
+      return (profile, status);
+    }).toList();
+    return Result.success(results);
+  }, (error) => Result.failure(error));
 }

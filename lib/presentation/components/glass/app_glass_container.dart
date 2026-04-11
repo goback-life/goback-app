@@ -188,8 +188,7 @@ class _ShaderGlass extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius:
-            hasCustomPath ? null : BorderRadius.circular(radius),
+        borderRadius: hasCustomPath ? null : BorderRadius.circular(radius),
         boxShadow: const [
           BoxShadow(
             color: Color(0x40191919),
@@ -221,10 +220,7 @@ class _RoundedGlassOverlay extends CustomPainter {
 
     // 0. Tint fill — colored glass when a tint is specified
     if (tint != null) {
-      canvas.drawRRect(
-        rrect,
-        Paint()..color = tint!.withValues(alpha: 0.3),
-      );
+      canvas.drawRRect(rrect, Paint()..color = tint!.withValues(alpha: 0.3));
     }
 
     // 1. Light tint — bright and clear like water
@@ -240,14 +236,10 @@ class _RoundedGlassOverlay extends CustomPainter {
     // 2. Body gradient: NW bright -> SE slightly less bright
     canvas.drawPaint(
       Paint()
-        ..shader = ui.Gradient.linear(
-          bounds.topLeft,
-          bounds.bottomRight,
-          [
-            Colors.white.withValues(alpha: 0.08),
-            Colors.white.withValues(alpha: 0.02),
-          ],
-        ),
+        ..shader = ui.Gradient.linear(bounds.topLeft, bounds.bottomRight, [
+          Colors.white.withValues(alpha: 0.08),
+          Colors.white.withValues(alpha: 0.02),
+        ]),
     );
 
     // 3. Inner highlight — soft bright glow on lower-right edges
@@ -257,11 +249,10 @@ class _RoundedGlassOverlay extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2)
-        ..shader = ui.Gradient.linear(
-          bounds.topLeft,
-          bounds.bottomRight,
-          [Colors.transparent, Colors.white.withValues(alpha: 0.08)],
-        ),
+        ..shader = ui.Gradient.linear(bounds.topLeft, bounds.bottomRight, [
+          Colors.transparent,
+          Colors.white.withValues(alpha: 0.08),
+        ]),
     );
 
     canvas.restore();

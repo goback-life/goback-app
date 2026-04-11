@@ -58,21 +58,17 @@ class _InviteCard extends HookConsumerWidget {
     final debounce = useRef<Timer?>(null);
     final phoneToCheck = useState<String?>(null);
 
-    final isPhone = useMemoized(
-      () => looksLikePhone(input.value),
-      [input.value],
-    );
+    final isPhone = useMemoized(() => looksLikePhone(input.value), [
+      input.value,
+    ]);
 
     // Load contacts once.
     useEffect(() {
       Future<void> load() async {
         final r = await getContacts();
-        r.fold(
-          (d) {
-            if (context.mounted) contactsData.value = d;
-          },
-          (_) {},
-        );
+        r.fold((d) {
+          if (context.mounted) contactsData.value = d;
+        }, (_) {});
       }
 
       load();
@@ -190,8 +186,10 @@ class _InviteCard extends HookConsumerWidget {
               Flexible(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(
-                    kInviteCardContactSidePad, _kBottomPad,
-                    kInviteCardContactSidePad, 0,
+                    kInviteCardContactSidePad,
+                    _kBottomPad,
+                    kInviteCardContactSidePad,
+                    0,
                   ),
                   child: InviteContactsList(
                     contacts: filteredContacts,

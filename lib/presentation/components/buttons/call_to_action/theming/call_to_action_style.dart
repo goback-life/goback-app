@@ -69,19 +69,25 @@ class CallToActionStyle extends ThemeExtension<CallToActionStyle> {
     return CallToActionStyle(
       iconOnTheRight: t >= 0.5 ? other.iconOnTheRight : iconOnTheRight,
       spaced: t >= 0.5 ? other.spaced : spaced,
-      borderRadius: BorderRadius.lerp(borderRadius, other.borderRadius, t) ??
+      borderRadius:
+          BorderRadius.lerp(borderRadius, other.borderRadius, t) ??
           borderRadius,
       mode: t >= 0.5 ? other.mode : mode,
       theme: t >= 0.5 ? other.theme : theme,
       height: lerpDouble(height, other.height, t) ?? other.height,
       horizontalMargin:
           lerpDouble(horizontalMargin, other.horizontalMargin, t) ??
-              other.horizontalMargin,
+          other.horizontalMargin,
       duration: Duration(
-          microseconds: (lerpDouble(duration.inMicroseconds,
-                      other.duration.inMicroseconds, t) ??
-                  other.duration.inMicroseconds)
-              .round()),
+        microseconds:
+            (lerpDouble(
+                      duration.inMicroseconds,
+                      other.duration.inMicroseconds,
+                      t,
+                    ) ??
+                    other.duration.inMicroseconds)
+                .round(),
+      ),
       curve: t >= 0.5 ? other.curve : curve,
     );
   }

@@ -61,8 +61,7 @@ class ParentPostPreview extends HookConsumerWidget
               ),
             ),
           ),
-        if (hasThumbnail)
-          SizedBox(width: parentPostPreviewThumbnailToUsername),
+        if (hasThumbnail) SizedBox(width: parentPostPreviewThumbnailToUsername),
         Text('@${parentPost.authorUsername}', style: textTheme.titleMedium),
       ],
     );

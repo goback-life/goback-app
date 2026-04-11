@@ -26,10 +26,8 @@ SearchUsersData useSearchUsers(WidgetRef ref) {
   final results = useMemoized(() {
     if (asyncResults == null) return <SearchUserResult>[];
     return asyncResults.when(
-      data: (result) => result.fold(
-        (list) => list,
-        (_) => <SearchUserResult>[],
-      ),
+      data: (result) =>
+          result.fold((list) => list, (_) => <SearchUserResult>[]),
       loading: () => <SearchUserResult>[],
       error: (_, __) => <SearchUserResult>[],
     );

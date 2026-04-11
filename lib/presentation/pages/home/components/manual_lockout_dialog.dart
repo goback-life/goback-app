@@ -14,8 +14,9 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
     // Prefer the passed context; fall back to the root navigator if it lacks
     // a Navigator ancestor (can happen after hot restart with FeedView).
     final hasNavigator = Navigator.maybeOf(context) != null;
-    final dialogContext =
-        hasNavigator ? context : startupNavigatorKey.currentContext!;
+    final dialogContext = hasNavigator
+        ? context
+        : startupNavigatorKey.currentContext!;
     return showDialog<({Duration duration, String? actionText})>(
       context: dialogContext,
       useRootNavigator: hasNavigator,
@@ -55,229 +56,232 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
 
     return Dialog(
       backgroundColor: colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
         child: SingleChildScrollView(
           child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              translator.translate('pages.manual_lockout.dialog.title'),
-              style: textTheme.titleLarge?.copyWith(
-                color: colorScheme.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 28),
-            Text(
-              translator.translate('pages.manual_lockout.dialog.description'),
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface.withValues(alpha: 0.8),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 40),
-            // Time pickers
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Hours picker
-                SizedBox(
-                  width: 80,
-                  height: 150,
-                  child: CupertinoPicker(
-                    scrollController: FixedExtentScrollController(
-                      initialItem: selectedHours.value - 1,
-                    ),
-                    itemExtent: 40,
-                    onSelectedItemChanged: (index) {
-                      selectedHours.value = index + 1;
-                    },
-                    children: List.generate(9, (index) {
-                      index += 1;
-                      return Center(
-                        child: Text(
-                          '$index ${index == 1 ? 'hr' : 'hrs'}',
-                          style: textTheme.bodyLarge?.copyWith(
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                translator.translate('pages.manual_lockout.dialog.title'),
+                style: textTheme.titleLarge?.copyWith(
+                  color: colorScheme.onSurface,
                 ),
-                const SizedBox(width: 16),
-                // Minutes picker
-                SizedBox(
-                  width: 80,
-                  height: 150,
-                  child: CupertinoPicker(
-                    scrollController: FixedExtentScrollController(
-                      initialItem: [0, 15, 30, 45].indexOf(selectedMinutes.value),
-                    ),
-                    itemExtent: 40,
-                    onSelectedItemChanged: (index) {
-                      selectedMinutes.value = [0, 15, 30, 45][index];
-                    },
-                    children: [0, 15, 30, 45].map((minutes) {
-                      return Center(
-                        child: Text(
-                          '$minutes min',
-                          style: textTheme.bodyLarge?.copyWith(
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              Text(
+                translator.translate('pages.manual_lockout.dialog.description'),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.8),
                 ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            // Preset activity chips — horizontal scroll
-            SizedBox(
-              height: 36,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.zero,
-                itemCount: presets.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final e = presets.entries.elementAt(index);
-                  final isSelected = selectedPreset.value == e.key;
-                  final label = translator.translate(
-                    'pages.manual_lockout.dialog.activities.${e.key}',
-                  );
-                  return GestureDetector(
-                    onTap: () {
-                      if (isSelected) {
-                        selectedPreset.value = null;
-                        activityController.clear();
-                      } else {
-                        selectedPreset.value = e.key;
-                        activityController.text = label;
-                      }
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? colorScheme.primary.withValues(alpha: 0.15)
-                            : colorScheme.onSurface.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.onSurface.withValues(alpha: 0.15),
-                          width: isSelected ? 1.5 : 1,
-                        ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              // Time pickers
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Hours picker
+                  SizedBox(
+                    width: 80,
+                    height: 150,
+                    child: CupertinoPicker(
+                      scrollController: FixedExtentScrollController(
+                        initialItem: selectedHours.value - 1,
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(e.value, style: const TextStyle(fontSize: 16)),
-                          const SizedBox(width: 6),
-                          Text(
-                            label,
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: isSelected
-                                  ? colorScheme.primary
-                                  : colorScheme.onSurface
-                                      .withValues(alpha: 0.7),
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
+                      itemExtent: 40,
+                      onSelectedItemChanged: (index) {
+                        selectedHours.value = index + 1;
+                      },
+                      children: List.generate(9, (index) {
+                        index += 1;
+                        return Center(
+                          child: Text(
+                            '$index ${index == 1 ? 'hr' : 'hrs'}',
+                            style: textTheme.bodyLarge?.copyWith(
+                              color: colorScheme.onSurface,
                             ),
                           ),
-                        ],
-                      ),
+                        );
+                      }),
                     ),
-                  );
-                },
+                  ),
+                  const SizedBox(width: 16),
+                  // Minutes picker
+                  SizedBox(
+                    width: 80,
+                    height: 150,
+                    child: CupertinoPicker(
+                      scrollController: FixedExtentScrollController(
+                        initialItem: [
+                          0,
+                          15,
+                          30,
+                          45,
+                        ].indexOf(selectedMinutes.value),
+                      ),
+                      itemExtent: 40,
+                      onSelectedItemChanged: (index) {
+                        selectedMinutes.value = [0, 15, 30, 45][index];
+                      },
+                      children: [0, 15, 30, 45].map((minutes) {
+                        return Center(
+                          child: Text(
+                            '$minutes min',
+                            style: textTheme.bodyLarge?.copyWith(
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 12),
-            // Custom activity text field
-            TextField(
-              controller: activityController,
-              maxLength: 20,
-              textAlign: TextAlign.center,
-              onChanged: (_) => selectedPreset.value = null,
-              style: textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurface,
+              const SizedBox(height: 24),
+              // Preset activity chips — horizontal scroll
+              SizedBox(
+                height: 36,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.zero,
+                  itemCount: presets.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final e = presets.entries.elementAt(index);
+                    final isSelected = selectedPreset.value == e.key;
+                    final label = translator.translate(
+                      'pages.manual_lockout.dialog.activities.${e.key}',
+                    );
+                    return GestureDetector(
+                      onTap: () {
+                        if (isSelected) {
+                          selectedPreset.value = null;
+                          activityController.clear();
+                        } else {
+                          selectedPreset.value = e.key;
+                          activityController.text = label;
+                        }
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? colorScheme.primary.withValues(alpha: 0.15)
+                              : colorScheme.onSurface.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected
+                                ? colorScheme.primary
+                                : colorScheme.onSurface.withValues(alpha: 0.15),
+                            width: isSelected ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(e.value, style: const TextStyle(fontSize: 16)),
+                            const SizedBox(width: 6),
+                            Text(
+                              label,
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: isSelected
+                                    ? colorScheme.primary
+                                    : colorScheme.onSurface.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
-              decoration: InputDecoration(
-                hintText: translator.translate(
-                  'pages.manual_lockout.dialog.activity_hint',
+              const SizedBox(height: 12),
+              // Custom activity text field
+              TextField(
+                controller: activityController,
+                maxLength: 20,
+                textAlign: TextAlign.center,
+                onChanged: (_) => selectedPreset.value = null,
+                style: textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurface,
                 ),
-                hintStyle: textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurface.withValues(alpha: 0.4),
-                ),
-                counterStyle: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurface.withValues(alpha: 0.4),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: colorScheme.onSurface.withValues(alpha: 0.2),
+                decoration: InputDecoration(
+                  hintText: translator.translate(
+                    'pages.manual_lockout.dialog.activity_hint',
+                  ),
+                  hintStyle: textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
+                  counterStyle: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: colorScheme.onSurface.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: colorScheme.onSurface.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: colorScheme.primary),
                   ),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: colorScheme.onSurface.withValues(alpha: 0.2),
+              ),
+              const SizedBox(height: 16),
+              if (!isValid)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    translator.translate('pages.manual_lockout.dialog.error'),
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.error,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: colorScheme.primary),
+              // Buttons
+              CallToAction.primary.filled(
+                action: isValid
+                    ? () {
+                        final duration = Duration(
+                          hours: selectedHours.value,
+                          minutes: selectedMinutes.value,
+                        );
+                        final text = activityController.text.trim();
+                        Navigator.of(context).pop((
+                          duration: duration,
+                          actionText: text.isEmpty ? null : text,
+                        ));
+                      }
+                    : null,
+                label: Text(
+                  translator.translate('pages.manual_lockout.dialog.confirm'),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            if (!isValid)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(
-                  translator.translate('pages.manual_lockout.dialog.error'),
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.error,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            // Buttons
-            CallToAction.primary.filled(
-              action: isValid
-                  ? () {
-                      final duration = Duration(
-                        hours: selectedHours.value,
-                        minutes: selectedMinutes.value,
-                      );
-                      final text = activityController.text.trim();
-                      Navigator.of(context).pop((
-                        duration: duration,
-                        actionText: text.isEmpty ? null : text,
-                      ));
-                    }
-                  : null,
-              label: Text(
-                translator.translate('pages.manual_lockout.dialog.confirm'),
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-

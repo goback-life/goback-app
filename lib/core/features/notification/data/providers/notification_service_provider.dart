@@ -11,4 +11,3 @@ NotificationServiceContract notificationService(Ref ref) {
   final supabaseClient = ref.watch(supabaseClientProvider);
   return NotificationService(supabaseClient: supabaseClient);
 }
-

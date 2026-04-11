@@ -47,7 +47,8 @@ class ProfilePage extends HookConsumerWidget with MainLayout, ProfileLayout {
           // Dropdown menu
           if (isMenuVisible.value)
             Positioned(
-              top: MediaQuery.of(context).padding.top +
+              top:
+                  MediaQuery.of(context).padding.top +
                   hamburgerTopOffset * s +
                   40,
               right: hamburgerRightOffset * s,

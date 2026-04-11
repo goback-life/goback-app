@@ -24,4 +24,3 @@ mixin NotificationsLayout on MainLayout {
   // Notification Header
   double get notificationHeaderHeight => 60.0;
 }
-

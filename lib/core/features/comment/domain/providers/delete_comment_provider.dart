@@ -26,10 +26,7 @@ class DeleteComment extends _$DeleteComment {
     state = AsyncData(result);
 
     // Refresh the comments list for this post on success
-    result.fold(
-      (_) => ref.invalidate(getPostCommentsProvider(postId)),
-      (_) {},
-    );
+    result.fold((_) => ref.invalidate(getPostCommentsProvider(postId)), (_) {});
 
     return result;
   }

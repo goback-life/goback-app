@@ -39,116 +39,116 @@ class PostDetailCommentsListModal extends HookConsumerWidget
               MediaQuery.of(context).size.height * commentsListMaxHeightRatio,
         ),
         child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(top: commentsListTopPadding),
-            child: Container(
-              width: commentsListHandleWidth,
-              height: commentsListHandleHeight,
-              decoration: BoxDecoration(
-                color: MainColors.white.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(commentsListHandleRadius),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: commentsListTopPadding),
+              child: Container(
+                width: commentsListHandleWidth,
+                height: commentsListHandleHeight,
+                decoration: BoxDecoration(
+                  color: MainColors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(commentsListHandleRadius),
+                ),
               ),
             ),
-          ),
-          SizedBox(height: commentsListHandleToContent),
+            SizedBox(height: commentsListHandleToContent),
 
-          Flexible(
-            child: commentsResult.comments.when(
-              data: (result) {
-                return result.fold(
-                  (comments) {
-                    if (comments.isEmpty) {
+            Flexible(
+              child: commentsResult.comments.when(
+                data: (result) {
+                  return result.fold(
+                    (comments) {
+                      if (comments.isEmpty) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: commentsListHorizontalPadding,
+                            vertical: 32,
+                          ),
+                          child: Text(
+                            'No comments yet',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: MainColors.white.withValues(alpha: 0.5),
+                            ),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: commentsListHorizontalPadding,
+                        ),
+                        itemCount: comments.length,
+                        itemBuilder: (context, index) {
+                          final comment = comments[index];
+                          return PostDetailCommentItem(
+                            comment: comment,
+                            isOwnComment: commentsResult.isOwnComment(comment),
+                            onDelete: () =>
+                                commentsResult.deleteComment(comment.id),
+                          );
+                        },
+                      );
+                    },
+                    (error) {
                       return Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: commentsListHorizontalPadding,
                           vertical: 32,
                         ),
                         child: Text(
-                          'No comments yet',
+                          'Failed to load comments',
                           style: textTheme.bodyMedium?.copyWith(
-                            color: MainColors.white.withValues(alpha: 0.5),
+                            color: colorScheme.error,
                           ),
                         ),
                       );
-                    }
-
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: commentsListHorizontalPadding,
-                      ),
-                      itemCount: comments.length,
-                      itemBuilder: (context, index) {
-                        final comment = comments[index];
-                        return PostDetailCommentItem(
-                          comment: comment,
-                          isOwnComment: commentsResult.isOwnComment(comment),
-                          onDelete: () =>
-                              commentsResult.deleteComment(comment.id),
-                        );
-                      },
-                    );
-                  },
-                  (error) {
-                    return Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: commentsListHorizontalPadding,
-                        vertical: 32,
-                      ),
-                      child: Text(
-                        'Failed to load comments',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.error,
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-              loading: () => Padding(
-                padding: EdgeInsets.symmetric(vertical: 32),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (_, __) => Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: commentsListHorizontalPadding,
-                  vertical: 32,
+                    },
+                  );
+                },
+                loading: () => Padding(
+                  padding: EdgeInsets.symmetric(vertical: 32),
+                  child: Center(child: CircularProgressIndicator()),
                 ),
-                child: Text(
-                  'Failed to load comments',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.error,
+                error: (_, __) => Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: commentsListHorizontalPadding,
+                    vertical: 32,
+                  ),
+                  child: Text(
+                    'Failed to load comments',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.error,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          if (canComment && commentsResult.canAddMore)
-            PostDetailCommentInput(
-              onSubmit: commentsResult.addComment,
-              isSubmitting: commentsResult.isSubmitting,
-            )
-          else if (canComment && !commentsResult.canAddMore)
-            Padding(
-              padding: EdgeInsets.all(commentsListInputPadding),
-              child: SafeArea(
-                top: false,
-                child: Text(
-                  'You have reached the limit of ${kMaxCommentsPerUserPerPost} comments on this post',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: MainColors.white.withValues(alpha: 0.5),
+            if (canComment && commentsResult.canAddMore)
+              PostDetailCommentInput(
+                onSubmit: commentsResult.addComment,
+                isSubmitting: commentsResult.isSubmitting,
+              )
+            else if (canComment && !commentsResult.canAddMore)
+              Padding(
+                padding: EdgeInsets.all(commentsListInputPadding),
+                child: SafeArea(
+                  top: false,
+                  child: Text(
+                    'You have reached the limit of ${kMaxCommentsPerUserPerPost} comments on this post',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: MainColors.white.withValues(alpha: 0.5),
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
-            )
-          else
-            SizedBox(height: commentsListBottomPadding),
-        ],
-      ),
+              )
+            else
+              SizedBox(height: commentsListBottomPadding),
+          ],
+        ),
       ),
     );
   }

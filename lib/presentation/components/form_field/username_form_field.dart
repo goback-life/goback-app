@@ -56,42 +56,42 @@ class UsernameFormField extends HookConsumerWidget
                   }
                 },
                 child: FormerFormTextfield<String>(
-                textCapitalization: TextCapitalization.sentences,
-                selectionControls: CustomTextSelectionControls(),
-                autocorrect: false,
-                onTapOutside: (event) => context.unfocus(),
-                cursorColor: colorScheme.tertiary,
-                control: control,
-                textInputAction: TextInputAction.next,
-                maxLength: 30,
-                onSubmitted: (control) => form.focus('biography'),
-                decoration: inputDecoration(context, ''),
-                controller: controller,
-                showErrors: (control) {
-                  if (control.hasFocus) {
-                    return control.invalid && control.dirty;
-                  } else {
-                    return hasEverFocused.value && control.invalid;
-                  }
-                },
-                validationMessages: {
-                  'required': (_) => translator.translate(
-                    'pages.create_profile.error.username_required',
-                  ),
-                  'minLength': (_) => translator.translate(
-                    'pages.create_profile.error.username_too_short',
-                  ),
-                  'pattern': (_) => translator.translate(
-                    'pages.create_profile.error.username_invalid',
-                  ),
-                  translator.translate(
-                    'pages.create_profile.error.username_invalid',
-                  ): (_) => translator.translate(
-                    'pages.create_profile.error.username_invalid',
-                  ),
-                },
+                  textCapitalization: TextCapitalization.sentences,
+                  selectionControls: CustomTextSelectionControls(),
+                  autocorrect: false,
+                  onTapOutside: (event) => context.unfocus(),
+                  cursorColor: colorScheme.tertiary,
+                  control: control,
+                  textInputAction: TextInputAction.next,
+                  maxLength: 30,
+                  onSubmitted: (control) => form.focus('biography'),
+                  decoration: inputDecoration(context, ''),
+                  controller: controller,
+                  showErrors: (control) {
+                    if (control.hasFocus) {
+                      return control.invalid && control.dirty;
+                    } else {
+                      return hasEverFocused.value && control.invalid;
+                    }
+                  },
+                  validationMessages: {
+                    'required': (_) => translator.translate(
+                      'pages.create_profile.error.username_required',
+                    ),
+                    'minLength': (_) => translator.translate(
+                      'pages.create_profile.error.username_too_short',
+                    ),
+                    'pattern': (_) => translator.translate(
+                      'pages.create_profile.error.username_invalid',
+                    ),
+                    translator.translate(
+                      'pages.create_profile.error.username_invalid',
+                    ): (_) => translator.translate(
+                      'pages.create_profile.error.username_invalid',
+                    ),
+                  },
+                ),
               ),
-            ),
             ),
           ],
         );

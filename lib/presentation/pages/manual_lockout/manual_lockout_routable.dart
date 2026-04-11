@@ -31,4 +31,3 @@ sealed class ManualLockoutRoutable extends Routable<ManualLockoutRoutable>
     return const ManualLockoutPage();
   }
 }
-

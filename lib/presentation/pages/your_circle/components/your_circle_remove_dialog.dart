@@ -39,10 +39,7 @@ class _RemoveDialogContent extends StatelessWidget {
               cornerRadius: 24,
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 28,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
               child: Material(
                 color: Colors.transparent,
                 child: Column(

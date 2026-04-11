@@ -21,8 +21,10 @@ class PostCrudService {
     required int thumbnailWidth,
     required int thumbnailHeight,
     String? description,
+
     /// Reference to lockout_sessions table if this is a lockout post
     String? lockoutId,
+
     /// List of user IDs to exclude from seeing this post (stored as UUID[])
     List<String>? excludedUserIds,
   }) async {
@@ -185,10 +187,7 @@ class PostCrudService {
   }
 
   /// Fetches a single field from a post by ID.
-  Future<Map<String, dynamic>> getPostField(
-    String postId,
-    String field,
-  ) async {
+  Future<Map<String, dynamic>> getPostField(String postId, String field) async {
     return _supabaseClient
         .from('posts')
         .select(field)

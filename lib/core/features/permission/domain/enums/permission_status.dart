@@ -5,5 +5,5 @@ enum PermissionStatus {
   restricted,
   limited, // iOS only
   provisional, // iOS only
-  notDetermined;
+  notDetermined,
 }

@@ -6,11 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'verify_email_otp_provider.g.dart';
 
 @Riverpod(keepAlive: false)
-Future<Result<bool>> verifyEmailOtp(
-  Ref ref,
-  String email,
-  String otp,
-) async {
+Future<Result<bool>> verifyEmailOtp(Ref ref, String email, String otp) async {
   final useCase = VerifyEmailOtpUseCase(
     email: email,
     otp: otp,

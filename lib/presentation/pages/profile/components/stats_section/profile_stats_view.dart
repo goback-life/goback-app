@@ -33,10 +33,7 @@ class ProfileStatsView extends HookConsumerWidget {
     final weekStart = useState(_mondayOf(DateTime.now()));
 
     final statsAsync = ref.watch(
-      getLockoutDailyStatsProvider(
-        userId: userId,
-        weekStart: weekStart.value,
-      ),
+      getLockoutDailyStatsProvider(userId: userId, weekStart: weekStart.value),
     );
 
     final dailyStats = <LockoutDailyStatsDto>[];
@@ -68,11 +65,7 @@ class ProfileStatsView extends HookConsumerWidget {
             top: 0,
             right: 0,
             child: GestureDetector(
-              onTap: () => _shareStats(
-                context,
-                dailyStats,
-                weekStart.value,
-              ),
+              onTap: () => _shareStats(context, dailyStats, weekStart.value),
               child: Padding(
                 padding: EdgeInsets.all(8 * s),
                 child: Icon(
@@ -111,8 +104,9 @@ class ProfileStatsView extends HookConsumerWidget {
     }
 
     final totalHours = '${(totalMinutes / 60).toStringAsFixed(1)}h';
-    final avgScore =
-        scoreCount > 0 ? (scoreSum / scoreCount).toStringAsFixed(0) : '—';
+    final avgScore = scoreCount > 0
+        ? (scoreSum / scoreCount).toStringAsFixed(0)
+        : '—';
     final sessions = totalSessions.toString();
     final lh = maxMinutes ~/ 60;
     final lm = maxMinutes % 60;

@@ -67,9 +67,7 @@ class MainSnackbar extends StatelessWidget with MainLayout, MainSnackbarLayout {
         padding: EdgeInsets.all(allPadding),
         child: Row(
           children: [
-            isError
-                ? Assets.svg.error.render()
-                : Assets.svg.success.render(),
+            isError ? Assets.svg.error.render() : Assets.svg.success.render(),
             SizedBox(width: iconToMessage),
             Expanded(
               child: Text(
@@ -83,10 +81,7 @@ class MainSnackbar extends StatelessWidget with MainLayout, MainSnackbarLayout {
                 ),
               ),
             ),
-            GestureDetector(
-              onTap: onDismiss,
-              child: Assets.svg.close.render(),
-            ),
+            GestureDetector(onTap: onDismiss, child: Assets.svg.close.render()),
           ],
         ),
       ),

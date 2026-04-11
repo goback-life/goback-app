@@ -9,9 +9,7 @@ class TextPostParser {
   static final RegExp _mentionPattern = RegExp(r'@(\w+)');
 
   /// Regex pattern to match markdown links [alias](url)
-  static final RegExp _markdownLinkPattern = RegExp(
-    r'\[([^\]]+)\]\(([^)]+)\)',
-  );
+  static final RegExp _markdownLinkPattern = RegExp(r'\[([^\]]+)\]\(([^)]+)\)');
 
   /// Regex pattern to match URLs (http://, https://, www.)
   static final RegExp _urlPattern = RegExp(
@@ -21,10 +19,7 @@ class TextPostParser {
 
   /// Extract @username patterns from text and return list of user IDs
   /// that match users in the provided list.
-  static List<String> parseMentions(
-    String text,
-    List<ProfileModel> allUsers,
-  ) {
+  static List<String> parseMentions(String text, List<ProfileModel> allUsers) {
     final mentions = <String>[];
     final usernameToId = <String, String>{};
 
@@ -79,7 +74,7 @@ class TextPostParser {
   /// Returns list of URLs with their positions
   static List<({String url, int start, int end})> findUrls(String text) {
     final urls = <({String url, int start, int end})>[];
-    
+
     // Get all markdown link positions to exclude them
     final markdownRanges = <({int start, int end})>[];
     for (final match in _markdownLinkPattern.allMatches(text)) {
@@ -93,8 +88,9 @@ class TextPostParser {
       final end = match.end;
 
       // Check if this URL is inside a markdown link
-      final isInMarkdown = markdownRanges.any((range) =>
-          start >= range.start && end <= range.end);
+      final isInMarkdown = markdownRanges.any(
+        (range) => start >= range.start && end <= range.end,
+      );
 
       if (!isInMarkdown) {
         urls.add((url: url, start: start, end: end));

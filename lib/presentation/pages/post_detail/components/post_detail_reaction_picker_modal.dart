@@ -65,58 +65,58 @@ class PostDetailReactionPickerModal extends HookConsumerWidget
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: reactionPickerVerticalPadding),
         child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: reactionPickerHandleWidth,
-            height: reactionPickerHandleHeight,
-            decoration: BoxDecoration(
-              color: MainColors.white.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(reactionPickerHandleRadius),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: reactionPickerHandleWidth,
+              height: reactionPickerHandleHeight,
+              decoration: BoxDecoration(
+                color: MainColors.white.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(reactionPickerHandleRadius),
+              ),
             ),
-          ),
-          SizedBox(height: reactionPickerHandleToEmojis),
+            SizedBox(height: reactionPickerHandleToEmojis),
 
-          Wrap(
-            spacing: reactionPickerEmojiSpacing,
-            runSpacing: reactionPickerEmojiSpacing,
-            alignment: WrapAlignment.center,
-            children: PostDetailReactionPickerModal.availableEmojis.map((
-              emoji,
-            ) {
-              final isSelected = selectedEmoji == emoji;
+            Wrap(
+              spacing: reactionPickerEmojiSpacing,
+              runSpacing: reactionPickerEmojiSpacing,
+              alignment: WrapAlignment.center,
+              children: PostDetailReactionPickerModal.availableEmojis.map((
+                emoji,
+              ) {
+                final isSelected = selectedEmoji == emoji;
 
-              return GestureDetector(
-                onTap: () => handleEmojiTap(emoji),
-                child: Container(
-                  padding: EdgeInsets.all(reactionPickerEmojiPadding),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? colorScheme.surfaceContainer
-                        : colorScheme.primary,
-                    borderRadius: BorderRadius.circular(
-                      reactionPickerEmojiRadius,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colorScheme.secondary.withValues(alpha: 0.25),
-                        blurRadius: 2,
-                        spreadRadius: 0,
-                        offset: const Offset(0, 1),
+                return GestureDetector(
+                  onTap: () => handleEmojiTap(emoji),
+                  child: Container(
+                    padding: EdgeInsets.all(reactionPickerEmojiPadding),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? colorScheme.surfaceContainer
+                          : colorScheme.primary,
+                      borderRadius: BorderRadius.circular(
+                        reactionPickerEmojiRadius,
                       ),
-                    ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorScheme.secondary.withValues(alpha: 0.25),
+                          blurRadius: 2,
+                          spreadRadius: 0,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      emoji,
+                      style: TextStyle(fontSize: reactionPickerEmojiFontSize),
+                    ),
                   ),
-                  child: Text(
-                    emoji,
-                    style: TextStyle(fontSize: reactionPickerEmojiFontSize),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          SizedBox(height: reactionPickerBottomSpacing),
-        ],
-      ),
+                );
+              }).toList(),
+            ),
+            SizedBox(height: reactionPickerBottomSpacing),
+          ],
+        ),
       ),
     );
   }

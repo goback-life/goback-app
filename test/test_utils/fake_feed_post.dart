@@ -46,10 +46,7 @@ List<FeedPostModel> createFakePostList({
 }) {
   return List.generate(count, (index) {
     final publishedAt = startTime.subtract(interval * index);
-    return createFakePost(
-      id: 'post-$index',
-      publishedAt: publishedAt,
-    );
+    return createFakePost(id: 'post-$index', publishedAt: publishedAt);
   });
 }
 
@@ -63,7 +60,8 @@ List<FeedPostModel> createFakePostList({
   List<FeedPostModel> valid,
   List<FeedPostModel> expired,
   List<FeedPostModel> all,
-}) createPostsWithExpiry({
+})
+createPostsWithExpiry({
   int validCount = 3,
   int expiredCount = 2,
   DateTime? now,
@@ -88,9 +86,5 @@ List<FeedPostModel> createFakePostList({
     );
   });
 
-  return (
-    valid: valid,
-    expired: expired,
-    all: [...valid, ...expired],
-  );
+  return (valid: valid, expired: expired, all: [...valid, ...expired]);
 }

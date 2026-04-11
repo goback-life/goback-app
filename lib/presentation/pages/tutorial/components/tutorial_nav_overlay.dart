@@ -70,12 +70,11 @@ class TutorialNavOverlay extends StatelessWidget {
             // Lockout button — same position as feed / real overlay.
             Positioned(
               bottom: lockoutBottom,
-              left: size.width / 2 +
+              left:
+                  size.width / 2 +
                   FeedLayout.lockoutCenterOffsetX * sw -
                   btnW / 2,
-              child: IgnorePointer(
-                child: FeedLockoutButton(),
-              ),
+              child: IgnorePointer(child: FeedLockoutButton()),
             ),
           ],
         ),

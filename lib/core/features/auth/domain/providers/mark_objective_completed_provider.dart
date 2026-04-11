@@ -10,6 +10,6 @@ Future<Result<void>> markObjectiveCompleted(Ref ref) {
   final useCase = MarkObjectiveCompletedUseCase(
     repository: ref.watch(authRepositoryProvider),
   );
-  
+
   return useCase.execute();
 }

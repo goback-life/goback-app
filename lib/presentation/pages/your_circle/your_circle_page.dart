@@ -23,10 +23,7 @@ class YourCirclePage extends HookConsumerWidget {
           // Content
           IndexedStack(
             index: tabIndex.value,
-            children: const [
-              YourCircleView(),
-              ConnectionRequestsView(),
-            ],
+            children: const [YourCircleView(), ConnectionRequestsView()],
           ),
           // Tab toggle at top
           Positioned(
@@ -47,10 +44,7 @@ class YourCirclePage extends HookConsumerWidget {
 }
 
 class _TabToggle extends StatelessWidget {
-  const _TabToggle({
-    required this.selectedIndex,
-    required this.onChanged,
-  });
+  const _TabToggle({required this.selectedIndex, required this.onChanged});
 
   final int selectedIndex;
   final ValueChanged<int> onChanged;

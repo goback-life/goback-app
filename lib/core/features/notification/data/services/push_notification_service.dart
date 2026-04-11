@@ -12,9 +12,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 ///
 /// All FCM operations are guarded by a production-only check.
 class PushNotificationService {
-  PushNotificationService({
-    required this.deviceTokenService,
-  });
+  PushNotificationService({required this.deviceTokenService});
 
   final DeviceTokenService deviceTokenService;
 
@@ -84,10 +82,8 @@ class PushNotificationService {
 
     result.fold(
       (_) => logger.info('Device token registered'),
-      (error) => logger.error(
-        'Failed to register device token',
-        exception: error,
-      ),
+      (error) =>
+          logger.error('Failed to register device token', exception: error),
     );
   }
 
@@ -101,10 +97,8 @@ class PushNotificationService {
         logger.info('Device token unregistered');
         _currentToken = null;
       },
-      (error) => logger.error(
-        'Failed to unregister device token',
-        exception: error,
-      ),
+      (error) =>
+          logger.error('Failed to unregister device token', exception: error),
     );
   }
 
@@ -131,7 +125,8 @@ class PushNotificationService {
 
     await _localNotifications!
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(_androidChannel);
   }
 
@@ -147,9 +142,7 @@ class PushNotificationService {
   /// iOS: handled natively via setForegroundNotificationPresentationOptions.
   /// Android: show via flutter_local_notifications.
   void _handleForegroundMessage(RemoteMessage message) {
-    logger.info(
-      'Received foreground message: ${message.notification?.title}',
-    );
+    logger.info('Received foreground message: ${message.notification?.title}');
 
     if (Platform.isAndroid && _localNotifications != null) {
       final notification = message.notification;

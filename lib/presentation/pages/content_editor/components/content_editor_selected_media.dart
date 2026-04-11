@@ -108,7 +108,9 @@ class ContentEditorSelectedMedia extends HookConsumerWidget
       context: context,
       image: image,
       showFlipMenu: showFlipMenu,
-      onFlipHorizontal: showFlipMenu ? (bytes) => _applyFlip(bytes, file) : null,
+      onFlipHorizontal: showFlipMenu
+          ? (bytes) => _applyFlip(bytes, file)
+          : null,
       onFlipVertical: showFlipMenu ? (bytes) => _applyFlip(bytes, file) : null,
     );
   }

@@ -32,63 +32,65 @@ class PostDetailReactionsListModal extends HookConsumerWidget
               MediaQuery.of(context).size.height * reactionsListMaxHeightRatio,
         ),
         child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(top: reactionsListTopPadding),
-            child: Container(
-              width: reactionsListHandleWidth,
-              height: reactionsListHandleHeight,
-              decoration: BoxDecoration(
-                color: MainColors.white.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(reactionsListHandleRadius),
-              ),
-            ),
-          ),
-          SizedBox(height: reactionsListHandleToContent),
-
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(
-                horizontal: reactionsListHorizontalPadding,
-              ),
-              itemCount: reactions.length,
-              itemBuilder: (context, index) {
-                final reaction = reactions[index];
-                final profileAsync = ref.watch(
-                  getProfileProvider(reaction.userId),
-                );
-
-                return profileAsync.when(
-                  data: (result) {
-                    return result.fold((profile) {
-                      if (profile == null) {
-                        return const SizedBox.shrink();
-                      }
-
-                      return MainMemberItem(
-                        member: profile,
-                        action: MemberItemAction.reaction,
-                        reactionEmoji: reaction.reaction,
-                        onTap: () =>
-                            _navigateToUserProfile(ref, reaction.userId),
-                      );
-                    }, (error) => const SizedBox.shrink());
-                  },
-                  loading: () => const SizedBox(
-                    height: 60,
-                    child: Center(child: CircularProgressIndicator()),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: reactionsListTopPadding),
+              child: Container(
+                width: reactionsListHandleWidth,
+                height: reactionsListHandleHeight,
+                decoration: BoxDecoration(
+                  color: MainColors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(
+                    reactionsListHandleRadius,
                   ),
-                  error: (_, __) => const SizedBox.shrink(),
-                );
-              },
+                ),
+              ),
             ),
-          ),
-          SizedBox(height: reactionsListBottomPadding),
-        ],
-      ),
+            SizedBox(height: reactionsListHandleToContent),
+
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: reactionsListHorizontalPadding,
+                ),
+                itemCount: reactions.length,
+                itemBuilder: (context, index) {
+                  final reaction = reactions[index];
+                  final profileAsync = ref.watch(
+                    getProfileProvider(reaction.userId),
+                  );
+
+                  return profileAsync.when(
+                    data: (result) {
+                      return result.fold((profile) {
+                        if (profile == null) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return MainMemberItem(
+                          member: profile,
+                          action: MemberItemAction.reaction,
+                          reactionEmoji: reaction.reaction,
+                          onTap: () =>
+                              _navigateToUserProfile(ref, reaction.userId),
+                        );
+                      }, (error) => const SizedBox.shrink());
+                    },
+                    loading: () => const SizedBox(
+                      height: 60,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (_, __) => const SizedBox.shrink(),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: reactionsListBottomPadding),
+          ],
+        ),
       ),
     );
   }

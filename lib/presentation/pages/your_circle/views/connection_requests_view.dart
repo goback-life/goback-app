@@ -152,16 +152,13 @@ class _SearchResults extends StatelessWidget {
 
   void _handleConnect(String receiverId) {
     requestsData.send(receiverId).then((result) {
-      result.fold(
-        (value) {
-          ref.invalidate(searchUsersProvider(searchData.query));
-          ref.invalidate(getOutgoingRequestsProvider);
-          if (value == 'auto_accepted') {
-            ref.invalidate(getCircleMembersProvider);
-          }
-        },
-        (_) {},
-      );
+      result.fold((value) {
+        ref.invalidate(searchUsersProvider(searchData.query));
+        ref.invalidate(getOutgoingRequestsProvider);
+        if (value == 'auto_accepted') {
+          ref.invalidate(getCircleMembersProvider);
+        }
+      }, (_) {});
     });
   }
 
@@ -224,14 +221,10 @@ class _RequestsIdle extends StatelessWidget {
             IncomingRequestTile(
               request: request,
               isCircleFull: isCircleFull,
-              onAccept: () => requestsData.respond(
-                request.requestId,
-                accept: true,
-              ),
-              onDeny: () => requestsData.respond(
-                request.requestId,
-                accept: false,
-              ),
+              onAccept: () =>
+                  requestsData.respond(request.requestId, accept: true),
+              onDeny: () =>
+                  requestsData.respond(request.requestId, accept: false),
             ),
         ],
         if (hasOutgoing) ...[

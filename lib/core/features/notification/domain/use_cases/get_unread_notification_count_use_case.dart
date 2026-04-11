@@ -16,4 +16,3 @@ class GetUnreadNotificationCountUseCase
     return await repository.getUnreadCount(userId: userId);
   }
 }
-

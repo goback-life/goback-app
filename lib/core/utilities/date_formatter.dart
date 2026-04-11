@@ -123,7 +123,7 @@ class DateFormatter {
     final now = referenceDate ?? DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final postDate = DateTime(localDate.year, localDate.month, localDate.day);
-    
+
     if (postDate == today) {
       // Same day: show only time
       return formatTimeOnly(date, locale, convertToLocal: convertToLocal);

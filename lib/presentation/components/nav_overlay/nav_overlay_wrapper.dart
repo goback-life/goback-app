@@ -45,11 +45,11 @@ class NavOverlayWrapper extends HookConsumerWidget {
           if (v && !profileCompleted.value) profileCompleted.value = true;
         });
       }
+
       check();
-      final timer = Timer.periodic(
-        const Duration(milliseconds: 500),
-        (_) { if (!profileCompleted.value) check(); },
-      );
+      final timer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+        if (!profileCompleted.value) check();
+      });
       return timer.cancel;
     }, [isAuthenticated]);
     final hasCompletedSignup = isAuthenticated && profileCompleted.value;
@@ -63,18 +63,19 @@ class NavOverlayWrapper extends HookConsumerWidget {
           if (v != tutorialCompleted.value) tutorialCompleted.value = v;
         });
       }
+
       check();
-      final timer = Timer.periodic(
-        const Duration(milliseconds: 500),
-        (_) { if (!tutorialCompleted.value) check(); },
-      );
+      final timer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+        if (!tutorialCompleted.value) check();
+      });
       return timer.cancel;
     }, [isAuthenticated]);
 
     // Check lockout state to disable overlay.
     final lockoutAsync = ref.watch(manualLockoutNotifierProvider);
     final lockoutState = lockoutAsync.valueOrNull;
-    final isBlocked = !hasCompletedSignup ||
+    final isBlocked =
+        !hasCompletedSignup ||
         lockoutState?.isLockedOut == true ||
         lockoutState?.isCompletionPending == true ||
         !tutorialCompleted.value;

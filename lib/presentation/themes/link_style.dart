@@ -4,11 +4,11 @@ class LinkTextStyle extends ThemeExtension<LinkTextStyle> {
   const LinkTextStyle();
 
   TextStyle style(ThemeData theme) => TextStyle(
-        color: theme.colorScheme.primary,
-        decorationColor: theme.colorScheme.primary,
-        decoration: TextDecoration.underline,
-        fontWeight: FontWeight.bold,
-      );
+    color: theme.colorScheme.primary,
+    decorationColor: theme.colorScheme.primary,
+    decoration: TextDecoration.underline,
+    fontWeight: FontWeight.bold,
+  );
   @override
   LinkTextStyle copyWith() {
     return const LinkTextStyle();

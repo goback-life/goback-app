@@ -39,12 +39,16 @@ sealed class FeedPostModel with _$FeedPostModel {
     String? videoUrl,
     String? authorAvatarUrl,
     String? description,
+
     /// Reference to lockout_sessions table if this is a lockout post
     String? lockoutId,
+
     /// Goback score (0-100) from lockout session
     int? lockoutScore,
+
     /// Lockout duration in minutes from lockout session
     int? lockoutDurationMinutes,
+
     /// When this post was saved to calendar (null if not saved)
     DateTime? calendarSavedAt,
     @Default([]) List<LinkPreviewModel> linkPreviews,

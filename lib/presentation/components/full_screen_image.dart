@@ -74,6 +74,7 @@ class FullScreenImage extends StatefulWidget {
   @override
   State<FullScreenImage> createState() => _FullScreenImageState();
 }
+
 // ignore: one_class_per_file
 class _FullScreenImageState extends State<FullScreenImage>
     with TickerProviderStateMixin {
@@ -487,8 +488,7 @@ class _FullScreenImageState extends State<FullScreenImage>
 
   Rect get _boundaryRect {
     assert(childKey.currentContext != null);
-    final childRB =
-        childKey.currentContext!.findRenderObject()! as RenderBox;
+    final childRB = childKey.currentContext!.findRenderObject()! as RenderBox;
     return widget.boundaryMargin.inflateRect(Offset.zero & childRB.size);
   }
 

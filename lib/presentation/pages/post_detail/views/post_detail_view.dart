@@ -66,7 +66,6 @@ class PostDetailView extends HookConsumerWidget
           false;
     }, [currentUserAsync, postDetailResult.post?.authorId]);
 
-
     useEffect(() {
       var isMounted = true;
 
@@ -222,31 +221,28 @@ class PostDetailView extends HookConsumerWidget
       ],
     );
 
-    final canShowCalendarIcon = useMemoized(
-      () {
-        if (!isCurrentUserPost) {
-          return false;
-        }
+    final canShowCalendarIcon = useMemoized(() {
+      if (!isCurrentUserPost) {
+        return false;
+      }
 
-        final post = postDetailResult.post;
-        if (post == null) {
-          return false;
-        }
+      final post = postDetailResult.post;
+      if (post == null) {
+        return false;
+      }
 
-        final now = DateTime.now();
-        final today = DateTime(now.year, now.month, now.day);
-        final postCreatedDate = DateTime(
-          post.createdAt.year,
-          post.createdAt.month,
-          post.createdAt.day,
-        );
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final postCreatedDate = DateTime(
+        post.createdAt.year,
+        post.createdAt.month,
+        post.createdAt.day,
+      );
 
-        final isToday = postCreatedDate.isAtSameMomentAs(today);
+      final isToday = postCreatedDate.isAtSameMomentAs(today);
 
-        return isToday || isPostInCalendar;
-      },
-      [isCurrentUserPost, postDetailResult.post?.createdAt, isPostInCalendar],
-    );
+      return isToday || isPostInCalendar;
+    }, [isCurrentUserPost, postDetailResult.post?.createdAt, isPostInCalendar]);
 
     if (postDetailResult.post == null) {
       return Container(

@@ -2,11 +2,7 @@ part of 'package:cloudless/presentation/components/full_screen_image.dart';
 
 /// Clamp [matrix] so the viewport stays within [boundaryRect].
 /// Pure function — no widget state dependency.
-Matrix4 _fixMatrixForBounds(
-  Matrix4 matrix,
-  Rect boundaryRect,
-  Rect viewport,
-) {
+Matrix4 _fixMatrixForBounds(Matrix4 matrix, Rect boundaryRect, Rect viewport) {
   final nextMatrix = matrix.clone();
   final nextViewport = _transformViewport(nextMatrix, viewport);
   if (boundaryRect.isInfinite) return nextMatrix;

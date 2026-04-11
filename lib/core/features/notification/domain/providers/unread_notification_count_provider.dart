@@ -17,4 +17,3 @@ Future<Result<int>> unreadNotificationCount(
 
   return useCase.execute();
 }
-

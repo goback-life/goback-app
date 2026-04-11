@@ -28,4 +28,3 @@ class NotificationDtoToModelMapper {
     return dtos.map(mapDto).toList();
   }
 }
-

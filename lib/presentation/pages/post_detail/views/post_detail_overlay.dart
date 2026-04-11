@@ -22,10 +22,7 @@ void _showFullScreenImage(BuildContext context, String? imageUrl) {
       pageBuilder: (_, __, ___) => GestureDetector(
         onTap: () => Navigator.pop(context),
         child: Center(
-          child: CachedNetworkImage(
-            imageUrl: imageUrl,
-            fit: BoxFit.contain,
-          ),
+          child: CachedNetworkImage(imageUrl: imageUrl, fit: BoxFit.contain),
         ),
       ),
     ),
@@ -92,8 +89,10 @@ class PostDetailOverlay extends HookConsumerWidget {
           scrollFraction.value = 0;
           return;
         }
-        scrollFraction.value =
-            (pos.pixels / pos.maxScrollExtent).clamp(0.0, 1.0);
+        scrollFraction.value = (pos.pixels / pos.maxScrollExtent).clamp(
+          0.0,
+          1.0,
+        );
       }
 
       scrollController.addListener(onScroll);
@@ -187,8 +186,10 @@ class _GlassCard extends StatelessWidget {
     final visibleTop = squircleTop + squircleSize;
     final visibleH = cardH - visibleTop - contentBottom;
     final indicatorPad = 10 * scale;
-    final travel =
-        (visibleH - indicatorH - indicatorPad * 2).clamp(0.0, visibleH);
+    final travel = (visibleH - indicatorH - indicatorPad * 2).clamp(
+      0.0,
+      visibleH,
+    );
     // Reversed list: fraction=0 at rest (bottom), fraction=1 scrolled up (top)
     final indicatorTop =
         visibleTop + indicatorPad + (1 - scrollFraction) * travel;
@@ -263,9 +264,7 @@ class _GlassCard extends StatelessWidget {
                   child: SizedBox(
                     width: squircleSize,
                     height: squircleSize,
-                    child: ClipSquircle(
-                      child: _squircleImage(),
-                    ),
+                    child: ClipSquircle(child: _squircleImage()),
                   ),
                 ),
               ),
@@ -349,8 +348,7 @@ class _ContentClipper extends CustomClipper<Rect> {
   final double clipTop;
 
   @override
-  Rect getClip(Size size) =>
-      Rect.fromLTRB(0, clipTop, size.width, size.height);
+  Rect getClip(Size size) => Rect.fromLTRB(0, clipTop, size.width, size.height);
 
   @override
   bool shouldReclip(covariant _ContentClipper old) => old.clipTop != clipTop;

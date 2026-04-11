@@ -12,4 +12,3 @@ class ClearManualLockoutUseCase implements UseCaseContract<void> {
     await storable.clearLockout();
   }
 }
-

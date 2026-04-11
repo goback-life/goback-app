@@ -34,25 +34,27 @@ class NotificationService implements NotificationServiceContract {
         // Map database columns to DTO fields
         // DB returns: id, type, reference_id, latest_actor_id, latest_actor_username,
         //             latest_actor_avatar, actor_count, created_at, updated_at, read_at
-        notifications.add(AggregatedNotificationDto(
-          notificationType: data['type'] as String,
-          referenceId: data['reference_id']?.toString(),
-          latestActorId: data['latest_actor_id']?.toString(),
-          actorIds: data['latest_actor_id'] != null
-              ? [data['latest_actor_id'].toString()]
-              : [],
-          actorUsernames: data['latest_actor_username'] != null
-              ? [data['latest_actor_username'] as String]
-              : [],
-          actorAvatarUrls: data['latest_actor_avatar'] != null
-              ? [data['latest_actor_avatar'] as String]
-              : null,
-          actorCount: data['actor_count'] as int? ?? 1,
-          updatedAt: data['updated_at'] as String,
-          isRead: data['read_at'] != null,
-          postThumbnailUrl: null, // Not returned by this RPC
-          postContentType: null, // Not returned by this RPC
-        ));
+        notifications.add(
+          AggregatedNotificationDto(
+            notificationType: data['type'] as String,
+            referenceId: data['reference_id']?.toString(),
+            latestActorId: data['latest_actor_id']?.toString(),
+            actorIds: data['latest_actor_id'] != null
+                ? [data['latest_actor_id'].toString()]
+                : [],
+            actorUsernames: data['latest_actor_username'] != null
+                ? [data['latest_actor_username'] as String]
+                : [],
+            actorAvatarUrls: data['latest_actor_avatar'] != null
+                ? [data['latest_actor_avatar'] as String]
+                : null,
+            actorCount: data['actor_count'] as int? ?? 1,
+            updatedAt: data['updated_at'] as String,
+            isRead: data['read_at'] != null,
+            postThumbnailUrl: null, // Not returned by this RPC
+            postContentType: null, // Not returned by this RPC
+          ),
+        );
       }
 
       return notifications;

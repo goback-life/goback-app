@@ -10,47 +10,48 @@ class UrlShortener {
       r'(https?://[^\s]+|www\.[^\s]+)',
       caseSensitive: false,
     );
-    
+
     // Pattern to match existing markdown links (don't convert those)
     final markdownLinkPattern = RegExp(r'\[([^\]]+)\]\(([^)]+)\)');
-    
+
     // Get all markdown link ranges to exclude
     final markdownRanges = <({int start, int end})>[];
     for (final match in markdownLinkPattern.allMatches(text)) {
       markdownRanges.add((start: match.start, end: match.end));
     }
-    
+
     String result = text;
-    
+
     // Find all URLs and convert them to markdown links
     // Process in reverse to preserve positions
     final urlMatches = urlPattern.allMatches(text).toList();
     for (final match in urlMatches.reversed) {
       final urlStart = match.start;
       final urlEnd = match.end;
-      
+
       // Check if this URL is inside a markdown link
-      final isInMarkdown = markdownRanges.any((range) =>
-          urlStart >= range.start && urlEnd <= range.end);
-      
+      final isInMarkdown = markdownRanges.any(
+        (range) => urlStart >= range.start && urlEnd <= range.end,
+      );
+
       if (isInMarkdown) continue;
-      
+
       // Extract the URL
       final url = match.group(0)!;
-      
+
       // Extract domain from URL
       final domain = _extractDomain(url);
-      
+
       // Convert to markdown link [domain](url)
       final markdownLink = '[$domain]($url)';
-      
+
       // Replace URL with markdown link
       result = result.replaceRange(urlStart, urlEnd, markdownLink);
     }
-    
+
     return result;
   }
-  
+
   /// Extract domain from URL
   static String _extractDomain(String url) {
     try {
@@ -63,17 +64,19 @@ class UrlShortener {
       } else if (url.startsWith('www.')) {
         urlWithoutProtocol = url.substring(4);
       }
-      
+
       // Extract domain (everything before first /, ?, #, or space)
       final domainEnd = urlWithoutProtocol.indexOf(RegExp(r'[/?#\s]'));
       if (domainEnd != -1) {
         return urlWithoutProtocol.substring(0, domainEnd);
       }
-      
+
       return urlWithoutProtocol;
     } catch (e) {
       // If extraction fails, return a simplified version
-      return url.replaceAll(RegExp(r'^https?://'), '').replaceAll(RegExp(r'^www\.'), '');
+      return url
+          .replaceAll(RegExp(r'^https?://'), '')
+          .replaceAll(RegExp(r'^www\.'), '');
     }
   }
 }

@@ -48,33 +48,33 @@ class DescriptionFormField extends HookConsumerWidget {
                   }
                 },
                 child: FormerFormTextfield<String>(
-                textCapitalization: TextCapitalization.sentences,
-                selectionControls: CustomTextSelectionControls(),
-                onTapOutside: (event) => context.unfocus(),
-                autocorrect: true,
-                cursorColor: colorScheme.tertiary,
-                control: control,
-                textInputAction: TextInputAction.newline,
-                maxLines: 5,
-                maxLength: 200,
-                onSubmitted: (control) {
-                  if (onSubmitted != null) {
-                    onSubmitted!();
-                  } else {
-                    form.unfocus();
-                  }
-                },
-                decoration: inputDecoration(context, ''),
-                controller: controller,
-                showErrors: (control) {
-                  if (control.hasFocus) {
-                    return control.invalid && control.dirty;
-                  } else {
-                    return hasEverFocused.value && control.invalid;
-                  }
-                },
+                  textCapitalization: TextCapitalization.sentences,
+                  selectionControls: CustomTextSelectionControls(),
+                  onTapOutside: (event) => context.unfocus(),
+                  autocorrect: true,
+                  cursorColor: colorScheme.tertiary,
+                  control: control,
+                  textInputAction: TextInputAction.newline,
+                  maxLines: 5,
+                  maxLength: 200,
+                  onSubmitted: (control) {
+                    if (onSubmitted != null) {
+                      onSubmitted!();
+                    } else {
+                      form.unfocus();
+                    }
+                  },
+                  decoration: inputDecoration(context, ''),
+                  controller: controller,
+                  showErrors: (control) {
+                    if (control.hasFocus) {
+                      return control.invalid && control.dirty;
+                    } else {
+                      return hasEverFocused.value && control.invalid;
+                    }
+                  },
+                ),
               ),
-            ),
             ),
           ],
         );

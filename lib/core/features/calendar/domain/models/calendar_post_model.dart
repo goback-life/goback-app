@@ -25,8 +25,10 @@ sealed class CalendarPostModel with _$CalendarPostModel {
     String? thumbnailUrl,
     String? description,
     String? videoUrl,
+
     /// The lockout session ID this post was created from
     String? lockoutId,
+
     /// When this post was saved to calendar (legacy, now optional)
     DateTime? calendarSavedAt,
   }) = _CalendarPostModel;

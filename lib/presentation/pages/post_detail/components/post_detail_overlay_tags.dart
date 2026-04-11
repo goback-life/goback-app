@@ -46,10 +46,7 @@ class PostDetailOverlayTags extends StatelessWidget {
               onTagTap?.call(usernames[i], userId);
             },
             child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: hPad,
-                vertical: vPad,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
               decoration: BoxDecoration(
                 color: MainColors.accent.withValues(alpha: 0.20),
                 borderRadius: BorderRadius.circular(pillRadius),

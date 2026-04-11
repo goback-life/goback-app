@@ -17,4 +17,3 @@ mixin ReviewCircleLayout on MainLayout {
   double get bottomButtonPadding => 16.0;
   double get bottomButtonToContent => 24.0;
 }
-

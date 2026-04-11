@@ -10,7 +10,7 @@ import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 
 /// Hook to create a post when joining someone else's lockout with app logo
-/// 
+///
 /// Creates a post with the app icon and description "@joiner is going back for x hours with @other_user"
 /// Tags the other user (the lockout creator)
 Future<Result<PostModel>?> useJoinLockoutPost(
@@ -22,14 +22,11 @@ Future<Result<PostModel>?> useJoinLockoutPost(
   try {
     // Get current user (the joiner)
     final currentUserAsync = await ref.read(getCurrentUserProvider.future);
-    
-    final user = currentUserAsync.fold(
-      (user) => user,
-      (error) {
-        logger.error('Failed to get current user', exception: error);
-        return null;
-      },
-    );
+
+    final user = currentUserAsync.fold((user) => user, (error) {
+      logger.error('Failed to get current user', exception: error);
+      return null;
+    });
 
     if (user == null) {
       return Result.failure(Exception('User not found'));
@@ -38,13 +35,10 @@ Future<Result<PostModel>?> useJoinLockoutPost(
     // Get joiner's profile for username
     final profileAsync = await ref.read(getProfileProvider(user.id).future);
 
-    final profile = profileAsync.fold(
-      (profile) => profile,
-      (error) {
-        logger.error('Failed to get profile', exception: error);
-        return null;
-      },
-    );
+    final profile = profileAsync.fold((profile) => profile, (error) {
+      logger.error('Failed to get profile', exception: error);
+      return null;
+    });
 
     final joinerUsername = profile?.username ?? '';
     if (joinerUsername.isEmpty) {
@@ -54,16 +48,18 @@ Future<Result<PostModel>?> useJoinLockoutPost(
     // Format description: "@joiner is going back for x hours with @other_user"
     final totalMinutes = lockoutDuration.inMinutes;
     final hours = lockoutDuration.inHours;
-    
+
     String description;
     if (totalMinutes < 60) {
       // Less than 1 hour, use minutes
       final minutesText = totalMinutes == 1 ? 'minute' : 'minutes';
-      description = '@$joinerUsername is going back for $totalMinutes $minutesText with @$otherUserUsername';
+      description =
+          '@$joinerUsername is going back for $totalMinutes $minutesText with @$otherUserUsername';
     } else {
       // 1 hour or more, use hours
       final hoursText = hours == 1 ? 'hour' : 'hours';
-      description = '@$joinerUsername is going back for $hours $hoursText with @$otherUserUsername';
+      description =
+          '@$joinerUsername is going back for $hours $hoursText with @$otherUserUsername';
     }
 
     // Get app icon as File

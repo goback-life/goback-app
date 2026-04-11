@@ -296,10 +296,7 @@ class SearchResultTile extends StatelessWidget {
           onTap: isCircleFull ? null : onConnect,
         );
       case ConnectionStatus.pendingOutgoing:
-        return SmallActionButton(
-          label: 'Pending',
-          color: disabledColor,
-        );
+        return SmallActionButton(label: 'Pending', color: disabledColor);
       case ConnectionStatus.pendingIncoming:
         return SmallActionButton(
           label: isCircleFull ? 'Full' : 'Accept',
@@ -307,10 +304,7 @@ class SearchResultTile extends StatelessWidget {
           onTap: isCircleFull ? null : onAccept,
         );
       case ConnectionStatus.connected:
-        return SmallActionButton(
-          label: 'Connected',
-          color: disabledColor,
-        );
+        return SmallActionButton(label: 'Connected', color: disabledColor);
     }
   }
 }

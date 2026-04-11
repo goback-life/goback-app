@@ -37,8 +37,7 @@ class ShareCardCaptureService {
       final boundary =
           key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 3.0);
-      final byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
 
       if (byteData == null) return;
@@ -59,10 +58,7 @@ class ShareCardCaptureService {
             );
 
       await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(file.path)],
-          sharePositionOrigin: origin,
-        ),
+        ShareParams(files: [XFile(file.path)], sharePositionOrigin: origin),
       );
     } finally {
       entry.remove();

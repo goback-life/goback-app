@@ -52,14 +52,10 @@ class LockoutLineChartPainter extends CustomPainter {
         ..close();
 
       final fillPaint = Paint()
-        ..shader = ui.Gradient.linear(
-          Offset(0, vPad),
-          Offset(0, size.height),
-          [
-            MainColors.accent.withOpacity(0.25),
-            MainColors.accent.withOpacity(0.0),
-          ],
-        );
+        ..shader = ui.Gradient.linear(Offset(0, vPad), Offset(0, size.height), [
+          MainColors.accent.withOpacity(0.25),
+          MainColors.accent.withOpacity(0.0),
+        ]);
       canvas.drawPath(fillPath, fillPaint);
     }
 
@@ -83,22 +79,19 @@ class LockoutLineChartPainter extends CustomPainter {
       final isHighlighted = i == highlightIndex;
       final dotRadius = isHighlighted ? 5.0 : 3.0;
       final dotPaint = Paint()
-        ..color = isHighlighted ? MainColors.accent : MainColors.accent.withOpacity(0.8);
+        ..color = isHighlighted
+            ? MainColors.accent
+            : MainColors.accent.withOpacity(0.8);
       canvas.drawCircle(points[i], dotRadius, dotPaint);
 
       // White inner dot on highlight
       if (isHighlighted) {
-        canvas.drawCircle(
-          points[i],
-          2.0,
-          Paint()..color = MainColors.dark,
-        );
+        canvas.drawCircle(points[i], 2.0, Paint()..color = MainColors.dark);
       }
     }
   }
 
   @override
   bool shouldRepaint(covariant LockoutLineChartPainter old) =>
-      old.dailyMinutes != dailyMinutes ||
-      old.highlightIndex != highlightIndex;
+      old.dailyMinutes != dailyMinutes || old.highlightIndex != highlightIndex;
 }

@@ -41,8 +41,7 @@ class SharePostDialog {
     } catch (_) {}
 
     try {
-      final profileResult =
-          await ref.read(getProfileProvider(authorId).future);
+      final profileResult = await ref.read(getProfileProvider(authorId).future);
       profileResult.fold(
         (profile) => username = profile?.username ?? '',
         (_) {},

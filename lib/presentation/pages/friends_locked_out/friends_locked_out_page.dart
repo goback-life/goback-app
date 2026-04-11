@@ -11,9 +11,7 @@ class FriendsLockedOutPage extends HookConsumerWidget with MainLayout {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: MainColors.dark,
-      body: const SafeArea(
-        child: FriendsLockedOutView(),
-      ),
+      body: const SafeArea(child: FriendsLockedOutView()),
     );
   }
 }

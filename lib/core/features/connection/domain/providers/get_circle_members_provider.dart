@@ -28,19 +28,16 @@ class GetCircleMembers extends _$GetCircleMembers {
     final basicResult = await service.getCircleMembersBasic();
 
     // Handle errors - if basic fetch fails, return error
-    return basicResult.fold(
-      (basicMembers) {
-        // Convert to models with placeholder avatars (from DB cache if available)
-        final placeholderModels = _convertToConnectionMembers(basicMembers);
+    return basicResult.fold((basicMembers) {
+      // Convert to models with placeholder avatars (from DB cache if available)
+      final placeholderModels = _convertToConnectionMembers(basicMembers);
 
-        // Start avatar enrichment in background - don't await!
-        // This allows the UI to render immediately with placeholders
-        _enrichAvatarsInBackground(service, basicMembers);
+      // Start avatar enrichment in background - don't await!
+      // This allows the UI to render immediately with placeholders
+      _enrichAvatarsInBackground(service, basicMembers);
 
-        return Result.success(placeholderModels);
-      },
-      (error) => Result.failure(error),
-    );
+      return Result.success(placeholderModels);
+    }, (error) => Result.failure(error));
   }
 
   /// Enriches avatars in the background without blocking the provider.
@@ -50,10 +47,13 @@ class GetCircleMembers extends _$GetCircleMembers {
     List<GetCircleMembersResponseDto> basicMembers,
   ) async {
     try {
-      final enrichedResult = await service.enrichMembersWithAvatars(basicMembers);
+      final enrichedResult = await service.enrichMembersWithAvatars(
+        basicMembers,
+      );
       final completeMembers = enrichedResult.fold(
         (members) => members,
-        (error) => basicMembers, // Fall back to basic members if enrichment fails
+        (error) =>
+            basicMembers, // Fall back to basic members if enrichment fails
       );
 
       // Update state with complete data (avatars loaded)

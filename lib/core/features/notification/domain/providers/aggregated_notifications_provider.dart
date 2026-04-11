@@ -22,4 +22,3 @@ Future<Result<List<AggregatedNotificationModel>>> aggregatedNotifications(
 
   return useCase.execute();
 }
-

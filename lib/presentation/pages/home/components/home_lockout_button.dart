@@ -11,8 +11,7 @@ import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
-class HomeLockoutButton extends HookConsumerWidget
-    with MainLayout, HomeLayout {
+class HomeLockoutButton extends HookConsumerWidget with MainLayout, HomeLayout {
   const HomeLockoutButton({super.key});
 
   @override
@@ -37,7 +36,9 @@ class HomeLockoutButton extends HookConsumerWidget
         if (!context.mounted) return;
 
         try {
-          final lockoutNotifier = ref.read(manualLockoutNotifierProvider.notifier);
+          final lockoutNotifier = ref.read(
+            manualLockoutNotifierProvider.notifier,
+          );
           await lockoutNotifier.setLockout(
             result.duration,
             actionText: result.actionText,
@@ -69,4 +70,3 @@ class HomeLockoutButton extends HookConsumerWidget
     );
   }
 }
-

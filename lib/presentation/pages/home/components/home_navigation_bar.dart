@@ -16,8 +16,7 @@ import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:flutter/material.dart';
 
-class HomeNavigationBar extends HookConsumerWidget
-    with MainLayout, HomeLayout {
+class HomeNavigationBar extends HookConsumerWidget with MainLayout, HomeLayout {
   const HomeNavigationBar({super.key});
 
   @override
@@ -78,75 +77,77 @@ class HomeNavigationBar extends HookConsumerWidget
               // Notifications
               currentUserAsync.when(
                 data: (userResult) {
-                  return userResult.fold(
-                    (user) {
-                      final unreadCountAsync = useUnreadNotificationCount(
-                        ref,
-                        userId: user.id,
-                      );
+                  return userResult.fold((user) {
+                    final unreadCountAsync = useUnreadNotificationCount(
+                      ref,
+                      userId: user.id,
+                    );
 
-                      return unreadCountAsync.when(
-                        data: (countResult) {
-                          final unreadCount = countResult.fold(
-                            (count) => count,
-                            (_) => 0,
-                          );
+                    return unreadCountAsync.when(
+                      data: (countResult) {
+                        final unreadCount = countResult.fold(
+                          (count) => count,
+                          (_) => 0,
+                        );
 
-                          return GestureDetector(
-                            onTap: () => router.push(
-                              const NotificationsRoutable(),
-                            ),
-                            child: SizedBox(
-                              width: navCircleButtonSize,
-                              height: navCircleButtonSize,
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  Center(
-                                    child: Assets.svg.notifications.render(colorFilter: colorScheme.onSurface.asSrcIn),
+                        return GestureDetector(
+                          onTap: () =>
+                              router.push(const NotificationsRoutable()),
+                          child: SizedBox(
+                            width: navCircleButtonSize,
+                            height: navCircleButtonSize,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Center(
+                                  child: Assets.svg.notifications.render(
+                                    colorFilter: colorScheme.onSurface.asSrcIn,
                                   ),
-                                  if (unreadCount > 0)
-                                    Positioned(
-                                      right: -2,
-                                      top: -2,
-                                      child: Container(
-                                        width: 8,
-                                        height: 8,
-                                        decoration: const BoxDecoration(
-                                          color: MainColors.accent,
-                                          shape: BoxShape.circle,
-                                        ),
+                                ),
+                                if (unreadCount > 0)
+                                  Positioned(
+                                    right: -2,
+                                    top: -2,
+                                    child: Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(
+                                        color: MainColors.accent,
+                                        shape: BoxShape.circle,
                                       ),
                                     ),
-                                ],
-                              ),
+                                  ),
+                              ],
                             ),
-                          );
-                        },
-                        loading: () => GestureDetector(
-                          onTap: () => router.push(const NotificationsRoutable()),
-                          child: SizedBox(
-                            width: navCircleButtonSize,
-                            height: navCircleButtonSize,
-                            child: Center(
-                              child: Assets.svg.notifications.render(colorFilter: colorScheme.onSurface.asSrcIn),
+                          ),
+                        );
+                      },
+                      loading: () => GestureDetector(
+                        onTap: () => router.push(const NotificationsRoutable()),
+                        child: SizedBox(
+                          width: navCircleButtonSize,
+                          height: navCircleButtonSize,
+                          child: Center(
+                            child: Assets.svg.notifications.render(
+                              colorFilter: colorScheme.onSurface.asSrcIn,
                             ),
                           ),
                         ),
-                        error: (_, __) => GestureDetector(
-                          onTap: () => router.push(const NotificationsRoutable()),
-                          child: SizedBox(
-                            width: navCircleButtonSize,
-                            height: navCircleButtonSize,
-                            child: Center(
-                              child: Assets.svg.notifications.render(colorFilter: colorScheme.onSurface.asSrcIn),
+                      ),
+                      error: (_, __) => GestureDetector(
+                        onTap: () => router.push(const NotificationsRoutable()),
+                        child: SizedBox(
+                          width: navCircleButtonSize,
+                          height: navCircleButtonSize,
+                          child: Center(
+                            child: Assets.svg.notifications.render(
+                              colorFilter: colorScheme.onSurface.asSrcIn,
                             ),
                           ),
                         ),
-                      );
-                    },
-                    (_) => const SizedBox.shrink(),
-                  );
+                      ),
+                    );
+                  }, (_) => const SizedBox.shrink());
                 },
                 loading: () => const SizedBox.shrink(),
                 error: (_, __) => const SizedBox.shrink(),

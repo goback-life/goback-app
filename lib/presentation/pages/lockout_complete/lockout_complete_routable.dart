@@ -14,9 +14,8 @@ sealed class LockoutCompleteRoutable extends Routable<LockoutCompleteRoutable>
 
   const LockoutCompleteRoutable._();
 
-  const factory LockoutCompleteRoutable({
-    required String lockoutSessionId,
-  }) = _LockoutCompleteRoutable;
+  const factory LockoutCompleteRoutable({required String lockoutSessionId}) =
+      _LockoutCompleteRoutable;
 
   @override
   String get path => '/lockout_complete';

@@ -57,10 +57,8 @@ class PostDetailCommentItem extends StatelessWidget
                               ),
                             ),
                             TextSpan(
-                              text: '  ${DateFormatter.formatTimeWithDateIfNeeded(
-                                comment.createdAt,
-                                translator.currentLocale.toString(),
-                              )}',
+                              text:
+                                  '  ${DateFormatter.formatTimeWithDateIfNeeded(comment.createdAt, translator.currentLocale.toString())}',
                               style: textTheme.labelSmall?.copyWith(
                                 color: colorScheme.onSurface.withValues(
                                   alpha: 0.5,
@@ -83,10 +81,7 @@ class PostDetailCommentItem extends StatelessWidget
                   ],
                 ),
                 SizedBox(height: 4),
-                Text(
-                  comment.content,
-                  style: textTheme.bodyMedium,
-                ),
+                Text(comment.content, style: textTheme.bodyMedium),
               ],
             ),
           ),

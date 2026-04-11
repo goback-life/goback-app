@@ -86,7 +86,8 @@ class NavOverlay extends StatelessWidget {
             // Lockout button — same position as feed.
             Positioned(
               bottom: lockoutBottom,
-              left: size.width / 2 +
+              left:
+                  size.width / 2 +
                   FeedLayout.lockoutCenterOffsetX * sw -
                   btnW / 2,
               child: const FeedLockoutButton(),

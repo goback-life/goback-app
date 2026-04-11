@@ -122,6 +122,7 @@ class FeedView extends HookConsumerWidget {
           router.go(const ManualLockoutRoutable());
         }
       }
+
       check();
       return null;
     }, []);
@@ -151,12 +152,14 @@ class FeedView extends HookConsumerWidget {
     // -- Memorable post selection prompt --
     useEffect(() {
       Future<void> checkMemorableSelection() async {
-        final shouldShow =
-            await ref.read(shouldShowMemorableSelectionProvider.future);
+        final shouldShow = await ref.read(
+          shouldShowMemorableSelectionProvider.future,
+        );
         if (shouldShow && context.mounted) {
           MemorablePostSelectionDialog.show(context);
         }
       }
+
       checkMemorableSelection();
       return null;
     }, []);
@@ -215,7 +218,8 @@ class FeedView extends HookConsumerWidget {
           final atBottom = offset < 10;
 
           // ~4 posts worth of scroll distance (squircle + gaps, scaled)
-          final fourPostThreshold = 4 * (250 + 15 + 39 + 18) * (screenWidth / 402.0);
+          final fourPostThreshold =
+              4 * (250 + 15 + 39 + 18) * (screenWidth / 402.0);
           final farEnough = offset > fourPostThreshold;
           if (isFarFromBottom.value != farEnough) {
             isFarFromBottom.value = farEnough;
@@ -281,13 +285,15 @@ class FeedView extends HookConsumerWidget {
           postActionEvent.action == PostActionType.create &&
           scrollController.hasClients) {
         scrollController
-            .animateTo(0,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut)
+            .animateTo(
+              0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            )
             .then((_) {
-          isAtBottom.value = true;
-          hasUserScrolled.value = false;
-        });
+              isAtBottom.value = true;
+              hasUserScrolled.value = false;
+            });
       }
       return null;
     }, [postActionEvent?.timestamp.millisecondsSinceEpoch]);
@@ -296,13 +302,15 @@ class FeedView extends HookConsumerWidget {
     useEffect(() {
       if (postPublished != null && scrollController.hasClients) {
         scrollController
-            .animateTo(0,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut)
+            .animateTo(
+              0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            )
             .then((_) {
-          isAtBottom.value = true;
-          hasUserScrolled.value = false;
-        });
+              isAtBottom.value = true;
+              hasUserScrolled.value = false;
+            });
       }
       return null;
     }, [postPublished?.millisecondsSinceEpoch]);
@@ -311,24 +319,28 @@ class FeedView extends HookConsumerWidget {
     void onBannerTap() {
       feedPosts.loadNewPosts();
       scrollController
-          .animateTo(0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut)
+          .animateTo(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          )
           .then((_) {
-        isAtBottom.value = true;
-        hasUserScrolled.value = false;
-      });
+            isAtBottom.value = true;
+            hasUserScrolled.value = false;
+          });
     }
 
     void onScrollToBottom() {
       scrollController
-          .animateTo(0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut)
+          .animateTo(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          )
           .then((_) {
-        isAtBottom.value = true;
-        hasUserScrolled.value = false;
-      });
+            isAtBottom.value = true;
+            hasUserScrolled.value = false;
+          });
     }
 
     final feedContent = MainDataLoader(
@@ -362,8 +374,9 @@ class FeedView extends HookConsumerWidget {
           onDismiss: () async {
             await OnboardingCompletedStorable().set(true);
             onboardingDismissed.value = true;
-            final tutorialDone = await TutorialCompletedStorable()
-                .get(defaultValue: false);
+            final tutorialDone = await TutorialCompletedStorable().get(
+              defaultValue: false,
+            );
             if (!tutorialDone) {
               router.go(const TutorialRoutable());
             }
@@ -427,13 +440,16 @@ class FeedView extends HookConsumerWidget {
           right: 0,
           child: Center(
             child: FeedDateOverlay(
-              displayDate: topPostDate.value ??
+              displayDate:
+                  topPostDate.value ??
                   (feedPosts.posts.isNotEmpty
                       ? feedPosts.posts
-                          .reduce(
-                              (a, b) => a.createdAt.isAfter(b.createdAt) ? a : b)
-                          .createdAt
-                          .toLocal()
+                            .reduce(
+                              (a, b) =>
+                                  a.createdAt.isAfter(b.createdAt) ? a : b,
+                            )
+                            .createdAt
+                            .toLocal()
                       : null),
               hasUnreadNotifications: hasUnread,
             ),
@@ -463,7 +479,9 @@ class FeedView extends HookConsumerWidget {
             final btnH = 102 * s;
             final bottomOffset = lockoutCenterFromBottom - btnH / 2;
             final leftOffset =
-                screenWidth / 2 + FeedLayout.lockoutCenterOffsetX * s - btnW / 2;
+                screenWidth / 2 +
+                FeedLayout.lockoutCenterOffsetX * s -
+                btnW / 2;
             return Positioned(
               bottom: bottomOffset,
               left: leftOffset,

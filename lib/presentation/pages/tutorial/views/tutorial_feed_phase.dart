@@ -109,7 +109,9 @@ class TutorialFeedPhase extends HookWidget {
           builder: (context) {
             final bottomOffset = lockoutCenterFromBottom - btnH / 2;
             final leftOffset =
-                screenWidth / 2 + FeedLayout.lockoutCenterOffsetX * s - btnW / 2;
+                screenWidth / 2 +
+                FeedLayout.lockoutCenterOffsetX * s -
+                btnW / 2;
             return Positioned(
               bottom: bottomOffset,
               left: leftOffset,

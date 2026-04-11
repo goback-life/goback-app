@@ -34,4 +34,3 @@ class AggregatedNotificationDtoToModelMapper {
     return dtos.map(mapDto).toList();
   }
 }
-

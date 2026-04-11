@@ -50,6 +50,7 @@ class TutorialInviteTab extends HookConsumerWidget {
           },
         );
       }
+
       load();
       return null;
     }, []);
@@ -161,10 +162,7 @@ class TutorialInviteTab extends HookConsumerWidget {
       itemBuilder: (context, index) {
         // First row: "Send invite to <number>" when input is phone-like
         if (showPhoneOption && index == 0) {
-          return _PhoneInviteRow(
-            rawQuery: rawQuery,
-            inviteState: inviteState,
-          );
+          return _PhoneInviteRow(rawQuery: rawQuery, inviteState: inviteState);
         }
 
         final contact = contacts[index - phoneOffset];
@@ -175,10 +173,7 @@ class TutorialInviteTab extends HookConsumerWidget {
 }
 
 class _PhoneInviteRow extends StatelessWidget {
-  const _PhoneInviteRow({
-    required this.rawQuery,
-    required this.inviteState,
-  });
+  const _PhoneInviteRow({required this.rawQuery, required this.inviteState});
 
   final String rawQuery;
   final InviteSendingState inviteState;
@@ -223,11 +218,7 @@ class _PhoneInviteRow extends StatelessWidget {
                 ),
               ),
             ),
-            const Icon(
-              Icons.send_rounded,
-              color: MainColors.accent,
-              size: 18,
-            ),
+            const Icon(Icons.send_rounded, color: MainColors.accent, size: 18),
           ],
         ),
       ),
@@ -236,10 +227,7 @@ class _PhoneInviteRow extends StatelessWidget {
 }
 
 class _ContactRow extends StatelessWidget {
-  const _ContactRow({
-    required this.contact,
-    required this.inviteState,
-  });
+  const _ContactRow({required this.contact, required this.inviteState});
 
   final ContactModel contact;
   final InviteSendingState inviteState;
@@ -288,11 +276,7 @@ class _ContactRow extends StatelessWidget {
                 ),
               ),
             ),
-            const Icon(
-              Icons.send_rounded,
-              color: MainColors.accent,
-              size: 18,
-            ),
+            const Icon(Icons.send_rounded, color: MainColors.accent, size: 18),
           ],
         ),
       ),

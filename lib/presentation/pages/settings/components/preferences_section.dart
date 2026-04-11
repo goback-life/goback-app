@@ -28,7 +28,9 @@ class PreferencesSection extends HookConsumerWidget
         ),
         SizedBox(height: titleSectionToElement),
         SettingsMenuItem(
-          icon: Assets.svg.objective.render(colorFilter: colorScheme.onSurface.asSrcIn),
+          icon: Assets.svg.objective.render(
+            colorFilter: colorScheme.onSurface.asSrcIn,
+          ),
           title: translator.translate('pages.settings.objective'),
           onTap: () {
             router.push(

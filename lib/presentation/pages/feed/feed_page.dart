@@ -14,10 +14,7 @@ class FeedPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AppGlassLayer(
-      child: Scaffold(
-        backgroundColor: MainColors.dark,
-        body: const FeedView(),
-      ),
+      child: Scaffold(backgroundColor: MainColors.dark, body: const FeedView()),
     );
   }
 }

@@ -36,7 +36,9 @@ class CalendarPostsCache extends _$CalendarPostsCache {
   /// Returns -1 if not found.
   int _indexOfDate(List<CalendarPostModel> sorted, DateTime date) {
     final d = _dateOnly(date);
-    return sorted.indexWhere((p) => _dateOnly(p.publishedAt).isAtSameMomentAs(d));
+    return sorted.indexWhere(
+      (p) => _dateOnly(p.publishedAt).isAtSameMomentAs(d),
+    );
   }
 
   /// Updates the cache with a new list of calendar posts for a specific user.
@@ -87,9 +89,9 @@ class CalendarPostsCache extends _$CalendarPostsCache {
   /// Adds a single post to the cache optimistically (without DB reload).
   void addPostOptimistically(CalendarPostModel post) {
     final postDate = _dateOnly(post.publishedAt);
-    final filtered = state.where(
-      (p) => !_dateOnly(p.publishedAt).isAtSameMomentAs(postDate),
-    ).toList();
+    final filtered = state
+        .where((p) => !_dateOnly(p.publishedAt).isAtSameMomentAs(postDate))
+        .toList();
     state = [...filtered, post];
   }
 

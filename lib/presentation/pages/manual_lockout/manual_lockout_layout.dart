@@ -11,4 +11,3 @@ mixin ManualLockoutLayout on MainLayout {
 
   double get buttonBottomPadding => 33.0;
 }
-

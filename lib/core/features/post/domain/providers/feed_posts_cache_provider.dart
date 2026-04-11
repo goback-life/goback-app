@@ -118,8 +118,9 @@ class FeedPostsCache extends _$FeedPostsCache {
     bool hasNextPage,
   ) {
     final existingIds = state.posts.map((p) => p.id).toSet();
-    final newPosts =
-        responsePosts.where((p) => !existingIds.contains(p.id)).toList();
+    final newPosts = responsePosts
+        .where((p) => !existingIds.contains(p.id))
+        .toList();
     if (newPosts.isEmpty) {
       state = state.copyWith(hasNextPage: false, fullyLoaded: true);
       return [];
@@ -169,7 +170,10 @@ class FeedPostsCache extends _$FeedPostsCache {
           return;
         }
 
-        final newPosts = _appendAndTruncate(response.posts, response.hasNextPage);
+        final newPosts = _appendAndTruncate(
+          response.posts,
+          response.hasNextPage,
+        );
         if (newPosts.isEmpty) {
           _isBackgroundLoading = false;
           state = state.copyWith(isPreloading: false);
@@ -208,16 +212,16 @@ class FeedPostsCache extends _$FeedPostsCache {
       ).future,
     );
 
-    return result.fold(
-      (response) {
-        if (response.posts.isEmpty) {
-          state = state.copyWith(hasNextPage: false, fullyLoaded: true);
-          return false;
-        }
-        return _appendAndTruncate(response.posts, response.hasNextPage).isNotEmpty;
-      },
-      (error) => false,
-    );
+    return result.fold((response) {
+      if (response.posts.isEmpty) {
+        state = state.copyWith(hasNextPage: false, fullyLoaded: true);
+        return false;
+      }
+      return _appendAndTruncate(
+        response.posts,
+        response.hasNextPage,
+      ).isNotEmpty;
+    }, (error) => false);
   }
 
   /// Checks for new posts (published after our newest cached post).
@@ -231,51 +235,50 @@ class FeedPostsCache extends _$FeedPostsCache {
       getFeedPostsProvider(userId: userId, pageSize: _pageSize).future,
     );
 
-    result.fold(
-      (response) {
-        if (response.posts.isEmpty) return;
+    result.fold((response) {
+      if (response.posts.isEmpty) return;
 
-        // If cache is empty, just set the posts directly
-        if (state.posts.isEmpty) {
-          state = state.copyWith(
-            posts: response.posts,
-            lastFetchedAt: DateTime.now(),
-            newestPostTimestamp: response.posts.first.createdAt,
-            oldestPostTimestamp: response.posts.last.createdAt,
-            hasNextPage: response.hasNextPage,
-            initialLoadComplete: true,
-            fullyLoaded: !response.hasNextPage,
-          );
+      // If cache is empty, just set the posts directly
+      if (state.posts.isEmpty) {
+        state = state.copyWith(
+          posts: response.posts,
+          lastFetchedAt: DateTime.now(),
+          newestPostTimestamp: response.posts.first.createdAt,
+          oldestPostTimestamp: response.posts.last.createdAt,
+          hasNextPage: response.hasNextPage,
+          initialLoadComplete: true,
+          fullyLoaded: !response.hasNextPage,
+        );
 
-          // Start background loading if more posts available
-          if (response.hasNextPage && _currentUserId != null) {
-            _startBackgroundLoading(_currentUserId!);
-          }
-          return;
+        // Start background loading if more posts available
+        if (response.hasNextPage && _currentUserId != null) {
+          _startBackgroundLoading(_currentUserId!);
         }
+        return;
+      }
 
-        // Find new posts not already in cache
-        final existingIds = state.posts.map((p) => p.id).toSet();
-        final newestCached = state.newestPostTimestamp;
-        final newPosts = response.posts
-            .where((p) => !existingIds.contains(p.id))
-            .where((p) => newestCached == null || p.createdAt.isAfter(newestCached))
-            .toList();
+      // Find new posts not already in cache
+      final existingIds = state.posts.map((p) => p.id).toSet();
+      final newestCached = state.newestPostTimestamp;
+      final newPosts = response.posts
+          .where((p) => !existingIds.contains(p.id))
+          .where(
+            (p) => newestCached == null || p.createdAt.isAfter(newestCached),
+          )
+          .toList();
 
-        if (newPosts.isNotEmpty) {
-          var allPosts = [...newPosts, ...state.posts];
-          if (allPosts.length > _maxCachedPosts) {
-            allPosts = allPosts.take(_maxCachedPosts).toList();
-          }
-          state = state.copyWith(
-            posts: allPosts,
-            newestPostTimestamp: allPosts.first.createdAt,
-            lastFetchedAt: DateTime.now(),
-          );
+      if (newPosts.isNotEmpty) {
+        var allPosts = [...newPosts, ...state.posts];
+        if (allPosts.length > _maxCachedPosts) {
+          allPosts = allPosts.take(_maxCachedPosts).toList();
         }
-      },
-      (error) {},
-    );
+        state = state.copyWith(
+          posts: allPosts,
+          newestPostTimestamp: allPosts.first.createdAt,
+          lastFetchedAt: DateTime.now(),
+        );
+      }
+    }, (error) {});
   }
 
   /// Refreshes the feed (pull-to-refresh). Checks for new posts.
@@ -293,17 +296,12 @@ class FeedPostsCache extends _$FeedPostsCache {
     }
 
     try {
-      final result = await ref.read(
-        getPostByIdProvider(postId: postId).future,
-      );
+      final result = await ref.read(getPostByIdProvider(postId: postId).future);
 
-      return result.fold(
-        (newPost) {
-          addPost(newPost);
-          return true;
-        },
-        (error) => false,
-      );
+      return result.fold((newPost) {
+        addPost(newPost);
+        return true;
+      }, (error) => false);
     } catch (e) {
       return false;
     }
@@ -326,46 +324,49 @@ class FeedPostsCache extends _$FeedPostsCache {
       ).future,
     );
 
-    result.fold(
-      (response) {
-        final visiblePostIds = response.posts.map((p) => p.id).toSet();
+    result.fold((response) {
+      final visiblePostIds = response.posts.map((p) => p.id).toSet();
 
-        // If server returns 0 posts but we have cached posts, clear the cache
-        if (response.posts.isEmpty && state.posts.isNotEmpty) {
-          state = state.copyWith(
-            posts: [],
-            oldestPostTimestamp: null,
-            newestPostTimestamp: null,
-            hasNextPage: true, // Allow fetching when posts are added back
-            fullyLoaded: false, // Not fully loaded - cache is empty
-            initialLoadComplete: false, // Force fresh load on next access
-          );
-          _isBackgroundLoading = false; // Reset background loading state
-          return;
+      // If server returns 0 posts but we have cached posts, clear the cache
+      if (response.posts.isEmpty && state.posts.isNotEmpty) {
+        state = state.copyWith(
+          posts: [],
+          oldestPostTimestamp: null,
+          newestPostTimestamp: null,
+          hasNextPage: true, // Allow fetching when posts are added back
+          fullyLoaded: false, // Not fully loaded - cache is empty
+          initialLoadComplete: false, // Force fresh load on next access
+        );
+        _isBackgroundLoading = false; // Reset background loading state
+        return;
+      }
+
+      // Only check posts that would be in the first 50 (recent ones)
+      // Older posts we can't verify without fetching more pages
+      final postsToCheck = state.posts.take(50).toList();
+      final deletedIds = <String>[];
+
+      for (final post in postsToCheck) {
+        if (!visiblePostIds.contains(post.id)) {
+          deletedIds.add(post.id);
         }
+      }
 
-        // Only check posts that would be in the first 50 (recent ones)
-        // Older posts we can't verify without fetching more pages
-        final postsToCheck = state.posts.take(50).toList();
-        final deletedIds = <String>[];
-
-        for (final post in postsToCheck) {
-          if (!visiblePostIds.contains(post.id)) {
-            deletedIds.add(post.id);
-          }
-        }
-
-        if (deletedIds.isNotEmpty) {
-          final newPosts = state.posts.where((p) => !deletedIds.contains(p.id)).toList();
-          state = state.copyWith(
-            posts: newPosts,
-            oldestPostTimestamp: newPosts.isNotEmpty ? newPosts.last.createdAt : null,
-            newestPostTimestamp: newPosts.isNotEmpty ? newPosts.first.createdAt : null,
-          );
-        }
-      },
-      (error) {},
-    );
+      if (deletedIds.isNotEmpty) {
+        final newPosts = state.posts
+            .where((p) => !deletedIds.contains(p.id))
+            .toList();
+        state = state.copyWith(
+          posts: newPosts,
+          oldestPostTimestamp: newPosts.isNotEmpty
+              ? newPosts.last.createdAt
+              : null,
+          newestPostTimestamp: newPosts.isNotEmpty
+              ? newPosts.first.createdAt
+              : null,
+        );
+      }
+    }, (error) {});
   }
 
   /// Checks a batch of posts for deletions, cycling through all cached posts.
@@ -376,8 +377,10 @@ class FeedPostsCache extends _$FeedPostsCache {
 
     // Get the batch to check
     final batchStart = _deletionCheckOffset;
-    final batchEnd =
-        (batchStart + _deletionCheckBatchSize).clamp(0, allPosts.length);
+    final batchEnd = (batchStart + _deletionCheckBatchSize).clamp(
+      0,
+      allPosts.length,
+    );
     final postsToCheck = allPosts.sublist(batchStart, batchEnd);
 
     // Advance offset for next call (wrap around)
@@ -441,7 +444,9 @@ class FeedPostsCache extends _$FeedPostsCache {
     if (validPosts.length != state.posts.length) {
       state = state.copyWith(
         posts: validPosts,
-        oldestPostTimestamp: validPosts.isNotEmpty ? validPosts.last.createdAt : null,
+        oldestPostTimestamp: validPosts.isNotEmpty
+            ? validPosts.last.createdAt
+            : null,
       );
     }
   }
@@ -457,7 +462,8 @@ class FeedPostsCache extends _$FeedPostsCache {
   /// Returns true if cache needs a full rebuild.
   bool get needsFullRebuild {
     return _lastFullValidation == null ||
-        DateTime.now().difference(_lastFullValidation!) > const Duration(hours: 6);
+        DateTime.now().difference(_lastFullValidation!) >
+            const Duration(hours: 6);
   }
 
   /// Performs a full cache rebuild by fetching fresh data from server.

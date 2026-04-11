@@ -5,10 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'connection_request_actions_provider.g.dart';
 
 @Riverpod(keepAlive: false)
-Future<Result<String>> sendConnectionRequest(
-  Ref ref,
-  String receiverId,
-) async {
+Future<Result<String>> sendConnectionRequest(Ref ref, String receiverId) async {
   final service = ref.watch(connectionServiceProvider);
   return await service.sendConnectionRequest(receiverId);
 }
@@ -20,17 +17,11 @@ Future<Result<void>> respondToConnectionRequest(
   required bool accept,
 }) async {
   final service = ref.watch(connectionServiceProvider);
-  return await service.respondToConnectionRequest(
-    requestId,
-    accept: accept,
-  );
+  return await service.respondToConnectionRequest(requestId, accept: accept);
 }
 
 @Riverpod(keepAlive: false)
-Future<Result<void>> cancelConnectionRequest(
-  Ref ref,
-  String requestId,
-) async {
+Future<Result<void>> cancelConnectionRequest(Ref ref, String requestId) async {
   final service = ref.watch(connectionServiceProvider);
   return await service.cancelConnectionRequest(requestId);
 }

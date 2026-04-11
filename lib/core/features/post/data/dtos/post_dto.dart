@@ -18,10 +18,13 @@ sealed class PostDto with _$PostDto {
     @JsonKey(name: 'updated_at') required String updatedAt,
     @JsonKey(name: 'published_at') String? publishedAt,
     @JsonKey(name: 'published_timezone') String? publishedTimezone,
+
     /// Reference to lockout_sessions table if this is a lockout post
     @JsonKey(name: 'lockout_id') String? lockoutId,
+
     /// When this post was saved to calendar (null if not saved)
     @JsonKey(name: 'calendar_saved_at') String? calendarSavedAt,
+
     /// Excluded user IDs as UUID[] array
     @JsonKey(name: 'excluded_user_ids') List<String>? excludedUserIds,
     String? description,

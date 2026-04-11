@@ -17,9 +17,7 @@ class LockoutLiveActivityService {
   Future<void> init() async {
     if (!Platform.isIOS || _initialized) return;
     try {
-      await _plugin.init(
-        appGroupId: 'group.com.goback.app.live-activities',
-      );
+      await _plugin.init(appGroupId: 'group.com.goback.app.live-activities');
       _initialized = true;
     } catch (e) {
       logger.warning('Live Activities init failed', exception: e);
@@ -33,12 +31,9 @@ class LockoutLiveActivityService {
       if (!_initialized) await init();
       final enabled = await _plugin.areActivitiesEnabled();
       if (!enabled) return;
-      await _plugin.createActivity(
-        _activityId,
-        {
-          'endTimestamp': lockoutEndTimestamp.millisecondsSinceEpoch ~/ 1000,
-        },
-      );
+      await _plugin.createActivity(_activityId, {
+        'endTimestamp': lockoutEndTimestamp.millisecondsSinceEpoch ~/ 1000,
+      });
     } catch (e) {
       logger.warning('Failed to start Live Activity', exception: e);
     }

@@ -32,8 +32,7 @@ StartupConfig get startupConfig {
         ),
       ),
     ),
-    appBuilder: (context, child) => NavOverlayWrapper(
-      child: LockoutListenerWidget(child: child),
-    ),
+    appBuilder: (context, child) =>
+        NavOverlayWrapper(child: LockoutListenerWidget(child: child)),
   );
 }

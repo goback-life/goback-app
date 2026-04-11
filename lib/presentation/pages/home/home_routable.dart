@@ -7,8 +7,7 @@ part 'home_routable.freezed.dart';
 part 'home_routable.g.dart';
 
 @freezed
-sealed class HomeRoutable extends Routable<HomeRoutable>
-    with _$HomeRoutable {
+sealed class HomeRoutable extends Routable<HomeRoutable> with _$HomeRoutable {
   factory HomeRoutable.fromJson(Map<String, dynamic> json) =>
       _$HomeRoutableFromJson(json);
 

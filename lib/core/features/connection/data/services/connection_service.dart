@@ -119,12 +119,12 @@ class ConnectionService implements ConnectionServiceContract {
       // Check for existing friendship using ordered UUID pair
       final orderedIds = _orderUserIds(currentUserId, creatorId);
       final existingFriendship = await supabase
-        .from('friendships')
-        .select('id')
-        .eq('user_a_id', orderedIds.$1)
-        .eq('user_b_id', orderedIds.$2)
-        .limit(1)
-        .maybeSingle();
+          .from('friendships')
+          .select('id')
+          .eq('user_a_id', orderedIds.$1)
+          .eq('user_b_id', orderedIds.$2)
+          .limit(1)
+          .maybeSingle();
 
       if (existingFriendship != null) {
         throw const UsersAlreadyConnectedException();
@@ -169,7 +169,8 @@ class ConnectionService implements ConnectionServiceContract {
 
   /// Helper method to get circle members data from database without avatar URLs.
   /// This allows for fast initial data loading while avatar URLs are fetched separately.
-  FutureResult<List<GetCircleMembersResponseDto>> getCircleMembersBasic() async {
+  FutureResult<List<GetCircleMembersResponseDto>>
+  getCircleMembersBasic() async {
     try {
       // get_user_friends() uses auth.uid() internally, no parameters needed
       final result = await supabase.rpc('get_user_friends') as List<dynamic>;
@@ -193,7 +194,10 @@ class ConnectionService implements ConnectionServiceContract {
 
           members.add(dto);
         } catch (e) {
-          logger.error('Error processing member ${data['friend_id']}', exception: e);
+          logger.error(
+            'Error processing member ${data['friend_id']}',
+            exception: e,
+          );
           continue;
         }
       }
@@ -230,10 +234,7 @@ class ConnectionService implements ConnectionServiceContract {
           String? avatarUrl;
           try {
             avatarUrl = await ref.read(
-              signedUrlProvider(
-                SupabaseBuckets.avatars,
-                member.id,
-              ).future,
+              signedUrlProvider(SupabaseBuckets.avatars, member.id).future,
             );
           } catch (e) {
             avatarUrl = null;
@@ -253,13 +254,10 @@ class ConnectionService implements ConnectionServiceContract {
   FutureResult<List<GetCircleMembersResponseDto>> getCircleMembers() async {
     // Get basic member data first
     final basicResult = await getCircleMembersBasic();
-    return await basicResult.asyncFold(
-      (basicMembers) async {
-        // Then enrich with avatar URLs (synchronous, one by one, preserving original mechanism)
-        return await enrichMembersWithAvatars(basicMembers);
-      },
-      (error) async => Result.failure(error),
-    );
+    return await basicResult.asyncFold((basicMembers) async {
+      // Then enrich with avatar URLs (synchronous, one by one, preserving original mechanism)
+      return await enrichMembersWithAvatars(basicMembers);
+    }, (error) async => Result.failure(error));
   }
 
   @override
@@ -324,10 +322,12 @@ class ConnectionService implements ConnectionServiceContract {
     int limit = 10,
   }) async {
     try {
-      final result = await supabase.rpc(
-        'search_users',
-        params: {'p_query': query.trim(), 'p_limit': limit},
-      ) as List<dynamic>;
+      final result =
+          await supabase.rpc(
+                'search_users',
+                params: {'p_query': query.trim(), 'p_limit': limit},
+              )
+              as List<dynamic>;
       return Result.success(
         result.map((e) => Map<String, dynamic>.from(e as Map)).toList(),
       );
@@ -340,10 +340,12 @@ class ConnectionService implements ConnectionServiceContract {
   @override
   FutureResult<String> sendConnectionRequest(String receiverId) async {
     try {
-      final result = await supabase.rpc(
-        'send_connection_request',
-        params: {'p_receiver_id': receiverId},
-      ) as String;
+      final result =
+          await supabase.rpc(
+                'send_connection_request',
+                params: {'p_receiver_id': receiverId},
+              )
+              as String;
       return Result.success(result);
     } on PostgrestException catch (e) {
       if (e.message.contains('circle is full')) {
@@ -396,13 +398,17 @@ class ConnectionService implements ConnectionServiceContract {
   @override
   FutureResult<List<OutgoingRequestDto>> getOutgoingRequests() async {
     try {
-      final result = await supabase.rpc(
-        'get_outgoing_connection_requests',
-      ) as List<dynamic>;
+      final result =
+          await supabase.rpc('get_outgoing_connection_requests')
+              as List<dynamic>;
       return Result.success(
-        result.map((e) =>
-          OutgoingRequestDto.fromJson(Map<String, dynamic>.from(e as Map)),
-        ).toList(),
+        result
+            .map(
+              (e) => OutgoingRequestDto.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ),
+            )
+            .toList(),
       );
     } catch (e) {
       final exception = e is Exception ? e : Exception(e.toString());
@@ -413,9 +419,9 @@ class ConnectionService implements ConnectionServiceContract {
   @override
   FutureResult<List<OutgoingRequestDto>> getIncomingRequests() async {
     try {
-      final result = await supabase.rpc(
-        'get_incoming_connection_requests',
-      ) as List<dynamic>;
+      final result =
+          await supabase.rpc('get_incoming_connection_requests')
+              as List<dynamic>;
       return Result.success(
         result.map((e) {
           final raw = Map<String, dynamic>.from(e as Map);

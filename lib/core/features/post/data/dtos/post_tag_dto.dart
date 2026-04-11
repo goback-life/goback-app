@@ -8,7 +8,7 @@ part 'post_tag_dto.g.dart';
 /// Enum for tag types
 enum PostTagType {
   participant, // Auto-tagged from lockout participants
-  mention,     // Manual @mention in description/comments
+  mention, // Manual @mention in description/comments
 }
 
 @freezed

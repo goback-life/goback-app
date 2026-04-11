@@ -6,7 +6,7 @@ import 'package:dedecube_startup/dedecube_startup.dart';
 /// Helper to convert asset files to temporary File instances
 class AssetToFileHelper {
   /// Copies an asset to a temporary file and returns the File
-  /// 
+  ///
   /// [assetPath] should be the path relative to the assets directory
   /// (e.g., 'assets/images/pngs/app_icon_full.png')
   static Future<File> copyAssetToFile(String assetPath) async {
@@ -23,7 +23,9 @@ class AssetToFileHelper {
       // Write bytes to temp file
       await tempFile.writeAsBytes(bytes);
 
-      logger.info('Copied asset $assetPath to temporary file: ${tempFile.path}');
+      logger.info(
+        'Copied asset $assetPath to temporary file: ${tempFile.path}',
+      );
       return tempFile;
     } catch (e, stackTrace) {
       logger.error(
@@ -40,4 +42,3 @@ class AssetToFileHelper {
     return copyAssetToFile('assets/images/pngs/app_icon_full.png');
   }
 }
-

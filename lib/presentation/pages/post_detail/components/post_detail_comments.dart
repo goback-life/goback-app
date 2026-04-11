@@ -47,10 +47,8 @@ class PostDetailComments extends HookConsumerWidget
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => PostDetailCommentsListModal(
-        postId: post.id,
-        canComment: canComment,
-      ),
+      builder: (context) =>
+          PostDetailCommentsListModal(postId: post.id, canComment: canComment),
     );
   }
 }

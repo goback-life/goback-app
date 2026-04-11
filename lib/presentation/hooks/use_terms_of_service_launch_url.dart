@@ -3,4 +3,5 @@ import 'package:flutter/foundation.dart';
 
 /// Launches the terms of service URL with error logging.
 /// Delegates to [useLoggingLaunchUrl].
-AsyncCallback useTermsOfServiceLaunchUrl(String url) => useLoggingLaunchUrl(url);
+AsyncCallback useTermsOfServiceLaunchUrl(String url) =>
+    useLoggingLaunchUrl(url);

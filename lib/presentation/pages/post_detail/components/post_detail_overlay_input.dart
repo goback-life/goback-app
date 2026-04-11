@@ -212,14 +212,10 @@ class _GlassArrowPainter extends CustomPainter {
     canvas.clipPath(path);
     canvas.drawPaint(
       Paint()
-        ..shader = ui.Gradient.linear(
-          bounds.topLeft,
-          bounds.bottomRight,
-          [
-            Colors.white.withValues(alpha: 0.10),
-            Colors.white.withValues(alpha: 0.03),
-          ],
-        ),
+        ..shader = ui.Gradient.linear(bounds.topLeft, bounds.bottomRight, [
+          Colors.white.withValues(alpha: 0.10),
+          Colors.white.withValues(alpha: 0.03),
+        ]),
     );
     canvas.restore();
 

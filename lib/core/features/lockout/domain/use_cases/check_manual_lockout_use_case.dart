@@ -16,4 +16,3 @@ class CheckManualLockoutUseCase implements UseCaseContract<bool> {
     return await storable.isLockedOut();
   }
 }
-

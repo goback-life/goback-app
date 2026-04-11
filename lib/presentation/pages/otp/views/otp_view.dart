@@ -13,11 +13,7 @@ import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 class OtpView extends HookConsumerWidget with MainLayout, OtpLayout {
-  const OtpView({
-    required this.phoneNumber,
-    this.email = '',
-    super.key,
-  });
+  const OtpView({required this.phoneNumber, this.email = '', super.key});
 
   final String phoneNumber;
   final String email;

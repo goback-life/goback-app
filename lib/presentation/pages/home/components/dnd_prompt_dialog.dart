@@ -8,8 +8,9 @@ class DndPromptDialog extends HookWidget {
 
   static Future<void> showIfNeeded(BuildContext context) async {
     try {
-      final dismissed = await DndPromptDismissedStorable()
-          .get(defaultValue: false);
+      final dismissed = await DndPromptDismissedStorable().get(
+        defaultValue: false,
+      );
       if (dismissed || !context.mounted) return;
     } catch (_) {
       if (!context.mounted) return;
@@ -31,9 +32,7 @@ class DndPromptDialog extends HookWidget {
 
     return Dialog(
       backgroundColor: colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(

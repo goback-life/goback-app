@@ -65,10 +65,7 @@ class _LeftTrianglePainter extends CustomPainter {
       ..color = color
       ..style = PaintingStyle.fill;
 
-    canvas.drawPath(
-      _roundedTrianglePath(size),
-      rrPaint,
-    );
+    canvas.drawPath(_roundedTrianglePath(size), rrPaint);
   }
 
   Path _roundedTrianglePath(Size size) {
@@ -84,19 +81,24 @@ class _LeftTrianglePainter extends CustomPainter {
     final path = Path();
 
     // Move to a point offset from the tip along the top edge
-    path.moveTo(
-      tip.dx + r * 1.5,
-      tip.dy - r * 0.75,
-    );
+    path.moveTo(tip.dx + r * 1.5, tip.dy - r * 0.75);
 
     // Line to top-right corner, then round it
     path.lineTo(topRight.dx - r, topRight.dy);
-    path.quadraticBezierTo(topRight.dx, topRight.dy, topRight.dx, topRight.dy + r);
+    path.quadraticBezierTo(
+      topRight.dx,
+      topRight.dy,
+      topRight.dx,
+      topRight.dy + r,
+    );
 
     // Line to bottom-right corner, then round it
     path.lineTo(bottomRight.dx, bottomRight.dy - r);
     path.quadraticBezierTo(
-      bottomRight.dx, bottomRight.dy, bottomRight.dx - r, bottomRight.dy,
+      bottomRight.dx,
+      bottomRight.dy,
+      bottomRight.dx - r,
+      bottomRight.dy,
     );
 
     // Line back to tip, round it

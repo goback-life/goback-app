@@ -17,13 +17,16 @@ sealed class AggregatedNotificationModel with _$AggregatedNotificationModel {
 
   const factory AggregatedNotificationModel({
     required NotificationType type,
+
     /// Reference ID (post_id, lockout_session_id, etc.) depending on type
     String? referenceId,
+
     /// Latest actor ID for display
     String? latestActorId,
     required List<String> actorIds,
     required List<String> actorUsernames,
     List<String>? actorAvatarUrls,
+
     /// Number of actors for this notification group
     required int actorCount,
     required DateTime updatedAt,
@@ -32,4 +35,3 @@ sealed class AggregatedNotificationModel with _$AggregatedNotificationModel {
     String? postContentType,
   }) = _AggregatedNotificationModel;
 }
-

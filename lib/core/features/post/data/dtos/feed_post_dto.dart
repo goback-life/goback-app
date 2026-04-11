@@ -30,15 +30,20 @@ sealed class FeedPostDto with _$FeedPostDto {
     @JsonKey(name: 'video_url') String? videoUrl,
     @JsonKey(name: 'tagged_usernames') List<String>? taggedUsernames,
     @JsonKey(name: 'tagged_user_ids') List<String>? taggedUserIds,
+
     /// Excluded user IDs as UUID[] array from database
     @JsonKey(name: 'excluded_user_ids') List<String>? excludedUserIds,
     @JsonKey(name: 'author_avatar_url') String? authorAvatarUrl,
+
     /// Reference to lockout_sessions table if this is a lockout post
     @JsonKey(name: 'lockout_id') String? lockoutId,
+
     /// Goback score (0-100) from lockout session
     @JsonKey(name: 'lockout_score') int? lockoutScore,
+
     /// Lockout duration in minutes from lockout session
     @JsonKey(name: 'lockout_duration_minutes') int? lockoutDurationMinutes,
+
     /// When this post was saved to calendar (null if not saved)
     @JsonKey(name: 'calendar_saved_at') String? calendarSavedAt,
     String? description,

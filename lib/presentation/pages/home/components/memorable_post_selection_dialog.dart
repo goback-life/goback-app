@@ -46,6 +46,7 @@ class MemorablePostSelectionDialog extends HookConsumerWidget with MainLayout {
           isLoading.value = false;
         }
       }
+
       loadPosts();
       return null;
     }, []);
@@ -142,8 +143,7 @@ class MemorablePostSelectionDialog extends HookConsumerWidget with MainLayout {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color:
-                                  colorScheme.outline.withValues(alpha: 0.2),
+                              color: colorScheme.outline.withValues(alpha: 0.2),
                             ),
                           ),
                           child: ClipRRect(
@@ -161,19 +161,18 @@ class MemorablePostSelectionDialog extends HookConsumerWidget with MainLayout {
                                             child: SizedBox(
                                               width: 24,
                                               height: 24,
-                                              child:
-                                                  CircularProgressIndicator(
+                                              child: CircularProgressIndicator(
                                                 strokeWidth: 2,
                                               ),
                                             ),
                                           ),
                                         )
                                       : post.thumbnailUrl != null
-                                          ? Image.network(
-                                              post.thumbnailUrl!,
-                                              fit: BoxFit.cover,
-                                              errorBuilder:
-                                                  (_, __, ___) => Container(
+                                      ? Image.network(
+                                          post.thumbnailUrl!,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              Container(
                                                 color: colorScheme
                                                     .primaryContainer,
                                                 child: Icon(
@@ -182,16 +181,15 @@ class MemorablePostSelectionDialog extends HookConsumerWidget with MainLayout {
                                                       .onPrimaryContainer,
                                                 ),
                                               ),
-                                            )
-                                          : Container(
-                                              color: colorScheme
-                                                  .primaryContainer,
-                                              child: Icon(
-                                                Icons.image,
-                                                color: colorScheme
-                                                    .onPrimaryContainer,
-                                              ),
-                                            ),
+                                        )
+                                      : Container(
+                                          color: colorScheme.primaryContainer,
+                                          child: Icon(
+                                            Icons.image,
+                                            color:
+                                                colorScheme.onPrimaryContainer,
+                                          ),
+                                        ),
                                 ),
                                 const SizedBox(width: 12),
                                 // Description
@@ -217,10 +215,10 @@ class MemorablePostSelectionDialog extends HookConsumerWidget with MainLayout {
                                             'No description',
                                             style: textTheme.bodyMedium
                                                 ?.copyWith(
-                                              color: colorScheme.onSurface
-                                                  .withValues(alpha: 0.5),
-                                              fontStyle: FontStyle.italic,
-                                            ),
+                                                  color: colorScheme.onSurface
+                                                      .withValues(alpha: 0.5),
+                                                  fontStyle: FontStyle.italic,
+                                                ),
                                           ),
                                         const SizedBox(height: 4),
                                         if (publishedAt != null)
@@ -228,9 +226,9 @@ class MemorablePostSelectionDialog extends HookConsumerWidget with MainLayout {
                                             _formatTime(publishedAt),
                                             style: textTheme.bodySmall
                                                 ?.copyWith(
-                                              color: colorScheme.onSurface
-                                                  .withValues(alpha: 0.5),
-                                            ),
+                                                  color: colorScheme.onSurface
+                                                      .withValues(alpha: 0.5),
+                                                ),
                                           ),
                                       ],
                                     ),

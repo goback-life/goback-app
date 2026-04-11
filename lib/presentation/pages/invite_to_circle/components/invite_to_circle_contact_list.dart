@@ -43,10 +43,7 @@ class InviteToCircleContactList extends HookConsumerWidget
     }, [groupedContacts]);
 
     // Check which phone numbers have accounts - only called when phone numbers list changes
-    final existingPhones = useCheckPhoneNumbers(
-      ref,
-      allPhoneNumbers,
-    );
+    final existingPhones = useCheckPhoneNumbers(ref, allPhoneNumbers);
 
     // Create a map of normalized phone numbers to account status - memoized
     final phoneAccountMap = useMemoized(() {
@@ -112,8 +109,9 @@ class InviteToCircleContactList extends HookConsumerWidget
                               onTap: () => onContactTap(contacts[i]),
                               hasAccount: contacts[i].primaryPhoneNumber != null
                                   ? phoneAccountMap[PhoneNumberNormalizer.normalize(
-                                      contacts[i].primaryPhoneNumber!,
-                                    )] ?? false
+                                          contacts[i].primaryPhoneNumber!,
+                                        )] ??
+                                        false
                                   : false,
                             ),
                             if (i < contacts.length - 1)

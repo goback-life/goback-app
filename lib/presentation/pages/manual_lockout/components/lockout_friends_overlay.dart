@@ -233,8 +233,8 @@ class _FriendOverlayItem extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    final avatarWidget = session.avatarUrl != null &&
-            session.avatarUrl!.isNotEmpty
+    final avatarWidget =
+        session.avatarUrl != null && session.avatarUrl!.isNotEmpty
         ? ClipOval(
             child: CachedNetworkImage(
               imageUrl: session.avatarUrl!,
@@ -296,4 +296,3 @@ class _FriendOverlayItem extends StatelessWidget {
     return '$hours:${minutes.toString().padLeft(2, '0')}';
   }
 }
-

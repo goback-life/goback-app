@@ -76,48 +76,51 @@ class MentionOverlay extends StatelessWidget {
           child: Container(
             constraints: const BoxConstraints(maxHeight: 200),
             child: ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                shrinkWrap: true,
-                itemCount: users.length,
-                itemBuilder: (context, index) {
-                  final user = users[index];
-                  return GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => onUserSelected(user),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 32,
-                            height: 32,
-                            child: ClipOval(
-                              child: _overlayAvatar(user.avatarUrl, 32,
-                                  name: user.username),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              '@${user.username}',
-                              style: const TextStyle(
-                                fontFamily: MainFontFamilies.quicksand,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                                color: MainColors.white,
-                                decoration: TextDecoration.none,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              shrinkWrap: true,
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                final user = users[index];
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => onUserSelected(user),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
                     ),
-                  );
-                },
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: ClipOval(
+                            child: _overlayAvatar(
+                              user.avatarUrl,
+                              32,
+                              name: user.username,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            '@${user.username}',
+                            style: const TextStyle(
+                              fontFamily: MainFontFamilies.quicksand,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              color: MainColors.white,
+                              decoration: TextDecoration.none,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ),

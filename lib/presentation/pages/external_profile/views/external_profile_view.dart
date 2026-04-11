@@ -59,8 +59,9 @@ class ExternalProfileView extends HookConsumerWidget
               SizedBox(height: usernameTopGap * s),
               Theme(
                 data: theme.copyWith(
-                  textTheme:
-                      theme.textTheme.copyWith(titleLarge: usernameStyle),
+                  textTheme: theme.textTheme.copyWith(
+                    titleLarge: usernameStyle,
+                  ),
                 ),
                 child: UsernameField(username: profile.username),
               ),
@@ -69,8 +70,7 @@ class ExternalProfileView extends HookConsumerWidget
                 width: bioMaxWidth * s,
                 child: Theme(
                   data: theme.copyWith(
-                    textTheme:
-                        theme.textTheme.copyWith(bodyMedium: bioStyle),
+                    textTheme: theme.textTheme.copyWith(bodyMedium: bioStyle),
                   ),
                   child: ProfileDescription(
                     showFullDescription: true,

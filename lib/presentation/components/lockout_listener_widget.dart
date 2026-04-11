@@ -16,7 +16,9 @@ class LockoutListenerWidget extends HookConsumerWidget {
       if (previous == null || !previous.hasValue) return;
       next.whenData((lockoutState) {
         if (lockoutState.isLockedOut && !previous.value!.isLockedOut) {
-          logger.info('Manual lockout just activated - navigating to lockout screen');
+          logger.info(
+            'Manual lockout just activated - navigating to lockout screen',
+          );
           router.go(const ManualLockoutRoutable());
         }
       });

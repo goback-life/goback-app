@@ -16,7 +16,8 @@ typedef PostCommentsResult = ({
   bool canAddMore,
   bool isLoading,
   bool isSubmitting,
-  Future<void> Function(String content, {List<String>? mentionedUserIds}) addComment,
+  Future<void> Function(String content, {List<String>? mentionedUserIds})
+  addComment,
   Future<void> Function(String commentId) deleteComment,
   bool Function(PostCommentModel comment) isOwnComment,
   VoidCallback refresh,
@@ -28,9 +29,11 @@ PostCommentsResult usePostComments(WidgetRef ref, String postId) {
   final isSubmitting = useState<bool>(false);
   final optimisticCount = useState<int?>(null);
 
-  final serverCount = comments.whenOrNull(
-    data: (r) => r.fold((list) => list.length, (_) => 0),
-  ) ?? 0;
+  final serverCount =
+      comments.whenOrNull(
+        data: (r) => r.fold((list) => list.length, (_) => 0),
+      ) ??
+      0;
   final displayCount = optimisticCount.value ?? serverCount;
 
   final currentUserId = currentUserAsync.whenOrNull(
@@ -38,54 +41,54 @@ PostCommentsResult usePostComments(WidgetRef ref, String postId) {
   );
 
   // Count how many comments the current user has on this post
-  final userCommentCount = comments.whenOrNull(
-    data: (r) => r.fold(
-      (list) => currentUserId != null
-          ? list.where((c) => c.authorId == currentUserId).length
-          : 0,
-      (_) => 0,
-    ),
-  ) ?? 0;
+  final userCommentCount =
+      comments.whenOrNull(
+        data: (r) => r.fold(
+          (list) => currentUserId != null
+              ? list.where((c) => c.authorId == currentUserId).length
+              : 0,
+          (_) => 0,
+        ),
+      ) ??
+      0;
 
   final canAddMore = userCommentCount < kMaxCommentsPerUserPerPost;
 
-  Future<void> addComment(String content, {List<String>? mentionedUserIds}) async {
+  Future<void> addComment(
+    String content, {
+    List<String>? mentionedUserIds,
+  }) async {
     if (isSubmitting.value || content.trim().isEmpty) return;
     isSubmitting.value = true;
 
     optimisticCount.value = displayCount + 1;
 
-    final result = await ref.read(createCommentProvider.notifier).create(
-      postId: postId,
-      content: content.trim(),
-      mentionedUserIds: mentionedUserIds,
-    );
+    final result = await ref
+        .read(createCommentProvider.notifier)
+        .create(
+          postId: postId,
+          content: content.trim(),
+          mentionedUserIds: mentionedUserIds,
+        );
 
-    result.fold(
-      (_) => optimisticCount.value = null,
-      (error) {
-        optimisticCount.value = null;
-        logger.error('Failed to add comment', exception: error);
-      },
-    );
+    result.fold((_) => optimisticCount.value = null, (error) {
+      optimisticCount.value = null;
+      logger.error('Failed to add comment', exception: error);
+    });
     isSubmitting.value = false;
   }
 
   Future<void> deleteComment(String commentId) async {
     optimisticCount.value = (displayCount - 1).clamp(0, displayCount);
 
-    final result = await ref.read(deleteCommentProvider.notifier).delete(
-      commentId: commentId,
-      postId: postId,
-    );
+    final result = await ref
+        .read(deleteCommentProvider.notifier)
+        .delete(commentId: commentId, postId: postId);
 
-    result.fold(
-      (_) => optimisticCount.value = null,
-      (error) {
-        optimisticCount.value = null;
-        logger.error('Failed to delete comment', exception: error);
-      },
-    );
+    result.fold((_) => optimisticCount.value = null, (error) {
+      optimisticCount.value = null;
+      logger.error('Failed to delete comment', exception: error);
+    });
   }
 
   bool isOwnComment(PostCommentModel comment) {

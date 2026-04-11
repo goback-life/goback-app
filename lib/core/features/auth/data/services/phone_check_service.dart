@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PhoneCheckService {
   const PhoneCheckService({required SupabaseClient supabaseClient})
-      : _supabaseClient = supabaseClient;
+    : _supabaseClient = supabaseClient;
 
   final SupabaseClient _supabaseClient;
 
@@ -18,7 +18,9 @@ class PhoneCheckService {
       }
 
       // Normalize all phone numbers before sending to RPC
-      final normalizedPhones = PhoneNumberNormalizer.normalizeList(phoneNumbers);
+      final normalizedPhones = PhoneNumberNormalizer.normalizeList(
+        phoneNumbers,
+      );
 
       if (normalizedPhones.isEmpty) {
         return Result.success(<String>{});
@@ -32,8 +34,11 @@ class PhoneCheckService {
 
       // Response is a List<String> of phone numbers that exist
       // Normalize the response to ensure consistent format (remove any + signs)
-      final existingPhones = (response as List<dynamic>?)
-              ?.map((phone) => PhoneNumberNormalizer.normalize(phone.toString()))
+      final existingPhones =
+          (response as List<dynamic>?)
+              ?.map(
+                (phone) => PhoneNumberNormalizer.normalize(phone.toString()),
+              )
               .where((phone) => phone.isNotEmpty)
               .toSet() ??
           <String>{};

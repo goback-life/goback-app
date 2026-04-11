@@ -101,10 +101,7 @@ class _ProgressRow extends StatelessWidget {
 }
 
 class _TabSwitcher extends StatelessWidget {
-  const _TabSwitcher({
-    required this.selectedTab,
-    required this.onTabChanged,
-  });
+  const _TabSwitcher({required this.selectedTab, required this.onTabChanged});
 
   final int selectedTab;
   final ValueChanged<int> onTabChanged;

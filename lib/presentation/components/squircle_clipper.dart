@@ -58,9 +58,6 @@ class ClipSquircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: const SquircleClipper(),
-      child: child,
-    );
+    return ClipPath(clipper: const SquircleClipper(), child: child);
   }
 }

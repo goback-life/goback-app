@@ -5,4 +5,3 @@ class UserCircleSizeLimitException extends ConnectionException {
     super.message = 'You have reached the maximum circle size',
   ]);
 }
-

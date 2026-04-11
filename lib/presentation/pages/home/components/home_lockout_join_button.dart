@@ -33,7 +33,8 @@ class HomeLockoutJoinButton extends HookConsumerWidget
 
     // Check if current user is already locked out
     final lockoutStateAsync = ref.watch(manualLockoutNotifierProvider);
-    final isAlreadyLockedOut = lockoutStateAsync.whenOrNull(
+    final isAlreadyLockedOut =
+        lockoutStateAsync.whenOrNull(
           data: (lockoutState) => lockoutState.isLockedOut,
         ) ??
         false;
@@ -47,9 +48,7 @@ class HomeLockoutJoinButton extends HookConsumerWidget
     final isEnabled = !isAlreadyLockedOut;
 
     return GestureDetector(
-      onTap: isEnabled
-          ? () => _handleJoinLockout(context, ref)
-          : null,
+      onTap: isEnabled ? () => _handleJoinLockout(context, ref) : null,
       child: Padding(
         padding: const EdgeInsets.only(left: 8.0),
         child: SizedBox(
@@ -82,10 +81,7 @@ class HomeLockoutJoinButton extends HookConsumerWidget
     );
   }
 
-  Future<void> _handleJoinLockout(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _handleJoinLockout(BuildContext context, WidgetRef ref) async {
     final lockoutNotifier = ref.read(manualLockoutNotifierProvider.notifier);
     final lockoutSessionId = post.lockoutId;
 
@@ -97,7 +93,9 @@ class HomeLockoutJoinButton extends HookConsumerWidget
     try {
       // Get session details to calculate remaining duration
       final sessionService = ref.read(lockoutSessionServiceProvider);
-      final sessionResult = await sessionService.getSessionById(lockoutSessionId);
+      final sessionResult = await sessionService.getSessionById(
+        lockoutSessionId,
+      );
 
       Duration? remainingDuration;
       await sessionResult.asyncFold(
@@ -163,7 +161,9 @@ class HomeLockoutJoinButton extends HookConsumerWidget
 
       final errorMessage = e.toString().contains('expired')
           ? translator.translate('pages.home.lockout_join_error_expired')
-          : translator.translate('pages.home.lockout_join_error_already_locked');
+          : translator.translate(
+              'pages.home.lockout_join_error_already_locked',
+            );
 
       MainSnackbar.showError(context, errorMessage);
     }

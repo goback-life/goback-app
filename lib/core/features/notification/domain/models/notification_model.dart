@@ -24,4 +24,3 @@ sealed class NotificationModel with _$NotificationModel {
     DateTime? readAt,
   }) = _NotificationModel;
 }
-

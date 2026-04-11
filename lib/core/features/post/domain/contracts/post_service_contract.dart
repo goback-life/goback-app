@@ -17,8 +17,10 @@ abstract class PostServiceContract {
     required String publishedTimezone,
     String? description,
     File? thumbnailFile,
+
     /// Reference to lockout_sessions table if this is a lockout post
     String? lockoutId,
+
     /// List of user IDs to exclude from seeing this post
     List<String>? excludedUserIds,
   });
@@ -37,8 +39,10 @@ abstract class PostServiceContract {
     required int thumbnailWidth,
     required int thumbnailHeight,
     String? description,
+
     /// Reference to lockout_sessions table if this is a lockout post
     String? lockoutId,
+
     /// List of user IDs to exclude from seeing this post
     List<String>? excludedUserIds,
   });

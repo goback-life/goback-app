@@ -55,7 +55,9 @@ class JoinCircleView extends HookConsumerWidget
             SizedBox(height: titleToText),
             Text(
               translator.translate('pages.join_circle.description'),
-              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             SizedBox(height: descriptionToFormField),
             Padding(

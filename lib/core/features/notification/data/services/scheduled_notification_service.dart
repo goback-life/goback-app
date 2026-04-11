@@ -41,7 +41,8 @@ class ScheduledNotificationService {
     // Android channel
     await _plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(
           const AndroidNotificationChannel(
             _channelId,
@@ -177,13 +178,16 @@ class ScheduledNotificationService {
   }
 
   /// Returns the next occurrence of [hour]:[minute] in the given [location].
-  tz.TZDateTime _nextTimeOfDay(
-    int hour,
-    int minute,
-    tz.Location location,
-  ) {
+  tz.TZDateTime _nextTimeOfDay(int hour, int minute, tz.Location location) {
     final now = tz.TZDateTime.now(location);
-    var scheduled = tz.TZDateTime(location, now.year, now.month, now.day, hour, minute);
+    var scheduled = tz.TZDateTime(
+      location,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
     if (scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }

@@ -61,12 +61,10 @@ class CalendarDay extends StatelessWidget with MainLayout, ProfileLayout {
                 memCacheWidth: (cellW * 2).toInt(),
                 fadeInDuration: const Duration(milliseconds: 200),
                 fadeOutDuration: const Duration(milliseconds: 100),
-                placeholder: (context, url) => Container(
-                  color: Colors.white.withValues(alpha: 0.08),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: Colors.white.withValues(alpha: 0.08),
-                ),
+                placeholder: (context, url) =>
+                    Container(color: Colors.white.withValues(alpha: 0.08)),
+                errorWidget: (context, url, error) =>
+                    Container(color: Colors.white.withValues(alpha: 0.08)),
               ),
               Center(child: dayText),
             ],

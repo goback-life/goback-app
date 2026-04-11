@@ -35,30 +35,29 @@ class NotificationExceptionMapper {
 
       // Generic PostgrestException
       PostgrestException(:final code, :final message) => UnhandledException(
-          'Notification retrieval failed: $message',
-          code: code,
-          cause: exception,
-        ),
+        'Notification retrieval failed: $message',
+        code: code,
+        cause: exception,
+      ),
 
       // Data parsing errors
       FormatException() => UnhandledException(
-          'Invalid notification data format received',
-          cause: exception,
-        ),
+        'Invalid notification data format received',
+        cause: exception,
+      ),
       TypeError() => UnhandledException(
-          'Notification data type mismatch',
-          cause: exception,
-        ),
+        'Notification data type mismatch',
+        cause: exception,
+      ),
 
       // Input validation errors
       ArgumentError() => UnhandledException(
-          'Invalid parameters provided for notification retrieval',
-          cause: exception,
-        ),
+        'Invalid parameters provided for notification retrieval',
+        cause: exception,
+      ),
 
       // Fallback
       _ => NotificationFetchException(exception.toString()),
     };
   }
 }
-

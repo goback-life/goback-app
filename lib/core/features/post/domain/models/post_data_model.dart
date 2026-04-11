@@ -17,6 +17,7 @@ sealed class PostDataModel with _$PostDataModel {
     File? thumbnailFile,
     @Default([]) List<String> taggedUserIds,
     @Default([]) List<String> excludedUserIds,
+
     /// Reference to lockout_sessions table if this is a lockout post
     String? lockoutId,
   }) = _PostDataModel;

@@ -41,7 +41,9 @@ class PostDetailEditAction extends HookConsumerWidget
             SizedBox(
               width: menuIconSize,
               height: menuIconSize,
-              child: Assets.svg.editPost.render(colorFilter: theme.colorScheme.onSurface.asSrcIn),
+              child: Assets.svg.editPost.render(
+                colorFilter: theme.colorScheme.onSurface.asSrcIn,
+              ),
             ),
             SizedBox(width: menuIconSpacing),
             Text(

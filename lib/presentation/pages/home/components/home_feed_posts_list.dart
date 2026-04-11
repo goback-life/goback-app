@@ -48,18 +48,19 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     final mountedRef = useRef(true);
     // Track if we're refreshing when posts are empty (must be outside conditional for hook order)
     final isRefreshingEmptyRef = useRef(false);
-    
+
     useEffect(() {
       mountedRef.value = true;
       return () {
         mountedRef.value = false;
       };
     }, []);
-    
+
     // Memoize sorted posts to avoid O(n log n) sort on every frame
     final sortedPosts = useMemoized(
-      () => List<FeedPostModel>.from(posts)
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+      () =>
+          List<FeedPostModel>.from(posts)
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
       [posts],
     );
 
@@ -81,7 +82,8 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
 
         // Calculate scroll velocity (pixels per second)
         final timeDelta = now.difference(lastScrollTime.value).inMilliseconds;
-        final positionDelta = (position.pixels - lastScrollPosition.value).abs();
+        final positionDelta = (position.pixels - lastScrollPosition.value)
+            .abs();
         final velocity = timeDelta > 0 ? (positionDelta / timeDelta) * 1000 : 0;
 
         lastScrollPosition.value = position.pixels;
@@ -106,17 +108,21 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
             });
           }
         }
-        
+
         // Track which post is at the top using memoized sortedPostsRef (no recomputation)
         final currentSorted = sortedPostsRef.value;
         if (currentSorted.isNotEmpty && onTopPostDateChanged != null) {
           DateTime topPostDate;
           if (position.maxScrollExtent > position.minScrollExtent) {
             // Calculate scroll progress (0 = at bottom/newest, 1 = at top/oldest)
-            final scrollRange = position.maxScrollExtent - position.minScrollExtent;
-            final scrollProgress = (position.pixels - position.minScrollExtent) / scrollRange;
+            final scrollRange =
+                position.maxScrollExtent - position.minScrollExtent;
+            final scrollProgress =
+                (position.pixels - position.minScrollExtent) / scrollRange;
             // Map to post index (0 = newest, last = oldest)
-            final topIndex = (scrollProgress * (currentSorted.length - 1)).clamp(0.0, currentSorted.length - 1.0).round();
+            final topIndex = (scrollProgress * (currentSorted.length - 1))
+                .clamp(0.0, currentSorted.length - 1.0)
+                .round();
             topPostDate = currentSorted[topIndex].createdAt.toLocal();
           } else {
             topPostDate = currentSorted.first.createdAt.toLocal();
@@ -151,27 +157,31 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     if (posts.isEmpty) {
       return NotificationListener<ScrollUpdateNotification>(
         onNotification: (notification) {
-          if (effectiveScrollController.hasClients && !isRefreshingEmptyRef.value && !isLoading) {
+          if (effectiveScrollController.hasClients &&
+              !isRefreshingEmptyRef.value &&
+              !isLoading) {
             final position = effectiveScrollController.position;
             // In reverse ListView, minScrollExtent is at bottom (most recent posts)
             final isAtBottom = position.pixels <= position.minScrollExtent + 10;
             // Negative scrollDelta means scrolling up (towards newer posts in reversed list)
             final isScrollingUp = notification.scrollDelta! < 0;
-            
+
             if (isAtBottom && isScrollingUp) {
               isRefreshingEmptyRef.value = true;
               isRefreshingRef.value = true;
-              onRefresh().then((_) {
-                if (mountedRef.value) {
-                  isRefreshingEmptyRef.value = false;
-                  isRefreshingRef.value = false;
-                }
-              }).catchError((error) {
-                if (mountedRef.value) {
-                  isRefreshingEmptyRef.value = false;
-                  isRefreshingRef.value = false;
-                }
-              });
+              onRefresh()
+                  .then((_) {
+                    if (mountedRef.value) {
+                      isRefreshingEmptyRef.value = false;
+                      isRefreshingRef.value = false;
+                    }
+                  })
+                  .catchError((error) {
+                    if (mountedRef.value) {
+                      isRefreshingEmptyRef.value = false;
+                      isRefreshingRef.value = false;
+                    }
+                  });
             }
           }
           return false;
@@ -182,37 +192,41 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
             // Positive overscroll means trying to scroll beyond minScrollExtent (pull up)
             if (effectiveScrollController.hasClients) {
               final position = effectiveScrollController.position;
-              final isAtBottom = position.pixels <= position.minScrollExtent + 20;
-              
+              final isAtBottom =
+                  position.pixels <= position.minScrollExtent + 20;
+
               if (isAtBottom &&
                   notification.overscroll.abs() > 30 &&
                   !isRefreshingEmptyRef.value &&
                   !isLoading) {
                 isRefreshingEmptyRef.value = true;
                 isRefreshingRef.value = true;
-                onRefresh().then((_) {
-                  if (mountedRef.value) {
-                    isRefreshingEmptyRef.value = false;
-                    isRefreshingRef.value = false;
-                  }
-                }).catchError((error) {
-                  if (mountedRef.value) {
-                    isRefreshingEmptyRef.value = false;
-                    isRefreshingRef.value = false;
-                  }
-                });
+                onRefresh()
+                    .then((_) {
+                      if (mountedRef.value) {
+                        isRefreshingEmptyRef.value = false;
+                        isRefreshingRef.value = false;
+                      }
+                    })
+                    .catchError((error) {
+                      if (mountedRef.value) {
+                        isRefreshingEmptyRef.value = false;
+                        isRefreshingRef.value = false;
+                      }
+                    });
               }
             }
             return false;
           },
-        child: SingleChildScrollView(
+          child: SingleChildScrollView(
             controller: effectiveScrollController,
             physics: const AlwaysScrollableScrollPhysics(
               parent: BouncingScrollPhysics(),
             ),
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height -
+                minHeight:
+                    MediaQuery.of(context).size.height -
                     MediaQuery.of(context).padding.top -
                     MediaQuery.of(context).padding.bottom,
               ),
@@ -228,10 +242,9 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
       );
     }
 
-
     // Track refresh state for parent callback (use ref to avoid ValueNotifier disposal issues)
     final isRefreshingStateRef = useRef(false);
-    
+
     // Helper to safely update refresh state and notify parent
     void setRefreshing(bool value) {
       if (!mountedRef.value) return;
@@ -239,7 +252,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
       isRefreshingStateRef.value = value;
       onRefreshStateChanged?.call(value);
     }
-    
+
     // Helper to safely check refresh state
     bool getIsRefreshing() {
       if (!mountedRef.value) return false;
@@ -256,26 +269,30 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
           final position = effectiveScrollController.position;
           final isAtBottom = position.pixels <= position.minScrollExtent + 20;
           // In reversed list, negative scrollDelta when at bottom means trying to pull up
-          final isTryingToPullUp = notification.scrollDelta != null && notification.scrollDelta! < -2;
+          final isTryingToPullUp =
+              notification.scrollDelta != null &&
+              notification.scrollDelta! < -2;
 
           if (isAtBottom && isTryingToPullUp) {
             isRefreshingRef.value = true;
             setRefreshing(true);
-            onRefresh().then((_) {
-              Future.delayed(const Duration(milliseconds: 50), () {
-                if (mountedRef.value) {
-                  isRefreshingRef.value = false;
-                  setRefreshing(false);
-                }
-              });
-            }).catchError((error) {
-              Future.delayed(const Duration(milliseconds: 50), () {
-                if (mountedRef.value) {
-                  isRefreshingRef.value = false;
-                  setRefreshing(false);
-                }
-              });
-            });
+            onRefresh()
+                .then((_) {
+                  Future.delayed(const Duration(milliseconds: 50), () {
+                    if (mountedRef.value) {
+                      isRefreshingRef.value = false;
+                      setRefreshing(false);
+                    }
+                  });
+                })
+                .catchError((error) {
+                  Future.delayed(const Duration(milliseconds: 50), () {
+                    if (mountedRef.value) {
+                      isRefreshingRef.value = false;
+                      setRefreshing(false);
+                    }
+                  });
+                });
           }
         }
         return false;
@@ -289,7 +306,8 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
               !isRefreshingRef.value) {
             final position = effectiveScrollController.position;
             // Check if we're at or very close to the bottom
-            final isAtBottom = position.pixels <= position.minScrollExtent + 100;
+            final isAtBottom =
+                position.pixels <= position.minScrollExtent + 100;
 
             // When at bottom and overscrolling (trying to pull down in reversed list), trigger refresh
             // In reversed ListView with BouncingScrollPhysics, NEGATIVE overscroll means
@@ -297,28 +315,30 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
             if (isAtBottom && notification.overscroll < -5) {
               isRefreshingRef.value = true;
               setRefreshing(true);
-              onRefresh().then((_) {
-                Future.delayed(const Duration(milliseconds: 50), () {
-                  if (mountedRef.value) {
-                    isRefreshingRef.value = false;
-                    setRefreshing(false);
-                  }
-                });
-              }).catchError((error) {
-                Future.delayed(const Duration(milliseconds: 50), () {
-                  if (mountedRef.value) {
-                    isRefreshingRef.value = false;
-                    setRefreshing(false);
-                  }
-                });
-              });
+              onRefresh()
+                  .then((_) {
+                    Future.delayed(const Duration(milliseconds: 50), () {
+                      if (mountedRef.value) {
+                        isRefreshingRef.value = false;
+                        setRefreshing(false);
+                      }
+                    });
+                  })
+                  .catchError((error) {
+                    Future.delayed(const Duration(milliseconds: 50), () {
+                      if (mountedRef.value) {
+                        isRefreshingRef.value = false;
+                        setRefreshing(false);
+                      }
+                    });
+                  });
             }
           }
           return false;
         },
-      child: Stack(
-        children: [
-          ListView.builder(
+        child: Stack(
+          children: [
+            ListView.builder(
               controller: effectiveScrollController,
               reverse: true,
               physics: const AlwaysScrollableScrollPhysics(
@@ -326,7 +346,8 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
               ),
               padding: EdgeInsets.only(
                 bottom:
-                    MediaQuery.of(context).padding.bottom + feedPostsListBottomPadding,
+                    MediaQuery.of(context).padding.bottom +
+                    feedPostsListBottomPadding,
               ),
               itemCount: sortedPosts.length + (isLoadingMore ? 1 : 0),
               itemBuilder: (context, index) {
@@ -345,8 +366,8 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
                 );
               },
             ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

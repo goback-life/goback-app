@@ -29,63 +29,60 @@ HomeScrollState useHomeScrollState(
   final hasUserScrolled = useState(false);
 
   // ── Scroll position listener ──────────────────────────────────────────
-  useEffect(
-    () {
-      void onScroll() {
-        try {
-          if (!scrollController.hasClients) return;
-          final atTop = scrollController.offset < 10;
+  useEffect(() {
+    void onScroll() {
+      try {
+        if (!scrollController.hasClients) return;
+        final atTop = scrollController.offset < 10;
 
-          final maxScroll = scrollController.position.maxScrollExtent;
-          final currentScroll = scrollController.offset;
-          final atBottom = maxScroll - currentScroll < 100;
+        final maxScroll = scrollController.position.maxScrollExtent;
+        final currentScroll = scrollController.offset;
+        final atBottom = maxScroll - currentScroll < 100;
 
-          if (!atTop && !hasUserScrolled.value) {
-            hasUserScrolled.value = true;
-          }
-
-          if (isAtBottom.value != atBottom) {
-            isAtBottom.value = atBottom;
-          }
-
-          if (isAtTop.value != atTop) {
-            isAtTop.value = atTop;
-
-            if (atTop && feedPosts.newPostsCount > 0) {
-              feedPosts.loadNewPosts();
-            }
-            if (atTop && hasUserScrolled.value) {
-              hasUserScrolled.value = false;
-            }
-          }
-        } catch (e) {
-          // Controller may be disposed; ignore.
+        if (!atTop && !hasUserScrolled.value) {
+          hasUserScrolled.value = true;
         }
-      }
 
-      void checkScrollPosition() {
-        if (scrollController.hasClients) {
-          SchedulerBinding.instance.addPostFrameCallback((_) {
-            try {
-              if (scrollController.hasClients && scrollController.offset < 10) {
-                if (!isAtTop.value) {
-                  isAtTop.value = true;
-                  hasUserScrolled.value = false;
-                }
+        if (isAtBottom.value != atBottom) {
+          isAtBottom.value = atBottom;
+        }
+
+        if (isAtTop.value != atTop) {
+          isAtTop.value = atTop;
+
+          if (atTop && feedPosts.newPostsCount > 0) {
+            feedPosts.loadNewPosts();
+          }
+          if (atTop && hasUserScrolled.value) {
+            hasUserScrolled.value = false;
+          }
+        }
+      } catch (e) {
+        // Controller may be disposed; ignore.
+      }
+    }
+
+    void checkScrollPosition() {
+      if (scrollController.hasClients) {
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          try {
+            if (scrollController.hasClients && scrollController.offset < 10) {
+              if (!isAtTop.value) {
+                isAtTop.value = true;
+                hasUserScrolled.value = false;
               }
-            } catch (e) {
-              // ignore
             }
-          });
-        }
+          } catch (e) {
+            // ignore
+          }
+        });
       }
+    }
 
-      scrollController.addListener(onScroll);
-      checkScrollPosition();
-      return () => scrollController.removeListener(onScroll);
-    },
-    [scrollController],
-  );
+    scrollController.addListener(onScroll);
+    checkScrollPosition();
+    return () => scrollController.removeListener(onScroll);
+  }, [scrollController]);
 
   // ── Re-check position when posts list length changes ──────────────────
   useEffect(() {
@@ -161,10 +158,13 @@ void _animateToTop(
   ValueNotifier<bool> hasUserScrolled,
 ) {
   controller
-      .animateTo(0,
-          duration: const Duration(milliseconds: 300), curve: Curves.easeOut)
+      .animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      )
       .then((_) {
-    isAtTop.value = true;
-    hasUserScrolled.value = false;
-  });
+        isAtTop.value = true;
+        hasUserScrolled.value = false;
+      });
 }

@@ -61,7 +61,8 @@ class MainMemberItem extends StatelessWidget with MainLayout, MainMemberLayout {
             break;
         }
       },
-      onLongPress: action == MemberItemAction.selection &&
+      onLongPress:
+          action == MemberItemAction.selection &&
               onSelectOnly != null &&
               !isDisabled
           ? () {

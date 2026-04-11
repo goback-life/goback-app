@@ -15,8 +15,8 @@ enum NotificationType {
   static NotificationType fromValue(String value) {
     return NotificationType.values.firstWhere(
       (type) => type.value == value,
-      orElse: () => throw ArgumentError('Invalid notification type value: $value'),
+      orElse: () =>
+          throw ArgumentError('Invalid notification type value: $value'),
     );
   }
 }
-

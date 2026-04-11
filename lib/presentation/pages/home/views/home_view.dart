@@ -95,7 +95,8 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final hasFeedReady = feedPosts.posts.isNotEmpty ||
+        final hasFeedReady =
+            feedPosts.posts.isNotEmpty ||
             (!feedPosts.isLoading && feedPosts.posts.isEmpty);
         final hasCircleMembers = circleMembersData.allUsers.isNotEmpty;
         final knowsNoCircleMembers =
@@ -152,7 +153,8 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
                     feedPosts: feedPosts,
                     currentUserId: currentUserId,
                     scrollController: scrollState.scrollController,
-                    onPostTap: (post) => PostDetailPage.show(context, post: post),
+                    onPostTap: (post) =>
+                        PostDetailPage.show(context, post: post),
                     onRefreshStateChanged: (isRefreshing) {
                       if (isRefreshingFeed.value != isRefreshing) {
                         isRefreshingFeed.value = isRefreshing;
@@ -163,8 +165,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
                     },
                   )
                 : _buildCircleActionsContent(
-                    isLoading:
-                        circleMembersLoading && !knowsNoCircleMembers,
+                    isLoading: circleMembersLoading && !knowsNoCircleMembers,
                     currentUserId: currentUserId,
                   ),
 
@@ -198,13 +199,16 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
               right: 0,
               child: Center(
                 child: HomeDateBadge(
-                  displayDate: topPostDate.value ??
+                  displayDate:
+                      topPostDate.value ??
                       (feedPosts.posts.isNotEmpty
                           ? feedPosts.posts
-                              .reduce((a, b) =>
-                                  a.createdAt.isAfter(b.createdAt) ? a : b)
-                              .createdAt
-                              .toLocal()
+                                .reduce(
+                                  (a, b) =>
+                                      a.createdAt.isAfter(b.createdAt) ? a : b,
+                                )
+                                .createdAt
+                                .toLocal()
                           : null),
                 ),
               ),
@@ -301,6 +305,7 @@ void _usePendingLockoutCheck(WidgetRef ref) {
         router.go(const ManualLockoutRoutable());
       }
     }
+
     check();
     return null;
   }, []);
@@ -319,8 +324,9 @@ void _useAppResumeRefresh(WidgetRef ref, {required String? userId}) {
         await cacheNotifier.refresh(userId);
         await cacheNotifier.checkForDeletions(userId);
 
-        final backgroundDuration =
-            DateTime.now().difference(lastActiveTime.value);
+        final backgroundDuration = DateTime.now().difference(
+          lastActiveTime.value,
+        );
         if (backgroundDuration > const Duration(hours: 3)) {
           await cacheNotifier.reEnrichCachedPosts();
         }

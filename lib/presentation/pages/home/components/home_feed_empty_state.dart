@@ -28,12 +28,8 @@ class HomeFeedEmptyState extends HookConsumerWidget
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            translator.translate(
-              'pages.home.feed_empty_box.no_activity_title',
-            ),
-            style: textTheme.titleLarge?.copyWith(
-              color: colorScheme.onSurface,
-            ),
+            translator.translate('pages.home.feed_empty_box.no_activity_title'),
+            style: textTheme.titleLarge?.copyWith(color: colorScheme.onSurface),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: actionsTitleToDescription),

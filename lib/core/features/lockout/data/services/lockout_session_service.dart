@@ -158,10 +158,7 @@ class LockoutSessionService {
     try {
       await supabase.rpc(
         'update_lockout_score',
-        params: {
-          'p_session_id': sessionId,
-          'p_score': score,
-        },
+        params: {'p_session_id': sessionId, 'p_score': score},
       );
       return Result.success(null);
     } catch (e) {
@@ -208,8 +205,9 @@ class LockoutSessionService {
       final response = await supabase.rpc('get_friends_locked_out');
 
       final sessions = (response as List)
-          .map((json) =>
-            LockoutSessionDto.fromJson(json as Map<String, dynamic>))
+          .map(
+            (json) => LockoutSessionDto.fromJson(json as Map<String, dynamic>),
+          )
           .toList();
 
       return Result.success(sessions);
@@ -253,13 +251,16 @@ class LockoutSessionService {
         'get_lockout_daily_stats',
         params: {
           'p_user_id': userId,
-          'p_week_start': '${weekStart.year}-${weekStart.month.toString().padLeft(2, '0')}-${weekStart.day.toString().padLeft(2, '0')}',
+          'p_week_start':
+              '${weekStart.year}-${weekStart.month.toString().padLeft(2, '0')}-${weekStart.day.toString().padLeft(2, '0')}',
         },
       );
 
       final stats = (response as List)
-          .map((json) =>
-              LockoutDailyStatsDto.fromJson(json as Map<String, dynamic>))
+          .map(
+            (json) =>
+                LockoutDailyStatsDto.fromJson(json as Map<String, dynamic>),
+          )
           .toList();
 
       return Result.success(stats);
@@ -282,8 +283,10 @@ class LockoutSessionService {
       );
 
       final stats = (response as List)
-          .map((json) =>
-              LockoutActivityStatsDto.fromJson(json as Map<String, dynamic>))
+          .map(
+            (json) =>
+                LockoutActivityStatsDto.fromJson(json as Map<String, dynamic>),
+          )
           .toList();
 
       return Result.success(stats);
@@ -304,11 +307,7 @@ class LockoutSessionService {
     try {
       final response = await supabase.rpc(
         'get_lockout_monthly_summary',
-        params: {
-          'p_user_id': userId,
-          'p_year': year,
-          'p_month': month,
-        },
+        params: {'p_user_id': userId, 'p_year': year, 'p_month': month},
       );
 
       final rows = response as List;

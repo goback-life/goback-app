@@ -51,7 +51,8 @@ class MentionTextField extends HookWidget with MainLayout {
       final text = controller.text;
       final selection = controller.selection;
 
-      if (!selection.isValid || selection.baseOffset != selection.extentOffset) {
+      if (!selection.isValid ||
+          selection.baseOffset != selection.extentOffset) {
         mentionQuery.value = null;
         mentionStartIndex.value = null;
         return;
@@ -125,12 +126,14 @@ class MentionTextField extends HookWidget with MainLayout {
       final cursorPos = controller.selection.baseOffset;
 
       // Replace @query with @username
-      final newText = text.substring(0, startIdx) +
+      final newText =
+          text.substring(0, startIdx) +
           '@${user.username} ' +
           text.substring(cursorPos);
 
       controller.text = newText;
-      final newCursorPos = startIdx + user.username.length + 2; // @ + username + space
+      final newCursorPos =
+          startIdx + user.username.length + 2; // @ + username + space
       controller.selection = TextSelection.collapsed(offset: newCursorPos);
 
       // Track the mention
@@ -195,7 +198,8 @@ class MentionTextField extends HookWidget with MainLayout {
         onSubmitted: onSubmitted,
         style: style ?? textTheme.bodyMedium,
         cursorColor: colorScheme.tertiary,
-        decoration: decoration ??
+        decoration:
+            decoration ??
             InputDecoration(
               hintText: hintText ?? 'Type @ to mention someone...',
               hintStyle: textTheme.bodyMedium?.copyWith(

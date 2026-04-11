@@ -43,12 +43,12 @@ class NotificationsView extends HookConsumerWidget {
 
             // Check if circle is full to disable Accept on connection requests
             final circleMembersAsync = ref.watch(getCircleMembersProvider);
-            final circleCount = circleMembersAsync.whenOrNull(
-              data: (result) => result.fold(
-                (members) => members.length,
-                (_) => 0,
-              ),
-            ) ?? 0;
+            final circleCount =
+                circleMembersAsync.whenOrNull(
+                  data: (result) =>
+                      result.fold((members) => members.length, (_) => 0),
+                ) ??
+                0;
             final isCircleFull = circleCount >= 150;
 
             // Auto-mark all as read after 1.5s delay
@@ -100,24 +100,26 @@ class NotificationsView extends HookConsumerWidget {
                                 notification,
                               );
                             },
-                            onAccept: notification.type ==
+                            onAccept:
+                                notification.type ==
                                         NotificationType.connectionRequest &&
                                     !isCircleFull
                                 ? () => _respondToRequest(
-                                      ref,
-                                      notification,
-                                      user.id,
-                                      accept: true,
-                                    )
+                                    ref,
+                                    notification,
+                                    user.id,
+                                    accept: true,
+                                  )
                                 : null,
-                            onDeny: notification.type ==
+                            onDeny:
+                                notification.type ==
                                     NotificationType.connectionRequest
                                 ? () => _respondToRequest(
-                                      ref,
-                                      notification,
-                                      user.id,
-                                      accept: false,
-                                    )
+                                    ref,
+                                    notification,
+                                    user.id,
+                                    accept: false,
+                                  )
                                 : null,
                           );
                         },
@@ -132,9 +134,7 @@ class NotificationsView extends HookConsumerWidget {
                   ),
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, stackTrace) => Center(
                 child: Text(
                   'Error: ${error.toString()}',
@@ -177,10 +177,7 @@ class NotificationsView extends HookConsumerWidget {
         (_) {
           // Refresh notifications so read_at updates in UI
           ref.invalidate(
-            aggregatedNotificationsProvider(
-              userId: userId,
-              pageSize: 20,
-            ),
+            aggregatedNotificationsProvider(userId: userId, pageSize: 20),
           );
         },
         (error) {
@@ -208,21 +205,21 @@ class NotificationsView extends HookConsumerWidget {
           ).future,
         )
         .then((result) {
-      result.fold(
-        (_) {
-          // Refresh notifications + circle members on accept
-          ref.invalidate(
-            aggregatedNotificationsProvider(userId: userId, pageSize: 20),
+          result.fold(
+            (_) {
+              // Refresh notifications + circle members on accept
+              ref.invalidate(
+                aggregatedNotificationsProvider(userId: userId, pageSize: 20),
+              );
+              if (accept) {
+                ref.invalidate(getCircleMembersProvider);
+              }
+            },
+            (error) {
+              logger.error('Failed to respond to request', exception: error);
+            },
           );
-          if (accept) {
-            ref.invalidate(getCircleMembersProvider);
-          }
-        },
-        (error) {
-          logger.error('Failed to respond to request', exception: error);
-        },
-      );
-    });
+        });
   }
 
   Future<void> _navigateFromNotification(

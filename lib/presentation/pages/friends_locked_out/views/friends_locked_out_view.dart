@@ -86,7 +86,12 @@ class FriendsLockedOutView extends HookConsumerWidget {
       child: ListView.builder(
         reverse: true,
         shrinkWrap: true,
-        padding: const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 64),
+        padding: const EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 16,
+          bottom: 64,
+        ),
         itemCount: friends.length,
         itemBuilder: (context, index) {
           final session = friends[index];
@@ -110,8 +115,9 @@ class _FriendItem extends HookConsumerWidget with MainLayout {
     final timeRemaining = _formatTimeRemaining(session.endsAt);
     final hasActivity =
         session.actionText != null && session.actionText!.isNotEmpty;
-    final minutesRemaining =
-        session.endsAt.difference(DateTime.now()).inMinutes;
+    final minutesRemaining = session.endsAt
+        .difference(DateTime.now())
+        .inMinutes;
     final isJoinable = minutesRemaining > _minJoinableMinutes;
     final isJoining = useState(false);
 
@@ -169,8 +175,10 @@ class _FriendItem extends HookConsumerWidget with MainLayout {
                   ? null
                   : () => _handleJoin(context, ref, isJoining),
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: MainColors.accent,
                   borderRadius: BorderRadius.circular(16),
@@ -271,4 +279,3 @@ class _FriendItem extends HookConsumerWidget with MainLayout {
     return '$hours:${minutes.toString().padLeft(2, '0')}';
   }
 }
-

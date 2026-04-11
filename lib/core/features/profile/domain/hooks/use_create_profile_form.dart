@@ -28,7 +28,8 @@ CreateProfileFormResult useCreateProfileForm(WidgetRef ref) {
 
   final formResult = useForm<bool>(
     controls: buildProfileFormControls(),
-    onSubmit: (values) => profileFormSubmit(ref, values: values, checkUsername: true),
+    onSubmit: (values) =>
+        profileFormSubmit(ref, values: values, checkUsername: true),
     onSuccess: (success) async {
       logger.info('Profile created successfully');
 

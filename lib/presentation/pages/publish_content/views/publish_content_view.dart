@@ -131,7 +131,8 @@ class PublishContentView extends HookConsumerWidget
                       onMemberSelectionChanged:
                           memberExclusionData.updateSelectedMembers,
                       taggedUserIds: memberExclusionData.taggedUserIds,
-                      parentPostAuthorId: memberExclusionData.parentPostAuthorId,
+                      parentPostAuthorId:
+                          memberExclusionData.parentPostAuthorId,
                       onSelectOnly: memberExclusionData.selectOnly,
                     ),
                     SizedBox(height: bottomMargin + 80),
@@ -171,21 +172,21 @@ class PublishContentView extends HookConsumerWidget
 
                           // Capture before publish — ref may be
                           // disposed by lockout cleanup inside hook.
-                          final shareNotifier =
-                              ref.read(pendingShareProvider.notifier);
-                          final lockoutId =
-                              ref.read(pendingLockoutPostProvider);
+                          final shareNotifier = ref.read(
+                            pendingShareProvider.notifier,
+                          );
+                          final lockoutId = ref.read(
+                            pendingLockoutPostProvider,
+                          );
                           final userId = ref
                               .read(getCurrentUserProvider)
                               .whenOrNull(
-                                data: (r) =>
-                                    r.fold((u) => u.id, (_) => null),
+                                data: (r) => r.fold((u) => u.id, (_) => null),
                               );
                           final imagePath =
                               contentCreation.data.firstFrame?.path ??
-                                  contentCreation.mainImage?.path;
-                          final description =
-                              contentCreation.data.description;
+                              contentCreation.mainImage?.path;
+                          final description = contentCreation.data.description;
 
                           final result = await contentCreation
                               .publishPostWithExclusions(excludedUsersList);
@@ -196,14 +197,15 @@ class PublishContentView extends HookConsumerWidget
 
                           if (result != null) {
                             final succeeded = result.fold(
-                                (_) => true, (_) => false);
+                              (_) => true,
+                              (_) => false,
+                            );
 
                             if (succeeded) {
                               if (context.mounted) {
-                                final successKey =
-                                    postCreationData.isEditing
-                                        ? 'pages.publish_content.snackbar.update_success_message'
-                                        : 'pages.publish_content.snackbar.success_message';
+                                final successKey = postCreationData.isEditing
+                                    ? 'pages.publish_content.snackbar.update_success_message'
+                                    : 'pages.publish_content.snackbar.success_message';
                                 MainSnackbar.showSuccess(
                                   context,
                                   translator.translate(successKey),
@@ -223,17 +225,15 @@ class PublishContentView extends HookConsumerWidget
 
                               router.go(const HomeRoutable());
                             } else if (context.mounted) {
-                              final errorKey =
-                                  postCreationData.isEditing
-                                      ? 'components.alert.post_error.update_error_message'
-                                      : 'components.alert.post_error.error_message';
+                              final errorKey = postCreationData.isEditing
+                                  ? 'components.alert.post_error.update_error_message'
+                                  : 'components.alert.post_error.error_message';
                               MainAlert.showError(
                                 context: context,
                                 title: translator.translate(
                                   'components.alert.post_error.title',
                                 ),
-                                content:
-                                    translator.translate(errorKey),
+                                content: translator.translate(errorKey),
                               );
                             }
                           }

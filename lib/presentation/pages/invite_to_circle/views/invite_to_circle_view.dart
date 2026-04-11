@@ -131,32 +131,34 @@ class InviteToCircleView extends HookConsumerWidget
           ? [phoneNumberToCheck.value!]
           : <String>[];
     }, [phoneNumberToCheck.value]);
-    
+
     // Watch the provider directly to track loading state
     final phoneCheckAsync = phoneNumbersToCheck.isNotEmpty
         ? ref.watch(checkPhoneNumbersProvider(phoneNumbersToCheck))
         : null;
-    
+
     final typedPhoneCheckResult = useCheckPhoneNumbers(
       ref,
       phoneNumbersToCheck,
     );
-    
+
     // phoneNumberToCheck.value is already normalized, so compare directly
     // Track if we have a result (not loading) and account status
     final (typedPhoneHasAccount, hasChecked) = useMemoized(() {
       if (phoneNumberToCheck.value == null || phoneCheckAsync == null) {
         return (false, false);
       }
-      
+
       // Only show result if we have data (not loading)
       final hasResult = phoneCheckAsync.hasValue;
       if (!hasResult) {
         return (false, false);
       }
-      
-      final hasAccount = typedPhoneCheckResult.contains(phoneNumberToCheck.value!);
-      
+
+      final hasAccount = typedPhoneCheckResult.contains(
+        phoneNumberToCheck.value!,
+      );
+
       return (hasAccount, true);
     }, [phoneNumberToCheck.value, typedPhoneCheckResult, phoneCheckAsync]);
 
@@ -222,7 +224,7 @@ class InviteToCircleView extends HookConsumerWidget
 
       final phoneNumberString = phoneNumber.international;
       final contact = ContactModel.fromPhoneNumber(phoneNumberString);
-      
+
       if (!inviteSendingState.isLoading) {
         await inviteSendingState.sendInvite(contact);
       }

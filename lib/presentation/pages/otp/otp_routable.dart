@@ -30,9 +30,6 @@ sealed class OtpRoutable extends Routable<OtpRoutable> with _$OtpRoutable {
 
   @override
   Widget buildPage(BuildContext context, OtpRoutable routeData) {
-    return OtpPage(
-      phoneNumber: routeData.phoneNumber,
-      email: routeData.email,
-    );
+    return OtpPage(phoneNumber: routeData.phoneNumber, email: routeData.email);
   }
 }
