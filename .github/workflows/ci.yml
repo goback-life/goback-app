@@ -27,7 +27,12 @@ jobs:
         run: flutter pub get
 
       - name: Run code generation
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          for pkg in packages/dedecube_environment packages/dedecube_logger packages/dedecube_router packages/dedecube_startup packages/dedecube_storage packages/dedecube_themify packages/dedecube_translator; do
+            echo "Building $pkg..."
+            (cd $pkg && dart pub get && dart run build_runner build --delete-conflicting-outputs)
+          done
 
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed lib/ test/
@@ -53,7 +58,12 @@ jobs:
         run: flutter pub get
 
       - name: Run code generation
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          for pkg in packages/dedecube_environment packages/dedecube_logger packages/dedecube_router packages/dedecube_startup packages/dedecube_storage packages/dedecube_themify packages/dedecube_translator; do
+            echo "Building $pkg..."
+            (cd $pkg && dart pub get && dart run build_runner build --delete-conflicting-outputs)
+          done
 
       - name: Run tests
         run: flutter test --coverage
