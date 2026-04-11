@@ -57,6 +57,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Create placeholder .env
+        run: echo "# CI placeholder" > .env
+
       - name: Run code generation
         run: |
           dart run build_runner build --delete-conflicting-outputs
