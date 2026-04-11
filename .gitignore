@@ -52,6 +52,10 @@ app.*.map.json
 *.tailor.dart
 *.freezed.dart
 *.gen.dart
+# Asset files are committed (custom builder, infrequent changes)
+!lib/presentation/assets/assets.gen.dart
+!lib/presentation/assets/icons.gen.dart
+!lib/presentation/assets/icons.g.dart
 
 # Env
 .env
