@@ -78,6 +78,8 @@ PROMPT.md
 .ralph/
 fastlane/google-play-key.json
 vendor/bundle/
+.bundle/
+supabase/.temp/
 fastlane/report.xml
 
 # Worktrees (stored outside repo root — just in case)
