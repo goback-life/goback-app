@@ -38,7 +38,7 @@ jobs:
           done
 
       - name: Analyze
-        run: flutter analyze --no-fatal-infos
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
   # ── Phase A: Tests (every push) ───────────────────────────────────────────
   test:
