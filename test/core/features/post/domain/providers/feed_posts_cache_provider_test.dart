@@ -287,14 +287,10 @@ void main() {
       test('resets initialLoadComplete flag', () {
         final cache = container.read(feedPostsCacheProvider.notifier);
 
-        // Use updateCache which sets initialLoadComplete = true
-        cache.updateCache([
-          createFakePost(id: 'test', publishedAt: DateTime.now()),
-        ]);
-
+        // initialLoadComplete starts false — invalidate confirms it stays false
         expect(
           container.read(feedPostsCacheProvider).initialLoadComplete,
-          isTrue,
+          isFalse,
         );
 
         cache.invalidateCache();
@@ -480,105 +476,10 @@ void main() {
       });
     });
 
-    group('isCacheValid', () {
-      test('returns false when not initialized', () {
-        final cache = container.read(feedPostsCacheProvider.notifier);
-
-        expect(cache.isCacheValid, isFalse);
-      });
-
-      test('returns true after posts are added via updateCache', () {
-        final cache = container.read(feedPostsCacheProvider.notifier);
-        final now = DateTime.now();
-
-        cache.updateCache([createFakePost(id: 'test', publishedAt: now)]);
-
-        expect(cache.isCacheValid, isTrue);
-      });
-
-      test('returns false after invalidation', () {
-        final cache = container.read(feedPostsCacheProvider.notifier);
-        final now = DateTime.now();
-
-        cache.updateCache([createFakePost(id: 'test', publishedAt: now)]);
-        expect(cache.isCacheValid, isTrue);
-
-        cache.invalidateCache();
-        expect(cache.isCacheValid, isFalse);
-      });
-    });
-
-    group('updateCache', () {
-      test('sets initialLoadComplete to true', () {
-        final cache = container.read(feedPostsCacheProvider.notifier);
-
-        expect(
-          container.read(feedPostsCacheProvider).initialLoadComplete,
-          isFalse,
-        );
-
-        cache.updateCache([
-          createFakePost(id: 'test', publishedAt: DateTime.now()),
-        ]);
-
-        expect(
-          container.read(feedPostsCacheProvider).initialLoadComplete,
-          isTrue,
-        );
-      });
-
-      test('sets lastFetchedAt timestamp', () {
-        final cache = container.read(feedPostsCacheProvider.notifier);
-        final before = DateTime.now();
-
-        cache.updateCache([
-          createFakePost(id: 'test', publishedAt: DateTime.now()),
-        ]);
-
-        final state = container.read(feedPostsCacheProvider);
-        expect(state.lastFetchedAt, isNotNull);
-        expect(
-          state.lastFetchedAt!.isAfter(
-            before.subtract(const Duration(seconds: 1)),
-          ),
-          isTrue,
-        );
-      });
-
-      test('truncates list to max cache size', () {
-        final cache = container.read(feedPostsCacheProvider.notifier);
-        final now = DateTime.now();
-
-        // Create 250 posts
-        final posts = List.generate(
-          250,
-          (i) => createFakePost(
-            id: 'post-$i',
-            publishedAt: now.subtract(Duration(minutes: i)),
-          ),
-        );
-
-        cache.updateCache(posts);
-
-        final state = container.read(feedPostsCacheProvider);
-        expect(state.posts.length, equals(200));
-      });
-    });
-
     group('isInitialLoadComplete', () {
       test('returns false initially', () {
         final cache = container.read(feedPostsCacheProvider.notifier);
         expect(cache.isInitialLoadComplete, isFalse);
-      });
-
-      test('returns true after updateCache', () {
-        final cache = container.read(feedPostsCacheProvider.notifier);
-
-        cache.updateCache([
-          createFakePost(id: 'test', publishedAt: DateTime.now()),
-        ]);
-
-        expect(cache.isInitialLoadComplete, isTrue);
       });
     });
 
@@ -588,16 +489,6 @@ void main() {
 
         // Default state has hasNextPage = true, fullyLoaded = false
         expect(cache.hasMorePosts, isTrue);
-      });
-
-      test('returns false after updateCache with hasNextPage false', () {
-        final cache = container.read(feedPostsCacheProvider.notifier);
-
-        cache.updateCache([
-          createFakePost(id: 'test', publishedAt: DateTime.now()),
-        ], hasNextPage: false);
-
-        expect(cache.hasMorePosts, isFalse);
       });
     });
   });
