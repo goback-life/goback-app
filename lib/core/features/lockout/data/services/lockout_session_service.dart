@@ -21,6 +21,8 @@ class LockoutSessionService {
     double? locationLat,
     double? locationLng,
     String? locationName,
+    String? venueTagId,
+    bool isOpenEnded = false,
   }) async {
     try {
       final userId = supabase.auth.currentUser!.id;
@@ -37,6 +39,8 @@ class LockoutSessionService {
             'location_lat': locationLat,
             'location_lng': locationLng,
             'location_name': locationName,
+            'venue_tag_id': venueTagId,
+            'is_open_ended': isOpenEnded,
           })
           .select()
           .single();
@@ -150,15 +154,22 @@ class LockoutSessionService {
     }
   }
 
-  /// Updates the goback score for a lockout session.
+  /// Updates the goback score and raw signal data for a lockout session.
   FutureResult<void> updateScore({
     required String sessionId,
     required int score,
+    bool? batteryWasCharging,
+    int? stepCount,
   }) async {
     try {
       await supabase.rpc(
         'update_lockout_score',
-        params: {'p_session_id': sessionId, 'p_score': score},
+        params: {
+          'p_session_id': sessionId,
+          'p_score': score,
+          'p_battery_was_charging': batteryWasCharging,
+          'p_step_count': stepCount,
+        },
       );
       return Result.success(null);
     } catch (e) {
@@ -295,6 +306,79 @@ class LockoutSessionService {
       return Result.failure(
         e is Exception ? e : Exception('Failed to get activity stats: $e'),
       );
+    }
+  }
+
+  /// Called when a timed lockout timer reaches 0:00.
+  ///
+  /// Sets `completed_at = NOW()` on the session row.
+  FutureResult<void> completeTimedLockout(String sessionId) async {
+    try {
+      await supabase.rpc(
+        'complete_timed_lockout',
+        params: {'p_session_id': sessionId},
+      );
+      return Result.success(null);
+    } catch (e) {
+      logger.error('Failed to complete timed lockout', exception: e);
+      return Result.failure(
+        e is Exception ? e : Exception('Failed to complete timed lockout: $e'),
+      );
+    }
+  }
+
+  /// Called when venue lockout leader taps out (NFC scan to exit).
+  ///
+  /// Sets `completed_at` and sends push notifications to all participants.
+  FutureResult<void> leaderCompleteVenueLockout(String sessionId) async {
+    try {
+      await supabase.rpc(
+        'leader_complete_venue_lockout',
+        params: {'p_session_id': sessionId},
+      );
+      return Result.success(null);
+    } catch (e) {
+      logger.error('Failed to complete venue lockout', exception: e);
+      return Result.failure(
+        e is Exception ? e : Exception('Failed to complete venue lockout: $e'),
+      );
+    }
+  }
+
+  /// Called when a joiner leaves a venue lockout early (taps out before leader).
+  FutureResult<void> leaveVenueLockout(String sessionId) async {
+    try {
+      await supabase.rpc(
+        'leave_venue_lockout',
+        params: {'p_session_id': sessionId},
+      );
+      return Result.success(null);
+    } catch (e) {
+      logger.error('Failed to leave venue lockout', exception: e);
+      return Result.failure(
+        e is Exception ? e : Exception('Failed to leave venue lockout: $e'),
+      );
+    }
+  }
+
+  /// Checks if a lockout session is still active (not completed or deleted).
+  ///
+  /// Called on app resume to handle leader-ended-all or auto-delete scenarios.
+  /// Returns `true` if the session exists and has no `completed_at` value.
+  Future<bool> isSessionStillActive(String sessionId) async {
+    try {
+      final response = await supabase
+          .from('lockout_sessions')
+          .select('completed_at')
+          .eq('id', sessionId)
+          .maybeSingle();
+      if (response == null) {
+        return false; // Session deleted
+      }
+      return response['completed_at'] == null; // NULL = still active
+    } catch (e) {
+      logger.warning('Failed to check session active status: $e');
+      return true; // Assume active on error (don't break the lockout)
     }
   }
 
