@@ -16,6 +16,10 @@ class ManualLockoutStorable extends Storable<Map> {
         'lockoutStartTimestamp': null,
         'lockoutSessionId': null,
         'batteryAtStart': null,
+        'isOpenEnded': false,
+        'venueName': null,
+        'venueTagId': null,
+        'wasChargingDuringLockout': false,
       },
     );
     final result = Map<String, dynamic>.from(data);
@@ -28,12 +32,20 @@ class ManualLockoutStorable extends Storable<Map> {
     required DateTime lockoutStartTimestamp,
     String? lockoutSessionId,
     int? batteryAtStart,
+    bool isOpenEnded = false,
+    String? venueName,
+    String? venueTagId,
+    bool wasChargingDuringLockout = false,
   }) async {
     final dataToStore = <String, dynamic>{
       'lockoutEndTimestamp': lockoutEndTimestamp.toIso8601String(),
       'lockoutStartTimestamp': lockoutStartTimestamp.toIso8601String(),
       'lockoutSessionId': lockoutSessionId,
       'batteryAtStart': batteryAtStart,
+      'isOpenEnded': isOpenEnded,
+      'venueName': venueName,
+      'venueTagId': venueTagId,
+      'wasChargingDuringLockout': wasChargingDuringLockout,
     };
     logger.info('$_tag setLockoutData: $dataToStore');
     await set(dataToStore);
@@ -67,6 +79,21 @@ class ManualLockoutStorable extends Storable<Map> {
     return data['batteryAtStart'] as int?;
   }
 
+  Future<bool> getIsOpenEnded() async {
+    final data = await getLockoutData();
+    return (data['isOpenEnded'] as bool?) ?? false;
+  }
+
+  Future<String?> getVenueName() async {
+    final data = await getLockoutData();
+    return data['venueName'] as String?;
+  }
+
+  Future<String?> getVenueTagId() async {
+    final data = await getLockoutData();
+    return data['venueTagId'] as String?;
+  }
+
   Future<bool> isLockedOut() async {
     final lockoutEnd = await getLockoutEnd();
     if (lockoutEnd == null) {
@@ -75,12 +102,33 @@ class ManualLockoutStorable extends Storable<Map> {
     return DateTime.now().isBefore(lockoutEnd);
   }
 
+  Future<void> clearLockoutEnd() async {
+    final data = await getLockoutData();
+    data['lockoutEndTimestamp'] = null;
+    await set(data);
+  }
+
+  Future<bool> getWasChargingDuringLockout() async {
+    final data = await getLockoutData();
+    return (data['wasChargingDuringLockout'] as bool?) ?? false;
+  }
+
+  Future<void> setWasChargingDuringLockout({required bool value}) async {
+    final data = await getLockoutData();
+    data['wasChargingDuringLockout'] = value;
+    await set(data);
+  }
+
   Future<void> clearLockout() async {
     await set(<String, dynamic>{
       'lockoutEndTimestamp': null,
       'lockoutStartTimestamp': null,
       'lockoutSessionId': null,
       'batteryAtStart': null,
+      'isOpenEnded': false,
+      'venueName': null,
+      'venueTagId': null,
+      'wasChargingDuringLockout': false,
     });
   }
 }
