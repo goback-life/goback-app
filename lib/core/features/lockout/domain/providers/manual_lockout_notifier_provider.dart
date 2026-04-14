@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:battery_plus/battery_plus.dart';
 import 'package:cloudless/core/features/lockout/data/providers/lockout_live_activity_service_provider.dart';
+import 'package:cloudless/core/features/lockout/data/providers/step_count_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/data/storables/manual_lockout_storable.dart';
@@ -9,11 +12,17 @@ import 'package:cloudless/core/features/lockout/domain/use_cases/clear_manual_lo
 import 'package:cloudless/core/features/lockout/domain/use_cases/get_lockout_remaining_time_use_case.dart';
 import 'package:cloudless/core/features/lockout/domain/use_cases/join_lockout_use_case.dart';
 import 'package:cloudless/core/features/lockout/domain/use_cases/set_manual_lockout_use_case.dart';
+import 'package:cloudless/core/features/nfc/domain/models/venue_tag_model.dart';
 import 'package:cloudless/core/features/notification/domain/providers/scheduled_notification_provider.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'manual_lockout_notifier_provider.g.dart';
+
+/// Sentinel duration for open-ended venue lockouts.
+/// Keeps [isLockedOut] true indefinitely until the user ends the session.
+const _kOpenEndedSentinel = Duration(days: 30);
 
 @Riverpod(keepAlive: true)
 class ManualLockoutNotifier extends _$ManualLockoutNotifier {
@@ -38,7 +47,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     return currentState;
   }
 
-  /// Reads lockout check + remaining time from storable into a model.
+  /// Reads lockout state (including open-ended and venue fields) from storable.
   Future<ManualLockoutModel> _readLockoutState(
     ManualLockoutStorable storable,
   ) async {
@@ -53,9 +62,16 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       ).execute();
     }
 
+    final isOpenEnded = await storable.getIsOpenEnded();
+    final venueName = await storable.getVenueName();
+    final lockoutStartTime = await storable.getLockoutStart();
+
     return ManualLockoutModel(
       isLockedOut: isLockedOut && remainingDuration != null,
       remainingDuration: remainingDuration,
+      isOpenEnded: isOpenEnded,
+      venueName: venueName,
+      lockoutStartTime: lockoutStartTime,
     );
   }
 
@@ -66,6 +82,34 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     } catch (_) {
       return null;
     }
+  }
+
+  StreamSubscription<BatteryState>? _chargingSubscription;
+
+  /// Starts monitoring charging state and step count for the active lockout.
+  void _startLockoutTracking() {
+    // Track charging events
+    _chargingSubscription?.cancel();
+    _chargingSubscription = Battery().onBatteryStateChanged.listen((
+      batteryState,
+    ) {
+      if (batteryState == BatteryState.charging ||
+          batteryState == BatteryState.full) {
+        ref
+            .read(manualLockoutStorableProvider)
+            .setWasChargingDuringLockout(value: true);
+      }
+    });
+
+    // Start step tracking
+    ref.read(stepCountServiceProvider).startTracking();
+  }
+
+  /// Stops charging and step monitoring.
+  void _stopLockoutTracking() {
+    _chargingSubscription?.cancel();
+    _chargingSubscription = null;
+    ref.read(stepCountServiceProvider).stopTracking();
   }
 
   /// Sets a lockout for the given duration.
@@ -96,10 +140,15 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
         locationName: locationName,
       );
 
-      sessionResult.fold((session) {
-        sessionId = session.id;
-        logger.info('Lockout session created with ID: $sessionId');
-      }, (error) => logger.warning('Failed to create DB session: $error'));
+      sessionResult.fold(
+        (session) {
+          sessionId = session.id;
+          debugPrint('[LockoutNotifier] Session created: $sessionId');
+        },
+        (error) {
+          debugPrint('[LockoutNotifier] FAILED to create session: $error');
+        },
+      );
 
       // Store locally with session ID for post creation after lockout ends
       logger.info('Storing lockout locally with sessionId: $sessionId');
@@ -109,6 +158,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
         sessionId: sessionId,
         batteryAtStart: batteryAtStart,
       ).execute();
+      _startLockoutTracking();
 
       // Start Live Activity countdown on lock screen
       final lockoutEndTime = DateTime.now().add(duration);
@@ -136,6 +186,77 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     }
   }
 
+  /// Starts an open-ended venue lockout triggered by scanning an NFC tag.
+  ///
+  /// Uses a 30-day sentinel end time so the lockout stays active until
+  /// the user explicitly ends it by tapping the tag again.
+  Future<String?> startVenueLockout(VenueTagModel venue) async {
+    final storable = ref.read(manualLockoutStorableProvider);
+    final sessionService = ref.read(lockoutSessionServiceProvider);
+    state = const AsyncValue.loading();
+    String? sessionId;
+
+    final batteryAtStart = await _captureBattery();
+
+    try {
+      final sessionResult = await sessionService.createSession(
+        duration: _kOpenEndedSentinel,
+        locationName: venue.venueName,
+        venueTagId: venue.venueId,
+        isOpenEnded: true,
+      );
+
+      sessionResult.fold(
+        (session) {
+          sessionId = session.id;
+          logger.info(
+            'Venue lockout session created: $sessionId (${venue.venueName})',
+          );
+        },
+        (error) => logger.warning('Failed to create venue DB session: $error'),
+      );
+
+      final now = DateTime.now();
+      final sentinelEnd = now.add(_kOpenEndedSentinel);
+
+      await storable.setLockoutData(
+        lockoutEndTimestamp: sentinelEnd,
+        lockoutStartTimestamp: now,
+        lockoutSessionId: sessionId,
+        batteryAtStart: batteryAtStart,
+        isOpenEnded: true,
+        venueName: venue.venueName,
+        venueTagId: venue.venueId,
+      );
+      _startLockoutTracking();
+
+      // Skip Live Activity for open-ended lockouts — the sentinel end time
+      // (30 days) would display a nonsensical countdown on the lock screen.
+      await ref.read(lockoutLiveActivityServiceProvider).endActivity();
+
+      // Schedule a 1-hour encouragement notification using venue name
+      await ref
+          .read(scheduledNotificationProvider)
+          .scheduleLockoutNotifications(
+            sentinelEnd,
+            venueName: venue.venueName,
+          );
+
+      state = AsyncValue.data(await _readLockoutState(storable));
+
+      logger.info('Venue lockout started at ${venue.venueName}');
+      return sessionId;
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      logger.error(
+        'Error starting venue lockout',
+        exception: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
+
   /// Dismisses the completion UI without clearing local storage.
   /// Used by _handleShare so lockoutStartTimestamp remains available
   /// for the post-creation hook to read later.
@@ -151,6 +272,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
 
     state = const AsyncValue.loading();
     try {
+      _stopLockoutTracking();
       await ref.read(lockoutLiveActivityServiceProvider).endActivity();
       await ref
           .read(scheduledNotificationProvider)
@@ -181,6 +303,8 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
   /// Joins an existing lockout session by session ID.
   ///
   /// Calls the database RPC to join and stores locally.
+  /// For venue (open-ended) lockouts, stores venue metadata locally so the
+  /// lockout UI shows the correct venue name and count-up timer.
   Future<void> joinLockout(String lockoutSessionId) async {
     final storable = ref.read(manualLockoutStorableProvider);
     final sessionService = ref.read(lockoutSessionServiceProvider);
@@ -189,17 +313,24 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
 
     state = const AsyncValue.loading();
     try {
-      // Get session details to determine end time
+      // Get session details to determine end time and venue info
       final sessionResult = await sessionService.getSessionById(
         lockoutSessionId,
       );
       DateTime? lockoutEndTime;
+      bool isOpenEnded = false;
+      String? venueName;
+      String? venueTagId;
       Exception? sessionError;
 
       await sessionResult.asyncFold(
         (session) async {
           if (session != null) {
             lockoutEndTime = DateTime.parse(session.endsAt);
+            isOpenEnded = session.isOpenEnded;
+            venueName = session.locationName;
+            venueTagId = session.venueTagId;
+
             // Join session in database - check result for RPC errors
             final joinResult = await sessionService.joinSession(
               sessionId: lockoutSessionId,
@@ -230,17 +361,34 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
         lockoutEndTime: lockoutEndTime!,
         lockoutSessionId: lockoutSessionId,
         batteryAtStart: batteryAtStart,
+        isOpenEnded: isOpenEnded,
+        venueName: venueName,
+        venueTagId: venueTagId,
       ).execute();
+      _startLockoutTracking();
 
-      // Start Live Activity countdown on lock screen
-      await ref
-          .read(lockoutLiveActivityServiceProvider)
-          .startActivity(lockoutEndTimestamp: lockoutEndTime!);
+      if (isOpenEnded) {
+        // Skip Live Activity for open-ended lockouts (sentinel end time)
+        await ref.read(lockoutLiveActivityServiceProvider).endActivity();
 
-      // Schedule mid-lockout + post-lockout notifications, cancel daily
-      await ref
-          .read(scheduledNotificationProvider)
-          .scheduleLockoutNotifications(lockoutEndTime!);
+        // Schedule a 1-hour encouragement notification using venue name
+        await ref
+            .read(scheduledNotificationProvider)
+            .scheduleLockoutNotifications(
+              lockoutEndTime!,
+              venueName: venueName,
+            );
+      } else {
+        // Start Live Activity countdown on lock screen
+        await ref
+            .read(lockoutLiveActivityServiceProvider)
+            .startActivity(lockoutEndTimestamp: lockoutEndTime!);
+
+        // Schedule mid-lockout + post-lockout notifications, cancel daily
+        await ref
+            .read(scheduledNotificationProvider)
+            .scheduleLockoutNotifications(lockoutEndTime!);
+      }
 
       state = AsyncValue.data(await _readLockoutState(storable));
 
@@ -261,6 +409,7 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
 
     final wasLockedOut = state.value?.isLockedOut ?? false;
     final wasCompletionPending = state.value?.isCompletionPending ?? false;
+    final wasOpenEnded = state.value?.isOpenEnded ?? false;
 
     final currentState = await _readLockoutState(storable);
 
@@ -268,9 +417,14 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       ManualLockoutModel(
         isLockedOut: currentState.isLockedOut,
         remainingDuration: currentState.remainingDuration,
-        // Timer just expired -> completion pending (until share/skip)
+        isOpenEnded: currentState.isOpenEnded,
+        venueName: currentState.venueName,
+        lockoutStartTime: currentState.lockoutStartTime,
+        // Open-ended lockouts never expire automatically — completion is
+        // triggered only by an explicit NFC tap-out.
         isCompletionPending:
-            wasCompletionPending || (wasLockedOut && !currentState.isLockedOut),
+            wasCompletionPending ||
+            (!wasOpenEnded && wasLockedOut && !currentState.isLockedOut),
       ),
     );
   }
