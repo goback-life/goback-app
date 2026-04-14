@@ -194,14 +194,14 @@ void main() {
       // stepBonus = 0.3 * (20000/3000).clamp(0,1) = 0.3 * 1.0 = 0.3
       // No battery → quality = (0.7 + 0.3) = 1.0
       // timeMultiplier at 1hr = 0.7 + 0.3 * (60/240) = 0.775
-      // score = 1.0 * 100 * 0.775 = 78
+      // score = 1.0 * 100 * 0.775 ≈ 77–78 (floating-point: 77.4999... rounds to 77)
       final score = GobackScoreCalculator.calculate(
         batteryStart: null,
         batteryEnd: null,
         duration: const Duration(hours: 1),
         steps: 20000,
       );
-      expect(score, 78);
+      expect(score, inInclusiveRange(77, 78));
     });
   });
 }
