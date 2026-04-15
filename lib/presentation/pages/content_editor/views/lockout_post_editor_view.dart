@@ -5,6 +5,7 @@ import 'package:cloudless/core/features/auth/domain/providers/get_current_user_p
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout_post_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_creation.dart';
+import 'package:cloudless/core/features/post/domain/utilities/text_post_parser.dart';
 import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/presentation/components/alerts/main_alert.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
@@ -67,6 +68,27 @@ class LockoutPostEditorView extends HookConsumerWidget {
     final circleMembers =
         connectionMembers?.map((m) => m.profile).toList() ?? <ProfileModel>[];
     final totalMemberCount = connectionMembers?.length ?? 0;
+
+    // Sync @mentions in description text to taggedUserIds so they get written to post_tags
+    useEffect(() {
+      Future.microtask(() {
+        final description = contentCreation.data.description;
+        final mentionedUserIds = description.isNotEmpty
+            ? TextPostParser.parseMentions(description, circleMembers)
+            : <String>[];
+
+        final currentTagged = contentCreation.data.taggedUserIds;
+        final isDifferent =
+            mentionedUserIds.length != currentTagged.length ||
+            !mentionedUserIds.every((id) => currentTagged.contains(id)) ||
+            !currentTagged.every((id) => mentionedUserIds.contains(id));
+
+        if (isDifferent) {
+          contentCreation.updateTaggedUsers(mentionedUserIds);
+        }
+      });
+      return null;
+    }, [contentCreation.data.description, circleMembers]);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
