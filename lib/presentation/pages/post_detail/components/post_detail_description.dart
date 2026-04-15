@@ -11,12 +11,17 @@ class PostDetailDescription extends HookWidget
     required this.description,
     this.contentType,
     this.onMentionTap,
+    this.taggedUsernames,
     super.key,
   });
 
   final String description;
   final ContentType? contentType;
   final void Function(String username)? onMentionTap;
+
+  /// Only @usernames in this set will be rendered as bold/clickable.
+  /// If null, all @patterns are bolded (legacy behavior).
+  final Set<String>? taggedUsernames;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +52,12 @@ class PostDetailDescription extends HookWidget
           ) ??
           const TextStyle();
       return RichText(
-        text: parseMentions(description, baseStyle, onMentionTap: onMentionTap),
+        text: parseMentions(
+          description,
+          baseStyle,
+          taggedUsernames: taggedUsernames,
+          onMentionTap: onMentionTap,
+        ),
       );
     }
 
@@ -75,6 +85,7 @@ class PostDetailDescription extends HookWidget
                   text: parseMentions(
                     description,
                     baseStyle,
+                    taggedUsernames: taggedUsernames,
                     onMentionTap: onMentionTap,
                   ),
                   maxLines: showFullText.value

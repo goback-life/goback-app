@@ -264,6 +264,9 @@ class PostDetailOverlayContent extends HookConsumerWidget {
               text: parseMentions(
                 post.description!,
                 descStyle,
+                taggedUsernames: post.taggedUsernames
+                    .map((n) => n.toLowerCase())
+                    .toSet(),
                 onMentionTap: onMentionTap,
               ),
               maxLines: descExpanded.value ? null : 5,

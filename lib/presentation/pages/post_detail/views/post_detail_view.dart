@@ -327,6 +327,9 @@ class PostDetailView extends HookConsumerWidget
                       PostDetailDescription(
                         description: post.description!,
                         contentType: post.contentType,
+                        taggedUsernames: post.taggedUsernames
+                            .map((n) => n.toLowerCase())
+                            .toSet(),
                         onMentionTap: (username) {
                           final user = allUsers
                               .where((u) => u.username == username)

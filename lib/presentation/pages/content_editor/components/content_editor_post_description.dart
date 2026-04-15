@@ -56,17 +56,24 @@ class ContentEditorPostDescription extends HookWidget {
     void updateOverlay() {
       overlayEntry.value?.remove();
       if (mentionQuery.value != null && filteredUsers.isNotEmpty) {
-        final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+        // Capture users list for the overlay builder closure
+        final currentUsers = List<ProfileModel>.from(filteredUsers);
         overlayEntry.value = OverlayEntry(
-          builder: (_) => MentionOverlay(
-            users: filteredUsers,
-            onUserSelected: (user) {
-              onMentionSelected(user);
-              overlayEntry.value?.remove();
-              overlayEntry.value = null;
-            },
-            bottomInset: keyboardHeight,
-          ),
+          builder: (overlayContext) {
+            // Read keyboard height inside builder so it updates reactively
+            final keyboardHeight = MediaQuery.of(
+              overlayContext,
+            ).viewInsets.bottom;
+            return MentionOverlay(
+              users: currentUsers,
+              onUserSelected: (user) {
+                onMentionSelected(user);
+                overlayEntry.value?.remove();
+                overlayEntry.value = null;
+              },
+              bottomInset: keyboardHeight,
+            );
+          },
         );
         Overlay.of(context).insert(overlayEntry.value!);
       } else {

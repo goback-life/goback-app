@@ -156,16 +156,19 @@ class MentionTextField extends HookWidget with MainLayout {
     /// Shows/hides the overlay based on mention state.
     void updateOverlay() {
       final filteredUsers = getFilteredUsers();
-      final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
       if (mentionQuery.value != null && filteredUsers.isNotEmpty) {
         overlayEntry.value?.remove();
+        final currentUsers = List<ProfileModel>.from(filteredUsers);
         overlayEntry.value = OverlayEntry(
-          builder: (context) => MentionOverlay(
-            bottomInset: bottomInset,
-            users: filteredUsers,
-            onUserSelected: selectUser,
-          ),
+          builder: (overlayContext) {
+            final bottomInset = MediaQuery.of(overlayContext).viewInsets.bottom;
+            return MentionOverlay(
+              bottomInset: bottomInset,
+              users: currentUsers,
+              onUserSelected: selectUser,
+            );
+          },
         );
         Overlay.of(context).insert(overlayEntry.value!);
       } else {
