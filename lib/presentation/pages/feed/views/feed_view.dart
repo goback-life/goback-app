@@ -29,6 +29,8 @@ import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routa
 import 'package:cloudless/presentation/pages/tutorial/tutorial_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_page.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
+import 'package:cloudless/core/features/post/domain/providers/delete_post_provider.dart';
+import 'package:cloudless/presentation/components/alerts/main_alert.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
@@ -428,6 +430,12 @@ class FeedView extends HookConsumerWidget {
             onRefresh: feedPosts.refresh,
             scrollController: scrollController,
             onPostTap: (post) => PostDetailPage.show(context, post: post),
+            onPostDelete: (post) => _confirmAndDeletePost(
+              context,
+              ref,
+              post: post,
+              currentUserId: currentUserId,
+            ),
             onTopPostDateChanged: (date) => topPostDate.value = date,
             onRefreshStateChanged: (v) => isRefreshing.value = v,
           ),
@@ -490,5 +498,106 @@ class FeedView extends HookConsumerWidget {
         ),
       ],
     );
+  }
+
+  /// Shows a confirmation dialog and deletes the post if confirmed.
+  /// Returns true if deleted (Dismissible animates away), false otherwise.
+  Future<bool> _confirmAndDeletePost(
+    BuildContext context,
+    WidgetRef ref, {
+    required FeedPostModel post,
+    required String currentUserId,
+  }) async {
+    debugPrint('[FeedDelete] START postId=${post.id} userId=$currentUserId');
+
+    // Step 1: Show confirmation dialog and wait for user choice.
+    final confirmed = Completer<bool>();
+
+    try {
+      debugPrint('[FeedDelete] Showing dialog...');
+      await MainAlert.showFull(
+        context: context,
+        title: translator.translate('components.delete_post.title'),
+        content: Text(
+          translator.translate('components.delete_post.content'),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        primaryButtonText: translator.translate(
+          'components.delete_post.confirm',
+        ),
+        secondaryButtonText: translator.translate(
+          'components.delete_post.cancel',
+        ),
+        primaryButtonType: CallToActionType.danger,
+        onPrimaryPressed: () {
+          debugPrint('[FeedDelete] Delete button tapped');
+          router.pop();
+          confirmed.complete(true);
+        },
+        onSecondaryPressed: () {
+          debugPrint('[FeedDelete] Cancel button tapped');
+          router.pop();
+          confirmed.complete(false);
+        },
+      );
+      debugPrint('[FeedDelete] Dialog resolved');
+    } catch (e, s) {
+      debugPrint('[FeedDelete] Dialog THREW: $e\n$s');
+      return false;
+    }
+
+    if (!await confirmed.future) {
+      debugPrint('[FeedDelete] User cancelled');
+      return false;
+    }
+
+    // Step 2: Execute deletion outside the callback so exceptions propagate.
+    debugPrint('[FeedDelete] Confirmed. Calling deletePostProvider...');
+    try {
+      final result = await ref.read(
+        deletePostProvider(postId: post.id, authorId: currentUserId).future,
+      );
+
+      debugPrint('[FeedDelete] Provider returned: $result');
+
+      return result.fold(
+        (_) {
+          debugPrint('[FeedDelete] SUCCESS — removing from cache');
+          // Direct cache removal for immediate UI update.
+          ref.read(feedPostsCacheProvider.notifier).removePost(post.id);
+          // Also notify for other listeners (calendar, etc).
+          ref
+              .read(postActionNotifierProvider.notifier)
+              .notifyPostDeleted(postId: post.id);
+          return false;
+        },
+        (error) {
+          debugPrint('[FeedDelete] FAILURE (Result.failure): $error');
+          if (context.mounted) {
+            MainAlert.showError(
+              context: context,
+              title: translator.translate('components.delete_post.error_title'),
+              content: translator.translate(
+                'components.delete_post.error_content',
+              ),
+            );
+          }
+          return false;
+        },
+      );
+    } catch (e, stackTrace) {
+      debugPrint('[FeedDelete] EXCEPTION: $e\n$stackTrace');
+      if (context.mounted) {
+        await MainAlert.showError(
+          context: context,
+          title: translator.translate('components.delete_post.error_title'),
+          content: translator.translate('components.delete_post.error_content'),
+        );
+      }
+      return false;
+    }
   }
 }

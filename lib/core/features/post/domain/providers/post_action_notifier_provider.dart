@@ -31,10 +31,12 @@ class PostActionNotifier extends _$PostActionNotifier {
   }
 
   /// Notifies that a post was deleted.
-  void notifyPostDeleted() {
+  /// [postId] enables immediate feed cache removal.
+  void notifyPostDeleted({String? postId}) {
     state = PostActionEvent(
       action: PostActionType.delete,
       timestamp: DateTime.now(),
+      postId: postId,
     );
   }
 

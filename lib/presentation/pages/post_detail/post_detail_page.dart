@@ -47,6 +47,7 @@ class PostDetailPage extends HookConsumerWidget
     BuildContext context, {
     required FeedPostModel post,
     bool readOnly = false,
+    bool isFromCalendar = false,
   }) {
     return Navigator.of(context).push<void>(
       PageRouteBuilder<void>(
@@ -58,7 +59,11 @@ class PostDetailPage extends HookConsumerWidget
         pageBuilder: (_, animation, __) {
           return FadeTransition(
             opacity: animation,
-            child: PostDetailOverlay(post: post, readOnly: readOnly),
+            child: PostDetailOverlay(
+              post: post,
+              readOnly: readOnly,
+              showDeleteButton: isFromCalendar,
+            ),
           );
         },
       ),

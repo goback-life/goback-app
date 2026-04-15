@@ -60,6 +60,7 @@ class _RemoveDialogContent extends StatelessWidget {
                       children: [
                         Expanded(
                           child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
                             onTap: () => Navigator.of(context).pop(false),
                             child: SizedBox(
                               height: 44,
@@ -86,6 +87,7 @@ class _RemoveDialogContent extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
                             onTap: () => Navigator.of(context).pop(true),
                             child: SizedBox(
                               height: 44,

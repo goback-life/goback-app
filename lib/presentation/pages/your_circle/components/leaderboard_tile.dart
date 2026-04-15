@@ -54,6 +54,7 @@ class LeaderboardTile extends StatelessWidget
       child: SizedBox(
         height: _isKing ? kingTileHeight : friendTileHeight,
         child: Stack(
+          alignment: Alignment.centerLeft,
           children: [
             // Accent bar for current user or king
             if (_isCurrentUser && !_isKing)
@@ -88,23 +89,42 @@ class LeaderboardTile extends StatelessWidget
               ),
             // Main row
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(width: MediaQuery.of(context).size.width * 0.10),
-                // Rank number or crown
+                // Rank number (with crown overlay for king)
                 SizedBox(
                   width: rankWidth,
                   child: _isKing
-                      ? Text(
-                          '\u2654',
-                          style: TextStyle(
-                            fontFamily: MainFontFamilies.quicksand,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: _gold.withValues(alpha: 0.5),
-                          ),
+                      ? Stack(
+                          clipBehavior: Clip.none,
+                          alignment: Alignment.center,
+                          children: [
+                            Text(
+                              '#1',
+                              style: TextStyle(
+                                fontFamily: MainFontFamilies.quicksand,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                color: _gold.withValues(alpha: 0.5),
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            Positioned(
+                              top: -8,
+                              child: Text(
+                                '\u2654',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: _gold.withValues(alpha: 0.45),
+                                ),
+                              ),
+                            ),
+                          ],
                         )
                       : Text(
                           '#$rank',
+                          textAlign: TextAlign.right,
                           style: TextStyle(
                             fontFamily: MainFontFamilies.quicksand,
                             fontWeight: FontWeight.w500,
@@ -222,30 +242,15 @@ class _DurationOrDash extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (_isInactive) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            '\u2014',
-            style: TextStyle(
-              fontFamily: MainFontFamilies.quicksand,
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-              color: MainColors.white.withValues(alpha: 0.25),
-              letterSpacing: -0.5,
-            ),
-          ),
-          Text(
-            'no sessions',
-            style: TextStyle(
-              fontFamily: MainFontFamilies.quicksand,
-              fontWeight: FontWeight.w500,
-              fontSize: 10,
-              color: MainColors.white.withValues(alpha: 0.2),
-            ),
-          ),
-        ],
+      return Text(
+        '\u2014',
+        style: TextStyle(
+          fontFamily: MainFontFamilies.quicksand,
+          fontWeight: FontWeight.w500,
+          fontSize: 14,
+          color: MainColors.white.withValues(alpha: 0.25),
+          letterSpacing: -0.5,
+        ),
       );
     }
 

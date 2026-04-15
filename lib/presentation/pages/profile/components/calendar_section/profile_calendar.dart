@@ -387,6 +387,7 @@ class ProfileCalendar extends HookConsumerWidget
       context,
       post: feedPost,
       readOnly: userId != null,
+      isFromCalendar: true,
     );
 
     if (!context.mounted) return;

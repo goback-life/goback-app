@@ -112,7 +112,9 @@ class PostDetailDeleteAction extends HookConsumerWidget
 
         result.fold(
           (_) {
-            ref.read(postActionNotifierProvider.notifier).notifyPostDeleted();
+            ref
+                .read(postActionNotifierProvider.notifier)
+                .notifyPostDeleted(postId: post.id);
             onActionCompleted();
 
             if (context.mounted) {

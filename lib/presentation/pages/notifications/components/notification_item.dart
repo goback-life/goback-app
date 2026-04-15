@@ -146,6 +146,11 @@ class NotificationItem extends HookConsumerWidget
           context: context,
           arguments: {'username': firstUsername},
         );
+      case NotificationType.memberJoined:
+        if (otherCount > 0) {
+          return '$firstUsername and $otherCount others joined your lockout';
+        }
+        return '$firstUsername joined your lockout';
     }
   }
 

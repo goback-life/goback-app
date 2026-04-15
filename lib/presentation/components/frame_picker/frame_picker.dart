@@ -177,12 +177,13 @@ class FramePicker extends HookConsumerWidget
                       milliseconds: controlsAnimationDuration.toInt(),
                     ),
                     child: SafeArea(
-                      child: Container(
-                        margin: EdgeInsets.all(closeButtonMargin),
-                        child: GestureDetector(
-                          onTap: useConfirmButton
-                              ? () => Navigator.of(context).pop(null)
-                              : confirm,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: useConfirmButton
+                            ? () => Navigator.of(context).pop(null)
+                            : confirm,
+                        child: Container(
+                          margin: EdgeInsets.all(closeButtonMargin),
                           child: AppGlassContainer(
                             config: GlassConfig(
                               variant: GlassVariant.regular,

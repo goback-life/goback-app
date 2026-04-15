@@ -99,69 +99,57 @@ class CallToAction extends StatelessWidget {
       opacity: isDisabled ? 0.5 : 1.0,
     );
 
-    Widget content = Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        borderRadius: borderRadius,
-        onTap: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-          action?.call();
-        },
-        onLongPress: onLongPress,
-        child: SizedBox(
-          height: height,
-          width: double.infinity,
-          child: Stack(
-            children: [
-              Positioned.fill(
+    Widget content = SizedBox(
+      height: height,
+      width: double.infinity,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Center(
+              child: _CallToActionStyledChild(
+                foreground: colors.foreground,
+                child: switch ((spaced, icon)) {
+                  (false, final Widget icon) => Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [Opacity(opacity: 0, child: icon), label, icon]
+                        .separateWith(const CustomSpace.horizontal(8))
+                        .reversedList(!iconOnTheRight),
+                  ),
+                  _ => label,
+                },
+              ),
+            ),
+          ),
+          if (spaced)
+            if (icon case final Widget icon)
+              Positioned(
+                right: iconOnTheRight ? 0 : null,
+                left: !iconOnTheRight ? 0 : null,
+                width: kToolbarHeight,
+                top: 0,
+                bottom: 0,
                 child: Center(
                   child: _CallToActionStyledChild(
                     foreground: colors.foreground,
-                    child: switch ((spaced, icon)) {
-                      (false, final Widget icon) => Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children:
-                            [Opacity(opacity: 0, child: icon), label, icon]
-                                .separateWith(const CustomSpace.horizontal(8))
-                                .reversedList(!iconOnTheRight),
-                      ),
-                      _ => label,
-                    },
+                    child: icon,
                   ),
                 ),
               ),
-              if (spaced)
-                if (icon case final Widget icon)
-                  Positioned(
-                    right: iconOnTheRight ? 0 : null,
-                    left: !iconOnTheRight ? 0 : null,
-                    width: kToolbarHeight,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: _CallToActionStyledChild(
-                        foreground: colors.foreground,
-                        child: icon,
-                      ),
-                    ),
-                  ),
-              if (secondaryIcon case final Widget secondary)
-                Positioned(
-                  right: !iconOnTheRight ? 0 : null,
-                  left: iconOnTheRight ? 0 : null,
-                  width: kToolbarHeight,
-                  top: 0,
-                  bottom: 0,
-                  child: Center(
-                    child: _CallToActionStyledChild(
-                      foreground: colors.foreground,
-                      child: secondary,
-                    ),
-                  ),
+          if (secondaryIcon case final Widget secondary)
+            Positioned(
+              right: !iconOnTheRight ? 0 : null,
+              left: iconOnTheRight ? 0 : null,
+              width: kToolbarHeight,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: _CallToActionStyledChild(
+                  foreground: colors.foreground,
+                  child: secondary,
                 ),
-            ],
-          ),
-        ),
+              ),
+            ),
+        ],
       ),
     );
 
@@ -179,7 +167,20 @@ class CallToAction extends StatelessWidget {
       duration: duration,
       curve: curve,
       margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
-      child: AppGlassContainer(config: glassConfig, child: content),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: borderRadius,
+          onTap: action != null
+              ? () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  action?.call();
+                }
+              : null,
+          onLongPress: onLongPress,
+          child: AppGlassContainer(config: glassConfig, child: content),
+        ),
+      ),
     );
   }
 

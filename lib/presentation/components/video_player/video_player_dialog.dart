@@ -161,21 +161,20 @@ class VideoPlayerDialog extends HookConsumerWidget
                       milliseconds: controlsAnimationDuration.toInt(),
                     ),
                     child: SafeArea(
-                      child: Container(
-                        margin: EdgeInsets.all(closeButtonMargin),
-                        child: GestureDetector(
-                          onTap: handleClose,
-                          child: Container(
-                            padding: EdgeInsets.all(closeButtonPadding),
-                            decoration: BoxDecoration(
-                              color: colorScheme.secondary.withValues(
-                                alpha: closeButtonBackgroundAlpha,
-                              ),
-                              shape: BoxShape.circle,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: handleClose,
+                        child: Container(
+                          margin: EdgeInsets.all(closeButtonMargin),
+                          padding: EdgeInsets.all(closeButtonPadding),
+                          decoration: BoxDecoration(
+                            color: colorScheme.secondary.withValues(
+                              alpha: closeButtonBackgroundAlpha,
                             ),
-                            child: Assets.svg.close.render(
-                              colorFilter: colorScheme.primary.asSrcIn,
-                            ),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Assets.svg.close.render(
+                            colorFilter: colorScheme.primary.asSrcIn,
                           ),
                         ),
                       ),

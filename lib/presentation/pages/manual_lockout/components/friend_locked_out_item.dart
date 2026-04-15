@@ -37,6 +37,7 @@ class FriendLockedOutItem extends StatelessWidget {
         session.actionText != null && session.actionText!.isNotEmpty;
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: SizedBox(
         width: 90,

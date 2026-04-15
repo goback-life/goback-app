@@ -149,15 +149,20 @@ FeedPostsResult useFeedPosts(
         case PostActionType.update:
           // Edits don't matter for feed preview (only description changes)
           // Post detail page refetches when opened
-          ref.read(postActionNotifierProvider.notifier).clearAction();
+          Future(() {
+            ref.read(postActionNotifierProvider.notifier).clearAction();
+          });
           break;
         case PostActionType.delete:
         case PostActionType.hide:
         case PostActionType.report:
-          if (postActionEvent.postId != null) {
-            cacheNotifier.removePost(postActionEvent.postId!);
-          }
-          ref.read(postActionNotifierProvider.notifier).clearAction();
+          // Defer to avoid modifying provider state during build phase.
+          Future(() {
+            if (postActionEvent.postId != null) {
+              cacheNotifier.removePost(postActionEvent.postId!);
+            }
+            ref.read(postActionNotifierProvider.notifier).clearAction();
+          });
           break;
       }
     }

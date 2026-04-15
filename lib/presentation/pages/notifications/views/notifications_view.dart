@@ -232,6 +232,7 @@ class NotificationsView extends HookConsumerWidget {
     switch (notification.type) {
       case NotificationType.lockoutStarted:
       case NotificationType.lockoutJoined:
+      case NotificationType.memberJoined:
         break;
       case NotificationType.reaction:
       case NotificationType.tag:

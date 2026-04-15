@@ -422,20 +422,16 @@ class _FullScreenImageState extends State<FullScreenImage>
               Positioned(
                 top: 0,
                 right: 0,
-                child: Container(
-                  margin: const EdgeInsets.all(8),
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: _isFlipping
-                        ? null
-                        : () => Navigator.of(context).pop(),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      child: Icon(
-                        Icons.close,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 24,
-                      ),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: _isFlipping ? null : () => Navigator.of(context).pop(),
+                  child: Container(
+                    margin: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      Icons.close,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 24,
                     ),
                   ),
                 ),
@@ -446,36 +442,34 @@ class _FullScreenImageState extends State<FullScreenImage>
                 Positioned(
                   bottom: 0,
                   right: 0,
-                  child: Container(
-                    margin: const EdgeInsets.all(8),
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTap: _isFlipping ? null : _showFlipMenu,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        child: _isFlipping
-                            ? SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Theme.of(context).colorScheme.surface,
-                                  ),
-                                ),
-                              )
-                            : SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: Center(
-                                  child: Assets.svg.menu.render(
-                                    colorFilter: Theme.of(
-                                      context,
-                                    ).colorScheme.surface.asSrcIn,
-                                  ),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: _isFlipping ? null : _showFlipMenu,
+                    child: Container(
+                      margin: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(8),
+                      child: _isFlipping
+                          ? SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).colorScheme.surface,
                                 ),
                               ),
-                      ),
+                            )
+                          : SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: Center(
+                                child: Assets.svg.menu.render(
+                                  colorFilter: Theme.of(
+                                    context,
+                                  ).colorScheme.surface.asSrcIn,
+                                ),
+                              ),
+                            ),
                     ),
                   ),
                 ),

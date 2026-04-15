@@ -1,6 +1,14 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
+import 'package:cloudless/core/features/calendar/domain/providers/calendar_posts_cache_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_detail.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
+import 'package:cloudless/core/features/post/domain/providers/delete_post_provider.dart';
+import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_provider.dart';
+import 'package:cloudless/core/features/post/domain/providers/post_action_notifier_provider.dart';
+import 'package:cloudless/presentation/components/alerts/main_alert.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/squircle_clipper.dart';
@@ -8,7 +16,9 @@ import 'package:cloudless/presentation/pages/post_detail/components/post_detail_
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_overlay_reactions.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
+import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
+import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 /// Shows a full-screen image overlay that dismisses on tap.
@@ -34,15 +44,17 @@ void _showFullScreenImage(BuildContext context, String? imageUrl) {
 /// Features a pinned squircle image with Hero transition, scrollable
 /// comments/content, a glass scroll indicator, and dismiss gestures
 /// (swipe-down or tap-outside).
-class PostDetailOverlay extends HookConsumerWidget {
+class PostDetailOverlay extends HookConsumerWidget with MainLayout {
   const PostDetailOverlay({
     required this.post,
     this.readOnly = false,
+    this.showDeleteButton = false,
     super.key,
   });
 
   final FeedPostModel post;
   final bool readOnly;
+  final bool showDeleteButton;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -79,6 +91,17 @@ class PostDetailOverlay extends HookConsumerWidget {
       fallbackPost: post,
     );
     final currentPost = postDetail.post ?? post;
+
+    // Check if current user owns this post
+    final isOwnPost = useMemoized(() {
+      return ref
+              .read(getCurrentUserProvider)
+              .whenOrNull(
+                data: (r) =>
+                    r.fold((u) => u.id == currentPost.authorId, (_) => false),
+              ) ??
+          false;
+    }, [currentPost.authorId]);
 
     // Scroll tracking for indicator
     final scrollController = useScrollController();
@@ -144,7 +167,7 @@ class PostDetailOverlay extends HookConsumerWidget {
     }, [currentPost.commentCount]);
 
     return GestureDetector(
-      onTap: () => Navigator.of(context).pop(),
+      onTap: () => Navigator.of(context).pop(), // dismiss overlay
       child: Material(
         color: Colors.transparent,
         child: GestureDetector(
@@ -160,19 +183,49 @@ class PostDetailOverlay extends HookConsumerWidget {
               child: SizedBox(
                 width: cardW,
                 height: cardH,
-                child: _GlassCard(
-                  cardRadius: cardRadius,
-                  cardH: cardH,
-                  squircleSize: squircleSize,
-                  squircleLeft: squircleLeft,
-                  squircleTop: squircleTop,
-                  contentHPad: contentHPad,
-                  contentWidth: contentWidth,
-                  scale: s,
-                  post: currentPost,
-                  scrollController: scrollController,
-                  scrollFraction: scrollFraction.value,
-                  readOnly: readOnly,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    _GlassCard(
+                      cardRadius: cardRadius,
+                      cardH: cardH,
+                      squircleSize: squircleSize,
+                      squircleLeft: squircleLeft,
+                      squircleTop: squircleTop,
+                      contentHPad: contentHPad,
+                      contentWidth: contentWidth,
+                      scale: s,
+                      post: currentPost,
+                      scrollController: scrollController,
+                      scrollFraction: scrollFraction.value,
+                      readOnly: readOnly,
+                    ),
+                    if (showDeleteButton && isOwnPost)
+                      Positioned(
+                        top: -14 * s,
+                        right: -4 * s,
+                        child: GestureDetector(
+                          onTap: () => _confirmAndDeletePost(
+                            context,
+                            ref,
+                            post: currentPost,
+                          ),
+                          child: Container(
+                            width: 30 * s,
+                            height: 30 * s,
+                            decoration: BoxDecoration(
+                              color: MainColors.dark.withValues(alpha: 0.7),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.close,
+                              color: MainColors.white,
+                              size: 16 * s,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
@@ -180,6 +233,84 @@ class PostDetailOverlay extends HookConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmAndDeletePost(
+    BuildContext context,
+    WidgetRef ref, {
+    required FeedPostModel post,
+  }) async {
+    final confirmed = Completer<bool>();
+
+    await MainAlert.showFull(
+      context: context,
+      title: translator.translate('components.delete_post.title'),
+      content: Text(
+        translator.translate('components.delete_post.content'),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.outlineVariant,
+        ),
+        textAlign: TextAlign.center,
+      ),
+      primaryButtonText: translator.translate('components.delete_post.confirm'),
+      secondaryButtonText: translator.translate(
+        'components.delete_post.cancel',
+      ),
+      primaryButtonType: CallToActionType.danger,
+      onPrimaryPressed: () {
+        router.pop();
+        confirmed.complete(true);
+      },
+      onSecondaryPressed: () {
+        router.pop();
+        confirmed.complete(false);
+      },
+    );
+
+    if (!await confirmed.future) return;
+
+    try {
+      final result = await ref.read(
+        deletePostProvider(postId: post.id, authorId: post.authorId).future,
+      );
+
+      result.fold(
+        (_) {
+          // Remove from both caches
+          ref.read(feedPostsCacheProvider.notifier).removePost(post.id);
+          ref
+              .read(calendarPostsCacheProvider.notifier)
+              .removePostOptimistically(post.id);
+          ref
+              .read(postActionNotifierProvider.notifier)
+              .notifyPostDeleted(postId: post.id);
+          if (context.mounted) {
+            Navigator.of(context).pop(); // close overlay
+          }
+        },
+        (error) {
+          debugPrint('[PostDelete] FAILURE: $error');
+          if (context.mounted) {
+            MainAlert.showError(
+              context: context,
+              title: translator.translate('components.delete_post.error_title'),
+              content: translator.translate(
+                'components.delete_post.error_content',
+              ),
+            );
+          }
+        },
+      );
+    } catch (e, stackTrace) {
+      debugPrint('[PostDelete] EXCEPTION: $e\n$stackTrace');
+      if (context.mounted) {
+        await MainAlert.showError(
+          context: context,
+          title: translator.translate('components.delete_post.error_title'),
+          content: translator.translate('components.delete_post.error_content'),
+        );
+      }
+    }
   }
 }
 

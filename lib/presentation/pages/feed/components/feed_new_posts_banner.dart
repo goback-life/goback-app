@@ -33,6 +33,7 @@ class FeedNewPostsBanner extends StatelessWidget {
     final fontSize = 13.0 * s;
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: AppGlassContainer(
         config: GlassConfig(

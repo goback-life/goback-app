@@ -1,6 +1,7 @@
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_post_card.dart';
 import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class FeedPostsList extends HookConsumerWidget {
     required this.onRefresh,
     required this.scrollController,
     this.onPostTap,
+    this.onPostDelete,
     this.onTopPostDateChanged,
     this.onRefreshStateChanged,
     super.key,
@@ -33,6 +35,7 @@ class FeedPostsList extends HookConsumerWidget {
   final Future<void> Function() onRefresh;
   final ScrollController scrollController;
   final void Function(FeedPostModel post)? onPostTap;
+  final Future<bool> Function(FeedPostModel post)? onPostDelete;
   final void Function(DateTime? date)? onTopPostDateChanged;
   final void Function(bool isRefreshing)? onRefreshStateChanged;
 
@@ -180,11 +183,30 @@ class FeedPostsList extends HookConsumerWidget {
           final post = sortedPosts[index];
           final isCurrentUser = post.authorId == currentUserId;
 
-          return FeedPostCard(
+          final card = FeedPostCard(
             key: ValueKey('feed_post_${post.id}'),
             post: post,
             isCurrentUser: isCurrentUser,
             onTap: onPostTap != null ? () => onPostTap!(post) : null,
+          );
+
+          if (!isCurrentUser || onPostDelete == null) return card;
+
+          return Dismissible(
+            key: ValueKey('dismiss_${post.id}'),
+            direction: DismissDirection.endToStart,
+            confirmDismiss: (_) => onPostDelete!(post),
+            background: const SizedBox.shrink(),
+            secondaryBackground: Container(
+              alignment: Alignment.centerRight,
+              padding: EdgeInsets.only(right: 24 * s),
+              child: Icon(
+                Icons.delete_rounded,
+                color: MainColors.white,
+                size: 28 * s,
+              ),
+            ),
+            child: card,
           );
         },
       ),
