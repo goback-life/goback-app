@@ -26,12 +26,13 @@ class MentionOverlay extends StatelessWidget {
       height: 36,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             for (final user in users)
               Padding(
-                padding: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.only(right: 24),
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => onUserSelected(user),
