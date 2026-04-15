@@ -127,7 +127,9 @@ class LockoutDurationRing extends HookWidget {
       center,
     );
     final rawDuration = angleToDuration(angle);
-    final snapped = snapDuration(rawDuration, minMinutes: minMinutes);
+    // Don't clamp to minMinutes here — let the ring go below so the
+    // bottom sheet can show a validation error. The CTA is disabled.
+    final snapped = snapDuration(rawDuration);
 
     if (snapped != duration) {
       HapticFeedback.selectionClick();

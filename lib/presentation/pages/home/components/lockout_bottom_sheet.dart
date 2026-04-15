@@ -112,7 +112,19 @@ class LockoutBottomSheet extends HookWidget {
                     onDurationChanged: (d) => duration.value = d,
                     minMinutes: _kMinLockoutMinutes,
                   ),
-                  const SizedBox(height: 28),
+                  if (!isValid) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      'Minimum $_kMinLockoutMinutes minutes',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.redAccent.withValues(alpha: 0.8),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ] else
+                    const SizedBox(height: 28),
                   // Activity chips
                   LockoutActivityChips(
                     selectedPreset: selectedPreset.value,
