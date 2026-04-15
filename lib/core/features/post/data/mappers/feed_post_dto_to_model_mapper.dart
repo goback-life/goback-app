@@ -49,6 +49,10 @@ class FeedPostDtoToModelMapper {
       linkPreviews: [], // TODO: Parse linkPreviews JSON when implemented
       reactionCount: dto.reactionCount ?? 0,
       commentCount: dto.commentCount ?? 0,
+      lockoutParticipantIds: dto.lockoutParticipantIds ?? [],
+      lockoutParticipantUsernames: dto.lockoutParticipantUsernames ?? [],
+      lockoutParticipantAvatars: dto.lockoutParticipantAvatars ?? [],
+      lockoutParticipantJoinedVia: dto.lockoutParticipantJoinedVia ?? [],
     );
   }
 

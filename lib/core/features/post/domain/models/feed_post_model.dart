@@ -54,6 +54,18 @@ sealed class FeedPostModel with _$FeedPostModel {
     @Default([]) List<LinkPreviewModel> linkPreviews,
     @Default(0) int reactionCount,
     @Default(0) int commentCount,
+
+    /// Lockout participant user IDs (excluding post author)
+    @Default([]) List<String> lockoutParticipantIds,
+
+    /// Lockout participant usernames (parallel to IDs)
+    @Default([]) List<String> lockoutParticipantUsernames,
+
+    /// Lockout participant avatar URLs (parallel to IDs)
+    @Default([]) List<String?> lockoutParticipantAvatars,
+
+    /// Lockout participant joined_via UUIDs (parallel to IDs, null = direct friend of owner)
+    @Default([]) List<String?> lockoutParticipantJoinedVia,
   }) = _FeedPostModel;
 
   /// Returns true if this is a lockout post (has a lockout session reference)

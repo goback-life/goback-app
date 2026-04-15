@@ -50,6 +50,22 @@ sealed class FeedPostDto with _$FeedPostDto {
     @JsonKey(name: 'link_previews') Map<String, dynamic>? linkPreviews,
     @JsonKey(name: 'reaction_count') int? reactionCount,
     @JsonKey(name: 'comment_count') int? commentCount,
+
+    /// Lockout participant user IDs (excluding post author)
+    @JsonKey(name: 'lockout_participant_ids')
+    List<String>? lockoutParticipantIds,
+
+    /// Lockout participant usernames (parallel to IDs)
+    @JsonKey(name: 'lockout_participant_usernames')
+    List<String>? lockoutParticipantUsernames,
+
+    /// Lockout participant avatar URLs (parallel to IDs)
+    @JsonKey(name: 'lockout_participant_avatars')
+    List<String?>? lockoutParticipantAvatars,
+
+    /// Lockout participant joined_via UUIDs (parallel to IDs, null = direct friend of owner)
+    @JsonKey(name: 'lockout_participant_joined_via')
+    List<String?>? lockoutParticipantJoinedVia,
   }) = _FeedPostDto;
 
   factory FeedPostDto.fromJson(Map<String, dynamic> json) =>
