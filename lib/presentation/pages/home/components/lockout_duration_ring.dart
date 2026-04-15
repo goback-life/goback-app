@@ -56,30 +56,37 @@ class LockoutDurationRing extends HookWidget {
               ),
             ),
           ),
-          // Ring + gesture layer — use Listener for immediate pointer
-          // events, bypassing the gesture arena delay that lets the
-          // system long-press context menu win.
-          Listener(
-            onPointerDown: (event) {
-              isDragging.value = true;
-              _handleDrag(event.localPosition, center);
-            },
-            onPointerMove: (event) {
-              if (isDragging.value) {
+          // Ring gesture layer.
+          // GestureDetector claims long-press and drag so parent nav
+          // gestures don't fire. Listener inside gets immediate pointer
+          // events for smooth ring tracking.
+          GestureDetector(
+            onLongPress: () {},
+            onVerticalDragStart: (_) {},
+            onHorizontalDragStart: (_) {},
+            behavior: HitTestBehavior.opaque,
+            child: Listener(
+              onPointerDown: (event) {
+                isDragging.value = true;
                 _handleDrag(event.localPosition, center);
-              }
-            },
-            onPointerUp: (_) => isDragging.value = false,
-            onPointerCancel: (_) => isDragging.value = false,
-            child: CustomPaint(
-              size: Size(size, size),
-              painter: LockoutRingPainter(
-                sweepAngle: sweepAngle,
-                skyImage: skyImage.value,
-                trackColor: Colors.white.withValues(alpha: 0.05),
-                glowColor: const Color(0xFF5BA3D9).withValues(alpha: 0.1),
-                tickColor: Colors.white.withValues(alpha: 0.18),
-                thumbColor: const Color(0xFF5BA3D9),
+              },
+              onPointerMove: (event) {
+                if (isDragging.value) {
+                  _handleDrag(event.localPosition, center);
+                }
+              },
+              onPointerUp: (_) => isDragging.value = false,
+              onPointerCancel: (_) => isDragging.value = false,
+              child: CustomPaint(
+                size: Size(size, size),
+                painter: LockoutRingPainter(
+                  sweepAngle: sweepAngle,
+                  skyImage: skyImage.value,
+                  trackColor: Colors.white.withValues(alpha: 0.05),
+                  glowColor: const Color(0xFF5BA3D9).withValues(alpha: 0.1),
+                  tickColor: Colors.white.withValues(alpha: 0.18),
+                  thumbColor: const Color(0xFF5BA3D9),
+                ),
               ),
             ),
           ),
