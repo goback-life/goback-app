@@ -218,7 +218,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
                 _buildLimitMessage(),
             ],
             SizedBox(height: 16 * scale),
-            _buildThoughtsHeader(),
+            _buildThoughtsHeader(post.commentCount),
             if (comments.isNotEmpty) SizedBox(height: 16 * scale),
             ..._buildCommentItems(
               comments,
@@ -339,11 +339,14 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     );
   }
 
-  Widget _buildThoughtsHeader() {
+  Widget _buildThoughtsHeader(int commentCount) {
     final fs = 24.0 * scale;
     final ls = -1.44 * scale;
+    final label = commentCount > 0
+        ? '$commentCount ${commentCount == 1 ? 'Thought' : 'Thoughts'}'
+        : 'Thoughts';
     return Text(
-      'Thoughts',
+      label,
       style: TextStyle(
         fontFamily: MainFontFamilies.quicksand,
         fontWeight: FontWeight.w500,
