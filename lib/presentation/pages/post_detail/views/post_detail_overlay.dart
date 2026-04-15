@@ -119,13 +119,13 @@ class PostDetailOverlay extends HookConsumerWidget {
       scrollController.addListener(onUserScroll);
 
       Future<void> peek() async {
-        await Future.delayed(const Duration(milliseconds: 400));
+        await Future.delayed(const Duration(milliseconds: 700));
         if (cancelled ||
             !scrollController.hasClients ||
             scrollController.position.maxScrollExtent <= 0) {
           return;
         }
-        final peekDistance = (30.0 * s).clamp(
+        final peekDistance = (160.0 * s).clamp(
           0.0,
           scrollController.position.maxScrollExtent,
         );
