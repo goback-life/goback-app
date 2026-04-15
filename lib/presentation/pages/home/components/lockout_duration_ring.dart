@@ -56,16 +56,21 @@ class LockoutDurationRing extends HookWidget {
               ),
             ),
           ),
-          // Ring + gesture layer
-          GestureDetector(
-            onPanStart: (details) {
+          // Ring + gesture layer — use Listener for immediate pointer
+          // events, bypassing the gesture arena delay that lets the
+          // system long-press context menu win.
+          Listener(
+            onPointerDown: (event) {
               isDragging.value = true;
-              _handleDrag(details.localPosition, center);
+              _handleDrag(event.localPosition, center);
             },
-            onPanUpdate: (details) {
-              _handleDrag(details.localPosition, center);
+            onPointerMove: (event) {
+              if (isDragging.value) {
+                _handleDrag(event.localPosition, center);
+              }
             },
-            onPanEnd: (_) => isDragging.value = false,
+            onPointerUp: (_) => isDragging.value = false,
+            onPointerCancel: (_) => isDragging.value = false,
             child: CustomPaint(
               size: Size(size, size),
               painter: LockoutRingPainter(
