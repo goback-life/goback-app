@@ -3,6 +3,7 @@ import 'package:cloudless/core/features/comment/domain/hooks/use_post_comments.d
 import 'package:cloudless/core/features/comment/domain/models/post_comment_model.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_mention_autocomplete.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
+import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/core/features/storage/data/providers/signed_url_provider.dart';
 import 'package:cloudless/core/features/supabase/utilities/supabase_buckets.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_overlay_input.dart';
@@ -92,6 +93,19 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     ]);
     final mentionedIds = useState<List<String>>([]);
     final descExpanded = useState(false);
+
+    // Filter comment mentions to users who can see the post.
+    // If post author is in viewer's circle, all circle members can see it.
+    // If cross-circle lockout post, only lockout participants can see it.
+    final commentMentionFilter = useMemoized(() {
+      if (!post.isLockoutPost || post.isAuthorConnected) {
+        // Author is friend or this is viewer's own post — all circle can see it
+        return null;
+      }
+      // Cross-circle lockout post — only lockout participants + author can see it
+      final canSee = {post.authorId, ...post.lockoutParticipantIds};
+      return (ProfileModel u) => canSee.contains(u.id);
+    }, [post.isLockoutPost, post.isAuthorConnected, post.lockoutParticipantIds]);
 
     void navigateToUser(String userId) =>
         PostDetailNavigation.navigateToUserProfile(ref, userId, '');
@@ -196,6 +210,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
                   scale: scale,
                   textController: textController,
                   allUsers: allUsers,
+                  userFilter: commentMentionFilter,
                   onMentionsChanged: (ids) => mentionedIds.value = ids,
                   onSubmit: handleSubmit,
                 )

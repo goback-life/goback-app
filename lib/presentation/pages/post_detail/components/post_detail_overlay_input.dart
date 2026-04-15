@@ -46,6 +46,7 @@ class PostDetailOverlayInput extends StatelessWidget {
     required this.allUsers,
     required this.onMentionsChanged,
     required this.onSubmit,
+    this.userFilter,
     super.key,
   });
 
@@ -54,6 +55,7 @@ class PostDetailOverlayInput extends StatelessWidget {
   final List<ProfileModel> allUsers;
   final ValueChanged<List<String>> onMentionsChanged;
   final VoidCallback onSubmit;
+  final bool Function(ProfileModel)? userFilter;
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +92,7 @@ class PostDetailOverlayInput extends StatelessWidget {
                   child: MentionTextField(
                     controller: textController,
                     allUsers: allUsers,
+                    userFilter: userFilter,
                     onMentionsChanged: onMentionsChanged,
                     maxLines: null,
                     maxLength: kCommentMaxLength,
