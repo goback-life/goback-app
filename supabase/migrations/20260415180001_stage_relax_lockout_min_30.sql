@@ -9,7 +9,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   IF NOT NEW.is_open_ended THEN
-    IF NEW.ends_at < NOW() + INTERVAL '30 seconds' THEN
+    IF NEW.ends_at < NOW() + INTERVAL '55 seconds' THEN
       RAISE EXCEPTION 'Timed lockouts must be at least 1 minute (stage)';
     END IF;
   END IF;

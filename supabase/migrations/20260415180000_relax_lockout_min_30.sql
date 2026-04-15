@@ -9,7 +9,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   -- Only enforce on timed (non-open-ended) lockouts
-  IF NEW.is_open_ended = false AND NEW.ends_at < NOW() + INTERVAL '28 minutes' THEN
+  IF NEW.is_open_ended = false AND NEW.ends_at < NOW() + INTERVAL '29 minutes 5 seconds' THEN
     RAISE EXCEPTION 'Timed lockout must be at least 30 minutes';
   END IF;
   RETURN NEW;
