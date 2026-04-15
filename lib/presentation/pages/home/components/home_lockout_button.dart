@@ -2,7 +2,7 @@ import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/pages/home/components/dnd_prompt_dialog.dart';
-import 'package:cloudless/presentation/pages/home/components/manual_lockout_dialog.dart';
+import 'package:cloudless/presentation/pages/home/components/lockout_bottom_sheet.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
@@ -23,7 +23,7 @@ class HomeLockoutButton extends HookConsumerWidget with MainLayout, HomeLayout {
       onTap: () async {
         ref.read(friendsLockedOutCacheProvider.notifier).ensureFresh();
 
-        final result = await ManualLockoutDialog.show(context);
+        final result = await LockoutBottomSheet.show(context);
         if (result == null || !context.mounted) {
           return;
         }

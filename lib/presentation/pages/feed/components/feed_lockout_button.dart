@@ -6,7 +6,7 @@ import 'package:cloudless/core/features/nfc/data/providers/nfc_service_provider.
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/home/components/dnd_prompt_dialog.dart';
-import 'package:cloudless/presentation/pages/home/components/manual_lockout_dialog.dart';
+import 'package:cloudless/presentation/pages/home/components/lockout_bottom_sheet.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/lockout_cutout_painter.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
@@ -144,7 +144,7 @@ class FeedLockoutButton extends HookConsumerWidget {
   Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     ref.read(friendsLockedOutCacheProvider.notifier).ensureFresh();
 
-    final result = await ManualLockoutDialog.show(context);
+    final result = await LockoutBottomSheet.show(context);
     if (result == null || !context.mounted) return;
 
     if (result.nfcScan) {
