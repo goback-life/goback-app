@@ -5,6 +5,7 @@ import 'package:cloudless/core/features/lockout/data/providers/lockout_session_s
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout_post_provider.dart';
+import 'package:cloudless/core/features/supabase/data/providers/supabase_client_provider.dart';
 import 'package:cloudless/core/features/post/data/dtos/post_creation_dto.dart';
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
 import 'package:cloudless/core/features/post/domain/models/post_data_model.dart';
@@ -128,10 +129,13 @@ PostCreationResult usePostCreation(WidgetRef ref) {
               'Creating post with pendingLockoutId: $pendingLockoutId',
             );
 
-            // Auto-tag lockout participants when creating a lockout post
-            var finalTaggedUserIds = List<String>.from(
+            // Manual @mentions only — lockout participants are derived from
+            // lockout_participants table at read time (no auto-tagging needed)
+            final finalTaggedUserIds = List<String>.from(
               postCreationData.taggedUserIds,
             );
+
+            // Fetch lockout owner ID (needed for updateSessionPostId below)
             String? lockoutOwnerId;
             if (pendingLockoutId != null) {
               final sessionService = ref.read(lockoutSessionServiceProvider);
@@ -140,33 +144,10 @@ PostCreationResult usePostCreation(WidgetRef ref) {
               );
               sessionResult.fold(
                 (session) {
-                  if (session != null) {
-                    lockoutOwnerId = session.userId;
-                    // Tag the session owner (if current user is a joiner)
-                    if (!finalTaggedUserIds.contains(session.userId) &&
-                        session.userId != user.id) {
-                      finalTaggedUserIds.add(session.userId);
-                      logger.info(
-                        'Auto-tagged lockout owner: ${session.userId}',
-                      );
-                    }
-                    // Tag all participants (joiners)
-                    for (final participantId in session.participants) {
-                      if (!finalTaggedUserIds.contains(participantId) &&
-                          participantId != user.id) {
-                        finalTaggedUserIds.add(participantId);
-                      }
-                    }
-                    if (session.participants.isNotEmpty) {
-                      logger.info(
-                        'Auto-tagged ${session.participants.length} lockout participants',
-                      );
-                    }
-                  }
+                  lockoutOwnerId = session?.userId;
                 },
-                (error) => logger.warning(
-                  'Failed to fetch lockout participants: $error',
-                ),
+                (error) =>
+                    logger.warning('Failed to fetch lockout session: $error'),
               );
             }
 
@@ -233,11 +214,35 @@ PostCreationResult usePostCreation(WidgetRef ref) {
                     );
                   }
 
+                  // Notify lockout participants about the new post
+                  try {
+                    await ref
+                        .read(supabaseClientProvider)
+                        .rpc(
+                          'notify_lockout_participants',
+                          params: {
+                            'p_post_id': post.id,
+                            'p_lockout_id': pendingLockoutId,
+                            'p_author_id': user.id,
+                          },
+                        );
+                  } catch (e) {
+                    logger.warning('Failed to notify lockout participants: $e');
+                  }
+
                   // Update weekly stats with user's actual start time (important for joiners)
                   await sessionService.completeSessionWithStats(
                     pendingLockoutId,
                     userStartedAt: userStartedAt,
                   );
+
+                  // Notify feed BEFORE clearing lockout state — clearing
+                  // pendingLockoutPostProvider triggers the content editor
+                  // guard which navigates home. The feed must have the
+                  // create event so it can fetch the new post.
+                  ref
+                      .read(postActionNotifierProvider.notifier)
+                      .notifyPostCreated(postId: post.id);
 
                   ref.read(pendingLockoutPostProvider.notifier).clear();
                   await storable.clearLockout();
@@ -250,7 +255,9 @@ PostCreationResult usePostCreation(WidgetRef ref) {
                   ref
                       .read(postActionNotifierProvider.notifier)
                       .notifyPostUpdated();
-                } else {
+                } else if (pendingLockoutId == null) {
+                  // Non-lockout posts: notify here (lockout posts notify
+                  // earlier, before clearing pendingLockoutPostProvider).
                   ref
                       .read(postActionNotifierProvider.notifier)
                       .notifyPostCreated(postId: post.id);
