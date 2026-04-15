@@ -29,8 +29,11 @@ class LockoutDurationRing extends HookWidget {
 
     // Load the sky image once
     useEffect(() {
-      _loadSkyImage().then((img) => skyImage.value = img);
-      return null;
+      var mounted = true;
+      _loadSkyImage().then((img) {
+        if (mounted) skyImage.value = img;
+      });
+      return () => mounted = false;
     }, const []);
 
     final sweepAngle = durationToSweepAngle(duration);
