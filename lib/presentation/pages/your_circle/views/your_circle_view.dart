@@ -1,14 +1,15 @@
+import 'package:cloudless/core/features/connection/data/dtos/leaderboard_entry_dto.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_circle_members.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_remove_connection.dart';
+import 'package:cloudless/core/features/connection/domain/providers/get_circle_leaderboard_provider.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
-import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/main_data_loader.dart';
 import 'package:cloudless/presentation/components/main_empty_state.dart';
 import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
+import 'package:cloudless/presentation/pages/your_circle/components/leaderboard_tile.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_add_menu.dart';
-import 'package:cloudless/presentation/pages/your_circle/components/your_circle_friend_tile.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_remove_dialog.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_search_pill.dart';
 import 'package:cloudless/presentation/pages/your_circle/your_circle_layout.dart';
@@ -32,7 +33,7 @@ class YourCircleView extends HookConsumerWidget
   Widget build(BuildContext context, WidgetRef ref) {
     final circleMembersData = useCircleMembers(ref);
     final removeConnection = useRemoveConnection(ref);
-    final asyncValue = ref.watch(getCircleMembersProvider);
+    final leaderboardAsync = ref.watch(getCircleLeaderboardProvider);
     final searchController = useTextEditingController();
     final mq = MediaQuery.of(context);
     final bottomPad = mq.padding.bottom;
@@ -58,17 +59,38 @@ class YourCircleView extends HookConsumerWidget
     }, [isFull]);
 
     return MainDataLoader(
-      provider: asyncValue,
+      provider: leaderboardAsync,
       useScaffold: false,
-      onRetry: () => ref.invalidate(getCircleMembersProvider),
+      onRetry: () {
+        ref.invalidate(getCircleMembersProvider);
+        ref.invalidate(getCircleLeaderboardProvider);
+      },
       builder: (context, _) {
-        final members = _flatMembers(circleMembersData);
+        // Get leaderboard entries from the provider
+        final leaderboardEntries =
+            leaderboardAsync.valueOrNull?.fold(
+              (entries) => entries,
+              (error) => <LeaderboardEntryDto>[],
+            ) ??
+            <LeaderboardEntryDto>[];
+
+        // Apply search filter
+        final searchQuery = circleMembersData.searchQuery;
+        final filtered = searchQuery.isEmpty
+            ? leaderboardEntries
+            : leaderboardEntries
+                  .where(
+                    (e) => e.username.toLowerCase().contains(
+                      searchQuery.toLowerCase(),
+                    ),
+                  )
+                  .toList();
 
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            // Layer 0: Scrollable friend list
-            if (members.isEmpty)
+            // Layer 0: Scrollable leaderboard list
+            if (filtered.isEmpty)
               const Positioned.fill(child: Center(child: MainEmptyState()))
             else
               ListView.builder(
@@ -85,28 +107,31 @@ class YourCircleView extends HookConsumerWidget
                       24,
                   top: topPad + 16,
                 ),
-                itemCount: members.length,
+                itemCount: filtered.length,
                 itemBuilder: (context, index) {
-                  final profile = members[index];
-                  return YourCircleFriendTile(
-                    profile: profile,
+                  final entry = filtered[index];
+                  final rank = index + 1;
+                  return LeaderboardTile(
+                    entry: entry,
+                    rank: rank,
                     isRemoveMode: removeMode.value,
-                    isSelected: selectedIds.value.contains(profile.id),
-                    onTap: () =>
-                        router.push(CircleProfileRoutable(userId: profile.id)),
+                    isSelected: selectedIds.value.contains(entry.userId),
+                    onTap: () => router.push(
+                      CircleProfileRoutable(userId: entry.userId),
+                    ),
                     onSwipeDelete: () => _confirmRemove(
                       context,
-                      profile.username,
-                      profile.id,
+                      entry.username,
+                      entry.userId,
                       removeConnection,
                       ref,
                     ),
                     onToggle: () {
                       final ids = Set<String>.from(selectedIds.value);
-                      if (ids.contains(profile.id)) {
-                        ids.remove(profile.id);
+                      if (ids.contains(entry.userId)) {
+                        ids.remove(entry.userId);
                       } else {
-                        ids.add(profile.id);
+                        ids.add(entry.userId);
                       }
                       selectedIds.value = ids;
                     },
@@ -168,14 +193,6 @@ class YourCircleView extends HookConsumerWidget
     );
   }
 
-  List<ProfileModel> _flatMembers(CircleMembersData data) {
-    final flat = <ProfileModel>[];
-    for (final profiles in data.groupedMembers.values) {
-      flat.addAll(profiles);
-    }
-    return flat;
-  }
-
   Future<void> _confirmRemove(
     BuildContext context,
     String username,
@@ -191,6 +208,7 @@ class YourCircleView extends HookConsumerWidget
 
     await removeConnection(userId);
     ref.invalidate(getCircleMembersProvider);
+    ref.invalidate(getCircleLeaderboardProvider);
   }
 
   Future<void> _batchRemove(
@@ -214,6 +232,7 @@ class YourCircleView extends HookConsumerWidget
     selectedIds.value = {};
     removeMode.value = false;
     ref.invalidate(getCircleMembersProvider);
+    ref.invalidate(getCircleLeaderboardProvider);
   }
 
   Future<void> _showCircleFullAlert(BuildContext context) {
