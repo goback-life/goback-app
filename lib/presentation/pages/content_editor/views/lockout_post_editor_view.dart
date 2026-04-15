@@ -5,11 +5,14 @@ import 'package:cloudless/core/features/auth/domain/providers/get_current_user_p
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout_post_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_creation.dart';
+import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/presentation/components/alerts/main_alert.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/core/features/share/domain/providers/pending_share_provider.dart';
+import 'package:cloudless/presentation/components/mention_text_field/mention_overlay.dart';
 import 'package:cloudless/presentation/components/squircle_clipper.dart';
+import 'package:cloudless/presentation/pages/content_editor/components/mention_helpers.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
 import 'package:cloudless/presentation/pages/visibility_selection/visibility_selection_routable.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
@@ -56,13 +59,14 @@ class LockoutPostEditorView extends HookConsumerWidget {
       data: (r) => r.fold((p) => p?.avatarUrl, (_) => null),
     );
 
-    // Watch circle members for total count (used by restrict visibility)
+    // Watch circle members for total count (used by restrict visibility) and mention autocomplete
     final circleMembersAsync = ref.watch(getCircleMembersProvider);
-    final totalMemberCount =
+    final circleMembers =
         circleMembersAsync.whenOrNull(
-          data: (r) => r.fold((members) => members.length, (_) => 0),
+          data: (r) => r.fold((members) => members, (_) => <ProfileModel>[]),
         ) ??
-        0;
+        <ProfileModel>[];
+    final totalMemberCount = circleMembers.length;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -121,10 +125,11 @@ class LockoutPostEditorView extends HookConsumerWidget {
 
                           SizedBox(height: 8 * s),
 
-                          // Description input
+                          // Description input with @mention autocomplete
                           _DescriptionInput(
                             initialText: contentCreation.data.description,
                             onChanged: contentCreation.updateDescription,
+                            allUsers: circleMembers,
                             scale: s,
                           ),
                         ],
@@ -295,23 +300,83 @@ class _AvatarRow extends StatelessWidget {
   }
 }
 
-/// Minimal description text field matching Figma 157:142.
+/// Minimal description text field with @mention autocomplete.
 class _DescriptionInput extends HookWidget {
   const _DescriptionInput({
     required this.initialText,
     required this.onChanged,
+    required this.allUsers,
     required this.scale,
   });
 
   final String initialText;
   final ValueChanged<String> onChanged;
+  final List<ProfileModel> allUsers;
   final double scale;
 
   @override
   Widget build(BuildContext context) {
     final controller = useTextEditingController(text: initialText);
+    final focusNode = useFocusNode();
     final currentChars = useState(initialText.length);
+    final mentionQuery = useState<String?>(null);
+    final mentionStartIndex = useState<int?>(null);
+    final overlayEntry = useState<OverlayEntry?>(null);
     const maxLength = 200;
+
+    final filteredUsers = useMemoized(
+      () => filterMentionUsers(mentionQuery.value, allUsers),
+      [mentionQuery.value, allUsers],
+    );
+
+    void onMentionSelected(ProfileModel user) {
+      if (mentionStartIndex.value == null) return;
+      final newText = insertMention(
+        controller: controller,
+        user: user,
+        mentionStartIndex: mentionStartIndex.value!,
+      );
+      mentionQuery.value = null;
+      mentionStartIndex.value = null;
+      onChanged(newText);
+    }
+
+    void updateOverlay() {
+      overlayEntry.value?.remove();
+      if (mentionQuery.value != null && filteredUsers.isNotEmpty) {
+        final currentUsers = List<ProfileModel>.from(filteredUsers);
+        overlayEntry.value = OverlayEntry(
+          builder: (overlayContext) {
+            final keyboardHeight = MediaQuery.of(
+              overlayContext,
+            ).viewInsets.bottom;
+            return MentionOverlay(
+              users: currentUsers,
+              onUserSelected: (user) {
+                onMentionSelected(user);
+                overlayEntry.value?.remove();
+                overlayEntry.value = null;
+              },
+              bottomInset: keyboardHeight,
+            );
+          },
+        );
+        Overlay.of(context).insert(overlayEntry.value!);
+      } else {
+        overlayEntry.value = null;
+      }
+    }
+
+    useEffect(() {
+      updateOverlay();
+      return null;
+    }, [mentionQuery.value, filteredUsers]);
+
+    useEffect(() {
+      return () {
+        overlayEntry.value?.remove();
+      };
+    }, []);
 
     useEffect(() {
       void listener() {
@@ -328,11 +393,26 @@ class _DescriptionInput extends HookWidget {
       children: [
         TextField(
           controller: controller,
+          focusNode: focusNode,
           textCapitalization: TextCapitalization.sentences,
           maxLines: 5,
           minLines: 1,
           maxLength: maxLength,
           onTapOutside: (event) => FocusScope.of(context).unfocus(),
+          onChanged: (value) {
+            if (focusNode.hasFocus) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (focusNode.hasFocus) {
+                  final result = detectMention(
+                    controller.text,
+                    controller.selection.baseOffset,
+                  );
+                  mentionQuery.value = result.query;
+                  mentionStartIndex.value = result.startIndex;
+                }
+              });
+            }
+          },
           style: TextStyle(
             fontFamily: MainFontFamilies.quicksand,
             fontWeight: FontWeight.w400,
@@ -384,6 +464,7 @@ class _ShareButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: canPublish ? onTap : null,
       child: Opacity(
         opacity: canPublish ? 1.0 : 0.5,
