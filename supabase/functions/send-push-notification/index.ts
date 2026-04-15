@@ -226,8 +226,8 @@ async function buildMessage(
 
     case 'member_joined_batch': {
       const sessionId = payload.session_id
-      const joinerUsernames: string[] = JSON.parse(payload.joiner_usernames as string ?? '[]')
-      const joinerUserIds: string[] = JSON.parse(payload.joiner_user_ids as string ?? '[]')
+      const joinerUsernames: string[] = (payload.joiner_usernames ?? []) as unknown as string[]
+      const joinerUserIds: string[] = (payload.joiner_user_ids ?? []) as unknown as string[]
 
       if (!joinerUsernames.length || !joinerUserIds.length) return null
 
