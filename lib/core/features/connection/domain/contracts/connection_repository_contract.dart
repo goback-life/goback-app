@@ -81,7 +81,11 @@ abstract class ConnectionRepositoryContract {
     int limit = 10,
   });
 
-  Future<Result<String>> sendConnectionRequest(String receiverId);
+  Future<Result<String>> sendConnectionRequest(
+    String receiverId, {
+    String? contextType,
+    String? contextId,
+  });
 
   Future<Result<void>> respondToConnectionRequest(
     String requestId, {

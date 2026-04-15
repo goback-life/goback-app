@@ -5,9 +5,18 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'connection_request_actions_provider.g.dart';
 
 @Riverpod(keepAlive: false)
-Future<Result<String>> sendConnectionRequest(Ref ref, String receiverId) async {
+Future<Result<String>> sendConnectionRequest(
+  Ref ref,
+  String receiverId, {
+  String? contextType,
+  String? contextId,
+}) async {
   final service = ref.watch(connectionServiceProvider);
-  return await service.sendConnectionRequest(receiverId);
+  return await service.sendConnectionRequest(
+    receiverId,
+    contextType: contextType,
+    contextId: contextId,
+  );
 }
 
 @Riverpod(keepAlive: false)

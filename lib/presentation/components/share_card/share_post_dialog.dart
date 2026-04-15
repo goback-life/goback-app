@@ -17,6 +17,7 @@ class SharePostDialog {
     required String authorId,
     String? imagePath,
     String? description,
+    int participantCount = 0,
   }) async {
     // Fetch lockout session data (score, duration, activity)
     int? score;
@@ -80,7 +81,9 @@ class SharePostDialog {
             ),
             const SizedBox(height: 8),
             Text(
-              'Share your lockout to socials',
+              participantCount > 0
+                  ? 'Locked out with $participantCount other${participantCount == 1 ? '' : 's'}'
+                  : 'Share your lockout to socials',
               style: TextStyle(
                 fontFamily: MainFontFamilies.quicksand,
                 fontWeight: FontWeight.w500,
@@ -113,14 +116,21 @@ class SharePostDialog {
             ),
             const SizedBox(height: 12),
             GestureDetector(
+              behavior: HitTestBehavior.translucent,
               onTap: () => Navigator.of(ctx).pop(false),
-              child: Text(
-                'Skip',
-                style: TextStyle(
-                  fontFamily: MainFontFamilies.quicksand,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  color: MainColors.white.withValues(alpha: 0.5),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 44),
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Skip',
+                    style: TextStyle(
+                      fontFamily: MainFontFamilies.quicksand,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                      color: MainColors.white.withValues(alpha: 0.5),
+                    ),
+                  ),
                 ),
               ),
             ),

@@ -122,7 +122,14 @@ abstract class ConnectionServiceContract {
   });
 
   /// Sends a connection request. Returns 'sent' or 'auto_accepted'.
-  FutureResult<String> sendConnectionRequest(String receiverId);
+  ///
+  /// Optional [contextType] and [contextId] provide context about where
+  /// the request originated (e.g. 'lockout' with a lockout session ID).
+  FutureResult<String> sendConnectionRequest(
+    String receiverId, {
+    String? contextType,
+    String? contextId,
+  });
 
   /// Responds to a connection request (accept or deny).
   FutureResult<void> respondToConnectionRequest(

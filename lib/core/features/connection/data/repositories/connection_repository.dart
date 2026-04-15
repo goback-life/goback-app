@@ -102,9 +102,17 @@ class ConnectionRepository
   }
 
   @override
-  FutureResult<String> sendConnectionRequest(String receiverId) async {
+  FutureResult<String> sendConnectionRequest(
+    String receiverId, {
+    String? contextType,
+    String? contextId,
+  }) async {
     return processSupabaseResult<String, String>(
-      request: () => connectionService.sendConnectionRequest(receiverId),
+      request: () => connectionService.sendConnectionRequest(
+        receiverId,
+        contextType: contextType,
+        contextId: contextId,
+      ),
       responseMapper: (result) async => result,
       exceptionMapper: (e) => ConnectionRequestException(e.toString()),
     );

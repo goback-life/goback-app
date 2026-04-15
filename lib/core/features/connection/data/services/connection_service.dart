@@ -338,13 +338,18 @@ class ConnectionService implements ConnectionServiceContract {
   }
 
   @override
-  FutureResult<String> sendConnectionRequest(String receiverId) async {
+  FutureResult<String> sendConnectionRequest(
+    String receiverId, {
+    String? contextType,
+    String? contextId,
+  }) async {
     try {
+      final params = <String, dynamic>{'p_receiver_id': receiverId};
+      if (contextType != null) params['p_context_type'] = contextType;
+      if (contextId != null) params['p_context_id'] = contextId;
+
       final result =
-          await supabase.rpc(
-                'send_connection_request',
-                params: {'p_receiver_id': receiverId},
-              )
+          await supabase.rpc('send_connection_request', params: params)
               as String;
       return Result.success(result);
     } on PostgrestException catch (e) {
