@@ -1,7 +1,6 @@
 import 'package:cloudless/core/models/profile_model.dart';
-import 'package:cloudless/presentation/components/main_member/main_member_item.dart';
+import 'package:cloudless/presentation/components/mention_text_field/mention_overlay.dart';
 import 'package:cloudless/presentation/pages/content_editor/components/mention_helpers.dart';
-import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/dedecube_presentation.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -38,8 +37,12 @@ class ContentEditorPostDescription extends HookWidget {
       [mentionQuery.value, allUsers],
     );
 
+    final overlayEntry = useState<OverlayEntry?>(null);
+
     void onMentionSelected(ProfileModel user) {
-      if (mentionStartIndex.value == null) return;
+      if (mentionStartIndex.value == null) {
+        return;
+      }
       final newText = insertMention(
         controller: controller,
         user: user,
@@ -49,6 +52,39 @@ class ContentEditorPostDescription extends HookWidget {
       mentionStartIndex.value = null;
       onChanged(newText);
     }
+
+    void updateOverlay() {
+      overlayEntry.value?.remove();
+      if (mentionQuery.value != null && filteredUsers.isNotEmpty) {
+        final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+        overlayEntry.value = OverlayEntry(
+          builder: (_) => MentionOverlay(
+            users: filteredUsers,
+            onUserSelected: (user) {
+              onMentionSelected(user);
+              overlayEntry.value?.remove();
+              overlayEntry.value = null;
+            },
+            bottomInset: keyboardHeight,
+          ),
+        );
+        Overlay.of(context).insert(overlayEntry.value!);
+      } else {
+        overlayEntry.value = null;
+      }
+    }
+
+    useEffect(() {
+      updateOverlay();
+      return null;
+    }, [mentionQuery.value, filteredUsers]);
+
+    // Clean up overlay on dispose.
+    useEffect(() {
+      return () {
+        overlayEntry.value?.remove();
+      };
+    }, []);
 
     useEffect(() {
       void listener() {
@@ -102,36 +138,6 @@ class ContentEditorPostDescription extends HookWidget {
                   counterText: '',
                 ),
               ),
-              // User mention suggestions dropdown
-              if (mentionQuery.value != null && filteredUsers.isNotEmpty)
-                Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  constraints: const BoxConstraints(maxHeight: 200),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: MainColors.dark.withValues(alpha: 0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    itemCount: filteredUsers.length,
-                    itemBuilder: (context, index) {
-                      final user = filteredUsers[index];
-                      return MainMemberItem(
-                        member: user,
-                        action: MemberItemAction.none,
-                        onTap: () => onMentionSelected(user),
-                      );
-                    },
-                  ),
-                ),
               if (currentChars.value >= (maxLength * 0.75).round())
                 Container(
                   alignment: Alignment.centerRight,
