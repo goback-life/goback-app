@@ -54,6 +54,10 @@ BEGIN
 END;
 $$;
 
+-- Only callable by service_role (edge function) — not exposed to authenticated users
+REVOKE EXECUTE ON FUNCTION get_lockout_participant_tokens(UUID, UUID[]) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION get_lockout_participant_tokens(UUID, UUID[]) TO service_role;
+
 
 -- ============================================================================
 -- 3. REWRITE join_lockout_session — member_joined instead of lockout_joined
@@ -176,25 +180,26 @@ AS $$
 DECLARE
   v_batch RECORD;
 BEGIN
-  -- Process each lockout session that has ready member_joined events
+  -- Atomically claim ready member_joined events, then group by session.
+  -- CTE UPDATE ... RETURNING prevents race conditions if two cron
+  -- invocations overlap — each row is claimed exactly once.
   FOR v_batch IN
+    WITH claimed AS (
+      UPDATE push_notification_queue
+      SET processed_at = now()
+      WHERE event_type = 'member_joined'
+        AND processed_at IS NULL
+        AND process_after <= now()
+      RETURNING id, payload
+    )
     SELECT
       (payload->>'session_id')::UUID AS session_id,
-      array_agg(id) AS event_ids,
-      array_agg(payload->>'joiner_username') AS usernames,
-      array_agg((payload->>'joiner_user_id')::UUID) AS user_ids
-    FROM push_notification_queue
-    WHERE event_type = 'member_joined'
-      AND processed_at IS NULL
-      AND process_after <= now()
+      array_agg(id ORDER BY id) AS event_ids,
+      array_agg(payload->>'joiner_username' ORDER BY id) AS usernames,
+      array_agg((payload->>'joiner_user_id')::UUID ORDER BY id) AS user_ids
+    FROM claimed
     GROUP BY payload->>'session_id'
   LOOP
-    -- Mark original events as processed (claim them)
-    UPDATE push_notification_queue
-    SET processed_at = now()
-    WHERE id = ANY(v_batch.event_ids)
-      AND processed_at IS NULL;
-
     -- Insert a single batch event for the edge function to send
     -- process_after defaults to now() so webhook processes immediately
     INSERT INTO push_notification_queue (event_type, payload)
@@ -207,7 +212,14 @@ BEGIN
 END;
 $$;
 
--- Schedule: run every minute
+-- Idempotent schedule: remove existing job if present, then create
+DO $$
+BEGIN
+  PERFORM cron.unschedule('flush-member-joined-batch');
+EXCEPTION WHEN others THEN NULL;
+END;
+$$;
+
 SELECT cron.schedule(
   'flush-member-joined-batch',
   '* * * * *',
