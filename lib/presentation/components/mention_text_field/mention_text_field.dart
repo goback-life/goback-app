@@ -180,9 +180,6 @@ class MentionTextField extends HookWidget with MainLayout {
     useEffect(() {
       void listener() {
         updateMentionState();
-        debugPrint(
-          '[MentionTextField] query=${mentionQuery.value}, allUsers=${allUsers.length}, filtered=${getFilteredUsers().length}',
-        );
         updateOverlay();
       }
 
@@ -191,7 +188,7 @@ class MentionTextField extends HookWidget with MainLayout {
         controller.removeListener(listener);
         overlayEntry.value?.remove();
       };
-    }, [controller]);
+    }, [controller, allUsers]);
 
     // Clean up overlay on dispose
     useEffect(() {
