@@ -88,3 +88,4 @@ fastlane/report.xml
 
 # Worktrees (stored outside repo root — just in case)
 goback-worktrees/
+.superpowers/

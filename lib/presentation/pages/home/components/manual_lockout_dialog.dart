@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 /// Override at build time: `--dart-define=MIN_LOCKOUT_MINUTES=1`
 const _kMinLockoutMinutes = int.fromEnvironment(
   'MIN_LOCKOUT_MINUTES',
-  defaultValue: 60,
+  defaultValue: 30,
 );
 
 class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
