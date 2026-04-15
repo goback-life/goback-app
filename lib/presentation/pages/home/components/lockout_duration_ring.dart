@@ -90,32 +90,35 @@ class LockoutDurationRing extends HookWidget {
               ),
             ),
           ),
-          // Center duration text
-          Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _formatDuration(duration),
-                  style: const TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.w200,
-                    letterSpacing: -2,
-                    color: Colors.white,
-                    fontFeatures: [FontFeature.tabularFigures()],
+          // Center duration text — IgnorePointer so touches pass
+          // through to the ring gesture layer below.
+          IgnorePointer(
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _formatDuration(duration),
+                    style: const TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.w200,
+                      letterSpacing: -2,
+                      color: Colors.white,
+                      fontFeatures: [FontFeature.tabularFigures()],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  duration.inHours >= 1 ? 'hours' : 'minutes',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.5,
-                    color: Colors.white.withValues(alpha: 0.35),
+                  const SizedBox(height: 2),
+                  Text(
+                    duration.inHours >= 1 ? 'hours' : 'minutes',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.5,
+                      color: Colors.white.withValues(alpha: 0.35),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
