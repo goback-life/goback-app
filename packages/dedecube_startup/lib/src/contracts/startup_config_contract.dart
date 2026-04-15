@@ -74,4 +74,9 @@ abstract class StartupConfigContract {
   /// ]
   /// ```
   List<LocalizationsDelegate>? get localizationsDelegates;
+
+  /// The filename of the environment file to load (e.g., '.env.stage').
+  ///
+  /// If not set, defaults to '.env'.
+  String? get envFilename;
 }

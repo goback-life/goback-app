@@ -5,6 +5,7 @@ import 'package:cloudless/core/features/calendar/domain/providers/pending_select
 import 'package:cloudless/core/features/connection/domain/hooks/use_app_resume_refresh.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
+import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/notification/domain/providers/unread_notification_count_provider.dart';
 import 'package:cloudless/core/features/post/domain/enums/post_action_type.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_feed_posts/use_feed_posts.dart';
@@ -116,9 +117,7 @@ class FeedView extends HookConsumerWidget {
       Future<void> check() async {
         final s = ref.read(manualLockoutStorableProvider);
         final end = await s.getLockoutEnd();
-        final locked = await s.isLockedOut();
-        if (end != null && !locked) {
-          final sid = await s.getLockoutSessionId();
+        if (end != null) {
           router.go(const ManualLockoutRoutable());
         }
       }

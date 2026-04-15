@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
+import 'package:cloudless/core/features/nfc/data/providers/nfc_service_provider.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/home/components/dnd_prompt_dialog.dart';
@@ -146,6 +147,38 @@ class FeedLockoutButton extends HookConsumerWidget {
     final result = await ManualLockoutDialog.show(context);
     if (result == null || !context.mounted) return;
 
+    if (result.nfcScan) {
+      // NFC venue scan — iOS system sheet handles the UI.
+      // Delay lets the dialog dismiss animation finish before iOS presents
+      // the NFC sheet; presenting while a VC is mid-dismiss silently fails.
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+      if (!context.mounted) return;
+      final nfcService = ref.read(nfcServiceProvider);
+      await nfcService.startReadSession(
+        onTagRead: (venue) async {
+          try {
+            await ref
+                .read(manualLockoutNotifierProvider.notifier)
+                .startVenueLockout(venue);
+            router.go(const ManualLockoutRoutable());
+          } catch (e, st) {
+            logger.error(
+              'Error starting venue lockout',
+              exception: e,
+              stackTrace: st,
+            );
+          }
+        },
+        onInvalidTag: () => logger.warning(
+          '[FeedLockoutButton] Scanned tag is not a GoBack tag',
+        ),
+        onError: () =>
+            logger.warning('[FeedLockoutButton] NFC scan error or cancelled'),
+      );
+      return;
+    }
+
+    // Timed lockout
     try {
       await DndPromptDialog.showIfNeeded(context);
     } catch (_) {
@@ -155,7 +188,10 @@ class FeedLockoutButton extends HookConsumerWidget {
 
     try {
       final notifier = ref.read(manualLockoutNotifierProvider.notifier);
-      await notifier.setLockout(result.duration, actionText: result.actionText);
+      await notifier.setLockout(
+        result.duration!,
+        actionText: result.actionText,
+      );
       if (context.mounted) {
         router.go(const ManualLockoutRoutable());
       }

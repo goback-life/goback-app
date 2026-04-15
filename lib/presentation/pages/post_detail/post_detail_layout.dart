@@ -40,7 +40,7 @@ mixin PostDetailLayout on MainLayout {
 
   // Reactions
   double get reactionHorizontalPadding => 8.0;
-  double get reactionVerticalPadding => 4.0;
+  double get reactionVerticalPadding => 16.0;
   double get reactionIconSize => 12.0;
   double get reactionIconSpacing => 4.0;
   double get reactionSpacing => 8.0;

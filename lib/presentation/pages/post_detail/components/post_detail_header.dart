@@ -62,13 +62,18 @@ class PostDetailHeader extends HookConsumerWidget
         ),
         SizedBox(width: headerTimeToClose),
         GestureDetector(
+          behavior: HitTestBehavior.translucent,
           onTap: () => router.pop(),
           child: SizedBox(
-            width: headerIconSize,
-            height: headerIconSize,
+            width: 44,
+            height: 44,
             child: Center(
-              child: Assets.svg.close.render(
-                colorFilter: colorScheme.onSurface.asSrcIn,
+              child: SizedBox(
+                width: headerIconSize,
+                height: headerIconSize,
+                child: Assets.svg.close.render(
+                  colorFilter: colorScheme.onSurface.asSrcIn,
+                ),
               ),
             ),
           ),

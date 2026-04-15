@@ -64,7 +64,7 @@ class SmallActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(16),
@@ -223,11 +223,18 @@ class OutgoingRequestTile extends StatelessWidget {
             ),
           ),
           GestureDetector(
+            behavior: HitTestBehavior.translucent,
             onTap: onCancel,
-            child: Icon(
-              Icons.close,
-              size: 20,
-              color: MainColors.white.withValues(alpha: 0.4),
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: Center(
+                child: Icon(
+                  Icons.close,
+                  size: 20,
+                  color: MainColors.white.withValues(alpha: 0.4),
+                ),
+              ),
             ),
           ),
         ],

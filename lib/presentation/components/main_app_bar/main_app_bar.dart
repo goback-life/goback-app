@@ -30,8 +30,8 @@ class MainAppBar extends HookConsumerWidget with MainLayout, MainAppBarLayout {
         behavior: HitTestBehavior.translucent,
         onTap: () => router.pop(),
         child: SizedBox(
-          width: iconSize + 10,
-          height: iconSize + 10,
+          width: 44,
+          height: 44,
           child: Center(
             child: Assets.svg.back.render(
               height: iconSize,
@@ -82,11 +82,7 @@ class MainAppBar extends HookConsumerWidget with MainLayout, MainAppBarLayout {
         return GestureDetector(
           behavior: HitTestBehavior.translucent,
           onTap: onTap,
-          child: SizedBox(
-            height: mainAppBar.rightIconSize + 14,
-            width: mainAppBar.rightIconSize + 14,
-            child: Center(child: icon),
-          ),
+          child: SizedBox(height: 44, width: 44, child: Center(child: icon)),
         );
       },
     );

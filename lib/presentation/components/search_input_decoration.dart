@@ -28,8 +28,8 @@ InputDecoration searchInputDecoration(
         ? GestureDetector(
             onTap: onClearPressed,
             child: SizedBox(
-              width: 25,
-              height: 25,
+              width: 44,
+              height: 44,
               child: Center(
                 child: Assets.svg.clean.render(
                   width: 25,

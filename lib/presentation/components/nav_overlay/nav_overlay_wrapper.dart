@@ -8,22 +8,32 @@ import 'dart:ui' as ui;
 
 import 'package:cloudless/presentation/components/nav_overlay/nav_overlay.dart';
 import 'package:dedecube_core/dedecube_core.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Wraps the entire app to detect long-press anywhere and show [NavOverlay].
+/// Wraps the entire app to detect a quick hold or force-press and show [NavOverlay].
 ///
-/// Uses [GestureDetector] with [HitTestBehavior.translucent] so the overlay
-/// long-press participates in the gesture arena. Child widgets with their own
-/// long-press handlers (e.g. emoji name reveal) will win the arena and take
-/// precedence. When the overlay long-press wins, it claims the arena so no
-/// residual tap/click reaches the content underneath.
+/// Two activation paths:
+/// - **Hold** (200 ms): [LongPressGestureRecognizer] with a shorter duration
+///   than Flutter's default 500 ms.
+/// - **Force press**: [ForcePressGestureRecognizer] for instant activation on
+///   devices that report pressure data (e.g. iOS 3D Touch / Haptic Touch).
+///
+/// Uses [HitTestBehavior.translucent] so child widgets with their own
+/// gesture handlers participate in the gesture arena and can take precedence.
 ///
 /// Disabled when the user is in a lockout, time-limit-reached, or signup state.
 class NavOverlayWrapper extends HookConsumerWidget {
   const NavOverlayWrapper({super.key, required this.child});
 
   final Widget child;
+
+  /// How long the user must hold before the overlay activates.
+  static const _holdDuration = Duration(milliseconds: 200);
+
+  /// Normalized force-press threshold (0.0–1.0). Lower = more sensitive.
+  static const _forcePressure = 0.35;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,14 +90,38 @@ class NavOverlayWrapper extends HookConsumerWidget {
         lockoutState?.isCompletionPending == true ||
         !tutorialCompleted.value;
 
-    return GestureDetector(
+    final isEnabled = !isBlocked && !isOverlayVisible.value;
+
+    void activate() {
+      HapticFeedback.heavyImpact();
+      isOverlayVisible.value = true;
+    }
+
+    return RawGestureDetector(
       behavior: HitTestBehavior.translucent,
-      onLongPressStart: isBlocked || isOverlayVisible.value
-          ? null
-          : (_) {
-              HapticFeedback.heavyImpact();
-              isOverlayVisible.value = true;
-            },
+      gestures: isEnabled
+          ? <Type, GestureRecognizerFactory>{
+              LongPressGestureRecognizer:
+                  GestureRecognizerFactoryWithHandlers<
+                    LongPressGestureRecognizer
+                  >(() => LongPressGestureRecognizer(duration: _holdDuration), (
+                    instance,
+                  ) {
+                    instance.onLongPressStart = (_) => activate();
+                  }),
+              ForcePressGestureRecognizer:
+                  GestureRecognizerFactoryWithHandlers<
+                    ForcePressGestureRecognizer
+                  >(
+                    () => ForcePressGestureRecognizer(
+                      startPressure: _forcePressure,
+                    ),
+                    (instance) {
+                      instance.onStart = (_) => activate();
+                    },
+                  ),
+            }
+          : <Type, GestureRecognizerFactory>{},
       child: Stack(
         children: [
           if (isOverlayVisible.value)

@@ -22,6 +22,7 @@ class PostDetailReactionCounter extends StatelessWidget
     final textTheme = Theme.of(context).textTheme;
 
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onTap: onTap,
       child: AppGlassContainer(
         config: GlassConfig(

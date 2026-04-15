@@ -106,26 +106,35 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
     final hPad = 16.0 * scale;
     final addW = 32.0 * scale;
 
+    final minTap = 44.0 * scale;
+
     Widget addButton() => GestureDetector(
       onTap: readOnly ? null : () => _showPicker(context, result),
-      child: Container(
-        width: addW,
-        height: pillH,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(pillRadius),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.3),
-            width: 0.5,
-          ),
-        ),
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: addW < minTap ? minTap : addW,
+        height: pillH < minTap ? minTap : pillH,
         child: Center(
-          child: Text(
-            '+',
-            style: TextStyle(
-              fontSize: 18 * scale,
-              color: MainColors.white,
-              fontWeight: FontWeight.w300,
+          child: Container(
+            width: addW,
+            height: pillH,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(pillRadius),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 0.5,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                '+',
+                style: TextStyle(
+                  fontSize: 18 * scale,
+                  color: MainColors.white,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
             ),
           ),
         ),
@@ -151,36 +160,42 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
           final names = list.map((r) => resolveName(r.userId)).toList();
           _showReactors(context, emoji, names);
         },
-        child: Container(
-          height: pillH,
-          padding: EdgeInsets.symmetric(horizontal: 10 * scale),
-          decoration: BoxDecoration(
-            color: isOwn
-                ? MainColors.accent.withValues(alpha: 0.35)
-                : Colors.white.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(pillRadius),
-            border: Border.all(
-              color: isOwn
-                  ? MainColors.accent.withValues(alpha: 0.6)
-                  : Colors.white.withValues(alpha: 0.3),
-              width: 0.5,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(emoji, style: TextStyle(fontSize: 16 * scale)),
-              SizedBox(width: 4 * scale),
-              Text(
-                '$count',
-                style: TextStyle(
-                  fontFamily: MainFontFamilies.quicksand,
-                  fontSize: 13 * scale,
-                  fontWeight: FontWeight.w500,
-                  color: MainColors.white,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          height: pillH < minTap ? minTap : pillH,
+          child: Center(
+            child: Container(
+              height: pillH,
+              padding: EdgeInsets.symmetric(horizontal: 10 * scale),
+              decoration: BoxDecoration(
+                color: isOwn
+                    ? MainColors.accent.withValues(alpha: 0.35)
+                    : Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(pillRadius),
+                border: Border.all(
+                  color: isOwn
+                      ? MainColors.accent.withValues(alpha: 0.6)
+                      : Colors.white.withValues(alpha: 0.3),
+                  width: 0.5,
                 ),
               ),
-            ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(emoji, style: TextStyle(fontSize: 16 * scale)),
+                  SizedBox(width: 4 * scale),
+                  Text(
+                    '$count',
+                    style: TextStyle(
+                      fontFamily: MainFontFamilies.quicksand,
+                      fontSize: 13 * scale,
+                      fontWeight: FontWeight.w500,
+                      color: MainColors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       );
@@ -189,7 +204,7 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: hPad),
       child: SizedBox(
-        height: pillH,
+        height: pillH < minTap ? minTap : pillH,
         child: arranged.isEmpty
             ? (readOnly ? const SizedBox.shrink() : Center(child: addButton()))
             : LayoutBuilder(

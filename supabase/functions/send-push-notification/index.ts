@@ -161,9 +161,14 @@ async function buildMessage(
       const { data: tokens } = await supabase.rpc('get_friend_device_tokens_for_lockout', { p_lockout_user_id: payload.user_id })
       if (!tokens?.length) return null
       const username = await getUsername(payload.user_id)
+      const locationName = payload.location_name
+      const isOpenEnded = payload.is_open_ended === 'true' || payload.is_open_ended === true
+      const body = locationName
+        ? `${username} is going back at ${locationName}. Tap to join!`
+        : `${username} is going offline. Join them!`
       return {
-        title: 'Friend Locked Out',
-        body: `${username} is going offline. Join them!`,
+        title: isOpenEnded ? 'Friend at a GoBack Venue' : 'Friend Locked Out',
+        body,
         data: { type: 'lockout_started', lockout_id: payload.lockout_id },
         tokens,
         androidPriority: 'high',
@@ -194,6 +199,24 @@ async function buildMessage(
         title: 'Friend Locked Out',
         body: `${joinerName} joined ${ownerName}'s lockout. Join them!`,
         data: { type: 'friend_joins_lockout', lockout_id: payload.lockout_id },
+        tokens,
+        androidPriority: 'high',
+        iosInterruptionLevel: 'active',
+      }
+    }
+
+    case 'lockout_completed': {
+      // Notify a participant that the leader ended the venue lockout
+      const { data: tokens } = await supabase.rpc('get_user_device_tokens', { p_user_id: payload.user_id })
+      if (!tokens?.length) return null
+      const venueName = payload.venue_name
+      const body = venueName
+        ? `Your lockout at ${venueName} has ended`
+        : 'Your lockout has ended'
+      return {
+        title: 'Lockout ended',
+        body,
+        data: { type: 'lockout_completed', lockout_id: payload.lockout_id },
         tokens,
         androidPriority: 'high',
         iosInterruptionLevel: 'active',

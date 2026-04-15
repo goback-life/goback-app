@@ -171,73 +171,87 @@ class _InviteCard extends HookConsumerWidget {
       Navigator.of(context).pop();
     }
 
-    return Material(
-      type: MaterialType.transparency,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: cardWidth,
-          maxHeight: maxCardHeight,
-        ),
-        child: AppGlassContainer(
-          config: const GlassConfig(cornerRadius: _kCardRadius),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    kInviteCardContactSidePad,
-                    _kBottomPad,
-                    kInviteCardContactSidePad,
-                    0,
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: cardWidth,
+            maxHeight: maxCardHeight,
+          ),
+          child: AppGlassContainer(
+            config: const GlassConfig(cornerRadius: _kCardRadius),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            kInviteCardContactSidePad,
+                            _kBottomPad,
+                            kInviteCardContactSidePad,
+                            0,
+                          ),
+                          child: InviteContactsList(
+                            contacts: filteredContacts,
+                            gobackPhones: gobackPhones,
+                            showList: !isNewNumber,
+                            onTap: onContactTap,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: kInviteCardContactSidePad,
+                          ),
+                          child: InviteInputPill(
+                            controller: controller,
+                            onChanged: (t) => input.value = t,
+                            dotColor: dotColor,
+                            countryLabel: countryCode,
+                            canSubmit: canSubmit,
+                            onSend: onSendPhone,
+                          ),
+                        ),
+                        const SizedBox(height: _kTitleGap),
+                        const Text(
+                          'Let them in',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: MainFontFamilies.quicksand,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 27,
+                            color: MainColors.white,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: _kSubtitleGap),
+                        const Text(
+                          'Invite a friend to your circle',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: MainFontFamilies.quicksand,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 24,
+                            color: MainColors.white,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(height: _kBottomPad),
+                      ],
+                    ),
                   ),
-                  child: InviteContactsList(
-                    contacts: filteredContacts,
-                    gobackPhones: gobackPhones,
-                    showList: !isNewNumber,
-                    onTap: onContactTap,
-                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: kInviteCardContactSidePad,
-                ),
-                child: InviteInputPill(
-                  controller: controller,
-                  onChanged: (t) => input.value = t,
-                  dotColor: dotColor,
-                  countryLabel: countryCode,
-                  canSubmit: canSubmit,
-                  onSend: onSendPhone,
-                ),
-              ),
-              const SizedBox(height: _kTitleGap),
-              const Text(
-                'Let them in',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: MainFontFamilies.quicksand,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 27,
-                  color: MainColors.white,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: _kSubtitleGap),
-              const Text(
-                'Invite a friend to your circle',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: MainFontFamilies.quicksand,
-                  fontWeight: FontWeight.w400,
-                  fontSize: 24,
-                  color: MainColors.white,
-                  letterSpacing: -0.3,
-                ),
-              ),
-              const SizedBox(height: _kBottomPad),
-            ],
+              ],
+            ),
           ),
         ),
       ),

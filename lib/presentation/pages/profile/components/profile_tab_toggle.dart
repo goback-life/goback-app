@@ -75,7 +75,7 @@ class _Pill extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(
           horizontal: 18 * scale,
-          vertical: 8 * scale,
+          vertical: 15 * scale,
         ),
         decoration: BoxDecoration(
           color: isSelected

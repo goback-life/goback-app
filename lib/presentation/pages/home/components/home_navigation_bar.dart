@@ -45,35 +45,45 @@ class HomeNavigationBar extends HookConsumerWidget with MainLayout, HomeLayout {
             children: [
               // Profile
               GestureDetector(
+                behavior: HitTestBehavior.translucent,
                 onTap: () => router.push(const ProfileRoutable()),
-                child: ProfileImage(
-                  showFromProfile: true,
-                  size: navProfileImageSize,
-                ),
-              ),
-              SizedBox(width: navButtonSpacing),
-              // Lockouts
-              GestureDetector(
-                onTap: () => router.push(const FriendsLockedOutRoutable()),
                 child: SizedBox(
-                  width: navCircleButtonSize,
-                  height: navCircleButtonSize,
-                  child: const Center(
-                    child: Icon(Icons.people_outline, size: 24),
+                  width: 44,
+                  height: 44,
+                  child: Center(
+                    child: ProfileImage(
+                      showFromProfile: true,
+                      size: navProfileImageSize,
+                    ),
                   ),
                 ),
               ),
-              SizedBox(width: navButtonSpacing),
-              // Circle
+              // Lockouts
               GestureDetector(
-                onTap: () => router.push(const YourCircleRoutable()),
-                child: SizedBox(
-                  width: navCircleButtonSize,
-                  height: navCircleButtonSize,
-                  child: Assets.svg.yourCircle.render(),
+                behavior: HitTestBehavior.translucent,
+                onTap: () => router.push(const FriendsLockedOutRoutable()),
+                child: const SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Center(child: Icon(Icons.people_outline, size: 24)),
                 ),
               ),
-              SizedBox(width: navButtonSpacing),
+              // Circle
+              GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => router.push(const YourCircleRoutable()),
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Center(
+                    child: SizedBox(
+                      width: navCircleButtonSize,
+                      height: navCircleButtonSize,
+                      child: Assets.svg.yourCircle.render(),
+                    ),
+                  ),
+                ),
+              ),
               // Notifications
               currentUserAsync.when(
                 data: (userResult) {
@@ -91,11 +101,12 @@ class HomeNavigationBar extends HookConsumerWidget with MainLayout, HomeLayout {
                         );
 
                         return GestureDetector(
+                          behavior: HitTestBehavior.translucent,
                           onTap: () =>
                               router.push(const NotificationsRoutable()),
                           child: SizedBox(
-                            width: navCircleButtonSize,
-                            height: navCircleButtonSize,
+                            width: 44,
+                            height: 44,
                             child: Stack(
                               clipBehavior: Clip.none,
                               children: [
@@ -106,8 +117,8 @@ class HomeNavigationBar extends HookConsumerWidget with MainLayout, HomeLayout {
                                 ),
                                 if (unreadCount > 0)
                                   Positioned(
-                                    right: -2,
-                                    top: -2,
+                                    right: 8,
+                                    top: 8,
                                     child: Container(
                                       width: 8,
                                       height: 8,
@@ -123,10 +134,11 @@ class HomeNavigationBar extends HookConsumerWidget with MainLayout, HomeLayout {
                         );
                       },
                       loading: () => GestureDetector(
+                        behavior: HitTestBehavior.translucent,
                         onTap: () => router.push(const NotificationsRoutable()),
                         child: SizedBox(
-                          width: navCircleButtonSize,
-                          height: navCircleButtonSize,
+                          width: 44,
+                          height: 44,
                           child: Center(
                             child: Assets.svg.notifications.render(
                               colorFilter: colorScheme.onSurface.asSrcIn,
@@ -135,10 +147,11 @@ class HomeNavigationBar extends HookConsumerWidget with MainLayout, HomeLayout {
                         ),
                       ),
                       error: (_, __) => GestureDetector(
+                        behavior: HitTestBehavior.translucent,
                         onTap: () => router.push(const NotificationsRoutable()),
                         child: SizedBox(
-                          width: navCircleButtonSize,
-                          height: navCircleButtonSize,
+                          width: 44,
+                          height: 44,
                           child: Center(
                             child: Assets.svg.notifications.render(
                               colorFilter: colorScheme.onSurface.asSrcIn,

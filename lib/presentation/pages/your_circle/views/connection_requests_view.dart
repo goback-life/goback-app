@@ -53,6 +53,7 @@ class ConnectionRequestsView extends HookConsumerWidget
                   child: TextField(
                     controller: searchController,
                     onChanged: searchData.updateQuery,
+                    onTapOutside: (_) => FocusScope.of(context).unfocus(),
                     maxLength: 30,
                     style: const TextStyle(
                       fontFamily: MainFontFamilies.quicksand,

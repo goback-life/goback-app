@@ -40,7 +40,13 @@ class ContentEditorPage extends HookConsumerWidget
     // This is defense-in-depth; the post creation hook also enforces this
     final isEditing = contentEditorData.isEditing;
     final hasLockout = pendingLockoutId != null;
+    debugPrint(
+      '[ContentEditorPage] guard: isEditing=$isEditing, '
+      'hasLockout=$hasLockout, pendingLockoutId=$pendingLockoutId, '
+      'hasMainImage=${contentEditorData.hasMainImage}',
+    );
     if (!isEditing && !hasLockout) {
+      debugPrint('[ContentEditorPage] No lockout context — redirecting home');
       // Schedule navigation after this build frame completes
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) {

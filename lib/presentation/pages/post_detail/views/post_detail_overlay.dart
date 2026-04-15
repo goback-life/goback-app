@@ -48,13 +48,18 @@ class PostDetailOverlay extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final screenW = MediaQuery.of(context).size.width;
     final screenH = MediaQuery.of(context).size.height;
+    final keyboardH = MediaQuery.of(context).viewInsets.bottom;
     final s = screenW / 402.0;
 
     // Card dimensions
     final cardW = 371.0 * s;
-    final cardH = screenH * (600.0 / 874.0);
-    final cardMarginH = 15.0 * s;
     final cardTop = 93.0 * s;
+    // Shrink card when the keyboard is open so its bottom stays visible.
+    final cardH = (screenH * (600.0 / 874.0)).clamp(
+      0.0,
+      screenH - cardTop - keyboardH,
+    );
+    final cardMarginH = 15.0 * s;
     final cardRadius = 47.0 * s;
 
     // Squircle layout — equidistant from sides and top
@@ -178,7 +183,7 @@ class _GlassCard extends StatelessWidget {
     final contentBottom = reactionBarH + reactionBarPad * 2;
 
     // Scroll indicator dimensions
-    final indicatorW = 8.0 * scale;
+    final indicatorW = 24.0 * scale;
     final indicatorH = 35.0 * scale;
     final indicatorRight = 6.0 * scale;
 

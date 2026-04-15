@@ -20,6 +20,7 @@ class PostDetailCommentCounter extends StatelessWidget
     final textTheme = theme.textTheme;
 
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(

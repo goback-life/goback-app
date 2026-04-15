@@ -156,7 +156,12 @@ class ReviewCircleView extends HookConsumerWidget
                 child: SingleChildScrollView(
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: EdgeInsets.symmetric(vertical: viewVerticalPadding),
+                  padding: EdgeInsets.only(
+                    top: viewVerticalPadding,
+                    bottom:
+                        viewVerticalPadding +
+                        MediaQuery.of(context).viewInsets.bottom,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [

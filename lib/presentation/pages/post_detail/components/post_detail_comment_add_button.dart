@@ -17,6 +17,7 @@ class PostDetailCommentAddButton extends StatelessWidget
     final colorScheme = theme.colorScheme;
 
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onTap: onTap,
       child: AppGlassContainer(
         config: GlassConfig(

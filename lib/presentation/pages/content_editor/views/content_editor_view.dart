@@ -80,6 +80,7 @@ class ContentEditorView extends HookConsumerWidget
           Expanded(
             child: CustomScrollView(
               controller: scrollController,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               slivers: [
                 SliverList(
                   delegate: SliverChildListDelegate([
@@ -139,7 +140,9 @@ class ContentEditorView extends HookConsumerWidget
                       top: false,
                       child: CustomPadding(
                         horizontal: horizontalPadding,
-                        bottom: bottomMargin,
+                        bottom:
+                            bottomMargin +
+                            MediaQuery.of(context).viewInsets.bottom,
                         child: const ContentEditorButton(),
                       ),
                     ),

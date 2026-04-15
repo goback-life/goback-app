@@ -5,10 +5,20 @@ import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+/// Minimum lockout duration in minutes.
+/// Override at build time: `--dart-define=MIN_LOCKOUT_MINUTES=1`
+const _kMinLockoutMinutes = int.fromEnvironment(
+  'MIN_LOCKOUT_MINUTES',
+  defaultValue: 60,
+);
+
 class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
   const ManualLockoutDialog({super.key});
 
-  static Future<({Duration duration, String? actionText})?> show(
+  /// Result type: either a timed lockout or an NFC venue scan request.
+  ///
+  /// When [nfcScan] is true, [duration] and [actionText] are null.
+  static Future<({Duration? duration, String? actionText, bool nfcScan})?> show(
     BuildContext context,
   ) {
     // Prefer the passed context; fall back to the root navigator if it lacks
@@ -17,7 +27,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
     final dialogContext = hasNavigator
         ? context
         : startupNavigatorKey.currentContext!;
-    return showDialog<({Duration duration, String? actionText})>(
+    return showDialog<({Duration? duration, String? actionText, bool nfcScan})>(
       context: dialogContext,
       useRootNavigator: hasNavigator,
       barrierDismissible: true,
@@ -31,8 +41,10 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final selectedHours = useState<int>(1);
-    final selectedMinutes = useState<int>(0);
+    final selectedHours = useState<int>(_kMinLockoutMinutes < 60 ? 0 : 1);
+    final selectedMinutes = useState<int>(
+      _kMinLockoutMinutes < 60 ? _kMinLockoutMinutes : 0,
+    );
     final activityController = useTextEditingController();
     final selectedPreset = useState<String?>(null);
 
@@ -51,8 +63,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
       minutes: selectedMinutes.value,
     );
 
-    // Validate: must be >= 60 min
-    final isValid = totalDuration.inMinutes >= 60;
+    final isValid = totalDuration.inMinutes >= _kMinLockoutMinutes;
 
     return Dialog(
       backgroundColor: colorScheme.surface,
@@ -60,6 +71,10 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
         child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -70,7 +85,21 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 20),
+              // NFC venue scan option
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(
+                  context,
+                ).pop((duration: null, actionText: null, nfcScan: true)),
+                icon: const Icon(Icons.nfc_rounded),
+                label: const Text('Scan GoBack Tag'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Divider(color: colorScheme.onSurface.withValues(alpha: 0.12)),
+              const SizedBox(height: 16),
               Text(
                 translator.translate('pages.manual_lockout.dialog.description'),
                 style: textTheme.bodyMedium?.copyWith(
@@ -89,23 +118,32 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                     height: 150,
                     child: CupertinoPicker(
                       scrollController: FixedExtentScrollController(
-                        initialItem: selectedHours.value - 1,
+                        initialItem: _kMinLockoutMinutes < 60
+                            ? selectedHours.value
+                            : selectedHours.value - 1,
                       ),
                       itemExtent: 40,
                       onSelectedItemChanged: (index) {
-                        selectedHours.value = index + 1;
+                        selectedHours.value = _kMinLockoutMinutes < 60
+                            ? index
+                            : index + 1;
                       },
-                      children: List.generate(9, (index) {
-                        index += 1;
-                        return Center(
-                          child: Text(
-                            '$index ${index == 1 ? 'hr' : 'hrs'}',
-                            style: textTheme.bodyLarge?.copyWith(
-                              color: colorScheme.onSurface,
+                      children: List.generate(
+                        _kMinLockoutMinutes < 60 ? 10 : 9,
+                        (index) {
+                          final hr = _kMinLockoutMinutes < 60
+                              ? index
+                              : index + 1;
+                          return Center(
+                            child: Text(
+                              '$hr ${hr == 1 ? 'hr' : 'hrs'}',
+                              style: textTheme.bodyLarge?.copyWith(
+                                color: colorScheme.onSurface,
+                              ),
                             ),
-                          ),
-                        );
-                      }),
+                          );
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -115,27 +153,33 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                     height: 150,
                     child: CupertinoPicker(
                       scrollController: FixedExtentScrollController(
-                        initialItem: [
-                          0,
-                          15,
-                          30,
-                          45,
-                        ].indexOf(selectedMinutes.value),
+                        initialItem:
+                            (_kMinLockoutMinutes < 60
+                                    ? [0, 1, 2, 3, 5, 10, 15, 30, 45]
+                                    : [0, 15, 30, 45])
+                                .indexOf(selectedMinutes.value),
                       ),
                       itemExtent: 40,
                       onSelectedItemChanged: (index) {
-                        selectedMinutes.value = [0, 15, 30, 45][index];
+                        selectedMinutes.value = (_kMinLockoutMinutes < 60
+                            ? [0, 1, 2, 3, 5, 10, 15, 30, 45]
+                            : [0, 15, 30, 45])[index];
                       },
-                      children: [0, 15, 30, 45].map((minutes) {
-                        return Center(
-                          child: Text(
-                            '$minutes min',
-                            style: textTheme.bodyLarge?.copyWith(
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                      children:
+                          (_kMinLockoutMinutes < 60
+                                  ? [0, 1, 2, 3, 5, 10, 15, 30, 45]
+                                  : [0, 15, 30, 45])
+                              .map((minutes) {
+                                return Center(
+                                  child: Text(
+                                    '$minutes min',
+                                    style: textTheme.bodyLarge?.copyWith(
+                                      color: colorScheme.onSurface,
+                                    ),
+                                  ),
+                                );
+                              })
+                              .toList(),
                     ),
                   ),
                 ],
@@ -271,6 +315,7 @@ class ManualLockoutDialog extends HookConsumerWidget with MainLayout {
                         Navigator.of(context).pop((
                           duration: duration,
                           actionText: text.isEmpty ? null : text,
+                          nfcScan: false,
                         ));
                       }
                     : null,

@@ -4,7 +4,10 @@ import 'package:cloudless/core/features/auth/domain/providers/get_current_user_p
 import 'package:cloudless/core/features/connection/domain/hooks/use_app_resume_refresh.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_circle_members.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
+import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
+import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
+import 'package:cloudless/core/features/nfc/data/providers/nfc_service_provider.dart';
 import 'package:cloudless/core/features/notification/domain/providers/unread_notification_count_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_feed_posts/use_feed_posts.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
@@ -20,6 +23,7 @@ import 'package:cloudless/presentation/pages/home/components/home_circle_actions
 import 'package:cloudless/presentation/pages/home/components/home_date_badge.dart';
 import 'package:cloudless/presentation/pages/home/components/home_feed_posts_list.dart';
 import 'package:cloudless/presentation/pages/home/components/home_lockout_button.dart';
+import 'package:cloudless/presentation/pages/home/components/home_nfc_tag_button.dart';
 import 'package:cloudless/presentation/pages/home/components/home_new_posts_banner.dart';
 import 'package:cloudless/presentation/pages/home/components/home_scroll_indicator.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
@@ -104,6 +108,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
         return _buildHomeContent(
           context,
+          ref,
           feedPosts,
           userId!,
           hasFeedReady || hasCircleMembers,
@@ -133,6 +138,7 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
 
   Widget _buildHomeContent(
     BuildContext context,
+    WidgetRef ref,
     FeedPostsResult feedPosts,
     String currentUserId,
     bool showFeed,
@@ -220,6 +226,21 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
                 left: horizontalPadding,
                 child: const HomeLockoutButton(),
               ),
+
+            if (showFeed)
+              Positioned(
+                bottom: bottomMargin + navBarHeight,
+                right: horizontalPadding,
+                child: HomeNfcTagButton(
+                  onTagDetected: (venue) {
+                    ref
+                        .read(manualLockoutNotifierProvider.notifier)
+                        .startVenueLockout(venue)
+                        .then((_) => router.go(const ManualLockoutRoutable()));
+                  },
+                  nfcService: ref.read(nfcServiceProvider),
+                ),
+              ),
           ],
         ),
       ),
@@ -298,10 +319,24 @@ void _usePendingLockoutCheck(WidgetRef ref) {
     Future<void> check() async {
       final storable = ref.read(manualLockoutStorableProvider);
       final lockoutEnd = await storable.getLockoutEnd();
-      final isLockedOut = await storable.isLockedOut();
 
-      if (lockoutEnd != null && !isLockedOut) {
+      if (lockoutEnd != null) {
+        // Verify DB session still exists and is active
         final sessionId = await storable.getLockoutSessionId();
+        if (sessionId != null && sessionId.isNotEmpty) {
+          final sessionService = ref.read(lockoutSessionServiceProvider);
+          final stillActive = await sessionService.isSessionStillActive(
+            sessionId,
+          );
+          if (!stillActive) {
+            // Session was completed by leader or auto-deleted
+            await storable.clearLockout();
+            await ref
+                .read(manualLockoutNotifierProvider.notifier)
+                .clearLockout();
+            return; // Don't navigate to lockout page
+          }
+        }
         router.go(const ManualLockoutRoutable());
       }
     }

@@ -18,7 +18,7 @@ final startupProvider = FutureProvider.family<void, StartupConfig>((
   _unregisterDependencies();
 
   GetIt.I.registerSingleton<EnvironmentContract>(Environment());
-  await environment.initialize();
+  await environment.initialize(filename: config.envFilename);
 
   GetIt.I.registerSingleton<LoggerContract>(Logger(loggerConfig));
 

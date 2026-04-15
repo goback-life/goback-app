@@ -45,8 +45,8 @@ class PostNavigationHeader extends StatelessWidget
                 behavior: HitTestBehavior.translucent,
                 onTap: enableNavigation ? onPreviousPost : null,
                 child: SizedBox(
-                  width: navigationHeaderArrowSize,
-                  height: navigationHeaderArrowSize,
+                  width: 44,
+                  height: 44,
                   child: Center(
                     child: Assets.svg.back.render(
                       height: navigationHeaderIconSize,
@@ -59,10 +59,7 @@ class PostNavigationHeader extends StatelessWidget
                 ),
               )
             else
-              SizedBox(
-                width: navigationHeaderArrowSize,
-                height: navigationHeaderArrowSize,
-              ),
+              SizedBox(width: 44, height: 44),
             const Spacer(),
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -82,8 +79,8 @@ class PostNavigationHeader extends StatelessWidget
                 behavior: HitTestBehavior.translucent,
                 onTap: enableNavigation ? onNextPost : null,
                 child: SizedBox(
-                  width: navigationHeaderArrowSize,
-                  height: navigationHeaderArrowSize,
+                  width: 44,
+                  height: 44,
                   child: Center(
                     child: Assets.svg.next.render(
                       height: navigationHeaderIconSize,
@@ -96,10 +93,7 @@ class PostNavigationHeader extends StatelessWidget
                 ),
               )
             else
-              SizedBox(
-                width: navigationHeaderArrowSize,
-                height: navigationHeaderArrowSize,
-              ),
+              SizedBox(width: 44, height: 44),
           ],
         ),
       ],

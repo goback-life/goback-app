@@ -12,9 +12,17 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 ///
 /// All FCM operations are guarded by a production-only check.
 class PushNotificationService {
-  PushNotificationService({required this.deviceTokenService});
+  PushNotificationService({
+    required this.deviceTokenService,
+    this.onLockoutCompleted,
+  });
 
   final DeviceTokenService deviceTokenService;
+
+  /// Called when a `lockout_completed` push notification is received
+  /// (foreground) or tapped (background/terminated). The provider layer
+  /// wires this to clear local lockout state.
+  final Future<void> Function()? onLockoutCompleted;
 
   String? _currentToken;
 
@@ -144,6 +152,15 @@ class PushNotificationService {
   void _handleForegroundMessage(RemoteMessage message) {
     logger.info('Received foreground message: ${message.notification?.title}');
 
+    final type = message.data['type'] as String?;
+
+    // When a lockout_completed notification arrives in the foreground,
+    // immediately clear local lockout state so the UI updates.
+    if (type == 'lockout_completed') {
+      logger.info('Lockout completed notification received in foreground');
+      onLockoutCompleted?.call();
+    }
+
     if (Platform.isAndroid && _localNotifications != null) {
       final notification = message.notification;
       if (notification == null) return;
@@ -180,6 +197,10 @@ class PushNotificationService {
       case 'lockout_started':
       case 'lockout_joined':
       case 'friend_joins_lockout':
+        router.push(const FriendsLockedOutRoutable());
+      case 'lockout_completed':
+        // Clear local lockout state, then navigate to friends list
+        onLockoutCompleted?.call();
         router.push(const FriendsLockedOutRoutable());
       case 'connection_request':
         router.push(const NotificationsRoutable());

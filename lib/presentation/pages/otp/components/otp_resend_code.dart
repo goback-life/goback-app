@@ -16,6 +16,7 @@ class OtpResendCode extends HookWidget {
     final isResending = useState<bool>(false);
 
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onTap: isResending.value
           ? null
           : () async {
@@ -27,15 +28,21 @@ class OtpResendCode extends HookWidget {
                 isResending.value = false;
               }
             },
-      child: Text(
-        isResending.value
-            ? translator.translate('pages.otp.resend_texts.sending')
-            : translator.translate('pages.otp.resend_code'),
-        style: textTheme.bodyMedium?.copyWith(
-          color: isResending.value
-              ? colorScheme.onSurface.withValues(alpha: 0.5)
-              : colorScheme.onSurface,
-          decoration: isResending.value ? null : TextDecoration.underline,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 44),
+        child: Align(
+          alignment: Alignment.center,
+          child: Text(
+            isResending.value
+                ? translator.translate('pages.otp.resend_texts.sending')
+                : translator.translate('pages.otp.resend_code'),
+            style: textTheme.bodyMedium?.copyWith(
+              color: isResending.value
+                  ? colorScheme.onSurface.withValues(alpha: 0.5)
+                  : colorScheme.onSurface,
+              decoration: isResending.value ? null : TextDecoration.underline,
+            ),
+          ),
         ),
       ),
     );

@@ -98,7 +98,15 @@ class ScheduledNotificationService {
 
   /// Call when a lockout starts. Cancels daily reminders and schedules
   /// mid-lockout + post-lockout one-shot notifications.
-  Future<void> scheduleLockoutNotifications(DateTime endsAt) async {
+  ///
+  /// For venue lockouts pass [venueName] to include the venue in notification
+  /// bodies (e.g. "how does it feel at The Dunvegan?"). For open-ended
+  /// venue lockouts the midpoint is 1 hour after start and the post-lockout
+  /// notification is skipped (we don't know when they'll finish).
+  Future<void> scheduleLockoutNotifications(
+    DateTime endsAt, {
+    String? venueName,
+  }) async {
     if (!_isProduction) return;
 
     await cancelDailyReminders();
@@ -106,14 +114,22 @@ class ScheduledNotificationService {
     final location = await _localLocation();
     final now = tz.TZDateTime.now(location);
     final end = tz.TZDateTime.from(endsAt, location);
+    final isVenue = venueName != null && venueName.isNotEmpty;
 
-    // Midpoint between now and lockout end
-    final midpoint = now.add(end.difference(now) ~/ 2);
+    // For venue lockouts: send encouragement after 1 hour.
+    // For timed lockouts: send at midpoint.
+    final midpoint = isVenue
+        ? now.add(const Duration(hours: 1))
+        : now.add(end.difference(now) ~/ 2);
+
     if (midpoint.isAfter(now)) {
+      final midBody = isVenue
+          ? "how does it feel at $venueName? stay off the phone a little longer"
+          : "how does it feel? Don't answer that. Just stay where you are";
       await _plugin.zonedSchedule(
         _kMidLockoutId,
         'goback',
-        "how does it feel? Don't answer that. Just stay where you are",
+        midBody,
         midpoint,
         _notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -122,20 +138,26 @@ class ScheduledNotificationService {
       );
     }
 
-    // 1 hour after lockout ends
-    final postLockout = end.add(const Duration(hours: 1));
-    await _plugin.zonedSchedule(
-      _kPostLockoutId,
-      'goback',
-      'You\'ve been back online, the button is still there! Life awaits',
-      postLockout,
-      _notificationDetails,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-    );
+    // Skip post-lockout nudge for open-ended venue lockouts (unknown end time)
+    if (!isVenue) {
+      final postLockout = end.add(const Duration(hours: 1));
+      await _plugin.zonedSchedule(
+        _kPostLockoutId,
+        'goback',
+        "You've been back online, the button is still there! Life awaits",
+        postLockout,
+        _notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    }
 
-    logger.info('Lockout notifications scheduled (mid + post)');
+    logger.info(
+      isVenue
+          ? 'Venue lockout notifications scheduled for $venueName'
+          : 'Lockout notifications scheduled (mid + post)',
+    );
   }
 
   /// Call when a lockout ends or is cleared. Cancels lockout notifications

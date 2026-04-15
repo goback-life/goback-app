@@ -31,60 +31,61 @@ class SignInPrivacyCheckbox extends HookWidget with MainLayout, SignInLayout {
       translator.translate('pages.sign_in.terms_of_service_url'),
     );
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GestureDetector(
-          onTap: () => onChanged(!value),
-          child: Container(
-            width: checkBoxSize,
-            height: checkBoxSize,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(checkBoxBorderRadius),
-              color: value
-                  ? colorScheme.primaryContainer
-                  : colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
-            ),
-            child: value
-                ? Assets.svg.check.render(
-                    colorFilter: colorScheme.primary.asSrcIn,
-                    width: checkSize,
-                    height: checkSize,
-                  )
-                : null,
-          ),
-        ),
-        SizedBox(width: checkBoxToText),
-        Expanded(
-          child: GestureDetector(
-            onTap: () => onChanged(!value),
-            child: StyledText(
-              text: translator.translate('pages.sign_in.privacy_text'),
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onChanged(!value),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 44),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: checkBoxSize,
+              height: checkBoxSize,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(checkBoxBorderRadius),
+                color: value
+                    ? colorScheme.primaryContainer
+                    : colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
               ),
-              tags: {
-                'privacy': StyledTextActionTag(
-                  (_, __) {
-                    openPrivacyPolicyUrl();
-                  },
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                'terms': StyledTextActionTag(
-                  (_, __) {
-                    openTermsOfServiceUrl();
-                  },
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-              },
+              child: value
+                  ? Assets.svg.check.render(
+                      colorFilter: colorScheme.primary.asSrcIn,
+                      width: checkSize,
+                      height: checkSize,
+                    )
+                  : null,
             ),
-          ),
+            SizedBox(width: checkBoxToText),
+            Expanded(
+              child: StyledText(
+                text: translator.translate('pages.sign_in.privacy_text'),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
+                tags: {
+                  'privacy': StyledTextActionTag(
+                    (_, __) {
+                      openPrivacyPolicyUrl();
+                    },
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  'terms': StyledTextActionTag(
+                    (_, __) {
+                      openTermsOfServiceUrl();
+                    },
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                },
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

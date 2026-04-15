@@ -14,6 +14,7 @@ class PostDetailReactionAddButton extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onTap: onTap,
       child: AppGlassContainer(
         config: GlassConfig(

@@ -3,7 +3,7 @@ import 'package:cloudless/presentation/utilities/main_layout.dart';
 mixin VideoPlayerLayout on MainLayout {
   // Close button
   double get closeButtonMargin => 8.0;
-  double get closeButtonPadding => 8.0;
+  double get closeButtonPadding => 10.0;
 
   // Play/Pause button
   double get playPauseIconSize => 48.0;

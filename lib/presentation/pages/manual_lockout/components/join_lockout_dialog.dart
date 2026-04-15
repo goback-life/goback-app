@@ -25,7 +25,17 @@ class JoinLockoutDialog extends StatelessWidget with MainLayout {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
+    final isVenueLockout = session.isOpenEnded;
     final timeRemaining = _formatTimeRemaining(session.endsAt);
+
+    final descriptionText = isVenueLockout
+        ? 'They are at ${session.locationName ?? 'a venue'}. '
+              'You will need to scan the GoBack tag at the same venue to join.'
+        : translator.translate(
+            'pages.manual_lockout.friends_locked_out.join_dialog.description',
+            context: context,
+            arguments: {'time': timeRemaining},
+          );
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -53,11 +63,7 @@ class JoinLockoutDialog extends StatelessWidget with MainLayout {
               ),
               const SizedBox(height: 16),
               Text(
-                translator.translate(
-                  'pages.manual_lockout.friends_locked_out.join_dialog.description',
-                  context: context,
-                  arguments: {'time': timeRemaining},
-                ),
+                descriptionText,
                 style: textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurface.withValues(alpha: 0.8),
                 ),

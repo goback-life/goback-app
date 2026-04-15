@@ -77,9 +77,12 @@ class LockoutPostEditorView extends HookConsumerWidget {
           // Scrollable content
           SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
-                horizontal: 18 * s,
-                vertical: 24 * s,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.only(
+                left: 18 * s,
+                right: 18 * s,
+                top: 24 * s,
+                bottom: 24 * s + MediaQuery.of(context).viewInsets.bottom,
               ),
               child: Column(
                 children: [
@@ -222,6 +225,11 @@ class LockoutPostEditorView extends HookConsumerWidget {
           description: description,
         );
       }
+      // Guard: the content editor page guard may have already navigated home
+      // when pendingLockoutPostProvider was cleared during post-creation
+      // cleanup. A second router.go would recreate the HomeView and disrupt
+      // the feed cache update that adds the new post.
+      if (!context.mounted) return;
       result.fold((_) => router.go(const HomeRoutable()), (error) {
         if (!context.mounted) return;
         MainAlert.showError(

@@ -27,3 +27,8 @@ Format: [lesson] → [why it matters] → [what to do instead]
   → If generated output is wrong, fix the source annotation, not the generated file.
 
 ## From Development (ongoing — add here when corrected)
+
+- Background tasks must not be left running between sessions. This machine has limited resources
+  and orphaned processes consume them unnecessarily.
+  → Always clean up background tasks before ending a session. Never leave a `run_in_background`
+  command running unless it is explicitly meant to outlive the conversation.

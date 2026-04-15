@@ -40,7 +40,7 @@ class HomeLockoutButton extends HookConsumerWidget with MainLayout, HomeLayout {
             manualLockoutNotifierProvider.notifier,
           );
           await lockoutNotifier.setLockout(
-            result.duration,
+            result.duration!,
             actionText: result.actionText,
           );
 

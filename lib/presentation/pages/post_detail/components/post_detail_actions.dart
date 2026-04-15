@@ -30,19 +30,25 @@ class PostDetailActions extends StatelessWidget
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         if (isCurrentUserPost && showCalendarIcon)
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isPostInCalendar
-                  ? colorScheme.primaryContainer
-                  : colorScheme.primaryContainer.withValues(alpha: 0.1),
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(iconPadding),
-              child: Assets.svg.addToCalendar.render(
-                colorFilter: isPostInCalendar
-                    ? colorScheme.surface.asSrcIn
-                    : colorScheme.primaryContainer.asSrcIn,
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isPostInCalendar
+                      ? colorScheme.primaryContainer
+                      : colorScheme.primaryContainer.withValues(alpha: 0.1),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(iconPadding),
+                  child: Assets.svg.addToCalendar.render(
+                    colorFilter: isPostInCalendar
+                        ? colorScheme.surface.asSrcIn
+                        : colorScheme.primaryContainer.asSrcIn,
+                  ),
+                ),
               ),
             ),
           ),
@@ -53,8 +59,8 @@ class PostDetailActions extends StatelessWidget
             behavior: HitTestBehavior.translucent,
             onTap: onMenuTap,
             child: SizedBox(
-              height: iconHeight,
-              width: iconWidth,
+              height: 44,
+              width: 44,
               child: Center(
                 child: Assets.svg.menu.render(
                   colorFilter: colorScheme.onSurface.asSrcIn,

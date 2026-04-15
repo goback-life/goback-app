@@ -36,10 +36,15 @@ Future<void> showReceiveCodeCardPopup(BuildContext context) {
         FadeTransition(opacity: anim, child: child),
     pageBuilder: (context, _, __) => Column(
       children: [
-        const Expanded(
+        Expanded(
           child: Align(
             alignment: Alignment.bottomCenter,
-            child: _ReceiveCodeCard(),
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: const _ReceiveCodeCard(),
+            ),
           ),
         ),
         const Expanded(child: SizedBox.shrink()),

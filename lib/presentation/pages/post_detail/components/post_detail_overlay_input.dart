@@ -123,10 +123,17 @@ class PostDetailOverlayInput extends StatelessWidget {
               children: [
                 GestureDetector(
                   onTap: onSubmit,
-                  child: CustomPaint(
-                    size: Size(arrowW, arrowH),
-                    painter: _GlassArrowPainter(
-                      accent: MainColors.accent.withValues(alpha: 0.10),
+                  behavior: HitTestBehavior.opaque,
+                  child: SizedBox(
+                    width: arrowW < 44 ? 44 : arrowW,
+                    height: arrowH < 44 ? 44 : arrowH,
+                    child: Center(
+                      child: CustomPaint(
+                        size: Size(arrowW, arrowH),
+                        painter: _GlassArrowPainter(
+                          accent: MainColors.accent.withValues(alpha: 0.10),
+                        ),
+                      ),
                     ),
                   ),
                 ),

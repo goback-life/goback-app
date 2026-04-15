@@ -13,6 +13,7 @@ class StartupConfig implements StartupConfigContract {
     this.errorPage,
     this.appBuilder,
     this.localizationsDelegates,
+    this.envFilename,
   })  : routes = routes ?? <BaseRoutable>[],
         middlewares = middlewares ?? <Middleware>[];
 
@@ -39,4 +40,7 @@ class StartupConfig implements StartupConfigContract {
 
   @override
   final List<LocalizationsDelegate>? localizationsDelegates;
+
+  @override
+  final String? envFilename;
 }

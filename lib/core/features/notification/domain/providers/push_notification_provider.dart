@@ -1,3 +1,4 @@
+import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/notification/data/providers/device_token_service_provider.dart';
 import 'package:cloudless/core/features/notification/data/services/push_notification_service.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -19,5 +20,8 @@ part 'push_notification_provider.g.dart';
 PushNotificationService pushNotification(Ref ref) {
   return PushNotificationService(
     deviceTokenService: ref.watch(deviceTokenServiceProvider),
+    onLockoutCompleted: () async {
+      await ref.read(manualLockoutNotifierProvider.notifier).clearLockout();
+    },
   );
 }

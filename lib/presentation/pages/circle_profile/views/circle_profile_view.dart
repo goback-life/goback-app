@@ -5,7 +5,9 @@ import 'package:cloudless/presentation/components/profile_description.dart';
 import 'package:cloudless/presentation/components/profile_image/profile_image.dart';
 import 'package:cloudless/presentation/components/username_field.dart';
 import 'package:cloudless/presentation/pages/profile/components/calendar_section/profile_calendar.dart';
-import 'package:cloudless/presentation/pages/profile/components/profile_weekly_stats.dart';
+import 'package:cloudless/presentation/pages/profile/components/profile_tab_toggle.dart';
+import 'package:cloudless/presentation/pages/profile/components/stats_section/activity_bubble_cloud.dart';
+import 'package:cloudless/presentation/pages/profile/components/stats_section/profile_stats_view.dart';
 import 'package:cloudless/presentation/pages/profile/profile_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
@@ -30,6 +32,7 @@ class CircleProfileView extends HookConsumerWidget
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(getProfileProvider(userId));
     final circleMembersAsync = ref.watch(getCircleMembersProvider);
+    final tabIndex = useState<int>(0);
     final topPad = MediaQuery.of(context).padding.top;
     final theme = Theme.of(context);
     final s = scale;
@@ -139,27 +142,51 @@ class CircleProfileView extends HookConsumerWidget
                 ),
               ),
 
-              // Weekly lockout stats
+              // Tab toggle
               Positioned(
                 top: statsTop,
                 left: 0,
                 right: 0,
                 child: Center(
-                  child: ProfileWeeklyStats(
-                    weeklyLockoutMinutes: profileToUse?.weeklyLockoutMinutes,
-                    hasResolvedData: true,
+                  child: ProfileTabToggle(
+                    selectedIndex: tabIndex.value,
+                    onChanged: (i) => tabIndex.value = i,
+                    scale: s,
                   ),
                 ),
               ),
 
-              // Calendar (read-only: friends can view but not add
-              // new comments/reactions on posts)
+              // Tab content area
               Positioned(
                 top: calTop,
                 left: 0,
                 right: 0,
                 bottom: MediaQuery.of(context).padding.bottom + 8 * s,
-                child: ProfileCalendar(userId: userId, scale: s),
+                child: IndexedStack(
+                  index: tabIndex.value,
+                  children: [
+                    // Calendar tab
+                    ProfileCalendar(userId: userId, scale: s),
+                    // Stats tab
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: (statsTop + 56 * s) - calTop,
+                      ),
+                      child: ProfileStatsView(
+                        userId: userId,
+                        scale: s,
+                        username: profileToUse?.username ?? '',
+                      ),
+                    ),
+                    // Hobbies tab
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: (statsTop + 56 * s) - calTop,
+                      ),
+                      child: ActivityBubbleCloud(userId: userId, scale: s),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

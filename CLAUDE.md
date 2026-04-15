@@ -41,13 +41,15 @@ When intent is ambiguous, state which workflow you're applying and why before st
 - Migration before any code that depends on it.
 - `DateTime` stored as `.toUtc().toIso8601String()`.
 - RLS required on every new table.
+- **Migration tracking:** After pushing a migration to stage, update `memory/project_stage_migrations.md` with the migration name and date. On `/promote`, apply all pending stage migrations to production and clear the list.
 
 ## Environment Strategy
 ```
-local dev  → supabase start              → stage flavor (emulator)
+local dev  → supabase start              → production flavor (stage flavor broken)
 staging    → goback-stage Supabase       → stage flavor → TestFlight internal
 production → tvrbqsvxfpyfxvbypvtb        → production flavor → App Store
 ```
+**Note:** `--flavor stage` does not work locally — run on `production` flavor and manually swap Supabase creds for local/stage testing.
 Branch flow: `feature/*` → PR to `develop` → PR to `main` (manual /promote only)
 
 ## Session Protocol
@@ -68,12 +70,25 @@ Do NOT use for: architectural decisions, security-critical code, anything needin
 Default: `ralph run -p "task description"` — stop condition: `fvm flutter test && fvm flutter analyze`
 Stuck after N iterations → write BLOCKED report to `docs/claude/handoff.md`
 
-## Mandatory Superpowers (not optional)
-- `superpowers:test-driven-development` → every new feature / bug fix
-- `superpowers:systematic-debugging` → every unexpected test failure
-- `superpowers:requesting-code-review` → before every commit to main
-- `superpowers:finishing-a-development-branch` → before every merge
-- `gsd:pause-work` / `gsd:resume-work` → context management
+## Superpowers Plugin (mandatory — invoke via Skill tool)
+The `superpowers` plugin is installed. On every user message, check if a skill applies and invoke it via the `Skill` tool BEFORE responding or taking action. Even a 1% chance = invoke it.
+
+| Trigger | Invoke |
+|---|---|
+| Start of any conversation | `superpowers:using-superpowers` |
+| Open-ended / ambiguous request | `superpowers:brainstorming` |
+| New feature / bug fix / any code change | `superpowers:test-driven-development` |
+| Unexpected failure or wrong behaviour | `superpowers:systematic-debugging` |
+| Complex task needing a plan | `superpowers:writing-plans` |
+| Executing an agreed plan | `superpowers:executing-plans` |
+| Parallel independent work | `superpowers:dispatching-parallel-agents` |
+| Large feature with multiple agents | `superpowers:subagent-driven-development` |
+| Need isolated branch for risky work | `superpowers:using-git-worktrees` |
+| Before commit to main | `superpowers:requesting-code-review` |
+| Responding to review feedback | `superpowers:receiving-code-review` |
+| Before merge / PR | `superpowers:finishing-a-development-branch` |
+| After completing any task | `superpowers:verification-before-completion` |
+| Creating new reusable workflows | `superpowers:writing-skills` |
 
 ## Slash Commands
 `/new-feature` `/fix-bug` `/new-migration` `/add-tests` `/deploy-beta` `/deploy-functions` `/promote`

@@ -4,6 +4,7 @@ import 'package:dedecube_logger/dedecube_logger.dart';
 import 'package:dedecube_startup/src/configs/logger_config.dart';
 import 'package:dedecube_startup/src/configs/translator_config.dart';
 import 'package:dedecube_startup/src/providers/environment_initialized_provider.dart';
+import 'package:dedecube_startup/src/providers/startup_config_provider.dart';
 import 'package:dedecube_startup/src/utilities/translator_versioning.dart';
 import 'package:dedecube_translator/dedecube_translator.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,8 @@ void useStartupReassemble(WidgetRef ref) {
     environmentInitializedNotifier.isInitialized = false;
     ref.invalidate(environmentServiceProvider);
 
-    environment.initialize().then((_) {
+    final envFilename = ref.read(startupConfigNotifierProvider).envFilename;
+    environment.initialize(filename: envFilename).then((_) {
       // Reloading completed.
       environmentInitializedNotifier.isInitialized = true;
 

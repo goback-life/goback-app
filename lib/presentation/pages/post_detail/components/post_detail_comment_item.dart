@@ -71,11 +71,20 @@ class PostDetailCommentItem extends StatelessWidget
                     ),
                     if (isOwnComment)
                       GestureDetector(
+                        behavior: HitTestBehavior.translucent,
                         onTap: onDelete,
-                        child: Icon(
-                          Icons.close,
-                          size: commentDeleteIconSize,
-                          color: colorScheme.onSurface.withValues(alpha: 0.5),
+                        child: SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: Center(
+                            child: Icon(
+                              Icons.close,
+                              size: commentDeleteIconSize,
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                   ],
