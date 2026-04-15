@@ -20,6 +20,7 @@ interface WebhookPayload {
     payload: Record<string, string>
     created_at: string
     processed_at: string | null
+    process_after: string
   }
 }
 
@@ -176,20 +177,6 @@ async function buildMessage(
       }
     }
 
-    case 'lockout_joined': {
-      const { data: tokens } = await supabase.rpc('get_user_device_tokens', { p_user_id: payload.owner_id })
-      if (!tokens?.length) return null
-      const joinerName = await getUsername(payload.joiner_id)
-      return {
-        title: 'Someone joined!',
-        body: `${joinerName} joined your lockout`,
-        data: { type: 'lockout_joined', lockout_id: payload.lockout_id },
-        tokens,
-        androidPriority: 'normal',
-        iosInterruptionLevel: 'passive',
-      }
-    }
-
     case 'friend_joins_lockout': {
       const { data: tokens } = await supabase.rpc('get_friend_device_tokens_for_user', { p_user_id: payload.joiner_id })
       if (!tokens?.length) return null
@@ -237,6 +224,42 @@ async function buildMessage(
       }
     }
 
+    case 'member_joined_batch': {
+      const sessionId = payload.session_id
+      const joinerUsernames: string[] = JSON.parse(payload.joiner_usernames as string ?? '[]')
+      const joinerUserIds: string[] = JSON.parse(payload.joiner_user_ids as string ?? '[]')
+
+      if (!joinerUsernames.length || !joinerUserIds.length) return null
+
+      // Get device tokens for all current participants, excluding the joiners
+      const { data: tokens } = await supabase.rpc('get_lockout_participant_tokens', {
+        p_session_id: sessionId,
+        p_exclude_user_ids: joinerUserIds,
+      })
+      if (!tokens?.length) return null
+
+      // Build message based on joiner count
+      const count = joinerUsernames.length
+      const latest = joinerUsernames[joinerUsernames.length - 1]
+      let body: string
+      if (count === 1) {
+        body = `${latest} joined your lockout`
+      } else if (count === 2) {
+        body = `${joinerUsernames[0]} and ${joinerUsernames[1]} joined your lockout`
+      } else {
+        body = `${latest} and ${count - 1} others joined your lockout`
+      }
+
+      return {
+        title: 'goback',
+        body,
+        data: { type: 'member_joined', lockout_id: sessionId },
+        tokens,
+        androidPriority: 'normal',
+        iosInterruptionLevel: 'passive',
+      }
+    }
+
     default:
       console.warn(`Unknown event type: ${eventType}`)
       return null
@@ -254,6 +277,11 @@ Deno.serve(async (req) => {
     }
 
     const { id, event_type, payload } = webhookPayload.record
+
+    // Skip events that aren't ready to process yet (batched by pg_cron)
+    if (webhookPayload.record.process_after && new Date(webhookPayload.record.process_after) > new Date()) {
+      return new Response(JSON.stringify({ message: 'Deferred for batching' }), { status: 200 })
+    }
 
     // Parse service account
     const saJson = Deno.env.get('FCM_SERVICE_ACCOUNT_JSON')
