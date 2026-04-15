@@ -275,7 +275,7 @@ class _EmojiPickerSheet extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(16 * scale),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20 * scale)),
         ),
         child: SafeArea(
@@ -354,7 +354,7 @@ class _ReactorListSheet extends StatelessWidget {
       constraints: BoxConstraints(maxHeight: 200 * scale),
       padding: EdgeInsets.all(16 * scale),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20 * scale)),
       ),
       child: SafeArea(

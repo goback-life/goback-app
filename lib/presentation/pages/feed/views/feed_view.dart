@@ -417,9 +417,7 @@ class FeedView extends HookConsumerWidget {
       children: [
         // Feed list
         if (showLoading)
-          const Center(
-            child: CircularProgressIndicator(color: MainColors.white),
-          )
+          Center(child: CircularProgressIndicator(color: MainColors.dark))
         else if (feedPosts.posts.isNotEmpty)
           FeedPostsList(
             posts: feedPosts.posts,

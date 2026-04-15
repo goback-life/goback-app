@@ -5,7 +5,6 @@ import 'package:cloudless/presentation/pages/circle_profile/views/circle_profile
 import 'package:cloudless/presentation/pages/profile/components/profile_hamburger_menu.dart';
 import 'package:cloudless/presentation/pages/profile/profile_layout.dart';
 import 'package:cloudless/presentation/pages/profile_shared/components/profile_actions_menu.dart';
-import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -71,7 +70,7 @@ class CircleProfilePage extends HookConsumerWidget
     }
 
     return Scaffold(
-      backgroundColor: MainColors.dark,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Stack(
         children: [
           CircleProfileView(userId: userId, scale: s),
@@ -85,7 +84,7 @@ class CircleProfilePage extends HookConsumerWidget
               behavior: HitTestBehavior.translucent,
               child: Icon(
                 Icons.arrow_back_ios_new,
-                color: MainColors.white,
+                color: Theme.of(context).colorScheme.onSurface,
                 size: 20 * s,
               ),
             ),

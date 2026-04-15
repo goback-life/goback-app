@@ -20,7 +20,7 @@ class StatsCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12 * s, vertical: 6 * s),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2A2A),
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(12 * s),
       ),
       child: Column(

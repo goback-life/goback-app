@@ -202,7 +202,7 @@ class FeedPostsList extends HookConsumerWidget {
               padding: EdgeInsets.only(right: 24 * s),
               child: Icon(
                 Icons.delete_rounded,
-                color: MainColors.white,
+                color: MainColors.dark,
                 size: 28 * s,
               ),
             ),

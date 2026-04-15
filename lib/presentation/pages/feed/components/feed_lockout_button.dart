@@ -122,7 +122,7 @@ class FeedLockoutButton extends HookConsumerWidget {
                     variant: GlassVariant.clear,
                     tint: MainColors.accent,
                     pathData: _kTrianglePathData,
-                    opacity: 0.3,
+                    opacity: 0.5,
                   ).toCreationParams(),
                   creationParamsCodec: const StandardMessageCodec(),
                 ),
@@ -220,7 +220,7 @@ class _ShadowPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final path = lockoutTrianglePath(size);
     final paint = Paint()
-      ..color = const Color(0xFF191919).withValues(alpha: 0.25)
+      ..color = const Color(0xFF191919).withValues(alpha: 0.12)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
     canvas.save();
     canvas.translate(0, 4);
@@ -254,7 +254,7 @@ class _GlassOverlayPainter extends CustomPainter {
       // 1. Accent tint
       canvas.drawPath(
         path,
-        Paint()..color = MainColors.accent.withValues(alpha: 0.20),
+        Paint()..color = MainColors.accent.withValues(alpha: 0.40),
       );
 
       // -- Clipped interior effects --
@@ -308,9 +308,9 @@ class _GlassOverlayPainter extends CustomPainter {
     }
 
     // 5a. Direct reflection — NW light (315 deg) hitting the glass surface.
-    //     Glow boost: peak alpha rises from 0.80 -> 1.0 during refresh.
-    final reflAlpha = 0.80 + 0.20 * glowIntensity;
-    final reflMid = 0.20 + 0.30 * glowIntensity;
+    //     Glow boost: peak alpha rises from 0.40 -> 0.60 during refresh.
+    final reflAlpha = 0.40 + 0.20 * glowIntensity;
+    final reflMid = 0.10 + 0.30 * glowIntensity;
     canvas.drawPath(
       path,
       Paint()
@@ -329,8 +329,8 @@ class _GlassOverlayPainter extends CustomPainter {
     );
 
     // 5b. Caustic — NW light refracts through the glass body.
-    //     Glow boost: alpha rises from 0.28 -> 0.70, radius widens.
-    final causticAlpha = 0.28 + 0.42 * glowIntensity;
+    //     Glow boost: alpha rises from 0.15 -> 0.57, radius widens.
+    final causticAlpha = 0.15 + 0.42 * glowIntensity;
     final causticRadius = bounds.width * (0.30 + 0.15 * glowIntensity);
     canvas.drawPath(
       path,

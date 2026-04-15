@@ -16,7 +16,7 @@ class YourCirclePage extends HookConsumerWidget {
     final topPad = MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      backgroundColor: MainColors.dark,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
@@ -99,7 +99,7 @@ class _TabPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? MainColors.accent.withOpacity(0.25)
+              ? MainColors.accent.withValues(alpha: 0.25)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(17),
         ),
@@ -110,8 +110,10 @@ class _TabPill extends StatelessWidget {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             fontSize: 14,
             color: isSelected
-                ? MainColors.white
-                : MainColors.white.withOpacity(0.5),
+                ? Theme.of(context).colorScheme.onSurface
+                : Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.5),
           ),
         ),
       ),

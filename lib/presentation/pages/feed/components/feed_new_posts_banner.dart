@@ -52,7 +52,7 @@ class FeedNewPostsBanner extends StatelessWidget {
                 'assets/images/svgs/feed_arrow_down.svg',
                 width: iconSize,
                 height: iconSize,
-                colorFilter: MainColors.white.asSrcIn,
+                colorFilter: MainColors.dark.asSrcIn,
               ),
               if (hasNew) ...[
                 SizedBox(width: 4 * s),
@@ -62,7 +62,7 @@ class FeedNewPostsBanner extends StatelessWidget {
                     fontFamily: MainFontFamilies.quicksand,
                     fontWeight: FontWeight.w400,
                     fontSize: fontSize,
-                    color: MainColors.white,
+                    color: MainColors.dark,
                   ),
                 ),
               ],

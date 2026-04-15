@@ -48,7 +48,7 @@ class FeedDateOverlay extends StatelessWidget {
             fontFamily: MainFontFamilies.quicksand,
             fontWeight: FontWeight.w400,
             fontSize: fontSize,
-            color: MainColors.white,
+            color: MainColors.dark,
           ),
         ),
       ),

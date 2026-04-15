@@ -7,7 +7,6 @@ import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routa
 import 'package:cloudless/presentation/pages/external_profile/external_profile_routable.dart';
 import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
 import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
-import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -78,12 +77,22 @@ class FeedPostCard extends HookConsumerWidget {
                               fadeOutDuration: const Duration(
                                 milliseconds: 100,
                               ),
-                              placeholder: (_, __) =>
-                                  Container(color: MainColors.dark),
-                              errorWidget: (_, __, ___) =>
-                                  Container(color: MainColors.dark),
+                              placeholder: (_, __) => Container(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHigh,
+                              ),
+                              errorWidget: (_, __, ___) => Container(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHigh,
+                              ),
                             )
-                          : Container(color: MainColors.dark),
+                          : Container(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHigh,
+                            ),
                     ),
                   ),
                 ),
@@ -118,12 +127,22 @@ class FeedPostCard extends HookConsumerWidget {
                                   height: avatarSize,
                                   memCacheWidth: (avatarSize * 2).toInt(),
                                   memCacheHeight: (avatarSize * 2).toInt(),
-                                  placeholder: (_, __) =>
-                                      Container(color: MainColors.dark),
-                                  errorWidget: (_, __, ___) =>
-                                      Container(color: MainColors.dark),
+                                  placeholder: (_, __) => Container(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainerHigh,
+                                  ),
+                                  errorWidget: (_, __, ___) => Container(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainerHigh,
+                                  ),
                                 )
-                              : Container(color: MainColors.dark),
+                              : Container(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainerHigh,
+                                ),
                         ),
                       ),
                       SizedBox(width: avatarToName),
@@ -138,7 +157,7 @@ class FeedPostCard extends HookConsumerWidget {
                             fontFamily: MainFontFamilies.quicksand,
                             fontWeight: FontWeight.w400,
                             fontSize: fontSize,
-                            color: MainColors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                             letterSpacing: letterSpacing,
                           ),
                         ),

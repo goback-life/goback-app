@@ -70,12 +70,15 @@ class LimitedProfileView extends HookConsumerWidget with MainLayout {
     }
 
     return Scaffold(
-      backgroundColor: MainColors.dark,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: MainColors.white),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -97,11 +100,11 @@ class LimitedProfileView extends HookConsumerWidget with MainLayout {
                 // Username
                 Text(
                   '@$username',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: MainFontFamilies.quicksand,
                     fontWeight: FontWeight.w600,
                     fontSize: 20,
-                    color: MainColors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -115,10 +118,12 @@ class LimitedProfileView extends HookConsumerWidget with MainLayout {
                     onPressed: requestSent.value ? null : sendRequest,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: requestSent.value
-                          ? MainColors.grey500
+                          ? Theme.of(context).colorScheme.outline
                           : MainColors.accent,
                       foregroundColor: MainColors.white,
-                      disabledBackgroundColor: MainColors.grey500,
+                      disabledBackgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.outline,
                       disabledForegroundColor: MainColors.white.withValues(
                         alpha: 0.7,
                       ),

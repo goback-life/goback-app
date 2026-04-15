@@ -83,7 +83,7 @@ class LockoutBottomSheet extends HookWidget {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF222222),
+          color: Theme.of(context).colorScheme.surfaceContainer,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SafeArea(

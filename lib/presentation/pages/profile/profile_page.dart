@@ -3,7 +3,6 @@ import 'package:cloudless/presentation/pages/profile/components/profile_hamburge
 import 'package:cloudless/presentation/pages/profile/profile_layout.dart';
 import 'package:cloudless/presentation/pages/profile/views/profile_view.dart';
 import 'package:cloudless/presentation/pages/settings/settings_routable.dart';
-import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -20,7 +19,7 @@ class ProfilePage extends HookConsumerWidget with MainLayout, ProfileLayout {
     final isMenuVisible = useState(false);
 
     return Scaffold(
-      backgroundColor: MainColors.dark,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Stack(
         children: [
           ProfileView(scale: s),
@@ -87,7 +86,7 @@ class _ProfileDropdownMenu extends StatelessWidget {
       fontFamily: MainFontFamilies.quicksand,
       fontWeight: FontWeight.w500,
       fontSize: 16 * scale,
-      color: MainColors.white,
+      color: Theme.of(context).colorScheme.onSurface,
     );
     final padH = 20.0 * scale;
     final padV = 12.0 * scale;
@@ -97,11 +96,11 @@ class _ProfileDropdownMenu extends StatelessWidget {
       color: Colors.transparent,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF2A2A2A),
+          color: Theme.of(context).colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(radius),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x40000000),
+              color: Color(0x14191919),
               blurRadius: 8,
               offset: Offset(0, 4),
             ),
