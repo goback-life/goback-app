@@ -6,6 +6,7 @@ import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart'
 import 'package:cloudless/core/features/storage/data/providers/signed_url_provider.dart';
 import 'package:cloudless/core/features/supabase/utilities/supabase_buckets.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_overlay_input.dart';
+import 'package:cloudless/presentation/pages/post_detail/components/post_detail_participants.dart';
 import 'package:cloudless/presentation/pages/post_detail/utilities/post_detail_navigation.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
@@ -118,6 +119,9 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     final textController = useTextEditingController();
     final mentionState = useMentionAutocomplete(ref);
     final allUsers = mentionState.allUsers;
+    final myFriendIds = useMemoized(() => allUsers.map((u) => u.id).toSet(), [
+      allUsers,
+    ]);
     final mentionedIds = useState<List<String>>([]);
     final descExpanded = useState(false);
 
@@ -203,6 +207,20 @@ class PostDetailOverlayContent extends HookConsumerWidget {
               onMentionTap: navigateToMention,
               authorAvatarUrl: resolveAvatar(post.authorId),
             ),
+            if (post.isLockoutPost &&
+                post.lockoutParticipantIds.isNotEmpty) ...[
+              SizedBox(height: 12 * scale),
+              PostDetailParticipants(
+                participantIds: post.lockoutParticipantIds,
+                participantUsernames: post.lockoutParticipantUsernames,
+                participantAvatars: post.lockoutParticipantAvatars,
+                participantJoinedVia: post.lockoutParticipantJoinedVia,
+                myFriendIds: myFriendIds,
+                onFriendTap: (userId, username) => navigateToUser(userId),
+                onFriendOfFriendTap: (userId, username) =>
+                    navigateToUser(userId),
+              ),
+            ],
             SizedBox(height: inputGap),
             if (!readOnly) ...[
               if (commentsResult.canAddMore)
