@@ -1,7 +1,7 @@
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
-import 'package:cloudless/presentation/components/text/linkable_text.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
+import 'package:cloudless/presentation/utilities/mention_text_parser.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 
@@ -10,11 +10,13 @@ class PostDetailDescription extends HookWidget
   const PostDetailDescription({
     required this.description,
     this.contentType,
+    this.onMentionTap,
     super.key,
   });
 
   final String description;
   final ContentType? contentType;
+  final void Function(String username)? onMentionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +40,14 @@ class PostDetailDescription extends HookWidget
 
     // For text posts, always show full text without expand/collapse
     if (contentType == ContentType.text) {
-      return LinkableText(
-        text: description,
-        style: textTheme.bodyMedium?.copyWith(
-          color: colorScheme.outlineVariant,
-          height: 20.5 / 14.0,
-        ),
-        maxLines: null,
-        overflow: null,
+      final baseStyle =
+          textTheme.bodyMedium?.copyWith(
+            color: colorScheme.outlineVariant,
+            height: 20.5 / 14.0,
+          ) ??
+          const TextStyle();
+      return RichText(
+        text: parseMentions(description, baseStyle, onMentionTap: onMentionTap),
       );
     }
 
@@ -61,22 +63,28 @@ class PostDetailDescription extends HookWidget
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              style:
-                  textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.outlineVariant,
-                    height: 20.5 / 14.0,
-                  ) ??
-                  const TextStyle(),
-              child: Text(
-                description,
-                maxLines: showFullText.value
-                    ? null
-                    : (isLongText.value ? descriptionMaxLines.toInt() : null),
-                overflow: showFullText.value ? null : TextOverflow.ellipsis,
-              ),
+            Builder(
+              builder: (_) {
+                final baseStyle =
+                    textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.outlineVariant,
+                      height: 20.5 / 14.0,
+                    ) ??
+                    const TextStyle();
+                return RichText(
+                  text: parseMentions(
+                    description,
+                    baseStyle,
+                    onMentionTap: onMentionTap,
+                  ),
+                  maxLines: showFullText.value
+                      ? null
+                      : (isLongText.value ? descriptionMaxLines.toInt() : null),
+                  overflow: showFullText.value
+                      ? TextOverflow.clip
+                      : TextOverflow.ellipsis,
+                );
+              },
             ),
             if (isLongText.value) ...[
               SizedBox(height: descriptionTruncatorSpacing),

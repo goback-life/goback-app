@@ -10,8 +10,8 @@ import 'package:cloudless/presentation/pages/post_detail/components/post_detail_
 import 'package:cloudless/presentation/pages/post_detail/utilities/post_detail_navigation.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
+import 'package:cloudless/presentation/utilities/mention_text_parser.dart';
 import 'package:dedecube_core/dedecube_core.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 Widget _cachedAvatar(String? url, double size, {String? name}) {
@@ -50,38 +50,6 @@ Widget _initialCircle(double size, String? name, Color bg) {
     );
   }
   return Container(width: size, height: size, color: bg);
-}
-
-/// Parses text for @username patterns and wraps them in bold spans.
-/// When [onMentionTap] is provided, each @mention becomes tappable.
-TextSpan _parseMentions(
-  String text,
-  TextStyle base, {
-  void Function(String username)? onMentionTap,
-}) {
-  final regex = RegExp(r'@(\w+)');
-  final children = <InlineSpan>[];
-  var lastEnd = 0;
-  for (final match in regex.allMatches(text)) {
-    if (match.start > lastEnd) {
-      children.add(TextSpan(text: text.substring(lastEnd, match.start)));
-    }
-    final username = match.group(1)!;
-    children.add(
-      TextSpan(
-        text: match.group(0),
-        style: base.copyWith(fontWeight: FontWeight.w700),
-        recognizer: onMentionTap != null
-            ? (TapGestureRecognizer()..onTap = () => onMentionTap(username))
-            : null,
-      ),
-    );
-    lastEnd = match.end;
-  }
-  if (lastEnd < text.length) {
-    children.add(TextSpan(text: text.substring(lastEnd)));
-  }
-  return TextSpan(style: base, children: children);
 }
 
 /// Scrollable content column for the post detail overlay.
@@ -278,7 +246,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
           GestureDetector(
             onTap: () => descExpanded.value = !descExpanded.value,
             child: RichText(
-              text: _parseMentions(
+              text: parseMentions(
                 post.description!,
                 descStyle,
                 onMentionTap: onMentionTap,
@@ -473,7 +441,7 @@ class _CommentRow extends StatelessWidget {
               ),
               SizedBox(height: 4 * scale),
               RichText(
-                text: _parseMentions(
+                text: parseMentions(
                   comment.content,
                   TextStyle(
                     fontFamily: MainFontFamilies.quicksand,
