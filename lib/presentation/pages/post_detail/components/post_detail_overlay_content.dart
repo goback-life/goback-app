@@ -185,7 +185,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
                 participantJoinedVia: post.lockoutParticipantJoinedVia,
                 myFriendIds: myFriendIds,
                 onFriendTap: (userId, username) => navigateToUser(userId),
-                onFriendOfFriendTap: (userId, username) =>
+                onFriendOfFriendTap: (userId, username, _) =>
                     navigateToUser(userId),
               ),
             ],
