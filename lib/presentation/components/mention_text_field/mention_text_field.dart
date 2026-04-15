@@ -5,7 +5,7 @@ import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 
 /// A text field that supports @mention autocomplete from circle members.
-/// Shows a dropdown of matching users when the user types @.
+/// Shows a horizontal strip of matching users when the user types @.
 class MentionTextField extends HookWidget with MainLayout {
   const MentionTextField({
     required this.controller,
@@ -19,6 +19,7 @@ class MentionTextField extends HookWidget with MainLayout {
     this.onSubmitted,
     this.textInputAction,
     this.focusNode,
+    this.userFilter,
     super.key,
   });
 
@@ -33,6 +34,7 @@ class MentionTextField extends HookWidget with MainLayout {
   final void Function(String)? onSubmitted;
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
+  final bool Function(ProfileModel)? userFilter;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +42,6 @@ class MentionTextField extends HookWidget with MainLayout {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final layerLink = useMemoized(() => LayerLink());
     final overlayEntry = useState<OverlayEntry?>(null);
     final mentionQuery = useState<String?>(null);
     final mentionStartIndex = useState<int?>(null);
@@ -111,10 +112,15 @@ class MentionTextField extends HookWidget with MainLayout {
       if (query == null) return [];
 
       final lowerQuery = query.toLowerCase();
-      return allUsers
-          .where((u) => u.username.toLowerCase().startsWith(lowerQuery))
-          .take(5)
-          .toList();
+      var filtered = allUsers.where(
+        (u) => u.username.toLowerCase().startsWith(lowerQuery),
+      );
+
+      if (userFilter != null) {
+        filtered = filtered.where(userFilter!);
+      }
+
+      return filtered.take(5).toList();
     }
 
     /// Inserts the selected username at the mention position.
@@ -150,12 +156,13 @@ class MentionTextField extends HookWidget with MainLayout {
     /// Shows/hides the overlay based on mention state.
     void updateOverlay() {
       final filteredUsers = getFilteredUsers();
+      final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
       if (mentionQuery.value != null && filteredUsers.isNotEmpty) {
         overlayEntry.value?.remove();
         overlayEntry.value = OverlayEntry(
           builder: (context) => MentionOverlay(
-            layerLink: layerLink,
+            bottomInset: bottomInset,
             users: filteredUsers,
             onUserSelected: selectUser,
           ),
@@ -187,37 +194,34 @@ class MentionTextField extends HookWidget with MainLayout {
       };
     }, []);
 
-    return CompositedTransformTarget(
-      link: layerLink,
-      child: TextField(
-        controller: controller,
-        focusNode: focusNode,
-        maxLines: maxLines,
-        maxLength: maxLength,
-        textInputAction: textInputAction,
-        onSubmitted: onSubmitted,
-        style: style ?? textTheme.bodyMedium,
-        cursorColor: colorScheme.tertiary,
-        decoration:
-            decoration ??
-            InputDecoration(
-              hintText: hintText ?? 'Type @ to mention someone...',
-              hintStyle: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              filled: true,
-              fillColor: colorScheme.primaryContainer.withValues(alpha: 0.1),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-              counterText: '',
+    return TextField(
+      controller: controller,
+      focusNode: focusNode,
+      maxLines: maxLines,
+      maxLength: maxLength,
+      textInputAction: textInputAction,
+      onSubmitted: onSubmitted,
+      style: style ?? textTheme.bodyMedium,
+      cursorColor: colorScheme.tertiary,
+      decoration:
+          decoration ??
+          InputDecoration(
+            hintText: hintText ?? 'Type @ to mention someone...',
+            hintStyle: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface.withValues(alpha: 0.5),
             ),
-      ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            filled: true,
+            fillColor: colorScheme.primaryContainer.withValues(alpha: 0.1),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            counterText: '',
+          ),
     );
   }
 }
