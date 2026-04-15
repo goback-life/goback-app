@@ -62,9 +62,11 @@ class LockoutPostEditorView extends HookConsumerWidget {
     // Watch circle members for total count (used by restrict visibility) and mention autocomplete
     final circleMembersAsync = ref.watch(getCircleMembersProvider);
     final circleMembers =
-        circleMembersAsync.whenOrNull(
-          data: (r) => r.fold((members) => members, (_) => <ProfileModel>[]),
-        ) ??
+        (circleMembersAsync.whenOrNull(
+              data: (r) =>
+                  r.fold((members) => members, (_) => <ProfileModel>[]),
+            )
+            as List<ProfileModel>?) ??
         <ProfileModel>[];
     final totalMemberCount = circleMembers.length;
 
