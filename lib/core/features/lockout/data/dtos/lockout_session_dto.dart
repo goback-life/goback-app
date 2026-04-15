@@ -25,6 +25,8 @@ sealed class LockoutSessionDto with _$LockoutSessionDto {
     @JsonKey(name: 'location_lat') double? locationLat,
     @JsonKey(name: 'location_lng') double? locationLng,
     @JsonKey(name: 'location_name') String? locationName,
+    @JsonKey(name: 'venue_tag_id') String? venueTagId,
+    @JsonKey(name: 'is_open_ended') @Default(false) bool isOpenEnded,
     @JsonKey(name: 'post_id') String? postId,
     @JsonKey(name: 'created_at') String? createdAt,
 
@@ -33,6 +35,7 @@ sealed class LockoutSessionDto with _$LockoutSessionDto {
     // Denormalized from RPC join:
     String? username,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
+    @JsonKey(name: 'joined_via') String? joinedVia,
   }) = _LockoutSessionDto;
 
   factory LockoutSessionDto.fromJson(Map<String, dynamic> json) =>

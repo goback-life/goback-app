@@ -17,6 +17,8 @@ sealed class LockoutSessionModel with _$LockoutSessionModel {
     double? locationLat,
     double? locationLng,
     String? locationName,
+    String? venueTagId,
+    @Default(false) bool isOpenEnded,
     String? postId,
     DateTime? createdAt,
 
@@ -25,6 +27,7 @@ sealed class LockoutSessionModel with _$LockoutSessionModel {
     // Denormalized from RPC for display:
     String? username,
     String? avatarUrl,
+    String? joinedVia,
   }) = _LockoutSessionModel;
 
   factory LockoutSessionModel.fromJson(Map<String, dynamic> json) =>

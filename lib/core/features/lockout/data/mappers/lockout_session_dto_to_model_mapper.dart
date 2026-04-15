@@ -16,6 +16,8 @@ class LockoutSessionDtoToModelMapper
       locationLat: dto.locationLat,
       locationLng: dto.locationLng,
       locationName: dto.locationName,
+      venueTagId: dto.venueTagId,
+      isOpenEnded: dto.isOpenEnded,
       postId: dto.postId,
       createdAt: dto.createdAt != null
           ? DateTime.parse(dto.createdAt!)
@@ -23,6 +25,7 @@ class LockoutSessionDtoToModelMapper
       participants: dto.participants,
       username: dto.username,
       avatarUrl: dto.avatarUrl,
+      joinedVia: dto.joinedVia,
     );
   }
 }
