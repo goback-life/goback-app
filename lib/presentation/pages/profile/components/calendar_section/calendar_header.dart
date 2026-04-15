@@ -118,16 +118,22 @@ class _GlassArrow extends StatelessWidget {
       child: Opacity(
         opacity: isDisabled ? 0.3 : 1.0,
         child: SizedBox(
-          width: arrowWidth,
-          height: arrowHeight,
-          child: RotatedBox(
-            quarterTurns: isLeft ? 1 : 3,
-            child: const AppGlassContainer(
-              config: GlassConfig(
-                tint: MainColors.accent,
-                pathData: _kArrowDownPathData,
+          width: arrowWidth < 44 ? 44 : arrowWidth,
+          height: arrowHeight < 44 ? 44 : arrowHeight,
+          child: Center(
+            child: SizedBox(
+              width: arrowWidth,
+              height: arrowHeight,
+              child: RotatedBox(
+                quarterTurns: isLeft ? 1 : 3,
+                child: const AppGlassContainer(
+                  config: GlassConfig(
+                    tint: MainColors.accent,
+                    pathData: _kArrowDownPathData,
+                  ),
+                  child: SizedBox.expand(),
+                ),
               ),
-              child: SizedBox.expand(),
             ),
           ),
         ),

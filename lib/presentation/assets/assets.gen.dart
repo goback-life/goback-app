@@ -314,10 +314,12 @@ class Assets {
   const Assets._();
 
   static const String aEnv = '.env';
+  static const String aEnvProduction = '.env.production';
+  static const String aEnvStage = '.env.stage';
   static const $AssetsImagesGen images = $AssetsImagesGen();
 
   /// List of all assets
-  static List<String> get values => [aEnv];
+  static List<String> get values => [aEnv, aEnvProduction, aEnvStage];
 }
 
 class AssetGenImage {
