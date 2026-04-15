@@ -53,13 +53,19 @@ void main() {
   });
 
   group('snapDuration', () {
-    test('snaps 37 minutes to 30', () {
-      final snapped = snapDuration(const Duration(minutes: 37));
+    test('snaps 37 minutes to 30 with 15-min snap', () {
+      final snapped = snapDuration(
+        const Duration(minutes: 37),
+        snapMinutes: 15,
+      );
       expect(snapped.inMinutes, 30);
     });
 
-    test('snaps 38 minutes to 45', () {
-      final snapped = snapDuration(const Duration(minutes: 38));
+    test('snaps 38 minutes to 45 with 15-min snap', () {
+      final snapped = snapDuration(
+        const Duration(minutes: 38),
+        snapMinutes: 15,
+      );
       expect(snapped.inMinutes, 45);
     });
 
@@ -69,8 +75,16 @@ void main() {
     });
 
     test('exact 15-min boundary stays', () {
-      final snapped = snapDuration(const Duration(minutes: 45));
+      final snapped = snapDuration(
+        const Duration(minutes: 45),
+        snapMinutes: 15,
+      );
       expect(snapped.inMinutes, 45);
+    });
+
+    test('uses 1-min snap when minMinutes < 15', () {
+      final snapped = snapDuration(const Duration(minutes: 3), minMinutes: 1);
+      expect(snapped.inMinutes, 3);
     });
 
     test('snaps to max of 10 hours', () {

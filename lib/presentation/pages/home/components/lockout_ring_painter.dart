@@ -28,11 +28,19 @@ Duration angleToDuration(double angle) {
   return Duration(minutes: minutes);
 }
 
-/// Snaps a duration to the nearest 15-minute increment, clamped to
+/// Snaps a duration to the nearest [snapMinutes] increment, clamped to
 /// [minMinutes]..[_kMaxMinutes].
-Duration snapDuration(Duration duration, {int minMinutes = 0}) {
+///
+/// When [minMinutes] < [_kSnapMinutes], uses 1-minute granularity so that
+/// stage builds with MIN_LOCKOUT_MINUTES=1 can pick any minute.
+Duration snapDuration(
+  Duration duration, {
+  int minMinutes = 0,
+  int? snapMinutes,
+}) {
+  final snap = snapMinutes ?? (minMinutes < _kSnapMinutes ? 1 : _kSnapMinutes);
   final raw = duration.inMinutes.clamp(0, _kMaxMinutes);
-  final snapped = ((raw + _kSnapMinutes ~/ 2) ~/ _kSnapMinutes) * _kSnapMinutes;
+  final snapped = ((raw + snap ~/ 2) ~/ snap) * snap;
   final clamped = snapped.clamp(minMinutes, _kMaxMinutes);
   return Duration(minutes: clamped);
 }
