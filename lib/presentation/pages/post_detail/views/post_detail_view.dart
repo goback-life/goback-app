@@ -3,6 +3,7 @@ import 'package:cloudless/core/features/calendar/domain/enums/calendar_load_dire
 import 'package:cloudless/core/features/calendar/domain/providers/calendar_posts_cache_provider.dart';
 import 'package:cloudless/core/features/calendar/domain/providers/get_calendar_posts_provider.dart';
 import 'package:cloudless/core/features/post/domain/enums/content_type.dart';
+import 'package:cloudless/core/features/post/domain/hooks/use_mention_autocomplete.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_detail.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_actions.dart';
@@ -11,8 +12,8 @@ import 'package:cloudless/presentation/pages/post_detail/components/post_detail_
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_header.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_media.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_comments.dart';
+import 'package:cloudless/presentation/pages/post_detail/components/post_detail_participants.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_reactions.dart';
-import 'package:cloudless/presentation/pages/post_detail/components/post_detail_tags.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
 import 'package:cloudless/presentation/pages/post_detail/utilities/post_detail_navigation.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
@@ -264,6 +265,12 @@ class PostDetailView extends HookConsumerWidget
 
     final post = postDetailResult.post!;
 
+    final mentionState = useMentionAutocomplete(ref);
+    final allUsers = mentionState.allUsers;
+    final myFriendIds = useMemoized(() => allUsers.map((u) => u.id).toSet(), [
+      allUsers,
+    ]);
+
     return Stack(
       children: [
         Container(
@@ -320,6 +327,18 @@ class PostDetailView extends HookConsumerWidget
                       PostDetailDescription(
                         description: post.description!,
                         contentType: post.contentType,
+                        onMentionTap: (username) {
+                          final user = allUsers
+                              .where((u) => u.username == username)
+                              .firstOrNull;
+                          if (user != null) {
+                            PostDetailNavigation.navigateToUserProfile(
+                              ref,
+                              user.id,
+                              user.username,
+                            );
+                          }
+                        },
                       ),
                       SizedBox(height: sectionSpacing),
                     ],
@@ -338,11 +357,21 @@ class PostDetailView extends HookConsumerWidget
                       ],
                     ),
                     SizedBox(height: sectionSpacing),
-                    if (post.taggedUsernames.isNotEmpty) ...[
-                      PostDetailTags(
-                        taggedUsernames: post.taggedUsernames,
-                        taggedUserIds: post.taggedUserIds,
-                        onUserTap: (userId, username) =>
+                    if (post.isLockoutPost &&
+                        post.lockoutParticipantIds.isNotEmpty) ...[
+                      PostDetailParticipants(
+                        participantIds: post.lockoutParticipantIds,
+                        participantUsernames: post.lockoutParticipantUsernames,
+                        participantAvatars: post.lockoutParticipantAvatars,
+                        participantJoinedVia: post.lockoutParticipantJoinedVia,
+                        myFriendIds: myFriendIds,
+                        onFriendTap: (userId, username) =>
+                            PostDetailNavigation.navigateToUserProfile(
+                              ref,
+                              userId,
+                              username,
+                            ),
+                        onFriendOfFriendTap: (userId, username, _) =>
                             PostDetailNavigation.navigateToUserProfile(
                               ref,
                               userId,
