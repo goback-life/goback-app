@@ -1,4 +1,5 @@
 import 'package:cloudless/core/features/connection/data/dtos/get_circle_members_response_dto.dart';
+import 'package:cloudless/core/features/connection/data/dtos/leaderboard_entry_dto.dart';
 import 'package:cloudless/core/features/connection/data/dtos/outgoing_request_dto.dart';
 import 'package:cloudless/core/features/connection/domain/models/invite_validation_result.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -145,4 +146,8 @@ abstract class ConnectionServiceContract {
 
   /// Gets all pending incoming connection requests.
   FutureResult<List<OutgoingRequestDto>> getIncomingRequests();
+
+  /// Retrieves circle leaderboard ranked by average lockout duration
+  /// over a rolling 7-day window. Includes current user in results.
+  FutureResult<List<LeaderboardEntryDto>> getCircleLeaderboard();
 }

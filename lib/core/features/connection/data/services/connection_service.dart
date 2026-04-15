@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:cloudless/core/features/connection/data/dtos/get_circle_members_response_dto.dart';
+import 'package:cloudless/core/features/connection/data/dtos/leaderboard_entry_dto.dart';
 import 'package:cloudless/core/features/connection/data/dtos/outgoing_request_dto.dart';
 import 'package:cloudless/core/features/connection/data/exceptions/invite_code_generation_exception.dart';
 import 'package:cloudless/core/features/connection/data/exceptions/invite_limit_exception.dart';
@@ -464,6 +465,27 @@ class ConnectionService implements ConnectionServiceContract {
       return Result.failure(
         ConnectionException('Failed to check user connection: $e'),
       );
+    }
+  }
+
+  @override
+  FutureResult<List<LeaderboardEntryDto>> getCircleLeaderboard() async {
+    try {
+      final result =
+          await supabase.rpc('get_circle_leaderboard') as List<dynamic>;
+
+      final entries = result.map((row) {
+        final data = Map<String, dynamic>.from(row as Map);
+        return LeaderboardEntryDto.fromJson(data);
+      }).toList();
+
+      return Result.success(entries);
+    } catch (e) {
+      logger.error('Error getting circle leaderboard', exception: e);
+      final exception = e is Exception
+          ? e
+          : Exception('Failed to get circle leaderboard: $e');
+      return Result.failure(exception);
     }
   }
 
