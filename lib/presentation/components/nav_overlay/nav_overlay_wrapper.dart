@@ -23,11 +23,17 @@ import 'package:flutter/services.dart';
 /// Uses [HitTestBehavior.translucent] so child widgets with their own
 /// gesture handlers participate in the gesture arena and can take precedence.
 ///
-/// Disabled when the user is in a lockout, time-limit-reached, or signup state.
+/// Disabled when the user is in a lockout, time-limit-reached, or signup state,
+/// or when a modal (like the lockout bottom sheet) sets [suppress] to true.
 class NavOverlayWrapper extends HookConsumerWidget {
   const NavOverlayWrapper({super.key, required this.child});
 
   final Widget child;
+
+  /// Set to `true` to temporarily suppress the nav overlay (e.g. while a
+  /// modal sheet that needs drag gestures is open). Revert to `false` on
+  /// dismiss.
+  static final suppress = ValueNotifier<bool>(false);
 
   /// How long the user must hold before the overlay activates.
   static const _holdDuration = Duration(milliseconds: 200);
@@ -90,7 +96,8 @@ class NavOverlayWrapper extends HookConsumerWidget {
         lockoutState?.isCompletionPending == true ||
         !tutorialCompleted.value;
 
-    final isEnabled = !isBlocked && !isOverlayVisible.value;
+    final isSuppressed = useValueListenable(suppress);
+    final isEnabled = !isBlocked && !isOverlayVisible.value && !isSuppressed;
 
     void activate() {
       HapticFeedback.heavyImpact();
