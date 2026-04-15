@@ -186,42 +186,50 @@ class _CustomChip extends StatelessWidget {
         ),
         clipBehavior: Clip.hardEdge,
         child: isExpanded
-            ? Row(
-                children: [
-                  const SizedBox(width: 10),
-                  Icon(Icons.edit_rounded, size: 16, color: MainColors.accent),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: TextField(
-                      controller: controller,
-                      focusNode: focusNode,
-                      maxLength: 20,
-                      onChanged: onChanged,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: MainColors.accent,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        counterText: '',
-                        isDense: true,
-                        contentPadding: EdgeInsets.zero,
+            ? OverflowBox(
+                maxWidth: 150,
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  children: [
+                    const SizedBox(width: 10),
+                    Icon(
+                      Icons.edit_rounded,
+                      size: 16,
+                      color: MainColors.accent,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        maxLength: 20,
+                        onChanged: onChanged,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: MainColors.accent,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          counterText: '',
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
                       ),
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: onClear,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: Icon(
-                        Icons.close_rounded,
-                        size: 14,
-                        color: Colors.white.withValues(alpha: 0.3),
+                    GestureDetector(
+                      onTap: onClear,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 14,
+                          color: Colors.white.withValues(alpha: 0.3),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               )
             : Center(
                 child: Icon(
