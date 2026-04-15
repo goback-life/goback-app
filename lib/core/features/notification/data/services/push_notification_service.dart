@@ -197,6 +197,7 @@ class PushNotificationService {
       case 'lockout_started':
       case 'lockout_joined':
       case 'friend_joins_lockout':
+      case 'member_joined':
         router.push(const FriendsLockedOutRoutable());
       case 'lockout_completed':
         // Clear local lockout state, then navigate to friends list

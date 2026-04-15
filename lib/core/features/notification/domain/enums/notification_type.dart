@@ -6,7 +6,8 @@ enum NotificationType {
   lockoutStarted('lockout_started'),
   lockoutJoined('lockout_joined'),
   friendJoined('friend_joined'),
-  connectionRequest('connection_request');
+  connectionRequest('connection_request'),
+  memberJoined('member_joined');
 
   const NotificationType(this.value);
 
