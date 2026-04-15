@@ -82,7 +82,9 @@ class ContentEditorPostDescription extends HookWidget {
     }
 
     useEffect(() {
-      updateOverlay();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        updateOverlay();
+      });
       return null;
     }, [mentionQuery.value, filteredUsers]);
 
