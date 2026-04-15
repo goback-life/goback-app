@@ -36,4 +36,14 @@ mixin YourCircleLayout on MainLayout {
   double get removeButtonHeight => 51.0;
   double get checkboxSize => 18.0;
   double get checkboxRadius => 5.0;
+
+  // Leaderboard
+  double get kingTileHeight => 66.0;
+  double get kingAvatarSize => 42.0;
+  double get rankWidth => 28.0;
+  double get rankRightMargin => 10.0;
+  double get accentBarWidth => 3.0;
+  double get accentBarHeight => 28.0;
+  double get kingAccentBarHeight => 32.0;
+  double get accentBarLeftOffset => 14.0;
 }
