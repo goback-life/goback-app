@@ -11,11 +11,15 @@ class FriendLockedOutItem extends StatelessWidget {
     required this.session,
     required this.onTap,
     this.isInSameLockout = false,
+    this.distance = 1,
+    this.joinedViaUsername,
   });
 
   final LockoutSessionModel session;
   final VoidCallback onTap;
   final bool isInSameLockout;
+  final int distance;
+  final String? joinedViaUsername;
 
   static const double _avatarSize = 48.0;
 
@@ -25,7 +29,10 @@ class FriendLockedOutItem extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final timeRemaining = _formatTimeRemaining(session.endsAt);
+    final isVenueLockout = session.isOpenEnded;
+    final statusText = isVenueLockout
+        ? _formatVenueStatus(session.locationName)
+        : _formatTimeRemaining(session.endsAt);
     final hasActivity =
         session.actionText != null && session.actionText!.isNotEmpty;
 
@@ -56,14 +63,51 @@ class FriendLockedOutItem extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  timeRemaining,
-                  style: textTheme.labelSmall?.copyWith(
-                    color: colorScheme.surface.withValues(alpha: 0.8),
+                if (distance == 2 && joinedViaUsername != null) ...[
+                  Text(
+                    'via @$joinedViaUsername',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.surface.withValues(alpha: 0.5),
+                      fontStyle: FontStyle.italic,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
+                ],
+                const SizedBox(height: 2),
+                if (isVenueLockout)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        size: 10,
+                        color: colorScheme.surface.withValues(alpha: 0.8),
+                      ),
+                      const SizedBox(width: 2),
+                      Flexible(
+                        child: Text(
+                          statusText,
+                          style: textTheme.labelSmall?.copyWith(
+                            color: colorScheme.surface.withValues(alpha: 0.8),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Text(
+                    statusText,
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.surface.withValues(alpha: 0.8),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 if (hasActivity) ...[
                   const SizedBox(height: 2),
                   Text(
@@ -136,5 +180,12 @@ class FriendLockedOutItem extends StatelessWidget {
       return '${hours}h ${minutes}m';
     }
     return '${minutes}m';
+  }
+
+  String _formatVenueStatus(String? locationName) {
+    if (locationName != null && locationName.isNotEmpty) {
+      return locationName;
+    }
+    return 'Venue';
   }
 }

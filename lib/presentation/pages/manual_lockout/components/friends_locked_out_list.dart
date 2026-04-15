@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
+import 'package:cloudless/core/features/lockout/domain/utilities/participant_distance.dart';
+import 'package:cloudless/core/features/nfc/data/providers/nfc_service_provider.dart';
 import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
 import 'package:cloudless/presentation/pages/home/components/dnd_prompt_dialog.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/friend_locked_out_item.dart';
@@ -35,6 +38,18 @@ class FriendsLockedOutList extends HookConsumerWidget {
     // Watch the cache state directly - this is the single source of truth
     final cacheState = ref.watch(friendsLockedOutCacheProvider);
     final cacheNotifier = ref.read(friendsLockedOutCacheProvider.notifier);
+
+    // Get user's friend IDs for distance computation
+    final membersAsync = ref.watch(getCircleMembersProvider);
+    final myFriendIds = useMemoized(() {
+      return membersAsync.maybeWhen(
+        data: (result) => result.fold(
+          (members) => members.map((m) => m.profile.id).toSet(),
+          (_) => <String>{},
+        ),
+        orElse: () => <String>{},
+      );
+    }, [membersAsync]);
 
     // Track the current user's lockout session ID for same-lockout detection
     final storable = ref.read(manualLockoutStorableProvider);
@@ -107,6 +122,7 @@ class FriendsLockedOutList extends HookConsumerWidget {
       colorScheme,
       textTheme,
       currentSessionId.value,
+      myFriendIds,
     );
   }
 
@@ -146,7 +162,51 @@ class FriendsLockedOutList extends HookConsumerWidget {
     ColorScheme colorScheme,
     TextTheme textTheme,
     String? currentSessionId,
+    Set<String> myFriendIds,
   ) {
+    // Build a map of userId -> username from the friends list for joined_via
+    // lookup
+    final usernameById = <String, String>{};
+    for (final session in friends) {
+      usernameById[session.userId] = session.username ?? '';
+    }
+
+    // Compute distances and separate into tiers
+    final d1d2Items = <_FriendWithDistance>[];
+    var d3Count = 0;
+
+    for (final session in friends) {
+      final distance = ParticipantDistance.compute(
+        participantId: session.userId,
+        joinedVia: session.joinedVia,
+        myFriendIds: myFriendIds,
+      );
+
+      if (distance >= 3) {
+        d3Count++;
+        continue;
+      }
+
+      // Look up the joined_via username
+      String? joinedViaUsername;
+      if (distance == 2 && session.joinedVia != null) {
+        joinedViaUsername = usernameById[session.joinedVia!];
+      }
+
+      d1d2Items.add(
+        _FriendWithDistance(
+          session: session,
+          distance: distance,
+          joinedViaUsername: joinedViaUsername,
+        ),
+      );
+    }
+
+    // Sort: distance 1 first, then distance 2
+    d1d2Items.sort((a, b) => a.distance.compareTo(b.distance));
+
+    final itemCount = d1d2Items.length + (d3Count > 0 ? 1 : 0);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -168,21 +228,49 @@ class FriendsLockedOutList extends HookConsumerWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: friends.length,
+            itemCount: itemCount,
             separatorBuilder: (_, __) => const SizedBox(width: 4),
             itemBuilder: (context, index) {
-              final session = friends[index];
+              // Last item is the "and N others" placeholder for distance 3+
+              if (index >= d1d2Items.length) {
+                return _buildOthersItem(d3Count, colorScheme, textTheme);
+              }
+
+              final item = d1d2Items[index];
               final isInSameLockout =
-                  currentSessionId != null && session.id == currentSessionId;
+                  currentSessionId != null &&
+                  item.session.id == currentSessionId;
               return FriendLockedOutItem(
-                session: session,
-                onTap: () => _handleJoinTap(context, ref, session),
+                session: item.session,
+                onTap: () => _handleJoinTap(context, ref, item.session),
                 isInSameLockout: isInSameLockout,
+                distance: item.distance,
+                joinedViaUsername: item.joinedViaUsername,
               );
             },
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildOthersItem(
+    int count,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    return SizedBox(
+      width: 90,
+      child: Center(
+        child: Text(
+          'and $count ${count == 1 ? 'other' : 'others'}',
+          style: textTheme.labelSmall?.copyWith(
+            color: colorScheme.surface.withValues(alpha: 0.5),
+            fontStyle: FontStyle.italic,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
     );
   }
 
@@ -209,6 +297,58 @@ class FriendsLockedOutList extends HookConsumerWidget {
     final shouldJoin = await JoinLockoutDialog.show(context, session);
     if (shouldJoin != true || !context.mounted) return;
 
+    // Venue lockouts require NFC scan to verify same venue
+    if (session.isOpenEnded && session.venueTagId != null) {
+      await _handleVenueJoinWithNfc(context, ref, session);
+      return;
+    }
+
+    // Timed lockouts: direct join (no NFC required)
+    await _performJoin(context, ref, session);
+  }
+
+  /// Initiates NFC scan and joins venue lockout if tag matches.
+  Future<void> _handleVenueJoinWithNfc(
+    BuildContext context,
+    WidgetRef ref,
+    LockoutSessionModel session,
+  ) async {
+    final nfcService = ref.read(nfcServiceProvider);
+
+    await nfcService.startReadSession(
+      onTagRead: (venue) async {
+        if (!context.mounted) return;
+
+        if (venue.venueId != session.venueTagId) {
+          MainSnackbar.showError(
+            context,
+            'You need to be at the same venue to join this lockout',
+          );
+          return;
+        }
+
+        // Tag matches — proceed with join
+        await _performJoin(context, ref, session);
+      },
+      onInvalidTag: () {
+        if (context.mounted) {
+          MainSnackbar.showError(context, 'This is not a valid GoBack tag');
+        }
+      },
+      onError: () {
+        if (context.mounted) {
+          MainSnackbar.showError(context, 'NFC scan failed. Please try again.');
+        }
+      },
+    );
+  }
+
+  /// Performs the actual lockout join (DnD prompt + RPC call).
+  Future<void> _performJoin(
+    BuildContext context,
+    WidgetRef ref,
+    LockoutSessionModel session,
+  ) async {
     try {
       await DndPromptDialog.showIfNeeded(context);
     } catch (_) {
@@ -236,4 +376,16 @@ class FriendsLockedOutList extends HookConsumerWidget {
       }
     }
   }
+}
+
+class _FriendWithDistance {
+  const _FriendWithDistance({
+    required this.session,
+    required this.distance,
+    this.joinedViaUsername,
+  });
+
+  final LockoutSessionModel session;
+  final int distance;
+  final String? joinedViaUsername;
 }
