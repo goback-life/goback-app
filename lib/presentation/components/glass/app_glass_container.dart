@@ -191,8 +191,8 @@ class _ShaderGlass extends StatelessWidget {
         borderRadius: hasCustomPath ? null : BorderRadius.circular(radius),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x40191919),
-            blurRadius: 4,
+            color: Color(0x18191919),
+            blurRadius: 6,
             offset: Offset(0, 2),
           ),
         ],
@@ -218,31 +218,31 @@ class _RoundedGlassOverlay extends CustomPainter {
     );
     final bounds = Offset.zero & size;
 
-    // 0. Tint fill — colored glass when a tint is specified
+    // 0. Tint fill
     if (tint != null) {
-      canvas.drawRRect(rrect, Paint()..color = tint!.withValues(alpha: 0.3));
+      canvas.drawRRect(rrect, Paint()..color = tint!.withValues(alpha: 0.4));
     }
 
-    // 1. Light tint — bright and clear like water
+    // 1. Subtle surface tint for presence on light backgrounds
     canvas.drawRRect(
       rrect,
-      Paint()..color = Colors.white.withValues(alpha: 0.08),
+      Paint()..color = const Color(0xFF5A8FB2).withValues(alpha: 0.04),
     );
 
     // -- Clipped interior --
     canvas.save();
     canvas.clipRRect(rrect);
 
-    // 2. Body gradient: NW bright -> SE slightly less bright
+    // 2. Body gradient: subtle darkening NW -> SE
     canvas.drawPaint(
       Paint()
         ..shader = ui.Gradient.linear(bounds.topLeft, bounds.bottomRight, [
-          Colors.white.withValues(alpha: 0.08),
-          Colors.white.withValues(alpha: 0.02),
+          Colors.black.withValues(alpha: 0.02),
+          Colors.black.withValues(alpha: 0.05),
         ]),
     );
 
-    // 3. Inner highlight — soft bright glow on lower-right edges
+    // 3. Inner shadow
     canvas.drawRRect(
       rrect,
       Paint()
@@ -251,25 +251,25 @@ class _RoundedGlassOverlay extends CustomPainter {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2)
         ..shader = ui.Gradient.linear(bounds.topLeft, bounds.bottomRight, [
           Colors.transparent,
-          Colors.white.withValues(alpha: 0.08),
+          Colors.black.withValues(alpha: 0.06),
         ]),
     );
 
     canvas.restore();
 
-    // 4. Edge highlight — NW directional light
+    // 4. Edge highlight — subtle border definition
     canvas.drawRRect(
       rrect,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0
+        ..strokeWidth = 0.5
         ..shader = ui.Gradient.linear(
           bounds.topLeft,
           bounds.bottomRight,
           [
-            Colors.white.withValues(alpha: 0.5),
-            Colors.white.withValues(alpha: 0.15),
-            Colors.transparent,
+            Colors.white.withValues(alpha: 0.6),
+            Colors.black.withValues(alpha: 0.08),
+            Colors.black.withValues(alpha: 0.04),
           ],
           [0.0, 0.45, 0.75],
         ),

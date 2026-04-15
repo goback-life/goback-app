@@ -8,7 +8,7 @@ class CallToActionStyle extends ThemeExtension<CallToActionStyle> {
     this.iconOnTheRight = true,
     this.spaced = true,
     this.height = kToolbarHeight,
-    this.borderRadius = const BorderRadius.all(Radius.circular(12)),
+    this.borderRadius = const BorderRadius.all(Radius.circular(10)),
     this.duration = Durations.medium4,
     this.curve = Easings.standard,
   });
@@ -29,7 +29,7 @@ class CallToActionStyle extends ThemeExtension<CallToActionStyle> {
     iconOnTheRight: true,
     spaced: true,
     height: kToolbarHeight,
-    borderRadius: BorderRadius.all(Radius.circular(12)),
+    borderRadius: BorderRadius.all(Radius.circular(10)),
     duration: Durations.medium4,
     curve: Easings.standard,
     mode: CallToActionMode.filled,

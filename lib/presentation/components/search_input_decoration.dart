@@ -43,15 +43,15 @@ InputDecoration searchInputDecoration(
     filled: true,
     fillColor: Colors.transparent,
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(99),
+      borderRadius: BorderRadius.circular(10),
       borderSide: BorderSide.none,
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(99),
+      borderRadius: BorderRadius.circular(10),
       borderSide: BorderSide.none,
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(99),
+      borderRadius: BorderRadius.circular(10),
       borderSide: BorderSide.none,
     ),
   );

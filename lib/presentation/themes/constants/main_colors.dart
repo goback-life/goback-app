@@ -32,5 +32,6 @@ class MainColors {
 
   // V1 Design System palette
   static const Color dark = Color(0xFF1A1A1A);
-  static const Color accent = Color(0xFF598EB5);
+  static const Color surface = Color(0xFFF8F7F5);
+  static const Color accent = Color(0xFF5A8FB2);
 }
