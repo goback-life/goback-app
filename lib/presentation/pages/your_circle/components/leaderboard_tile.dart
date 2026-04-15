@@ -165,7 +165,7 @@ class LeaderboardTile extends StatelessWidget
       ),
     );
 
-    if (isRemoveMode) {
+    if (isRemoveMode || onSwipeDelete == null) {
       return tile;
     }
 

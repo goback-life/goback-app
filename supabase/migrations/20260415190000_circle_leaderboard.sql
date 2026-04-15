@@ -60,7 +60,8 @@ BEGIN
       AVG(lcl.duration_minutes)::DOUBLE PRECISION AS avg_duration_minutes,
       COUNT(*)::INT                                AS session_count
     FROM lockout_completed_log lcl
-    WHERE lcl.session_date >= (NOW() - INTERVAL '7 days')::DATE
+    WHERE lcl.user_id IN (SELECT member_id FROM circle)
+      AND lcl.session_date >= (NOW() - INTERVAL '7 days')::DATE
     GROUP BY lcl.user_id
   )
   SELECT

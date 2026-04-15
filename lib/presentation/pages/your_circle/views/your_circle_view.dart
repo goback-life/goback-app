@@ -74,13 +74,20 @@ class YourCircleView extends HookConsumerWidget
             ) ??
             <LeaderboardEntryDto>[];
 
-        // Apply search filter
+        // Pair entries with their real rank before filtering
+        final ranked = leaderboardEntries
+            .asMap()
+            .entries
+            .map((e) => (rank: e.key + 1, entry: e.value))
+            .toList();
+
+        // Apply search filter (preserves original ranks)
         final searchQuery = circleMembersData.searchQuery;
         final filtered = searchQuery.isEmpty
-            ? leaderboardEntries
-            : leaderboardEntries
+            ? ranked
+            : ranked
                   .where(
-                    (e) => e.username.toLowerCase().contains(
+                    (r) => r.entry.username.toLowerCase().contains(
                       searchQuery.toLowerCase(),
                     ),
                   )
@@ -109,29 +116,30 @@ class YourCircleView extends HookConsumerWidget
                 ),
                 itemCount: filtered.length,
                 itemBuilder: (context, index) {
-                  final entry = filtered[index];
-                  final rank = index + 1;
+                  final item = filtered[index];
                   return LeaderboardTile(
-                    entry: entry,
-                    rank: rank,
+                    entry: item.entry,
+                    rank: item.rank,
                     isRemoveMode: removeMode.value,
-                    isSelected: selectedIds.value.contains(entry.userId),
+                    isSelected: selectedIds.value.contains(item.entry.userId),
                     onTap: () => router.push(
-                      CircleProfileRoutable(userId: entry.userId),
+                      CircleProfileRoutable(userId: item.entry.userId),
                     ),
-                    onSwipeDelete: () => _confirmRemove(
-                      context,
-                      entry.username,
-                      entry.userId,
-                      removeConnection,
-                      ref,
-                    ),
+                    onSwipeDelete: item.entry.isCurrentUser
+                        ? null
+                        : () => _confirmRemove(
+                            context,
+                            item.entry.username,
+                            item.entry.userId,
+                            removeConnection,
+                            ref,
+                          ),
                     onToggle: () {
                       final ids = Set<String>.from(selectedIds.value);
-                      if (ids.contains(entry.userId)) {
-                        ids.remove(entry.userId);
+                      if (ids.contains(item.entry.userId)) {
+                        ids.remove(item.entry.userId);
                       } else {
-                        ids.add(entry.userId);
+                        ids.add(item.entry.userId);
                       }
                       selectedIds.value = ids;
                     },
