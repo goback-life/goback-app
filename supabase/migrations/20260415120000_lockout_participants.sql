@@ -49,14 +49,19 @@ CREATE INDEX IF NOT EXISTS idx_lockout_participants_session
 -- ============================================================================
 ALTER TABLE lockout_participants ENABLE ROW LEVEL SECURITY;
 
--- SELECT: user can read rows in sessions they participate in
+-- SELECT: user can read rows if they are owner or participant of the session
+-- NOTE: uses lockout_sessions.participants array (not self-referential) to avoid
+-- circular RLS evaluation that would silently block co-participant reads.
 CREATE POLICY "Participants can view own session participants"
   ON lockout_participants FOR SELECT
   USING (
     EXISTS (
-      SELECT 1 FROM lockout_participants lp2
-      WHERE lp2.session_id = lockout_participants.session_id
-        AND lp2.user_id = auth.uid()
+      SELECT 1 FROM lockout_sessions ls
+      WHERE ls.id = lockout_participants.session_id
+        AND (
+          ls.user_id = auth.uid()
+          OR auth.uid() = ANY(ls.participants)
+        )
     )
   );
 
