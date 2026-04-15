@@ -10,6 +10,7 @@ import 'package:cloudless/core/features/lockout/domain/providers/pending_lockout
 import 'package:cloudless/core/features/lockout/domain/utilities/goback_score_calculator.dart';
 import 'package:cloudless/core/features/nfc/data/providers/nfc_service_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_post_creation_initialization.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/lockout_friends_overlay.dart';
@@ -278,11 +279,16 @@ class ManualLockoutView extends HookConsumerWidget {
               onSkip: () => _handleSkip(ref, sessionId.value),
             ),
 
-          // Layer 4: Tap-to-end button for open-ended venue lockouts
-          if (isOpenEnded.value && !isLockoutComplete.value)
+          // Layer 4: Triangle tap target (camera for timed, NFC-end for venue)
+          if (!isLockoutComplete.value)
             _TapToEndButton(
-              venueName: venueName.value,
-              onTap: () => _handleEndVenueLockout(ref, onLockoutComplete),
+              venueName: isOpenEnded.value ? venueName.value : null,
+              onTap: isOpenEnded.value
+                  ? () => _handleEndVenueLockout(ref, onLockoutComplete)
+                  : () async {
+                      final picker = ImagePicker();
+                      await picker.pickImage(source: ImageSource.camera);
+                    },
             ),
 
           // Friends overlay

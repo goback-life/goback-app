@@ -70,24 +70,20 @@ Do NOT use for: architectural decisions, security-critical code, anything needin
 Default: `ralph run -p "task description"` — stop condition: `fvm flutter test && fvm flutter analyze`
 Stuck after N iterations → write BLOCKED report to `docs/claude/handoff.md`
 
-## Superpowers Plugin (mandatory — invoke via Skill tool)
-The `superpowers` plugin is installed. On every user message, check if a skill applies and invoke it via the `Skill` tool BEFORE responding or taking action. Even a 1% chance = invoke it.
+## Superpowers Plugin
+The `superpowers` plugin is installed. Only invoke skills for **non-trivial tasks** — multi-file changes, new features, complex bugs, or architectural work. Skip superpowers for quick fixes, small edits, one-liner changes, and simple questions.
 
 | Trigger | Invoke |
 |---|---|
-| Start of any conversation | `superpowers:using-superpowers` |
 | Open-ended / ambiguous request | `superpowers:brainstorming` |
-| New feature / bug fix / any code change | `superpowers:test-driven-development` |
-| Unexpected failure or wrong behaviour | `superpowers:systematic-debugging` |
-| Complex task needing a plan | `superpowers:writing-plans` |
+| Multi-file feature or significant code change | `superpowers:test-driven-development` |
+| Complex or unclear failure | `superpowers:systematic-debugging` |
+| Multi-step task needing a plan | `superpowers:writing-plans` |
 | Executing an agreed plan | `superpowers:executing-plans` |
 | Parallel independent work | `superpowers:dispatching-parallel-agents` |
 | Large feature with multiple agents | `superpowers:subagent-driven-development` |
 | Need isolated branch for risky work | `superpowers:using-git-worktrees` |
-| Before commit to main | `superpowers:requesting-code-review` |
-| Responding to review feedback | `superpowers:receiving-code-review` |
 | Before merge / PR | `superpowers:finishing-a-development-branch` |
-| After completing any task | `superpowers:verification-before-completion` |
 | Creating new reusable workflows | `superpowers:writing-skills` |
 
 ## Slash Commands

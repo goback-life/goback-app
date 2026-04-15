@@ -386,7 +386,7 @@ class InviteInputPill extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Text(
-                          'Send',
+                          'Share',
                           style: TextStyle(
                             fontFamily: MainFontFamilies.quicksand,
                             fontWeight: FontWeight.w600,

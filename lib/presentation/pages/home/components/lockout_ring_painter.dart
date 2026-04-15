@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 
+import 'package:cloudless/presentation/pages/manual_lockout/components/lockout_cutout_painter.dart';
 import 'package:flutter/material.dart';
 
 /// Maximum lockout duration the ring represents (one full rotation).
@@ -170,25 +171,46 @@ class LockoutRingPainter extends CustomPainter {
       center.dy + radius * sin(thumbAngle),
     );
 
-    final thumbPaint = Paint()..color = thumbColor;
-    canvas.drawCircle(thumbCenter, kThumbRadius, thumbPaint);
+    // Draw GoBack triangle instead of circle.
+    // The triangle viewBox is 86x102; scale to fit the thumb area.
+    const thumbSize = kThumbRadius * 2;
+    final triH = thumbSize;
+    final triW = triH * 86 / 102;
+    final path = lockoutTrianglePath(Size(triW, triH));
 
-    final sheenPaint = Paint()
-      ..shader = ui.Gradient.radial(
-        Offset(thumbCenter.dx - 3, thumbCenter.dy - 4),
-        kThumbRadius,
-        [
-          Colors.white.withValues(alpha: 0.4),
-          Colors.white.withValues(alpha: 0.0),
-        ],
-      );
-    canvas.drawCircle(thumbCenter, kThumbRadius, sheenPaint);
+    canvas.save();
+    // Position: center the triangle on the thumb point, then rotate to
+    // follow the ring (triangle tip points outward along the radius).
+    canvas.translate(thumbCenter.dx, thumbCenter.dy);
+    canvas.rotate(thumbAngle - pi / 2);
+    canvas.translate(-triW / 2, -triH / 2);
 
-    final borderPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
-      ..color = Colors.white.withValues(alpha: 0.2);
-    canvas.drawCircle(thumbCenter, kThumbRadius, borderPaint);
+    canvas.drawPath(path, Paint()..color = thumbColor);
+
+    // Sheen highlight
+    canvas.drawPath(
+      path,
+      Paint()
+        ..shader = ui.Gradient.radial(
+          Offset(triW * 0.3, triH * 0.25),
+          triH * 0.8,
+          [
+            Colors.white.withValues(alpha: 0.4),
+            Colors.white.withValues(alpha: 0.0),
+          ],
+        ),
+    );
+
+    // Border
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0
+        ..color = Colors.white.withValues(alpha: 0.2),
+    );
+
+    canvas.restore();
   }
 
   @override

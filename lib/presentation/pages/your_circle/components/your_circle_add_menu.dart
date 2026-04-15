@@ -2,12 +2,10 @@ import 'dart:ui' as ui;
 
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
-import 'package:cloudless/presentation/pages/your_circle/components/invite_card_popup.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/receive_code_card_popup.dart';
 import 'package:cloudless/presentation/pages/your_circle/your_circle_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
-import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 /// Path data for the rounded plus/cross button (viewBox 51x51).
@@ -61,7 +59,9 @@ const _kArrowDownPathData = GlassPathData(
 );
 
 class YourCircleAddMenu extends StatefulWidget {
-  const YourCircleAddMenu({super.key});
+  const YourCircleAddMenu({required this.onShareInvite, super.key});
+
+  final VoidCallback onShareInvite;
 
   @override
   State<YourCircleAddMenu> createState() => _YourCircleAddMenuState();
@@ -137,7 +137,7 @@ class _YourCircleAddMenuState extends State<YourCircleAddMenu>
 
   void _onUpTap() {
     _toggle();
-    showInviteCardPopup(context);
+    widget.onShareInvite();
   }
 
   void _onDownTap() {

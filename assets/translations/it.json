@@ -367,8 +367,8 @@
             "phone_number_label": "Numero di telefono",
             "phone_has_account": "Questo numero ha già un account goback",
             "phone_no_account": "Questo numero non ha un account goback",
-            "send_invite_button": "Invia invito",
-            "success_message": "Invito inviato con successo!",
+            "send_invite_button": "Condividi link di invito",
+            "success_message": "Invito condiviso con successo!",
             "error": {
                 "phone_required": "Inserisci un numero di telefono",
                 "phone_invalid": "Il formato del numero di telefono non è valido"

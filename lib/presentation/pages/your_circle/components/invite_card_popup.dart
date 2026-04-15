@@ -103,9 +103,6 @@ class _InviteCard extends HookConsumerWidget {
       }).toList();
     }, [allContacts, input.value, isPhone]);
 
-    // In phone mode with no contact matches -> "new number" entry mode.
-    final isNewNumber = isPhone && filteredContacts.isEmpty;
-
     // Debounced phone number checking (whenever in phone mode).
     useEffect(() {
       if (!isPhone) {
@@ -154,9 +151,6 @@ class _InviteCard extends HookConsumerWidget {
       return MainColors.white.withValues(alpha: 0.5);
     }, [isPhone, typedHasGoback]);
 
-    // Can submit?
-    final canSubmit = isNewNumber && isValidPhone(input.value);
-
     // Handlers.
     void onContactTap(ContactModel c) {
       if (inviteState.isLoading) return;
@@ -164,10 +158,9 @@ class _InviteCard extends HookConsumerWidget {
       Navigator.of(context).pop();
     }
 
-    void onSendPhone() {
-      if (!canSubmit || inviteState.isLoading) return;
-      final phone = input.value.trim().replaceAll(RegExp(r'[^\d+]'), '');
-      inviteState.sendInvite(ContactModel.fromPhoneNumber(phone));
+    void onShare() {
+      if (inviteState.isLoading) return;
+      inviteState.shareInvite();
       Navigator.of(context).pop();
     }
 
@@ -204,7 +197,7 @@ class _InviteCard extends HookConsumerWidget {
                           child: InviteContactsList(
                             contacts: filteredContacts,
                             gobackPhones: gobackPhones,
-                            showList: !isNewNumber,
+                            showList: true,
                             onTap: onContactTap,
                           ),
                         ),
@@ -217,8 +210,38 @@ class _InviteCard extends HookConsumerWidget {
                             onChanged: (t) => input.value = t,
                             dotColor: dotColor,
                             countryLabel: countryCode,
-                            canSubmit: canSubmit,
-                            onSend: onSendPhone,
+                            canSubmit: false,
+                            onSend: () {},
+                          ),
+                        ),
+                        const SizedBox(height: _kTitleGap),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: kInviteCardContactSidePad,
+                          ),
+                          child: GestureDetector(
+                            onTap: onShare,
+                            child: SizedBox(
+                              height: kInviteCardInputPillHeight,
+                              child: AppGlassContainer(
+                                config: const GlassConfig(
+                                  tint: MainColors.accent,
+                                  cornerRadius: kInviteCardInputPillRadius,
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    'Share invite link',
+                                    style: TextStyle(
+                                      fontFamily: MainFontFamilies.quicksand,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 20,
+                                      color: MainColors.white,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: _kTitleGap),

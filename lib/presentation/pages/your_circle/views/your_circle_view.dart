@@ -8,6 +8,7 @@ import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/main_data_loader.dart';
 import 'package:cloudless/presentation/components/main_empty_state.dart';
 import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
+import 'package:cloudless/presentation/pages/invite_to_circle/hooks/use_sms_launch.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/leaderboard_tile.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_add_menu.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_remove_dialog.dart';
@@ -33,6 +34,7 @@ class YourCircleView extends HookConsumerWidget
   Widget build(BuildContext context, WidgetRef ref) {
     final circleMembersData = useCircleMembers(ref);
     final removeConnection = useRemoveConnection(ref);
+    final inviteState = useSmsSender(ref);
     final leaderboardAsync = ref.watch(getCircleLeaderboardProvider);
     final searchController = useTextEditingController();
     final mq = MediaQuery.of(context);
@@ -191,7 +193,9 @@ class YourCircleView extends HookConsumerWidget
                             ),
                           )
                         else
-                          const YourCircleAddMenu(),
+                          YourCircleAddMenu(
+                            onShareInvite: inviteState.shareInvite,
+                          ),
                       ],
                     ),
             ),
