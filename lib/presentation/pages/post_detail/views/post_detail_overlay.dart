@@ -104,6 +104,39 @@ class PostDetailOverlay extends HookConsumerWidget {
       return () => scrollController.removeListener(onScroll);
     }, [scrollController]);
 
+    // Peek scroll: when comments exist, briefly scroll up to reveal
+    // the "Thoughts" header after the card's Hero animation settles.
+    useEffect(() {
+      if (currentPost.commentCount <= 0) {
+        return null;
+      }
+
+      bool cancelled = false;
+
+      Future<void> peek() async {
+        // Wait for Hero animation + layout to settle
+        await Future.delayed(const Duration(milliseconds: 400));
+        if (cancelled ||
+            !scrollController.hasClients ||
+            scrollController.position.maxScrollExtent <= 0) {
+          return;
+        }
+        // Peek distance: just enough to show the header (~30px scaled)
+        final peekDistance = (30.0 * s).clamp(
+          0.0,
+          scrollController.position.maxScrollExtent,
+        );
+        scrollController.animateTo(
+          peekDistance,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+
+      peek();
+      return () => cancelled = true;
+    }, [currentPost.commentCount]);
+
     return GestureDetector(
       onTap: () => Navigator.of(context).pop(),
       child: Material(
