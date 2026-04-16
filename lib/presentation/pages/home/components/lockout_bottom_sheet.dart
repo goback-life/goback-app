@@ -1,4 +1,5 @@
-import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/nav_overlay/nav_overlay_wrapper.dart';
 import 'package:cloudless/presentation/pages/home/components/lockout_activity_chips.dart';
 import 'package:cloudless/presentation/pages/home/components/lockout_duration_ring.dart';
@@ -151,16 +152,42 @@ class LockoutBottomSheet extends HookWidget {
                   },
                 ),
                 const SizedBox(height: 24),
-                // Go Back CTA
-                CallToAction.primary.filled(
-                  action: isValid
+                // Go Back CTA — slightly more opaque than other buttons
+                GestureDetector(
+                  onTap: isValid
                       ? () => Navigator.of(context).pop((
                           duration: duration.value,
                           actionText: resolveActionText(),
                           nfcScan: false,
                         ))
                       : null,
-                  label: const Text('Go Back'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: AppGlassContainer(
+                      config: GlassConfig(
+                        variant: GlassVariant.clear,
+                        tint: MainColors.accent,
+                        cornerRadius: 10,
+                        opacity: isValid ? 0.6 : 0.2,
+                      ),
+                      child: SizedBox(
+                        height: 50,
+                        width: double.infinity,
+                        child: Center(
+                          child: Text(
+                            'Go Back',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: isValid
+                                  ? MainColors.white
+                                  : MainColors.dark.withValues(alpha: 0.3),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 14),
                 // NFC link
