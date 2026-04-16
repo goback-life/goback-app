@@ -21,20 +21,31 @@ class FeedCircleHubButton extends StatelessWidget {
     final s = screenWidth / 402.0;
     final size = FeedLayout.circleHubButtonSize * s;
 
+    // 44px minimum tap target, glass circle visually centered inside.
+    const minTap = 44.0;
+    final tapSize = minTap * s;
+
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => router.push(const CircleHubRoutable()),
       child: SizedBox(
-        width: size,
-        height: size,
-        child: AppGlassContainer(
-          config: GlassConfig(
-            variant: GlassVariant.clear,
-            cornerRadius: size / 2,
-            tint: hasUnread
-                ? MainColors.red500.withValues(alpha: 0.35)
-                : MainColors.accent,
+        width: tapSize,
+        height: tapSize,
+        child: Center(
+          child: SizedBox(
+            width: size,
+            height: size,
+            child: AppGlassContainer(
+              config: GlassConfig(
+                variant: GlassVariant.clear,
+                cornerRadius: size / 2,
+                tint: hasUnread
+                    ? MainColors.red500.withValues(alpha: 0.35)
+                    : MainColors.accent,
+              ),
+              child: const SizedBox.expand(),
+            ),
           ),
-          child: const SizedBox.expand(),
         ),
       ),
     );

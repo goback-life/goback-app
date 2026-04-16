@@ -451,20 +451,22 @@ class FeedView extends HookConsumerWidget {
           top: safeTop + 8 * s,
           left: 0,
           right: 0,
-          child: Center(
-            child: FeedDateOverlay(
-              displayDate:
-                  topPostDate.value ??
-                  (feedPosts.posts.isNotEmpty
-                      ? feedPosts.posts
-                            .reduce(
-                              (a, b) =>
-                                  a.createdAt.isAfter(b.createdAt) ? a : b,
-                            )
-                            .createdAt
-                            .toLocal()
-                      : null),
-              hasUnreadNotifications: hasUnread,
+          child: IgnorePointer(
+            child: Center(
+              child: FeedDateOverlay(
+                displayDate:
+                    topPostDate.value ??
+                    (feedPosts.posts.isNotEmpty
+                        ? feedPosts.posts
+                              .reduce(
+                                (a, b) =>
+                                    a.createdAt.isAfter(b.createdAt) ? a : b,
+                              )
+                              .createdAt
+                              .toLocal()
+                        : null),
+                hasUnreadNotifications: hasUnread,
+              ),
             ),
           ),
         ),
