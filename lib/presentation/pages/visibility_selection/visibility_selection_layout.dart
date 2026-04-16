@@ -13,7 +13,7 @@ mixin VisibilitySelectionLayout on MainLayout {
 
   double get pillHeight => 40.0;
 
-  double get pillRadius => 20.0;
+  double get pillRadius => 10.0;
 
   double get doneButtonHeight => 51.0;
 

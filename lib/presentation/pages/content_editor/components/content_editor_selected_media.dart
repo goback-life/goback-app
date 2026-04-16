@@ -6,7 +6,6 @@ import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/full_screen_image.dart';
 import 'package:cloudless/presentation/components/video_player/video_player_dialog.dart';
 import 'package:cloudless/presentation/pages/content_editor/content_editor_layout.dart';
-import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -60,7 +59,10 @@ class ContentEditorSelectedMedia extends HookConsumerWidget
     final bool isVideo = contentType == ContentType.video;
 
     if (isVideo && isExtractingThumbnail) {
-      return Container(color: MainColors.white, child: const SizedBox.shrink());
+      return const ColoredBox(
+        color: Colors.transparent,
+        child: SizedBox.shrink(),
+      );
     }
 
     if (isVideo && firstFrameFile != null) {

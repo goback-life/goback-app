@@ -265,7 +265,11 @@ class _GlassPill extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AppGlassContainer(
-        config: GlassConfig(cornerRadius: radius, interactive: true),
+        config: GlassConfig(
+          cornerRadius: radius,
+          interactive: true,
+          tint: MainColors.accent,
+        ),
         child: Container(
           height: height,
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -276,7 +280,7 @@ class _GlassPill extends StatelessWidget {
               fontFamily: MainFontFamilies.quicksand,
               fontWeight: FontWeight.w500,
               fontSize: 14,
-              color: MainColors.white,
+              color: MainColors.dark,
               letterSpacing: -0.84,
             ),
           ),

@@ -90,15 +90,15 @@ class LockoutPostEditorView extends HookConsumerWidget {
       return null;
     }, [contentCreation.data.description, circleMembers]);
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
         fit: StackFit.expand,
         children: [
           // Semi-transparent overlay background
-          Container(
-            color: const Color(0x33D9D9D9), // rgba(217,217,217,0.2)
-          ),
+          Container(color: colorScheme.outline.withValues(alpha: 0.15)),
 
           // Scrollable content
           SafeArea(
