@@ -6,10 +6,12 @@ import 'package:cloudless/core/features/connection/domain/hooks/use_circle_membe
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/lockout_session_service_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
+import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/nfc/data/providers/nfc_service_provider.dart';
 import 'package:cloudless/core/features/notification/domain/providers/unread_notification_count_provider.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_feed_posts/use_feed_posts.dart';
+import 'package:cloudless/core/features/post/domain/models/feed_item.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_provider.dart';
 import 'package:cloudless/core/features/profile/domain/providers/get_profile_provider.dart';
@@ -28,6 +30,7 @@ import 'package:cloudless/presentation/pages/home/components/home_new_posts_bann
 import 'package:cloudless/presentation/pages/home/components/home_scroll_indicator.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
 import 'package:cloudless/presentation/pages/home/hooks/use_home_scroll_state.dart';
+import 'package:cloudless/presentation/pages/manual_lockout/components/join_lockout_dialog.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_page.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
@@ -156,6 +159,8 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
           children: [
             showFeed
                 ? _buildFeedContent(
+                    context: context,
+                    ref: ref,
                     feedPosts: feedPosts,
                     currentUserId: currentUserId,
                     scrollController: scrollState.scrollController,
@@ -211,9 +216,11 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
                           ? feedPosts.posts
                                 .reduce(
                                   (a, b) =>
-                                      a.createdAt.isAfter(b.createdAt) ? a : b,
+                                      a.sortTimestamp.isAfter(b.sortTimestamp)
+                                      ? a
+                                      : b,
                                 )
-                                .createdAt
+                                .sortTimestamp
                                 .toLocal()
                           : null),
                 ),
@@ -248,6 +255,8 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
   }
 
   Widget _buildFeedContent({
+    required BuildContext context,
+    required WidgetRef ref,
     required FeedPostsResult feedPosts,
     required String currentUserId,
     required ScrollController? scrollController,
@@ -269,9 +278,26 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
       onRefresh: feedPosts.refresh,
       scrollController: scrollController,
       onPostTap: onPostTap,
+      onJoinLockout: (session) => _handleJoinLockout(context, ref, session),
       onRefreshStateChanged: onRefreshStateChanged,
       onTopPostDateChanged: onTopPostDateChanged,
     );
+  }
+
+  Future<void> _handleJoinLockout(
+    BuildContext context,
+    WidgetRef ref,
+    LockoutSessionModel session,
+  ) async {
+    final confirmed = await JoinLockoutDialog.show(context, session);
+    if (confirmed == true) {
+      await ref
+          .read(manualLockoutNotifierProvider.notifier)
+          .joinLockout(session.id);
+      if (context.mounted) {
+        router.go(const ManualLockoutRoutable());
+      }
+    }
   }
 
   Widget _buildCircleActionsContent({

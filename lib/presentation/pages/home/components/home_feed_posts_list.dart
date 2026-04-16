@@ -1,4 +1,7 @@
+import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
+import 'package:cloudless/core/features/post/domain/models/feed_item.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
+import 'package:cloudless/presentation/pages/feed/components/lockout_placeholder_card.dart';
 import 'package:cloudless/presentation/pages/home/components/home_feed_empty_state.dart';
 import 'package:cloudless/presentation/pages/home/components/home_feed_post_card.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
@@ -17,12 +20,13 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     required this.onRefresh,
     this.scrollController,
     this.onPostTap,
+    this.onJoinLockout,
     this.onRefreshStateChanged,
     this.onTopPostDateChanged,
     super.key,
   });
 
-  final List<FeedPostModel> posts;
+  final List<FeedItem> posts;
   final String currentUserId;
   final bool isLoading;
   final bool isLoadingMore;
@@ -31,6 +35,7 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
   final Future<void> Function() onRefresh;
   final ScrollController? scrollController;
   final void Function(FeedPostModel post)? onPostTap;
+  final void Function(LockoutSessionModel session)? onJoinLockout;
   final void Function(bool isRefreshing)? onRefreshStateChanged;
   final void Function(DateTime? date)? onTopPostDateChanged;
 
@@ -59,13 +64,13 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
     // Memoize sorted posts to avoid O(n log n) sort on every frame
     final sortedPosts = useMemoized(
       () =>
-          List<FeedPostModel>.from(posts)
-            ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+          List<FeedItem>.from(posts)
+            ..sort((a, b) => b.sortTimestamp.compareTo(a.sortTimestamp)),
       [posts],
     );
 
     // Store sorted posts in ref for scroll handler access without recalculating
-    final sortedPostsRef = useRef<List<FeedPostModel>>([]);
+    final sortedPostsRef = useRef<List<FeedItem>>([]);
     useEffect(() {
       sortedPostsRef.value = sortedPosts;
       return null;
@@ -123,9 +128,9 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
             final topIndex = (scrollProgress * (currentSorted.length - 1))
                 .clamp(0.0, currentSorted.length - 1.0)
                 .round();
-            topPostDate = currentSorted[topIndex].createdAt.toLocal();
+            topPostDate = currentSorted[topIndex].sortTimestamp.toLocal();
           } else {
-            topPostDate = currentSorted.first.createdAt.toLocal();
+            topPostDate = currentSorted.first.sortTimestamp.toLocal();
           }
 
           // Extract to primitives before creating any closures
@@ -355,15 +360,22 @@ class HomeFeedPostsList extends HookConsumerWidget with MainLayout, HomeLayout {
                   return const SizedBox.shrink();
                 }
 
-                final post = sortedPosts[index];
-                final isCurrentUser = post.authorId == currentUserId;
+                final item = sortedPosts[index];
 
-                return HomeFeedPostCard(
-                  key: ValueKey('post_${post.id}'),
-                  post: post,
-                  isCurrentUser: isCurrentUser,
-                  onTap: onPostTap != null ? () => onPostTap!(post) : null,
-                );
+                return switch (item) {
+                  FeedItemPost(:final post) => HomeFeedPostCard(
+                    key: ValueKey('post_${post.id}'),
+                    post: post,
+                    isCurrentUser: post.authorId == currentUserId,
+                    onTap: onPostTap != null ? () => onPostTap!(post) : null,
+                  ),
+                  FeedItemLockoutPlaceholder(:final lockout) =>
+                    LockoutPlaceholderCard(
+                      key: ValueKey('lockout_${lockout.id}'),
+                      session: lockout,
+                      onJoinTap: () => onJoinLockout?.call(lockout),
+                    ),
+                };
               },
             ),
           ],
