@@ -93,10 +93,10 @@ class CallToAction extends StatelessWidget {
     final radius = borderRadius.topLeft.x;
 
     final glassConfig = GlassConfig(
-      variant: isTransparent ? GlassVariant.clear : GlassVariant.regular,
+      variant: GlassVariant.clear,
       cornerRadius: radius,
       tint: colors.background,
-      opacity: isDisabled ? 0.5 : 1.0,
+      opacity: isDisabled ? 0.25 : 0.5,
     );
 
     Widget content = SizedBox(
