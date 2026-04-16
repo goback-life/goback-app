@@ -22,7 +22,7 @@ class ProfileTabToggle extends StatelessWidget {
       config: const GlassConfig(
         variant: GlassVariant.clear,
         tint: MainColors.accent,
-        cornerRadius: 20,
+        cornerRadius: 10,
       ),
       child: Padding(
         padding: EdgeInsets.all(3 * scale),

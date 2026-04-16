@@ -1,8 +1,11 @@
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/edit_profile/edit_profile_routable.dart';
 import 'package:cloudless/presentation/pages/profile/components/profile_hamburger_menu.dart';
 import 'package:cloudless/presentation/pages/profile/profile_layout.dart';
 import 'package:cloudless/presentation/pages/profile/views/profile_view.dart';
 import 'package:cloudless/presentation/pages/settings/settings_routable.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -94,17 +97,11 @@ class _ProfileDropdownMenu extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(radius),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x14191919),
-              blurRadius: 8,
-              offset: Offset(0, 4),
-            ),
-          ],
+      child: AppGlassContainer(
+        config: GlassConfig(
+          variant: GlassVariant.clear,
+          tint: MainColors.accent,
+          cornerRadius: radius,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
