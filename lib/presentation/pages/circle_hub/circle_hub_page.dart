@@ -2,7 +2,6 @@ import 'package:cloudless/presentation/components/glass/app_glass_container.dart
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/friends_locked_out/views/friends_locked_out_view.dart';
 import 'package:cloudless/presentation/pages/notifications/views/notifications_view.dart';
-import 'package:cloudless/presentation/pages/your_circle/views/your_circle_view.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -26,7 +25,6 @@ class CircleHubPage extends HookConsumerWidget {
               index: tabIndex.value,
               children: const [
                 SafeArea(child: FriendsLockedOutView()),
-                YourCircleView(),
                 NotificationsView(),
               ],
             ),
@@ -73,14 +71,9 @@ class _TabToggle extends StatelessWidget {
               onTap: () => onChanged(0),
             ),
             _TabPill(
-              label: 'Circle',
+              label: 'Notifications',
               isSelected: selectedIndex == 1,
               onTap: () => onChanged(1),
-            ),
-            _TabPill(
-              label: 'Notifications',
-              isSelected: selectedIndex == 2,
-              onTap: () => onChanged(2),
             ),
           ],
         ),
