@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:cloudless/core/features/post/domain/enums/post_action_type.dart';
+import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
+import 'package:cloudless/core/features/post/domain/models/feed_item.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/core/features/post/domain/providers/feed_posts_cache_provider.dart';
 import 'package:cloudless/core/features/post/domain/providers/post_action_notifier_provider.dart';
@@ -9,7 +11,7 @@ import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 
 typedef FeedPostsResult = ({
-  List<FeedPostModel> posts,
+  List<FeedItem> posts,
   bool isLoading,
   bool isLoadingMore,
   bool hasNextPage,
@@ -54,8 +56,28 @@ FeedPostsResult useFeedPosts(
 
   // Computed values from cache
   // Use notifier.posts for 24-hour filtered list, not raw cacheState.posts
-  final posts = cacheNotifier.posts;
+  final rawPosts = cacheNotifier.posts;
   final hasNextPage = cacheState.hasNextPage && !cacheState.fullyLoaded;
+
+  // Watch active friend lockouts for placeholder cards
+  final lockoutCacheState = ref.watch(friendsLockedOutCacheProvider);
+
+  // Merge posts and active friend lockouts into a unified feed
+  final posts = useMemoized(() {
+    final postItems = rawPosts.map(FeedItemPost.new).toList();
+
+    // Filter lockouts: exclude own sessions and sessions user already joined
+    final currentId = userId;
+    final lockoutItems = lockoutCacheState.activeLockouts
+        .where((s) => s.userId != currentId)
+        .where((s) => !s.participants.contains(currentId))
+        .map(FeedItemLockoutPlaceholder.new)
+        .toList();
+
+    final allItems = <FeedItem>[...postItems, ...lockoutItems];
+    allItems.sort((a, b) => b.sortTimestamp.compareTo(a.sortTimestamp));
+    return allItems;
+  }, [rawPosts, lockoutCacheState.activeLockouts, userId]);
 
   Future<void> loadNewPosts() async {
     if (newPostsCount.value > 0) {
