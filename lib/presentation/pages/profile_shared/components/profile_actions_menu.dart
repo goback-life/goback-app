@@ -1,11 +1,8 @@
-import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
-import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/profile_shared/components/profile_block_action.dart';
 import 'package:cloudless/presentation/pages/profile_shared/components/profile_remove_action.dart';
 import 'package:cloudless/presentation/pages/profile_shared/components/profile_report_action.dart';
 import 'package:cloudless/presentation/pages/profile_shared/profile_actions_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
-import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
 
@@ -32,41 +29,41 @@ class ProfileActionsMenu extends HookConsumerWidget
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return AppGlassContainer(
-      config: GlassConfig(
-        variant: GlassVariant.clear,
-        tint: MainColors.accent,
-        cornerRadius: menuBorderRadius,
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: menuVerticalSpacing),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(menuBorderRadius),
+        border: Border.all(color: colorScheme.shadow, width: menuBorderWidth),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.secondary.withValues(alpha: menuShadowOpacity),
+            blurRadius: menuShadowBlur,
+            spreadRadius: 0,
+            offset: Offset(0, menuShadowOffsetY),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: menuVerticalSpacing),
-        child: IntrinsicWidth(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (showRemoveOption && onRemoveTap != null) ...[
-                ProfileRemoveAction(onTap: onRemoveTap!),
-                Container(
-                  height: menuDividerHeight,
-                  color: colorScheme.outline.withValues(alpha: 0.15),
-                ),
-              ],
-              if (showBlockOption) ...[
-                ProfileBlockAction(
-                  blockedUserId: userId,
-                  onActionCompleted: onActionCompleted,
-                ),
-                Container(
-                  height: menuDividerHeight,
-                  color: colorScheme.outline.withValues(alpha: 0.15),
-                ),
-              ],
-              ProfileReportAction(
-                reportedUserId: userId,
+      child: IntrinsicWidth(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (showRemoveOption && onRemoveTap != null) ...[
+              ProfileRemoveAction(onTap: onRemoveTap!),
+              Container(height: menuDividerHeight, color: colorScheme.shadow),
+            ],
+            if (showBlockOption) ...[
+              ProfileBlockAction(
+                blockedUserId: userId,
                 onActionCompleted: onActionCompleted,
               ),
+              Container(height: menuDividerHeight, color: colorScheme.shadow),
             ],
-          ),
+            ProfileReportAction(
+              reportedUserId: userId,
+              onActionCompleted: onActionCompleted,
+            ),
+          ],
         ),
       ),
     );
