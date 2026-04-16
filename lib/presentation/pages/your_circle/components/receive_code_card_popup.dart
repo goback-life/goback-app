@@ -199,10 +199,7 @@ class _ReceiveCodeCard extends HookConsumerWidget {
       child: SizedBox(
         width: cardWidth,
         child: AppGlassContainer(
-          config: const GlassConfig(
-            tint: MainColors.accent,
-            cornerRadius: _kCardRadius,
-          ),
+          config: const GlassConfig(tint: null, cornerRadius: _kCardRadius),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 30, 24, 30),
             child: Column(
@@ -254,7 +251,7 @@ class _ReceiveCodeCard extends HookConsumerWidget {
                       height: _kSubmitHeight,
                       child: AppGlassContainer(
                         config: const GlassConfig(
-                          tint: MainColors.accent,
+                          tint: null,
                           cornerRadius: _kSubmitRadius,
                         ),
                         child: Center(
@@ -332,7 +329,7 @@ class _CodeBoxes extends StatelessWidget {
                         height: boxH,
                         child: AppGlassContainer(
                           config: const GlassConfig(
-                            tint: MainColors.accent,
+                            tint: null,
                             cornerRadius: _kCodeBoxRadius,
                           ),
                           child: Center(

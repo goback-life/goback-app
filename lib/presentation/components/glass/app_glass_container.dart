@@ -220,7 +220,7 @@ class _RoundedGlassOverlay extends CustomPainter {
 
     // 0. Tint fill
     if (tint != null) {
-      canvas.drawRRect(rrect, Paint()..color = tint!.withValues(alpha: 0.4));
+      canvas.drawRRect(rrect, Paint()..color = tint!.withValues(alpha: 0.25));
     }
 
     // 1. Subtle surface tint for presence on light backgrounds

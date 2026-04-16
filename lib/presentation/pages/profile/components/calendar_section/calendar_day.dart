@@ -32,15 +32,15 @@ class CalendarDay extends StatelessWidget with MainLayout, ProfileLayout {
       return SizedBox(width: cellW, height: cellH);
     }
 
-    // Day number text style (Quicksand Medium 24px, -6% tracking, white).
-    final dayText = Text(
+    // Day number: white on populated (thumbnail) cells, dark on empty cells.
+    Text dayText(Color color) => Text(
       dayData.day.toString(),
       style: TextStyle(
         fontFamily: MainFontFamilies.quicksand,
         fontWeight: FontWeight.w500,
         fontSize: dayFontSize * scale,
         letterSpacing: dayTracking * scale,
-        color: MainColors.white,
+        color: color,
       ),
     );
 
@@ -66,7 +66,7 @@ class CalendarDay extends StatelessWidget with MainLayout, ProfileLayout {
                 errorWidget: (context, url, error) =>
                     Container(color: Colors.white.withValues(alpha: 0.08)),
               ),
-              Center(child: dayText),
+              Center(child: dayText(MainColors.white)),
             ],
           ),
         ),
@@ -87,7 +87,7 @@ class CalendarDay extends StatelessWidget with MainLayout, ProfileLayout {
               context,
             ).colorScheme.onSurface.withValues(alpha: 0.06),
           ),
-          child: Center(child: dayText),
+          child: Center(child: dayText(MainColors.dark)),
         ),
       );
     }

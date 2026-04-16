@@ -8,6 +8,7 @@ import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_
 import 'package:cloudless/core/features/lockout/domain/utilities/participant_distance.dart';
 import 'package:cloudless/core/features/nfc/data/providers/nfc_service_provider.dart';
 import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/pages/home/components/dnd_prompt_dialog.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/friend_locked_out_item.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/join_lockout_dialog.dart';
@@ -132,7 +133,7 @@ class FriendsLockedOutList extends HookConsumerWidget {
       child: Text(
         translator.translate('pages.manual_lockout.friends_locked_out.empty'),
         style: textTheme.bodyMedium?.copyWith(
-          color: colorScheme.surface.withValues(alpha: 0.6),
+          color: MainColors.white.withValues(alpha: 0.6),
         ),
         textAlign: TextAlign.center,
       ),
@@ -148,7 +149,7 @@ class FriendsLockedOutList extends HookConsumerWidget {
           height: 20,
           child: CircularProgressIndicator(
             strokeWidth: 2,
-            color: colorScheme.surface.withValues(alpha: 0.6),
+            color: MainColors.white.withValues(alpha: 0.6),
           ),
         ),
       ),
@@ -218,7 +219,7 @@ class FriendsLockedOutList extends HookConsumerWidget {
               'pages.manual_lockout.friends_locked_out.title',
             ),
             style: textTheme.titleSmall?.copyWith(
-              color: colorScheme.surface.withValues(alpha: 0.8),
+              color: MainColors.white.withValues(alpha: 0.8),
             ),
           ),
         ),
@@ -265,7 +266,7 @@ class FriendsLockedOutList extends HookConsumerWidget {
         child: Text(
           'and $count ${count == 1 ? 'other' : 'others'}',
           style: textTheme.labelSmall?.copyWith(
-            color: colorScheme.surface.withValues(alpha: 0.5),
+            color: MainColors.white.withValues(alpha: 0.5),
             fontStyle: FontStyle.italic,
           ),
           textAlign: TextAlign.center,

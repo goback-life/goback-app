@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/pages/home/components/lockout_ring_painter.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
@@ -96,7 +97,7 @@ class LockoutDurationRing extends HookWidget {
                       fontSize: 48,
                       fontWeight: FontWeight.w200,
                       letterSpacing: -2,
-                      color: Colors.white,
+                      color: MainColors.dark,
                       fontFeatures: [FontFeature.tabularFigures()],
                     ),
                   ),
@@ -107,7 +108,7 @@ class LockoutDurationRing extends HookWidget {
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 0.5,
-                      color: Colors.white.withValues(alpha: 0.35),
+                      color: MainColors.dark.withValues(alpha: 0.35),
                     ),
                   ),
                 ],

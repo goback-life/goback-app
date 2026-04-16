@@ -75,7 +75,7 @@ class CalendarHeader extends StatelessWidget with MainLayout, ProfileLayout {
               fontWeight: FontWeight.w500,
               fontSize: monthFontSize * scale,
               letterSpacing: monthTracking * scale,
-              color: MainColors.white,
+              color: MainColors.dark,
             ),
           ),
           const Spacer(),

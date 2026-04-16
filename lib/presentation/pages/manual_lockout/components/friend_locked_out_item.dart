@@ -57,7 +57,7 @@ class FriendLockedOutItem extends StatelessWidget {
                 Text(
                   session.username ?? '',
                   style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.surface,
+                    color: MainColors.white,
                     fontWeight: FontWeight.w600,
                   ),
                   maxLines: 1,
@@ -68,7 +68,7 @@ class FriendLockedOutItem extends StatelessWidget {
                   Text(
                     'via @$joinedViaUsername',
                     style: textTheme.labelSmall?.copyWith(
-                      color: colorScheme.surface.withValues(alpha: 0.5),
+                      color: MainColors.white.withValues(alpha: 0.5),
                       fontStyle: FontStyle.italic,
                     ),
                     maxLines: 1,
@@ -85,14 +85,14 @@ class FriendLockedOutItem extends StatelessWidget {
                       Icon(
                         Icons.location_on,
                         size: 10,
-                        color: colorScheme.surface.withValues(alpha: 0.8),
+                        color: MainColors.white.withValues(alpha: 0.8),
                       ),
                       const SizedBox(width: 2),
                       Flexible(
                         child: Text(
                           statusText,
                           style: textTheme.labelSmall?.copyWith(
-                            color: colorScheme.surface.withValues(alpha: 0.8),
+                            color: MainColors.white.withValues(alpha: 0.8),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -105,7 +105,7 @@ class FriendLockedOutItem extends StatelessWidget {
                   Text(
                     statusText,
                     style: textTheme.labelSmall?.copyWith(
-                      color: colorScheme.surface.withValues(alpha: 0.8),
+                      color: MainColors.white.withValues(alpha: 0.8),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -114,7 +114,7 @@ class FriendLockedOutItem extends StatelessWidget {
                   Text(
                     session.actionText!,
                     style: textTheme.labelSmall?.copyWith(
-                      color: colorScheme.surface.withValues(alpha: 0.6),
+                      color: MainColors.white.withValues(alpha: 0.6),
                       fontStyle: FontStyle.italic,
                     ),
                     maxLines: 1,

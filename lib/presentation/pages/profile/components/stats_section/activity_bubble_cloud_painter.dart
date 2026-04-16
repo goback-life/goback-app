@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -30,16 +31,16 @@ class _PackedBubble {
   final Color color;
 }
 
-/// 8 muted palette colors for dark backgrounds.
+/// 8 palette colors — softer, slightly desaturated for light backgrounds.
 const _kPalette = [
-  Color(0xFF598EB5),
-  Color(0xFF6B8E6B),
-  Color(0xFFB57859),
-  Color(0xFF8B7BB5),
-  Color(0xFFB5A259),
-  Color(0xFF59B5A3),
-  Color(0xFFB55976),
-  Color(0xFF7BAAB5),
+  Color(0xFF5A8FB2),
+  Color(0xFF7DA07D),
+  Color(0xFFC08A6A),
+  Color(0xFF9B8DC0),
+  Color(0xFFC0AD6A),
+  Color(0xFF6AC0B0),
+  Color(0xFFC06A84),
+  Color(0xFF8AB8C0),
 ];
 
 /// CustomPainter that draws a packed bubble cloud of lockout activities.
@@ -56,9 +57,27 @@ class ActivityBubbleCloudPainter extends CustomPainter {
     if (packed.isEmpty) return;
 
     for (final b in packed) {
-      // Filled circle
-      final circlePaint = Paint()..color = b.color.withValues(alpha: 0.70);
-      canvas.drawCircle(b.center, b.radius, circlePaint);
+      // Radial gradient fill — lighter center, saturated edge for depth
+      final gradientPaint = Paint()
+        ..shader = ui.Gradient.radial(
+          Offset(b.center.dx - b.radius * 0.25, b.center.dy - b.radius * 0.25),
+          b.radius * 1.2,
+          [b.color.withValues(alpha: 0.45), b.color.withValues(alpha: 0.70)],
+          [0.0, 1.0],
+        );
+      canvas.drawCircle(b.center, b.radius, gradientPaint);
+
+      // Subtle inner highlight — glassy top-left sheen
+      final sheenPaint = Paint()
+        ..shader = ui.Gradient.radial(
+          Offset(b.center.dx - b.radius * 0.3, b.center.dy - b.radius * 0.35),
+          b.radius * 0.7,
+          [
+            Colors.white.withValues(alpha: 0.30),
+            Colors.white.withValues(alpha: 0.0),
+          ],
+        );
+      canvas.drawCircle(b.center, b.radius, sheenPaint);
 
       // Emoji
       final emojiSpan = TextSpan(

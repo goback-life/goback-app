@@ -39,9 +39,9 @@ class ProfileHamburgerMenu extends StatelessWidget
                   borderRadius: BorderRadius.circular(radius),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x40191919),
-                      blurRadius: 4,
-                      offset: Offset(0, 4),
+                      color: Color(0x0F191919),
+                      blurRadius: 3,
+                      offset: Offset(0, 1),
                     ),
                   ],
                 ),
