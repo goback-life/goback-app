@@ -20,6 +20,7 @@ import 'package:cloudless/presentation/pages/sign_in/sign_in_routable.dart';
 import 'package:cloudless/presentation/pages/visibility_selection/visibility_selection_routable.dart';
 import 'package:cloudless/presentation/pages/tutorial/tutorial_routable.dart';
 import 'package:cloudless/presentation/pages/your_circle/your_circle_routable.dart';
+import 'package:cloudless/presentation/pages/circle_hub/circle_hub_routable.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 
 final List<BaseRoutable> routes = [
@@ -34,6 +35,7 @@ final List<BaseRoutable> routes = [
   const CircleProfileRoutable(),
   const ExternalProfileRoutable(),
   const YourCircleRoutable(),
+  const CircleHubRoutable(),
   const InviteToCircleRoutable(),
   const JoinCircleRoutable(),
   const ReviewCircleRoutable(),
