@@ -13,7 +13,8 @@ import 'package:cloudless/presentation/components/main_data_loader.dart';
 import 'package:cloudless/presentation/components/main_empty_state.dart';
 import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/hooks/use_sms_launch.dart';
-import 'package:cloudless/presentation/pages/your_circle/components/connection_request_tiles.dart';
+import 'package:cloudless/core/features/connection/domain/models/connection_request_model.dart';
+import 'package:cloudless/core/models/profile_model.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/leaderboard_tile.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_add_menu.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_remove_dialog.dart';
@@ -112,7 +113,7 @@ class YourCircleView extends HookConsumerWidget
           clipBehavior: Clip.none,
           children: [
             // Layer 0: Scrollable list (leaderboard + external results)
-            if (totalItems == 0)
+            if (totalItems == 0 && searchQuery.isEmpty)
               const Positioned.fill(child: Center(child: MainEmptyState()))
             else
               ListView.builder(
@@ -163,10 +164,10 @@ class YourCircleView extends HookConsumerWidget
                       },
                     );
                   }
-                  // External search result
+                  // External search result — matches LeaderboardTile layout
                   final extIndex = index - filtered.length;
                   final (profile, status) = externalResults[extIndex];
-                  return SearchResultTile(
+                  return _ExternalUserTile(
                     profile: profile,
                     status: status,
                     isCircleFull: isFull,
@@ -184,7 +185,6 @@ class YourCircleView extends HookConsumerWidget
                         }, (_) {});
                       });
                     },
-                    onAccept: () {},
                   );
                 },
               ),
@@ -404,6 +404,151 @@ class _MinusPill extends StatelessWidget with MainLayout, YourCircleLayout {
           child: const SizedBox.expand(),
         ),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Remove bar — bottom bar in remove mode
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// External user tile — matches LeaderboardTile layout with a Connect button
+// ---------------------------------------------------------------------------
+
+class _ExternalUserTile extends StatelessWidget
+    with MainLayout, YourCircleLayout {
+  const _ExternalUserTile({
+    required this.profile,
+    required this.status,
+    required this.isCircleFull,
+    required this.onConnect,
+  });
+
+  final ProfileModel profile;
+  final ConnectionStatus status;
+  final bool isCircleFull;
+  final VoidCallback onConnect;
+
+  @override
+  Widget build(BuildContext context) {
+    final sidePad = MediaQuery.of(context).size.width * 0.10;
+    final disabledColor = Theme.of(
+      context,
+    ).colorScheme.onSurface.withValues(alpha: 0.3);
+
+    String label;
+    Color color;
+    VoidCallback? onTap;
+    switch (status) {
+      case ConnectionStatus.none:
+        label = isCircleFull ? 'Full' : 'Connect';
+        color = isCircleFull ? disabledColor : MainColors.accent;
+        onTap = isCircleFull ? null : onConnect;
+      case ConnectionStatus.pendingOutgoing:
+        label = 'Pending';
+        color = disabledColor;
+        onTap = null;
+      case ConnectionStatus.pendingIncoming:
+        label = isCircleFull ? 'Full' : 'Accept';
+        color = isCircleFull ? disabledColor : MainColors.accent;
+        onTap = isCircleFull ? null : onConnect;
+      case ConnectionStatus.connected:
+        label = 'Connected';
+        color = disabledColor;
+        onTap = null;
+    }
+
+    return SizedBox(
+      height: friendTileHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(width: sidePad),
+          // Blank rank area (matches LeaderboardTile rank column)
+          SizedBox(width: rankWidth),
+          SizedBox(width: rankRightMargin),
+          // Avatar — same size as leaderboard friend avatar
+          _buildAvatar(context),
+          SizedBox(width: friendAvatarToText),
+          // Username
+          Expanded(
+            child: Text(
+              profile.username,
+              style: TextStyle(
+                fontFamily: MainFontFamilies.quicksand,
+                fontWeight: FontWeight.w500,
+                fontSize: friendTextSize,
+                color: Theme.of(context).colorScheme.onSurface,
+                letterSpacing: friendLetterSpacing,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // Action button (where duration/stats would be)
+          Padding(
+            padding: EdgeInsets.only(right: sidePad),
+            child: GestureDetector(
+              onTap: onTap,
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontFamily: MainFontFamilies.quicksand,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: color,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvatar(BuildContext context) {
+    final hasAvatar =
+        profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty;
+    return Container(
+      width: friendAvatarSize,
+      height: friendAvatarSize,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: MainColors.accent.withValues(alpha: hasAvatar ? 0.0 : 1.0),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: hasAvatar
+          ? Image.network(
+              profile.avatarUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Center(
+                child: Text(
+                  profile.username.isNotEmpty
+                      ? profile.username[0].toUpperCase()
+                      : '?',
+                  style: TextStyle(
+                    fontFamily: MainFontFamilies.quicksand,
+                    fontWeight: FontWeight.w500,
+                    fontSize: friendAvatarSize * 0.4,
+                    color: MainColors.dark,
+                  ),
+                ),
+              ),
+            )
+          : Center(
+              child: Text(
+                profile.username.isNotEmpty
+                    ? profile.username[0].toUpperCase()
+                    : '?',
+                style: TextStyle(
+                  fontFamily: MainFontFamilies.quicksand,
+                  fontWeight: FontWeight.w500,
+                  fontSize: friendAvatarSize * 0.4,
+                  color: MainColors.dark,
+                ),
+              ),
+            ),
     );
   }
 }
