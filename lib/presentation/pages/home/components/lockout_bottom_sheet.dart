@@ -98,7 +98,9 @@ class LockoutBottomSheet extends HookWidget {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -110,7 +112,9 @@ class LockoutBottomSheet extends HookWidget {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.2,
-                    color: Colors.white.withValues(alpha: 0.45),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -173,7 +177,9 @@ class LockoutBottomSheet extends HookWidget {
                           'At a venue? ',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.white.withValues(alpha: 0.35),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.45),
                           ),
                         ),
                         Text(

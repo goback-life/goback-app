@@ -24,7 +24,7 @@ class LockoutLineChartPainter extends CustomPainter {
 
     // Subtle grid lines at 25%, 50%, 75%
     final gridPaint = Paint()
-      ..color = MainColors.white.withOpacity(0.05)
+      ..color = MainColors.dark.withValues(alpha: 0.08)
       ..strokeWidth = 1;
     for (final frac in [0.25, 0.5, 0.75]) {
       final y = vPad + chartH * (1 - frac);
@@ -53,8 +53,8 @@ class LockoutLineChartPainter extends CustomPainter {
 
       final fillPaint = Paint()
         ..shader = ui.Gradient.linear(Offset(0, vPad), Offset(0, size.height), [
-          MainColors.accent.withOpacity(0.25),
-          MainColors.accent.withOpacity(0.0),
+          MainColors.accent.withValues(alpha: 0.25),
+          MainColors.accent.withValues(alpha: 0.0),
         ]);
       canvas.drawPath(fillPath, fillPaint);
     }
@@ -81,7 +81,7 @@ class LockoutLineChartPainter extends CustomPainter {
       final dotPaint = Paint()
         ..color = isHighlighted
             ? MainColors.accent
-            : MainColors.accent.withOpacity(0.8);
+            : MainColors.accent.withValues(alpha: 0.8);
       canvas.drawCircle(points[i], dotRadius, dotPaint);
 
       // White inner dot on highlight

@@ -372,11 +372,11 @@ class _GlassCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(cardRadius),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x40191919),
+            color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.25),
             blurRadius: 4,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -422,7 +422,7 @@ class _GlassCard extends StatelessWidget {
                     fontFamily: MainFontFamilies.quicksand,
                     fontWeight: FontWeight.w500,
                     fontSize: 15.0 * scale,
-                    color: MainColors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     letterSpacing: -0.5 * scale,
                   ),
                 ),

@@ -57,7 +57,7 @@ class ActivityBubbleCloudPainter extends CustomPainter {
 
     for (final b in packed) {
       // Filled circle
-      final circlePaint = Paint()..color = b.color.withOpacity(0.70);
+      final circlePaint = Paint()..color = b.color.withValues(alpha: 0.70);
       canvas.drawCircle(b.center, b.radius, circlePaint);
 
       // Emoji
@@ -88,7 +88,7 @@ class ActivityBubbleCloudPainter extends CustomPainter {
             fontSize: (b.radius * 0.28).clamp(8.0, 13.0),
             fontWeight: FontWeight.w500,
             fontFamily: 'Quicksand',
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
           ),
         );
         final labelPainter = TextPainter(

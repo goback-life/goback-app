@@ -69,6 +69,7 @@ class _Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -79,9 +80,9 @@ class _Pill extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? MainColors.accent.withOpacity(0.25)
+              ? MainColors.accent.withValues(alpha: 0.25)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(17 * scale),
+          borderRadius: BorderRadius.circular(10 * scale),
         ),
         child: Text(
           label,
@@ -90,8 +91,8 @@ class _Pill extends StatelessWidget {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             fontSize: 14 * scale,
             color: isSelected
-                ? MainColors.white
-                : MainColors.white.withOpacity(0.5),
+                ? colorScheme.onSurface
+                : colorScheme.onSurface.withValues(alpha: 0.5),
           ),
         ),
       ),

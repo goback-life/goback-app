@@ -125,14 +125,14 @@ class TutorialInviteTab extends HookConsumerWidget {
       );
     }
     if (!data.hasPermission) {
-      return const Center(
+      return Center(
         child: Text(
           'Grant contacts access to invite friends',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontFamily: MainFontFamilies.quicksand,
             fontSize: 13,
-            color: MainColors.grey500,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             decoration: TextDecoration.none,
           ),
         ),
@@ -143,13 +143,13 @@ class TutorialInviteTab extends HookConsumerWidget {
     final totalCount = contacts.length + phoneOffset;
 
     if (totalCount == 0) {
-      return const Center(
+      return Center(
         child: Text(
           'No contacts found',
           style: TextStyle(
             fontFamily: MainFontFamilies.quicksand,
             fontSize: 13,
-            color: MainColors.grey500,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             decoration: TextDecoration.none,
           ),
         ),
@@ -245,18 +245,18 @@ class _ContactRow extends StatelessWidget {
             Container(
               width: 32,
               height: 32,
-              decoration: const BoxDecoration(
-                color: MainColors.grey300,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Text(
                   contact.firstLetter,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: MainFontFamilies.quicksand,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: MainColors.white,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     decoration: TextDecoration.none,
                   ),
                 ),

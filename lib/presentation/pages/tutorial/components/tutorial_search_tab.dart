@@ -92,18 +92,18 @@ class _SearchResultRow extends StatelessWidget {
           Container(
             width: 32,
             height: 32,
-            decoration: const BoxDecoration(
-              color: MainColors.grey300,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 username.isNotEmpty ? username[0].toUpperCase() : '?',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: MainFontFamilies.quicksand,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: MainColors.white,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   decoration: TextDecoration.none,
                 ),
               ),
@@ -124,22 +124,22 @@ class _SearchResultRow extends StatelessWidget {
             ),
           ),
           if (isAlreadyConnected)
-            const Text(
+            Text(
               'Connected',
               style: TextStyle(
                 fontFamily: MainFontFamilies.quicksand,
                 fontSize: 12,
-                color: MainColors.grey500,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 decoration: TextDecoration.none,
               ),
             )
           else if (isPending)
-            const Text(
+            Text(
               'Pending',
               style: TextStyle(
                 fontFamily: MainFontFamilies.quicksand,
                 fontSize: 12,
-                color: MainColors.grey500,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 decoration: TextDecoration.none,
               ),
             )

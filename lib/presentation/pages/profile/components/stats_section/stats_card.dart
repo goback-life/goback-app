@@ -42,7 +42,9 @@ class StatsCard extends StatelessWidget {
               fontFamily: MainFontFamilies.quicksand,
               fontWeight: FontWeight.w500,
               fontSize: 11 * s,
-              color: MainColors.white.withOpacity(0.5),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
         ],

@@ -86,11 +86,12 @@ class LockoutLineChart extends HookWidget {
     final weekLabel = '${fmt.format(weekStart)} – ${fmt.format(weekEnd)}';
 
     final s = scale;
+    final colorScheme = Theme.of(context).colorScheme;
     final labelStyle = TextStyle(
       fontFamily: MainFontFamilies.quicksand,
       fontWeight: FontWeight.w500,
       fontSize: 12 * s,
-      color: MainColors.white.withOpacity(0.5),
+      color: colorScheme.onSurface.withValues(alpha: 0.5),
     );
 
     // Tooltip text
@@ -120,8 +121,8 @@ class LockoutLineChart extends HookWidget {
               child: Icon(
                 Icons.chevron_left,
                 color: isOldestWeek
-                    ? MainColors.white.withOpacity(0.2)
-                    : MainColors.white.withOpacity(0.7),
+                    ? colorScheme.onSurface.withValues(alpha: 0.2)
+                    : colorScheme.onSurface.withValues(alpha: 0.7),
                 size: 24 * s,
               ),
             ),
@@ -132,7 +133,7 @@ class LockoutLineChart extends HookWidget {
                 fontFamily: MainFontFamilies.quicksand,
                 fontWeight: FontWeight.w600,
                 fontSize: 14 * s,
-                color: MainColors.white,
+                color: colorScheme.onSurface,
               ),
             ),
             SizedBox(width: 8 * s),
@@ -141,8 +142,8 @@ class LockoutLineChart extends HookWidget {
               child: Icon(
                 Icons.chevron_right,
                 color: isCurrentWeek
-                    ? MainColors.white.withOpacity(0.2)
-                    : MainColors.white.withOpacity(0.7),
+                    ? colorScheme.onSurface.withValues(alpha: 0.2)
+                    : colorScheme.onSurface.withValues(alpha: 0.7),
                 size: 24 * s,
               ),
             ),

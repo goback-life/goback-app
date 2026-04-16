@@ -66,6 +66,7 @@ class _FeedNfcTagButtonState extends State<FeedNfcTagButton> {
   @override
   Widget build(BuildContext context) {
     final size = 54.0 * widget.scale;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -75,9 +76,9 @@ class _FeedNfcTagButtonState extends State<FeedNfcTagButton> {
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: MainColors.white.withValues(alpha: 0.12),
+          color: colorScheme.surfaceContainerHigh,
           border: Border.all(
-            color: MainColors.white.withValues(alpha: 0.25),
+            color: colorScheme.outline.withValues(alpha: 0.25),
             width: 1.0,
           ),
         ),
@@ -88,12 +89,12 @@ class _FeedNfcTagButtonState extends State<FeedNfcTagButton> {
                   height: 22 * widget.scale,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: MainColors.white.withValues(alpha: 0.80),
+                    color: colorScheme.onSurface.withValues(alpha: 0.80),
                   ),
                 )
               : Icon(
                   Icons.nfc_rounded,
-                  color: MainColors.white.withValues(alpha: 0.80),
+                  color: colorScheme.onSurface.withValues(alpha: 0.80),
                   size: 26 * widget.scale,
                 ),
         ),

@@ -2,6 +2,12 @@ import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+// Opacity helpers used in place of white-alpha values now that the
+// bottom sheet has a light surface background.
+const _kChipUnselectedFillAlpha = 0.06;
+const _kChipUnselectedBorderAlpha = 0.12;
+const _kChipUnselectedContentAlpha = 0.5;
+
 /// Preset activity definitions: key → (label, icon builder).
 const _presets = <String, ({String label, IconData icon})>{
   'sport': (label: 'Sport', icon: Icons.directions_run_rounded),
@@ -96,6 +102,7 @@ class _PresetChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = MainColors.accent;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
 
     return GestureDetector(
       onTap: onTap,
@@ -107,12 +114,12 @@ class _PresetChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? accent.withValues(alpha: 0.15)
-              : Colors.white.withValues(alpha: 0.04),
+              : onSurface.withValues(alpha: _kChipUnselectedFillAlpha),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected
                 ? accent.withValues(alpha: 0.45)
-                : Colors.white.withValues(alpha: 0.08),
+                : onSurface.withValues(alpha: _kChipUnselectedBorderAlpha),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -123,7 +130,9 @@ class _PresetChip extends StatelessWidget {
             Icon(
               icon,
               size: 16,
-              color: isSelected ? accent : Colors.white.withValues(alpha: 0.5),
+              color: isSelected
+                  ? accent
+                  : onSurface.withValues(alpha: _kChipUnselectedContentAlpha),
             ),
             const SizedBox(width: 5),
             Flexible(
@@ -135,7 +144,9 @@ class _PresetChip extends StatelessWidget {
                   fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
                   color: isSelected
                       ? accent
-                      : Colors.white.withValues(alpha: 0.5),
+                      : onSurface.withValues(
+                          alpha: _kChipUnselectedContentAlpha,
+                        ),
                 ),
               ),
             ),
@@ -165,6 +176,8 @@ class _CustomChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+
     return GestureDetector(
       onTap: isExpanded ? null : onTap,
       child: AnimatedContainer(
@@ -175,12 +188,12 @@ class _CustomChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isExpanded
               ? MainColors.accent.withValues(alpha: 0.15)
-              : Colors.white.withValues(alpha: 0.04),
+              : onSurface.withValues(alpha: _kChipUnselectedFillAlpha),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isExpanded
                 ? MainColors.accent.withValues(alpha: 0.45)
-                : Colors.white.withValues(alpha: 0.08),
+                : onSurface.withValues(alpha: _kChipUnselectedBorderAlpha),
             width: isExpanded ? 1.5 : 1,
           ),
         ),
@@ -224,7 +237,7 @@ class _CustomChip extends StatelessWidget {
                         child: Icon(
                           Icons.close_rounded,
                           size: 14,
-                          color: Colors.white.withValues(alpha: 0.3),
+                          color: onSurface.withValues(alpha: 0.3),
                         ),
                       ),
                     ),
@@ -235,7 +248,9 @@ class _CustomChip extends StatelessWidget {
                 child: Icon(
                   Icons.edit_rounded,
                   size: 16,
-                  color: Colors.white.withValues(alpha: 0.3),
+                  color: onSurface.withValues(
+                    alpha: _kChipUnselectedContentAlpha,
+                  ),
                 ),
               ),
       ),

@@ -85,7 +85,7 @@ class TutorialTooltip extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: MainColors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
                               secondaryButtonLabel!,
@@ -109,7 +109,7 @@ class TutorialTooltip extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: MainColors.accent,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
                               buttonLabel ?? 'Tap to continue',
@@ -133,7 +133,7 @@ class TutorialTooltip extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: MainColors.accent,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         buttonLabel ?? 'Tap to continue',

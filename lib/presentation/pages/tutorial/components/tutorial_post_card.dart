@@ -77,8 +77,10 @@ class TutorialPostCard extends StatelessWidget {
                     Container(
                       width: avatarSize,
                       height: avatarSize,
-                      decoration: const BoxDecoration(
-                        color: MainColors.grey300,
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -93,7 +95,7 @@ class TutorialPostCard extends StatelessWidget {
                           fontFamily: MainFontFamilies.quicksand,
                           fontWeight: FontWeight.w400,
                           fontSize: fontSize,
-                          color: MainColors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           letterSpacing: letterSpacing,
                         ),
                       ),

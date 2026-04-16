@@ -83,7 +83,9 @@ class CalendarDay extends StatelessWidget with MainLayout, ProfileLayout {
           width: cellW,
           height: cellH,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.06),
           ),
           child: Center(child: dayText),
         ),

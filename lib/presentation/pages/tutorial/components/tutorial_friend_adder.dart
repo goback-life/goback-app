@@ -30,6 +30,7 @@ class TutorialFriendAdder extends HookConsumerWidget {
       config: const GlassConfig(
         variant: GlassVariant.regular,
         cornerRadius: 24,
+        tint: MainColors.accent,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -69,11 +70,11 @@ class _ProgressRow extends StatelessWidget {
       children: [
         Text(
           '$friendsAdded of 4 requests sent',
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: MainFontFamilies.quicksand,
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: MainColors.dark,
+            color: Theme.of(context).colorScheme.onSurface,
             decoration: TextDecoration.none,
           ),
         ),
@@ -90,7 +91,9 @@ class _ProgressRow extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: filled ? MainColors.accent : MainColors.grey300,
+                color: filled
+                    ? MainColors.accent
+                    : Theme.of(context).colorScheme.outline,
               ),
             );
           }),
@@ -145,14 +148,14 @@ class _TabButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             color: isSelected
                 ? MainColors.accent.withValues(alpha: 0.3)
                 : Colors.transparent,
             border: Border.all(
               color: isSelected
                   ? MainColors.accent
-                  : MainColors.grey300.withValues(alpha: 0.5),
+                  : Theme.of(context).colorScheme.outline,
             ),
           ),
           child: Text(
@@ -162,7 +165,9 @@ class _TabButton extends StatelessWidget {
               fontFamily: MainFontFamilies.quicksand,
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: isSelected ? MainColors.accent : MainColors.grey500,
+              color: isSelected
+                  ? MainColors.accent
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
               decoration: TextDecoration.none,
             ),
           ),

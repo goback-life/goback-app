@@ -385,6 +385,8 @@ class ActivityBubbleCloud extends HookConsumerWidget {
       );
     }).toList();
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (isLoading) {
       return Center(
         child: Text(
@@ -393,7 +395,7 @@ class ActivityBubbleCloud extends HookConsumerWidget {
             fontFamily: MainFontFamilies.quicksand,
             fontWeight: FontWeight.w500,
             fontSize: 14 * s,
-            color: MainColors.white.withValues(alpha: 0.4),
+            color: colorScheme.onSurface.withValues(alpha: 0.4),
           ),
         ),
       );
@@ -407,7 +409,7 @@ class ActivityBubbleCloud extends HookConsumerWidget {
             fontFamily: MainFontFamilies.quicksand,
             fontWeight: FontWeight.w500,
             fontSize: 12 * s,
-            color: MainColors.white.withValues(alpha: 0.6),
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
           ),
           textAlign: TextAlign.center,
         ),
@@ -422,7 +424,7 @@ class ActivityBubbleCloud extends HookConsumerWidget {
             fontFamily: MainFontFamilies.quicksand,
             fontWeight: FontWeight.w500,
             fontSize: 14 * s,
-            color: MainColors.white.withValues(alpha: 0.4),
+            color: colorScheme.onSurface.withValues(alpha: 0.4),
           ),
         ),
       );

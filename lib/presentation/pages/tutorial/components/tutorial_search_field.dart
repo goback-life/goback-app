@@ -15,19 +15,23 @@ class TutorialSearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SizedBox(
       height: 48,
       child: TextField(
         onChanged: onChanged,
         onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-        cursorColor: MainColors.dark,
-        style: const TextStyle(color: MainColors.dark, fontSize: 14),
+        cursorColor: colorScheme.onSurface,
+        style: TextStyle(color: colorScheme.onSurface, fontSize: 14),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(color: MainColors.grey500, fontSize: 14),
-          prefixIcon: const Icon(
+          hintStyle: TextStyle(
+            color: colorScheme.onSurface.withValues(alpha: 0.4),
+            fontSize: 14,
+          ),
+          prefixIcon: Icon(
             Icons.search,
-            color: MainColors.grey500,
+            color: colorScheme.onSurfaceVariant,
             size: 20,
           ),
           contentPadding: const EdgeInsets.symmetric(
@@ -35,19 +39,15 @@ class TutorialSearchField extends StatelessWidget {
             vertical: 8,
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: MainColors.grey300.withValues(alpha: 0.5),
-            ),
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: colorScheme.outline),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: MainColors.grey300.withValues(alpha: 0.5),
-            ),
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: colorScheme.outline),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(color: MainColors.accent),
           ),
         ),

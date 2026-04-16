@@ -144,7 +144,7 @@ class HomeFeedPostCard extends HookConsumerWidget
                         child: Text(
                           '@${post.authorUsername ?? 'Unknown'}',
                           style: textTheme.bodySmall?.copyWith(
-                            color: Colors.white,
+                            color: colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
