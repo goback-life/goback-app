@@ -29,6 +29,7 @@ targets:
               - assets/images/fonts/**
               - assets/fonts/**
               - assets/translations/**
+              - .env*
 
           fonts:
             enabled: false
