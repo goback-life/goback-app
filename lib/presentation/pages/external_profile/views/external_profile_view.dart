@@ -22,13 +22,14 @@ class ExternalProfileView extends HookConsumerWidget
     final profileAsync = ref.watch(getProfileProvider(userId));
     final screenWidth = MediaQuery.of(context).size.width;
     final s = screenWidth / designWidth;
+    final theme = Theme.of(context);
 
     final usernameStyle = TextStyle(
       fontFamily: MainFontFamilies.quicksand,
       fontWeight: FontWeight.w500,
       fontSize: usernameFontSize * s,
       letterSpacing: usernameTracking * s,
-      color: MainColors.white,
+      color: theme.colorScheme.onSurface,
     );
 
     final bioStyle = TextStyle(
@@ -36,10 +37,8 @@ class ExternalProfileView extends HookConsumerWidget
       fontWeight: FontWeight.w500,
       fontSize: bioFontSize * s,
       letterSpacing: bioTracking * s,
-      color: MainColors.white,
+      color: theme.colorScheme.onSurface,
     );
-
-    final theme = Theme.of(context);
 
     return profileAsync.when(
       data: (profileResult) {

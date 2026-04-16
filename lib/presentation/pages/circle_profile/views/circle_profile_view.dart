@@ -52,7 +52,7 @@ class CircleProfileView extends HookConsumerWidget
       fontWeight: FontWeight.w500,
       fontSize: usernameFontSize * s,
       letterSpacing: usernameTracking * s,
-      color: MainColors.white,
+      color: theme.colorScheme.onSurface,
     );
 
     final bioStyle = TextStyle(
@@ -60,7 +60,7 @@ class CircleProfileView extends HookConsumerWidget
       fontWeight: FontWeight.w500,
       fontSize: bioFontSize * s,
       letterSpacing: bioTracking * s,
-      color: MainColors.white,
+      color: theme.colorScheme.onSurface,
     );
 
     return MainDataLoader(

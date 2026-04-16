@@ -15,7 +15,7 @@ class ExternalProfilePage extends HookConsumerWidget with MainLayout {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: MainColors.dark,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -26,11 +26,11 @@ class ExternalProfilePage extends HookConsumerWidget with MainLayout {
               child: GestureDetector(
                 onTap: () => router.pop(),
                 behavior: HitTestBehavior.translucent,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Icon(
                     Icons.arrow_back_ios_new,
-                    color: MainColors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     size: 20,
                   ),
                 ),

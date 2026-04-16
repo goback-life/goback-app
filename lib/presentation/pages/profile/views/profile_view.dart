@@ -41,7 +41,7 @@ class ProfileView extends HookConsumerWidget with MainLayout, ProfileLayout {
       fontWeight: FontWeight.w500,
       fontSize: usernameFontSize * s,
       letterSpacing: usernameTracking * s,
-      color: MainColors.white,
+      color: theme.colorScheme.onSurface,
     );
 
     final bioStyle = TextStyle(
@@ -49,7 +49,7 @@ class ProfileView extends HookConsumerWidget with MainLayout, ProfileLayout {
       fontWeight: FontWeight.w500,
       fontSize: bioFontSize * s,
       letterSpacing: bioTracking * s,
-      color: MainColors.white,
+      color: theme.colorScheme.onSurface,
     );
 
     // Resolve current user and profile once.

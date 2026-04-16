@@ -8,7 +8,7 @@ class GobackLogo extends StatelessWidget {
   const GobackLogo({
     super.key,
     this.fontSize = 32,
-    this.textColor = MainColors.white,
+    this.textColor = MainColors.dark,
     this.triangleColor = MainColors.accent,
   });
 
