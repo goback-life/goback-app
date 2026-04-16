@@ -178,30 +178,25 @@ class FeedLockoutButton extends HookConsumerWidget {
       return;
     }
 
-    // Timed lockout
-    try {
-      await DndPromptDialog.showIfNeeded(context);
-    } catch (_) {
-      // DnD prompt is non-critical; proceed with lockout
-    }
-    if (!context.mounted) return;
-
+    // Timed lockout — set lockout first, then navigate immediately
+    // so the lockout screen appears while the sheet slides away.
     try {
       final notifier = ref.read(manualLockoutNotifierProvider.notifier);
       await notifier.setLockout(
         result.duration!,
         actionText: result.actionText,
       );
-      if (context.mounted) {
-        router.go(const ManualLockoutRoutable());
-      }
     } catch (e, st) {
       logger.error(
         'Error setting manual lockout',
         exception: e,
         stackTrace: st,
       );
+      return;
     }
+
+    if (!context.mounted) return;
+    router.go(const ManualLockoutRoutable());
   }
 }
 

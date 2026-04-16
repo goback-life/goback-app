@@ -32,7 +32,7 @@ class LockoutBottomSheet extends HookWidget {
         PageRouteBuilder(
           opaque: false,
           transitionDuration: const Duration(milliseconds: 300),
-          reverseTransitionDuration: const Duration(milliseconds: 200),
+          reverseTransitionDuration: const Duration(milliseconds: 0),
           pageBuilder: (ctx, _, __) => Material(
             color: Colors.transparent,
             child: GestureDetector(
