@@ -14,11 +14,13 @@ class FeedDateOverlay extends StatelessWidget {
   const FeedDateOverlay({
     required this.displayDate,
     this.hasUnreadNotifications = false,
+    this.postCount = 0,
     super.key,
   });
 
   final DateTime? displayDate;
   final bool hasUnreadNotifications;
+  final int postCount;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +50,7 @@ class FeedDateOverlay extends StatelessWidget {
             fontFamily: MainFontFamilies.quicksand,
             fontWeight: FontWeight.w400,
             fontSize: fontSize,
-            color: MainColors.white,
+            color: postCount < 3 ? MainColors.dark : MainColors.white,
           ),
         ),
       ),

@@ -15,6 +15,7 @@ import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routa
 import 'package:cloudless/presentation/pages/invite_to_circle/hooks/use_sms_launch.dart';
 import 'package:cloudless/core/features/connection/domain/models/connection_request_model.dart';
 import 'package:cloudless/core/models/profile_model.dart';
+import 'package:cloudless/presentation/pages/your_circle/components/connection_request_tiles.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/leaderboard_tile.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_add_menu.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_remove_dialog.dart';
@@ -488,19 +489,7 @@ class _ExternalUserTile extends StatelessWidget
           // Action button (where duration/stats would be)
           Padding(
             padding: EdgeInsets.only(right: sidePad),
-            child: GestureDetector(
-              onTap: onTap,
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontFamily: MainFontFamilies.quicksand,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  color: color,
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ),
+            child: SmallActionButton(label: label, color: color, onTap: onTap),
           ),
         ],
       ),

@@ -466,6 +466,7 @@ class FeedView extends HookConsumerWidget {
                               .toLocal()
                         : null),
                 hasUnreadNotifications: hasUnread,
+                postCount: feedPosts.posts.length,
               ),
             ),
           ),
