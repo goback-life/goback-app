@@ -6,6 +6,7 @@ import 'package:cloudless/core/features/connection/domain/hooks/use_app_resume_r
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
+import 'package:cloudless/core/features/connection/domain/providers/get_outgoing_requests_provider.dart';
 import 'package:cloudless/core/features/notification/domain/providers/unread_notification_count_provider.dart';
 import 'package:cloudless/core/features/post/domain/enums/post_action_type.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_feed_posts/use_feed_posts.dart';
@@ -21,6 +22,7 @@ import 'package:cloudless/presentation/components/main_data_loader.dart';
 import 'package:cloudless/presentation/components/onboarding/onboarding_overlay.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_date_overlay.dart';
 import 'package:cloudless/presentation/pages/home/components/memorable_post_selection_dialog.dart';
+import 'package:cloudless/presentation/pages/feed/components/feed_circle_hub_button.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_lockout_button.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_new_posts_banner.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_posts_list.dart';
@@ -412,6 +414,12 @@ class FeedView extends HookConsumerWidget {
           data: (r) => r.fold((c) => c > 0, (_) => false),
           orElse: () => false,
         );
+    final hasIncomingRequests = ref
+        .watch(getIncomingRequestsProvider)
+        .maybeWhen(
+          data: (r) => r.fold((list) => list.isNotEmpty, (_) => false),
+          orElse: () => false,
+        );
 
     return Stack(
       children: [
@@ -458,6 +466,15 @@ class FeedView extends HookConsumerWidget {
                       : null),
               hasUnreadNotifications: hasUnread,
             ),
+          ),
+        ),
+
+        // Circle hub button — top right, aligned with date overlay
+        Positioned(
+          top: safeTop + 8 * s,
+          right: FeedLayout.circleHubButtonRight * s,
+          child: FeedCircleHubButton(
+            hasUnread: hasUnread || hasIncomingRequests,
           ),
         ),
 

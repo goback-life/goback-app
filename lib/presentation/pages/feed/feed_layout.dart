@@ -41,6 +41,10 @@ mixin FeedLayout {
   static const double dateOverlayHPadding = 14.0;
   static const double dateOverlayVPadding = 5.0;
 
+  // -- Circle hub button --
+  static const double circleHubButtonSize = 32.0;
+  static const double circleHubButtonRight = 16.0;
+
   // -- New posts banner --
   static const double bannerWidth = 102.0;
   static const double bannerHeight = 30.0;
