@@ -5,8 +5,10 @@ import 'package:cloudless/core/features/calendar/domain/providers/pending_select
 import 'package:cloudless/core/features/connection/domain/hooks/use_app_resume_refresh.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
+import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_outgoing_requests_provider.dart';
+import 'package:cloudless/core/features/post/domain/models/feed_item.dart';
 import 'package:cloudless/core/features/notification/domain/providers/unread_notification_count_provider.dart';
 import 'package:cloudless/core/features/post/domain/enums/post_action_type.dart';
 import 'package:cloudless/core/features/post/domain/hooks/use_feed_posts/use_feed_posts.dart';
@@ -27,6 +29,7 @@ import 'package:cloudless/presentation/pages/feed/components/feed_lockout_button
 import 'package:cloudless/presentation/pages/feed/components/feed_new_posts_banner.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_posts_list.dart';
 import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
+import 'package:cloudless/presentation/pages/manual_lockout/components/join_lockout_dialog.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/pages/tutorial/tutorial_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_page.dart';
@@ -421,6 +424,22 @@ class FeedView extends HookConsumerWidget {
           orElse: () => false,
         );
 
+    Future<void> handleJoinLockout(
+      BuildContext ctx,
+      WidgetRef widgetRef,
+      LockoutSessionModel session,
+    ) async {
+      final confirmed = await JoinLockoutDialog.show(ctx, session);
+      if (confirmed == true) {
+        await widgetRef
+            .read(manualLockoutNotifierProvider.notifier)
+            .joinLockout(session.id);
+        if (ctx.mounted) {
+          router.go(const ManualLockoutRoutable());
+        }
+      }
+    }
+
     return Stack(
       children: [
         // Feed list
@@ -442,6 +461,8 @@ class FeedView extends HookConsumerWidget {
               post: post,
               currentUserId: currentUserId,
             ),
+            onJoinLockout: (session) =>
+                handleJoinLockout(context, ref, session),
             onTopPostDateChanged: (date) => topPostDate.value = date,
             onRefreshStateChanged: (v) => isRefreshing.value = v,
           ),
@@ -460,9 +481,11 @@ class FeedView extends HookConsumerWidget {
                         ? feedPosts.posts
                               .reduce(
                                 (a, b) =>
-                                    a.createdAt.isAfter(b.createdAt) ? a : b,
+                                    a.sortTimestamp.isAfter(b.sortTimestamp)
+                                    ? a
+                                    : b,
                               )
-                              .createdAt
+                              .sortTimestamp
                               .toLocal()
                         : null),
                 hasUnreadNotifications: hasUnread,
