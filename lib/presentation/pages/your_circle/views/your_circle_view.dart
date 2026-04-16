@@ -1,14 +1,19 @@
 import 'package:cloudless/core/features/connection/data/dtos/leaderboard_entry_dto.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_circle_members.dart';
+import 'package:cloudless/core/features/connection/domain/hooks/use_connection_requests.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_remove_connection.dart';
+import 'package:cloudless/core/features/connection/domain/hooks/use_search_users.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_leaderboard_provider.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
+import 'package:cloudless/core/features/connection/domain/providers/get_outgoing_requests_provider.dart';
+import 'package:cloudless/core/features/connection/domain/providers/search_users_provider.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/main_data_loader.dart';
 import 'package:cloudless/presentation/components/main_empty_state.dart';
 import 'package:cloudless/presentation/pages/circle_profile/circle_profile_routable.dart';
 import 'package:cloudless/presentation/pages/invite_to_circle/hooks/use_sms_launch.dart';
+import 'package:cloudless/presentation/pages/your_circle/components/connection_request_tiles.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/leaderboard_tile.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_add_menu.dart';
 import 'package:cloudless/presentation/pages/your_circle/components/your_circle_remove_dialog.dart';
@@ -37,6 +42,8 @@ class YourCircleView extends HookConsumerWidget
     final inviteState = useSmsSender(ref);
     final leaderboardAsync = ref.watch(getCircleLeaderboardProvider);
     final searchController = useTextEditingController();
+    final externalSearch = useSearchUsers(ref);
+    final requestsData = useConnectionRequests(ref);
     final mq = MediaQuery.of(context);
     final bottomPad = mq.padding.bottom;
     final topPad = mq.padding.top;
@@ -95,11 +102,17 @@ class YourCircleView extends HookConsumerWidget
                   )
                   .toList();
 
+        // External search results (only when actively searching)
+        final externalResults = searchQuery.isNotEmpty
+            ? externalSearch.results
+            : <SearchUserResult>[];
+        final totalItems = filtered.length + externalResults.length;
+
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            // Layer 0: Scrollable leaderboard list
-            if (filtered.isEmpty)
+            // Layer 0: Scrollable list (leaderboard + external results)
+            if (totalItems == 0)
               const Positioned.fill(child: Center(child: MainEmptyState()))
             else
               ListView.builder(
@@ -116,35 +129,62 @@ class YourCircleView extends HookConsumerWidget
                       24,
                   top: topPad + 16,
                 ),
-                itemCount: filtered.length,
+                itemCount: totalItems,
                 itemBuilder: (context, index) {
-                  final item = filtered[index];
-                  return LeaderboardTile(
-                    entry: item.entry,
-                    rank: item.rank,
-                    isRemoveMode: removeMode.value,
-                    isSelected: selectedIds.value.contains(item.entry.userId),
-                    onTap: () => router.push(
-                      CircleProfileRoutable(userId: item.entry.userId),
-                    ),
-                    onSwipeDelete: item.entry.isCurrentUser
-                        ? null
-                        : () => _confirmRemove(
-                            context,
-                            item.entry.username,
-                            item.entry.userId,
-                            removeConnection,
-                            ref,
-                          ),
-                    onToggle: () {
-                      final ids = Set<String>.from(selectedIds.value);
-                      if (ids.contains(item.entry.userId)) {
-                        ids.remove(item.entry.userId);
-                      } else {
-                        ids.add(item.entry.userId);
-                      }
-                      selectedIds.value = ids;
+                  // Circle members first (bottom of reversed list),
+                  // external users after (top when scrolling up).
+                  if (index < filtered.length) {
+                    final item = filtered[index];
+                    return LeaderboardTile(
+                      entry: item.entry,
+                      rank: item.rank,
+                      isRemoveMode: removeMode.value,
+                      isSelected: selectedIds.value.contains(item.entry.userId),
+                      onTap: () => router.push(
+                        CircleProfileRoutable(userId: item.entry.userId),
+                      ),
+                      onSwipeDelete: item.entry.isCurrentUser
+                          ? null
+                          : () => _confirmRemove(
+                              context,
+                              item.entry.username,
+                              item.entry.userId,
+                              removeConnection,
+                              ref,
+                            ),
+                      onToggle: () {
+                        final ids = Set<String>.from(selectedIds.value);
+                        if (ids.contains(item.entry.userId)) {
+                          ids.remove(item.entry.userId);
+                        } else {
+                          ids.add(item.entry.userId);
+                        }
+                        selectedIds.value = ids;
+                      },
+                    );
+                  }
+                  // External search result
+                  final extIndex = index - filtered.length;
+                  final (profile, status) = externalResults[extIndex];
+                  return SearchResultTile(
+                    profile: profile,
+                    status: status,
+                    isCircleFull: isFull,
+                    onConnect: () {
+                      requestsData.send(profile.id).then((result) {
+                        result.fold((value) {
+                          ref.invalidate(
+                            searchUsersProvider(externalSearch.query),
+                          );
+                          ref.invalidate(getOutgoingRequestsProvider);
+                          if (value == 'auto_accepted') {
+                            ref.invalidate(getCircleMembersProvider);
+                            ref.invalidate(getCircleLeaderboardProvider);
+                          }
+                        }, (_) {});
+                      });
                     },
+                    onAccept: () {},
                   );
                 },
               ),
@@ -174,7 +214,10 @@ class YourCircleView extends HookConsumerWidget
                       children: [
                         YourCircleSearchPill(
                           searchQuery: circleMembersData.searchQuery,
-                          onSearchChanged: circleMembersData.updateSearchQuery,
+                          onSearchChanged: (query) {
+                            circleMembersData.updateSearchQuery(query);
+                            externalSearch.updateQuery(query);
+                          },
                           controller: searchController,
                         ),
                         const Spacer(),
