@@ -57,8 +57,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Create placeholder .env
-        run: echo "# CI placeholder" > .env
+      - name: Create placeholder .env files
+        run: |
+          echo "# CI placeholder" > .env
+          echo "# CI placeholder" > .env.stage
+          echo "# CI placeholder" > .env.production
 
       - name: Run code generation
         run: |
