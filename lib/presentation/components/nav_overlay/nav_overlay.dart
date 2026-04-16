@@ -60,14 +60,14 @@ class NavOverlay extends StatelessWidget {
                   children: [
                     for (final item in _items)
                       Padding(
-                        padding: EdgeInsets.symmetric(vertical: 14 * sh),
+                        padding: EdgeInsets.symmetric(vertical: 24 * sh),
                         child: GestureDetector(
                           onTap: () => _onItemTap(item),
                           child: Text(
                             item.label.toUpperCase(),
                             style: TextStyle(
                               fontFamily: MainFontFamilies.lilitaOne,
-                              fontSize: 44 * sw,
+                              fontSize: 64 * sw,
                               color: MainColors.white,
                               letterSpacing: 1,
                               decoration: TextDecoration.none,
