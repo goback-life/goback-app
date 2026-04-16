@@ -1,10 +1,8 @@
 import 'package:cloudless/presentation/pages/feed/components/feed_lockout_button.dart';
 import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
-import 'package:cloudless/presentation/pages/friends_locked_out/friends_locked_out_routable.dart';
+import 'package:cloudless/presentation/pages/circle_hub/circle_hub_routable.dart';
 import 'package:cloudless/presentation/pages/home/home_routable.dart';
-import 'package:cloudless/presentation/pages/notifications/notifications_routable.dart';
 import 'package:cloudless/presentation/pages/profile/profile_routable.dart';
-import 'package:cloudless/presentation/pages/your_circle/your_circle_routable.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -21,9 +19,7 @@ class NavOverlay extends StatelessWidget {
 
   static const _items = <_NavItem>[
     _NavItem(label: 'Feed', route: HomeRoutable()),
-    _NavItem(label: 'Circle', route: YourCircleRoutable()),
-    _NavItem(label: 'Notifs', route: NotificationsRoutable()),
-    _NavItem(label: 'Lockouts', route: FriendsLockedOutRoutable()),
+    _NavItem(label: 'Circle', route: CircleHubRoutable()),
     _NavItem(label: 'Profile', route: ProfileRoutable()),
   ];
 
