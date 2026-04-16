@@ -96,7 +96,7 @@ class CallToAction extends StatelessWidget {
       variant: GlassVariant.clear,
       cornerRadius: radius,
       tint: colors.background,
-      opacity: isDisabled ? 0.2 : 0.45,
+      opacity: isDisabled ? 0.2 : 0.35,
     );
 
     Widget content = SizedBox(
