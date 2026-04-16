@@ -75,7 +75,7 @@ class FriendsLockedOutView extends HookConsumerWidget {
             fontFamily: MainFontFamilies.quicksand,
             fontWeight: FontWeight.w500,
             fontSize: 20,
-            color: MainColors.white.withValues(alpha: 0.6),
+            color: MainColors.dark.withValues(alpha: 0.4),
           ),
         ),
       );
@@ -138,7 +138,7 @@ class _FriendItem extends HookConsumerWidget with MainLayout {
                     fontFamily: MainFontFamilies.quicksand,
                     fontWeight: FontWeight.w500,
                     fontSize: 24,
-                    color: MainColors.white,
+                    color: MainColors.dark,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -150,7 +150,7 @@ class _FriendItem extends HookConsumerWidget with MainLayout {
                       fontFamily: MainFontFamilies.quicksand,
                       fontWeight: FontWeight.w400,
                       fontSize: 20,
-                      color: MainColors.white,
+                      color: MainColors.dark,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -165,7 +165,7 @@ class _FriendItem extends HookConsumerWidget with MainLayout {
               fontFamily: MainFontFamilies.quicksand,
               fontWeight: FontWeight.w500,
               fontSize: 24,
-              color: MainColors.white,
+              color: MainColors.dark,
             ),
           ),
           if (isJoinable) ...[
@@ -181,7 +181,7 @@ class _FriendItem extends HookConsumerWidget with MainLayout {
                 ),
                 decoration: BoxDecoration(
                   color: MainColors.accent,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: isJoining.value
                     ? const SizedBox(
