@@ -1,5 +1,8 @@
+import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
+import 'package:cloudless/core/features/post/domain/models/feed_item.dart';
 import 'package:cloudless/core/features/post/domain/models/feed_post_model.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_post_card.dart';
+import 'package:cloudless/presentation/pages/feed/components/lockout_placeholder_card.dart';
 import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -22,12 +25,13 @@ class FeedPostsList extends HookConsumerWidget {
     required this.scrollController,
     this.onPostTap,
     this.onPostDelete,
+    this.onJoinLockout,
     this.onTopPostDateChanged,
     this.onRefreshStateChanged,
     super.key,
   });
 
-  final List<FeedPostModel> posts;
+  final List<FeedItem> posts;
   final String currentUserId;
   final bool isLoadingMore;
   final bool hasNextPage;
@@ -36,6 +40,7 @@ class FeedPostsList extends HookConsumerWidget {
   final ScrollController scrollController;
   final void Function(FeedPostModel post)? onPostTap;
   final Future<bool> Function(FeedPostModel post)? onPostDelete;
+  final void Function(LockoutSessionModel session)? onJoinLockout;
   final void Function(DateTime? date)? onTopPostDateChanged;
   final void Function(bool isRefreshing)? onRefreshStateChanged;
 
@@ -56,12 +61,12 @@ class FeedPostsList extends HookConsumerWidget {
     // Sort: newest first (index 0 = newest, displayed at bottom in reversed list)
     final sortedPosts = useMemoized(
       () =>
-          List<FeedPostModel>.from(posts)
-            ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+          List<FeedItem>.from(posts)
+            ..sort((a, b) => b.sortTimestamp.compareTo(a.sortTimestamp)),
       [posts],
     );
 
-    final sortedPostsRef = useRef<List<FeedPostModel>>([]);
+    final sortedPostsRef = useRef<List<FeedItem>>([]);
     useEffect(() {
       sortedPostsRef.value = sortedPosts;
       return null;
@@ -98,9 +103,9 @@ class FeedPostsList extends HookConsumerWidget {
             final idx = (progress * (current.length - 1))
                 .clamp(0.0, current.length - 1.0)
                 .round();
-            topDate = current[idx].createdAt.toLocal();
+            topDate = current[idx].sortTimestamp.toLocal();
           } else {
-            topDate = current.first.createdAt.toLocal();
+            topDate = current.first.sortTimestamp.toLocal();
           }
           final cb = onTopPostDateChanged;
           final d = topDate;
@@ -122,6 +127,37 @@ class FeedPostsList extends HookConsumerWidget {
     }
 
     final interPostGap = FeedLayout.authorToNextPostGap * s;
+
+    Widget buildPostCard(FeedPostModel post, String uid, double scale) {
+      final isCurrentUser = post.authorId == uid;
+      final card = FeedPostCard(
+        key: ValueKey('feed_post_${post.id}'),
+        post: post,
+        isCurrentUser: isCurrentUser,
+        onTap: onPostTap != null ? () => onPostTap!(post) : null,
+      );
+
+      if (!isCurrentUser || onPostDelete == null) {
+        return card;
+      }
+
+      return Dismissible(
+        key: ValueKey('dismiss_${post.id}'),
+        direction: DismissDirection.endToStart,
+        confirmDismiss: (_) => onPostDelete!(post),
+        background: const SizedBox.shrink(),
+        secondaryBackground: Container(
+          alignment: Alignment.centerRight,
+          padding: EdgeInsets.only(right: 24 * scale),
+          child: Icon(
+            Icons.delete_rounded,
+            color: MainColors.dark,
+            size: 28 * scale,
+          ),
+        ),
+        child: card,
+      );
+    }
 
     return NotificationListener<ScrollUpdateNotification>(
       onNotification: (notification) {
@@ -180,34 +216,17 @@ class FeedPostsList extends HookConsumerWidget {
           if (index == sortedPosts.length) {
             return const SizedBox.shrink();
           }
-          final post = sortedPosts[index];
-          final isCurrentUser = post.authorId == currentUserId;
+          final item = sortedPosts[index];
 
-          final card = FeedPostCard(
-            key: ValueKey('feed_post_${post.id}'),
-            post: post,
-            isCurrentUser: isCurrentUser,
-            onTap: onPostTap != null ? () => onPostTap!(post) : null,
-          );
-
-          if (!isCurrentUser || onPostDelete == null) return card;
-
-          return Dismissible(
-            key: ValueKey('dismiss_${post.id}'),
-            direction: DismissDirection.endToStart,
-            confirmDismiss: (_) => onPostDelete!(post),
-            background: const SizedBox.shrink(),
-            secondaryBackground: Container(
-              alignment: Alignment.centerRight,
-              padding: EdgeInsets.only(right: 24 * s),
-              child: Icon(
-                Icons.delete_rounded,
-                color: MainColors.dark,
-                size: 28 * s,
+          return switch (item) {
+            FeedItemPost(:final post) => buildPostCard(post, currentUserId, s),
+            FeedItemLockoutPlaceholder(:final lockout) =>
+              LockoutPlaceholderCard(
+                key: ValueKey('lockout_${lockout.id}'),
+                session: lockout,
+                onJoinTap: () => onJoinLockout?.call(lockout),
               ),
-            ),
-            child: card,
-          );
+          };
         },
       ),
     );
