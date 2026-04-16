@@ -2,6 +2,7 @@ import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:flutter/material.dart';
 
@@ -23,6 +24,7 @@ class PostDetailCommentAddButton extends StatelessWidget
         config: GlassConfig(
           variant: GlassVariant.clear,
           cornerRadius: reactionBorderRadius,
+          tint: MainColors.accent,
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(

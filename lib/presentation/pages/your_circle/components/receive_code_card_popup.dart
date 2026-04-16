@@ -199,7 +199,11 @@ class _ReceiveCodeCard extends HookConsumerWidget {
       child: SizedBox(
         width: cardWidth,
         child: AppGlassContainer(
-          config: const GlassConfig(tint: null, cornerRadius: _kCardRadius),
+          config: const GlassConfig(
+            tint: MainColors.accent,
+            cornerRadius: _kCardRadius,
+            opacity: 0.15,
+          ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 30, 24, 30),
             child: Column(

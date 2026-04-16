@@ -49,6 +49,7 @@ class ParentPostPreview extends HookConsumerWidget
                         variant: GlassVariant.clear,
                         cornerRadius: parentPostPreviewBorderRadius,
                         tint: MainColors.accent,
+                        opacity: 0.15,
                       ),
                       child: const SizedBox.expand(),
                     ),

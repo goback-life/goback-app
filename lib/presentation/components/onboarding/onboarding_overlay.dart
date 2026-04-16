@@ -81,7 +81,11 @@ class _OnboardingOverlayState extends State<OnboardingOverlay> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: AppGlassContainer(
-                    config: const GlassConfig(cornerRadius: 24),
+                    config: const GlassConfig(
+                      cornerRadius: 24,
+                      tint: MainColors.accent,
+                      opacity: 0.15,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 28,

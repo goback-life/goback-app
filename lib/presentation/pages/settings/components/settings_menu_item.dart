@@ -2,6 +2,7 @@ import 'package:cloudless/presentation/assets/assets.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/settings/settings_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/dedecube_presentation.dart';
@@ -46,7 +47,8 @@ class SettingsMenuItem extends HookConsumerWidget
               config: GlassConfig(
                 variant: GlassVariant.regular,
                 cornerRadius: width / 2,
-                tint: colorScheme.primaryContainer,
+                tint: MainColors.accent,
+                opacity: 0.15,
               ),
               child: SizedBox(width: width, height: height),
             ),

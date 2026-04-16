@@ -48,6 +48,7 @@ class MainSearchBar extends HookConsumerWidget with MainLayout {
         variant: GlassVariant.regular,
         cornerRadius: 10,
         tint: MainColors.accent,
+        opacity: 0.15,
       ),
       child: TextField(
         textCapitalization: TextCapitalization.sentences,

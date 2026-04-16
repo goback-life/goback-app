@@ -60,6 +60,8 @@ class PostDetailReactionPickerModal extends HookConsumerWidget
       config: GlassConfig(
         variant: GlassVariant.regular,
         cornerRadius: reactionPickerBorderRadius,
+        tint: MainColors.accent,
+        opacity: 0.15,
       ),
       child: Container(
         width: double.infinity,

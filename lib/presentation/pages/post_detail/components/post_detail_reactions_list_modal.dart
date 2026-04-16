@@ -25,6 +25,8 @@ class PostDetailReactionsListModal extends HookConsumerWidget
       config: GlassConfig(
         variant: GlassVariant.regular,
         cornerRadius: reactionsListBorderRadius,
+        tint: MainColors.accent,
+        opacity: 0.15,
       ),
       child: Container(
         constraints: BoxConstraints(

@@ -122,6 +122,7 @@ class MainAlert extends StatelessWidget with MainLayout, MainAlertLayout {
           variant: GlassVariant.regular,
           cornerRadius: borderRadius,
           tint: MainColors.accent,
+          opacity: 0.15,
         ),
         child: Container(
           width: double.infinity,

@@ -2,6 +2,7 @@ import 'package:cloudless/core/features/post/domain/enums/post_report_reason.dar
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/post_detail/components/post_detail_report_reason_button.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_layout.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
@@ -32,6 +33,8 @@ class PostDetailReportReasonModal extends StatelessWidget
         config: GlassConfig(
           variant: GlassVariant.regular,
           cornerRadius: modalBorderRadius,
+          tint: MainColors.accent,
+          opacity: 0.15,
         ),
         child: Container(
           width: double.infinity,

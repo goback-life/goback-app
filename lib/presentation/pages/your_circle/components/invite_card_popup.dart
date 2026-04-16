@@ -180,6 +180,7 @@ class _InviteCard extends HookConsumerWidget {
             config: const GlassConfig(
               tint: MainColors.accent,
               cornerRadius: _kCardRadius,
+              opacity: 0.15,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

@@ -385,6 +385,7 @@ class _GlassCard extends StatelessWidget {
           variant: GlassVariant.regular,
           cornerRadius: cardRadius,
           tint: MainColors.accent,
+          opacity: 0.15,
         ),
         child: Stack(
           children: [

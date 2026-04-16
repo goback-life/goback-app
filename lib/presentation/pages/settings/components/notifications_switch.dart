@@ -45,6 +45,7 @@ class NotificationSwitch extends HookConsumerWidget
             variant: GlassVariant.regular,
             cornerRadius: switchBorderRadius,
             tint: MainColors.accent,
+            opacity: 0.15,
           ),
           child: SizedBox(
             width: switchWidth,
