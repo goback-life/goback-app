@@ -144,12 +144,13 @@ class _InviteCard extends HookConsumerWidget {
       [input.value, isPhone],
     );
 
-    // Dot colour: grey (search), accent (has goback), muted white (phone).
+    // Dot colour: grey (search), accent (has goback), muted (phone).
+    final colorScheme = Theme.of(context).colorScheme;
     final dotColor = useMemoized(() {
-      if (!isPhone) return const Color(0x66FFFFFF);
+      if (!isPhone) return colorScheme.onSurface.withValues(alpha: 0.25);
       if (typedHasGoback) return MainColors.accent;
-      return MainColors.white.withValues(alpha: 0.5);
-    }, [isPhone, typedHasGoback]);
+      return colorScheme.onSurface.withValues(alpha: 0.3);
+    }, [isPhone, typedHasGoback, colorScheme]);
 
     // Handlers.
     void onContactTap(ContactModel c) {
@@ -176,7 +177,10 @@ class _InviteCard extends HookConsumerWidget {
             maxHeight: maxCardHeight,
           ),
           child: AppGlassContainer(
-            config: const GlassConfig(cornerRadius: _kCardRadius),
+            config: const GlassConfig(
+              tint: MainColors.accent,
+              cornerRadius: _kCardRadius,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -235,7 +239,7 @@ class _InviteCard extends HookConsumerWidget {
                                       fontFamily: MainFontFamilies.quicksand,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 20,
-                                      color: MainColors.white,
+                                      color: MainColors.dark,
                                       letterSpacing: -0.5,
                                     ),
                                   ),
@@ -252,7 +256,7 @@ class _InviteCard extends HookConsumerWidget {
                             fontFamily: MainFontFamilies.quicksand,
                             fontWeight: FontWeight.w600,
                             fontSize: 27,
-                            color: MainColors.white,
+                            color: MainColors.dark,
                             letterSpacing: -0.5,
                           ),
                         ),
@@ -264,7 +268,7 @@ class _InviteCard extends HookConsumerWidget {
                             fontFamily: MainFontFamilies.quicksand,
                             fontWeight: FontWeight.w400,
                             fontSize: 24,
-                            color: MainColors.white,
+                            color: MainColors.dark,
                             letterSpacing: -0.3,
                           ),
                         ),

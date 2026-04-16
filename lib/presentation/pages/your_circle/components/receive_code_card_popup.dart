@@ -185,10 +185,11 @@ class _ReceiveCodeCard extends HookConsumerWidget {
       _CardState.error => errorMsg.value,
     };
 
+    final colorScheme = Theme.of(context).colorScheme;
     final accentColor = switch (cardState.value) {
-      _CardState.error => MainColors.white.withValues(alpha: 0.5),
+      _CardState.error => colorScheme.onSurface.withValues(alpha: 0.4),
       _CardState.success => MainColors.accent,
-      _ => MainColors.white,
+      _ => colorScheme.onSurface,
     };
 
     final canSubmit = cardState.value == _CardState.confirmed;
@@ -198,7 +199,10 @@ class _ReceiveCodeCard extends HookConsumerWidget {
       child: SizedBox(
         width: cardWidth,
         child: AppGlassContainer(
-          config: const GlassConfig(cornerRadius: _kCardRadius),
+          config: const GlassConfig(
+            tint: MainColors.accent,
+            cornerRadius: _kCardRadius,
+          ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 30, 24, 30),
             child: Column(
@@ -211,7 +215,7 @@ class _ReceiveCodeCard extends HookConsumerWidget {
                     fontFamily: MainFontFamilies.quicksand,
                     fontWeight: FontWeight.w600,
                     fontSize: 27,
-                    color: MainColors.white,
+                    color: MainColors.dark,
                     letterSpacing: -0.5,
                   ),
                 ),
@@ -262,7 +266,7 @@ class _ReceiveCodeCard extends HookConsumerWidget {
                               fontFamily: MainFontFamilies.quicksand,
                               fontWeight: FontWeight.w500,
                               fontSize: 24,
-                              color: MainColors.white,
+                              color: MainColors.dark,
                               letterSpacing: -0.3,
                             ),
                           ),

@@ -247,7 +247,7 @@ class InviteContactRow extends StatelessWidget {
                           fontFamily: MainFontFamilies.quicksand,
                           fontWeight: FontWeight.w500,
                           fontSize: 20,
-                          color: MainColors.white,
+                          color: MainColors.dark,
                           letterSpacing: -1.2,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -255,11 +255,13 @@ class InviteContactRow extends StatelessWidget {
                       if (contact.primaryPhoneNumber != null)
                         Text(
                           contact.primaryPhoneNumber!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: MainFontFamilies.quicksand,
                             fontWeight: FontWeight.w400,
                             fontSize: 12,
-                            color: Color(0x99FFFFFF),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -273,7 +275,9 @@ class InviteContactRow extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: hasGoback
                         ? MainColors.accent
-                        : MainColors.white.withValues(alpha: 0.5),
+                        : Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.2),
                   ),
                 ),
               ],
@@ -329,13 +333,13 @@ class InviteInputPill extends StatelessWidget {
                     onSubmitted: canSubmit ? (_) => onSend() : null,
                     maxLength: 30,
                     textAlignVertical: TextAlignVertical.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: MainFontFamilies.quicksand,
                       fontWeight: FontWeight.w500,
                       fontSize: 20,
-                      color: MainColors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       border: InputBorder.none,
                       counterText: '',
                       isDense: true,
@@ -345,7 +349,9 @@ class InviteInputPill extends StatelessWidget {
                         fontFamily: MainFontFamilies.quicksand,
                         fontWeight: FontWeight.w500,
                         fontSize: 20,
-                        color: Color(0x66FFFFFF),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.4),
                       ),
                     ),
                   ),
@@ -355,11 +361,13 @@ class InviteInputPill extends StatelessWidget {
                     padding: const EdgeInsets.only(right: 6),
                     child: Text(
                       countryLabel!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: MainFontFamilies.quicksand,
                         fontWeight: FontWeight.w500,
                         fontSize: 12,
-                        color: Color(0x99FFFFFF),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                     ),
                   ),
@@ -383,7 +391,7 @@ class InviteInputPill extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: MainColors.accent,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Text(
                           'Share',

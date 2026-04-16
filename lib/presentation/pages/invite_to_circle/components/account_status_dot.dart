@@ -2,7 +2,7 @@ import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:flutter/material.dart';
 
 /// Small colored dot indicating whether a phone number has a goback account.
-/// Green (accent) = has account, dimmed white = no account.
+/// Accent = has account, dimmed onSurface = no account.
 class AccountStatusDot extends StatelessWidget {
   const AccountStatusDot({super.key, required this.hasAccount});
 
@@ -16,7 +16,7 @@ class AccountStatusDot extends StatelessWidget {
       decoration: BoxDecoration(
         color: hasAccount
             ? MainColors.accent
-            : MainColors.white.withValues(alpha: 0.5),
+            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
         shape: BoxShape.circle,
       ),
     );

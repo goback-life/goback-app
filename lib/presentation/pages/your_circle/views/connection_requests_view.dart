@@ -55,11 +55,11 @@ class ConnectionRequestsView extends HookConsumerWidget
                     onChanged: searchData.updateQuery,
                     onTapOutside: (_) => FocusScope.of(context).unfocus(),
                     maxLength: 30,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: MainFontFamilies.quicksand,
                       fontWeight: FontWeight.w500,
                       fontSize: 16,
-                      color: MainColors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     decoration: InputDecoration(
                       hintText: 'Search by username or phone',
@@ -67,7 +67,9 @@ class ConnectionRequestsView extends HookConsumerWidget
                         fontFamily: MainFontFamilies.quicksand,
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
-                        color: MainColors.white.withValues(alpha: 0.5),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                       border: InputBorder.none,
                       counterText: '',
@@ -130,7 +132,9 @@ class _SearchResults extends StatelessWidget {
           style: TextStyle(
             fontFamily: MainFontFamilies.quicksand,
             fontSize: 16,
-            color: MainColors.white.withValues(alpha: 0.5),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.5),
           ),
         ),
       );
@@ -206,7 +210,9 @@ class _RequestsIdle extends StatelessWidget {
             style: TextStyle(
               fontFamily: MainFontFamilies.quicksand,
               fontSize: 16,
-              color: MainColors.white.withValues(alpha: 0.5),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
         ),

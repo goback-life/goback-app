@@ -129,7 +129,9 @@ class LeaderboardTile extends StatelessWidget
                             fontFamily: MainFontFamilies.quicksand,
                             fontWeight: FontWeight.w500,
                             fontSize: 13,
-                            color: MainColors.white.withValues(alpha: 0.25),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.25),
                             letterSpacing: -0.5,
                           ),
                         ),
@@ -154,7 +156,7 @@ class LeaderboardTile extends StatelessWidget
                           ? FontWeight.w600
                           : FontWeight.w500,
                       fontSize: friendTextSize,
-                      color: _usernameColor,
+                      color: _usernameColor(context),
                       letterSpacing: friendLetterSpacing,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -200,13 +202,17 @@ class LeaderboardTile extends StatelessWidget
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
-        child: const Icon(Icons.close, color: MainColors.white, size: 20),
+        child: Icon(
+          Icons.close,
+          color: Theme.of(context).colorScheme.onSurface,
+          size: 20,
+        ),
       ),
       child: tile,
     );
   }
 
-  Color get _usernameColor {
+  Color _usernameColor(BuildContext context) {
     if (_isKing) {
       return _gold.withValues(alpha: 0.75);
     }
@@ -214,9 +220,9 @@ class LeaderboardTile extends StatelessWidget
       return MainColors.accent;
     }
     if (_isInactive) {
-      return MainColors.white.withValues(alpha: 0.4);
+      return Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4);
     }
-    return MainColors.white;
+    return Theme.of(context).colorScheme.onSurface;
   }
 }
 
@@ -248,7 +254,9 @@ class _DurationOrDash extends StatelessWidget {
           fontFamily: MainFontFamilies.quicksand,
           fontWeight: FontWeight.w500,
           fontSize: 14,
-          color: MainColors.white.withValues(alpha: 0.25),
+          color: Theme.of(
+            context,
+          ).colorScheme.onSurface.withValues(alpha: 0.25),
           letterSpacing: -0.5,
         ),
       );
@@ -266,7 +274,9 @@ class _DurationOrDash extends StatelessWidget {
       durationColor = MainColors.accent.withValues(alpha: 0.7);
       durationWeight = FontWeight.w500;
     } else {
-      durationColor = MainColors.white.withValues(alpha: 0.5);
+      durationColor = Theme.of(
+        context,
+      ).colorScheme.onSurface.withValues(alpha: 0.5);
       durationWeight = FontWeight.w500;
     }
 
@@ -353,7 +363,7 @@ class _Avatar extends StatelessWidget {
             fontFamily: MainFontFamilies.quicksand,
             fontWeight: FontWeight.w500,
             fontSize: size * 0.4,
-            color: MainColors.white,
+            color: MainColors.dark,
           ),
         ),
       ),
@@ -386,7 +396,7 @@ class _Checkbox extends StatelessWidget {
         border: Border.all(
           color: isSelected
               ? MainColors.accent
-              : MainColors.white.withValues(alpha: 0.4),
+              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
           width: 1.5,
         ),
       ),

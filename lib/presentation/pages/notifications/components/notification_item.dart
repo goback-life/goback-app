@@ -34,7 +34,7 @@ class NotificationItem extends HookConsumerWidget
         notificationType == NotificationType.connectionRequest) {
       return Icon(
         Icons.person_outline,
-        color: colorScheme.onSurface.withOpacity(0.5),
+        color: colorScheme.onSurface.withValues(alpha: 0.5),
         size: 24,
       );
     }
@@ -45,7 +45,7 @@ class NotificationItem extends HookConsumerWidget
           'T',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: colorScheme.onSurface.withOpacity(0.7),
+            color: colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
       );
@@ -59,7 +59,7 @@ class NotificationItem extends HookConsumerWidget
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Icon(
             Icons.image_outlined,
-            color: colorScheme.onSurface.withOpacity(0.5),
+            color: colorScheme.onSurface.withValues(alpha: 0.5),
             size: 24,
           ),
         ),
@@ -68,7 +68,7 @@ class NotificationItem extends HookConsumerWidget
 
     return Icon(
       Icons.image_outlined,
-      color: colorScheme.onSurface.withOpacity(0.5),
+      color: colorScheme.onSurface.withValues(alpha: 0.5),
       size: 24,
     );
   }
@@ -229,7 +229,7 @@ class NotificationItem extends HookConsumerWidget
                   Text(
                     _formatRelativeTime(notification.updatedAt),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurface.withOpacity(0.6),
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   if (notification.type == NotificationType.connectionRequest &&
@@ -248,7 +248,7 @@ class NotificationItem extends HookConsumerWidget
                         if (onDeny != null)
                           _ActionChip(
                             label: 'Deny',
-                            color: colorScheme.onSurface.withOpacity(0.3),
+                            color: colorScheme.onSurface.withValues(alpha: 0.3),
                             onTap: onDeny!,
                           ),
                       ],
@@ -282,9 +282,9 @@ class _ActionChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3)),
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Text(
           label,

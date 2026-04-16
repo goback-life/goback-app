@@ -36,7 +36,7 @@ class ConnectionProfileAvatar extends StatelessWidget {
                 fontFamily: MainFontFamilies.quicksand,
                 fontWeight: FontWeight.w600,
                 fontSize: 16,
-                color: MainColors.white,
+                color: MainColors.dark,
               ),
             ),
     );
@@ -67,7 +67,7 @@ class SmallActionButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Text(
@@ -102,7 +102,7 @@ class RequestSectionHeader extends StatelessWidget {
           fontFamily: MainFontFamilies.quicksand,
           fontWeight: FontWeight.w600,
           fontSize: 14,
-          color: MainColors.white.withValues(alpha: 0.4),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
           letterSpacing: 0.5,
         ),
       ),
@@ -142,11 +142,11 @@ class IncomingRequestTile extends StatelessWidget {
           Expanded(
             child: Text(
               request.profile.username,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: MainFontFamilies.quicksand,
                 fontWeight: FontWeight.w500,
                 fontSize: 18,
-                color: MainColors.white,
+                color: Theme.of(context).colorScheme.onSurface,
                 letterSpacing: -0.5,
               ),
               overflow: TextOverflow.ellipsis,
@@ -155,14 +155,16 @@ class IncomingRequestTile extends StatelessWidget {
           SmallActionButton(
             label: isCircleFull ? 'Full' : 'Accept',
             color: isCircleFull
-                ? MainColors.white.withValues(alpha: 0.3)
+                ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)
                 : MainColors.accent,
             onTap: isCircleFull ? null : onAccept,
           ),
           const SizedBox(width: 8),
           SmallActionButton(
             label: 'Deny',
-            color: MainColors.white.withValues(alpha: 0.3),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.3),
             onTap: onDeny,
           ),
         ],
@@ -202,11 +204,11 @@ class OutgoingRequestTile extends StatelessWidget {
               children: [
                 Text(
                   request.profile.username,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: MainFontFamilies.quicksand,
                     fontWeight: FontWeight.w500,
                     fontSize: 18,
-                    color: MainColors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     letterSpacing: -0.5,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -216,7 +218,9 @@ class OutgoingRequestTile extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: MainFontFamilies.quicksand,
                     fontSize: 13,
-                    color: MainColors.white.withValues(alpha: 0.4),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                 ),
               ],
@@ -232,7 +236,9 @@ class OutgoingRequestTile extends StatelessWidget {
                 child: Icon(
                   Icons.close,
                   size: 20,
-                  color: MainColors.white.withValues(alpha: 0.4),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.4),
                 ),
               ),
             ),
@@ -277,24 +283,26 @@ class SearchResultTile extends StatelessWidget {
           Expanded(
             child: Text(
               profile.username,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: MainFontFamilies.quicksand,
                 fontWeight: FontWeight.w500,
                 fontSize: 18,
-                color: MainColors.white,
+                color: Theme.of(context).colorScheme.onSurface,
                 letterSpacing: -0.5,
               ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          _buildActionButton(),
+          _buildActionButton(context),
         ],
       ),
     );
   }
 
-  Widget _buildActionButton() {
-    final disabledColor = MainColors.white.withValues(alpha: 0.3);
+  Widget _buildActionButton(BuildContext context) {
+    final disabledColor = Theme.of(
+      context,
+    ).colorScheme.onSurface.withValues(alpha: 0.3);
     switch (status) {
       case ConnectionStatus.none:
         return SmallActionButton(

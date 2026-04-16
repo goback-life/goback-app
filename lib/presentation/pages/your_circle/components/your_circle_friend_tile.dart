@@ -48,7 +48,7 @@ class YourCircleFriendTile extends StatelessWidget
                   fontFamily: MainFontFamilies.quicksand,
                   fontWeight: FontWeight.w500,
                   fontSize: friendTextSize,
-                  color: MainColors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                   letterSpacing: friendLetterSpacing,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -73,7 +73,7 @@ class YourCircleFriendTile extends StatelessWidget
                             fontFamily: MainFontFamilies.quicksand,
                             fontWeight: FontWeight.w500,
                             fontSize: friendTextSize,
-                            color: MainColors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                             letterSpacing: friendLetterSpacing,
                           ),
                         ),
@@ -98,7 +98,11 @@ class YourCircleFriendTile extends StatelessWidget
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
-        child: const Icon(Icons.close, color: MainColors.white, size: 20),
+        child: Icon(
+          Icons.close,
+          color: Theme.of(context).colorScheme.onSurface,
+          size: 20,
+        ),
       ),
       child: tile,
     );
@@ -152,7 +156,7 @@ class _Avatar extends StatelessWidget {
             fontFamily: MainFontFamilies.quicksand,
             fontWeight: FontWeight.w500,
             fontSize: size * 0.4,
-            color: MainColors.white,
+            color: MainColors.dark,
           ),
         ),
       ),
@@ -184,7 +188,7 @@ class _Checkbox extends StatelessWidget {
         border: Border.all(
           color: isSelected
               ? MainColors.accent
-              : MainColors.white.withValues(alpha: 0.4),
+              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
           width: 1.5,
         ),
       ),

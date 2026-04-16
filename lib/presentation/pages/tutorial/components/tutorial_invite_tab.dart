@@ -101,6 +101,7 @@ class TutorialInviteTab extends HookConsumerWidget {
         const SizedBox(height: 12),
         Expanded(
           child: _buildContactList(
+            context,
             contactsData.value,
             filteredContacts,
             inviteState,
@@ -113,6 +114,7 @@ class TutorialInviteTab extends HookConsumerWidget {
   }
 
   Widget _buildContactList(
+    BuildContext context,
     PhoneContactData? data,
     List<ContactModel> contacts,
     InviteSendingState inviteState, {

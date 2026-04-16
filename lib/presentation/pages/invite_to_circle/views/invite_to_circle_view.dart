@@ -279,9 +279,9 @@ class InviteToCircleView extends HookConsumerWidget
                   child: Theme(
                     data: theme.copyWith(
                       textTheme: theme.textTheme,
-                      appBarTheme: const AppBarTheme(
-                        backgroundColor: MainColors.dark,
-                        foregroundColor: MainColors.white,
+                      appBarTheme: AppBarTheme(
+                        backgroundColor: colorScheme.surface,
+                        foregroundColor: colorScheme.onSurface,
                       ),
                     ),
                     child: PhoneFormField(
@@ -347,7 +347,7 @@ class InviteToCircleView extends HookConsumerWidget
                         style: textTheme.bodySmall?.copyWith(
                           color: typedPhoneHasAccount
                               ? MainColors.accent
-                              : MainColors.white.withValues(alpha: 0.5),
+                              : colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                       ),
                     ],
