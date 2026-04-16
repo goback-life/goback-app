@@ -100,7 +100,7 @@ class PostDetailOverlayInput extends StatelessWidget {
                       fontFamily: MainFontFamilies.quicksand,
                       fontWeight: FontWeight.w400,
                       fontSize: fs,
-                      color: MainColors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     decoration: InputDecoration(
                       border: InputBorder.none,
@@ -109,7 +109,9 @@ class PostDetailOverlayInput extends StatelessWidget {
                         fontFamily: MainFontFamilies.quicksand,
                         fontWeight: FontWeight.w400,
                         fontSize: fs,
-                        color: MainColors.white.withValues(alpha: 0.5),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
@@ -151,7 +153,9 @@ class PostDetailOverlayInput extends StatelessWidget {
                         fontWeight: FontWeight.w400,
                         color: len >= kCommentMaxLength
                             ? MainColors.accent
-                            : MainColors.white.withValues(alpha: 0.5),
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                     ),
                   ),

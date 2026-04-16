@@ -2,6 +2,7 @@ import 'package:cloudless/presentation/components/alerts/main_alert_layout.dart'
 import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
@@ -120,6 +121,7 @@ class MainAlert extends StatelessWidget with MainLayout, MainAlertLayout {
         config: GlassConfig(
           variant: GlassVariant.regular,
           cornerRadius: borderRadius,
+          tint: MainColors.accent,
         ),
         child: Container(
           width: double.infinity,

@@ -3,7 +3,6 @@ import 'package:cloudless/presentation/components/glass/app_glass_container.dart
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/profile_shared/components/profile_report_reason_button.dart';
 import 'package:cloudless/presentation/pages/profile_shared/profile_actions_layout.dart';
-import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +25,7 @@ class ProfileReportReasonModal extends StatelessWidget
         cornerRadius: modalBorderRadius,
       ),
       child: Dialog(
-        backgroundColor: MainColors.dark,
+        backgroundColor: colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(modalBorderRadius),
         ),
@@ -45,7 +44,7 @@ class ProfileReportReasonModal extends StatelessWidget
                 translator.translate('components.user_report_modal.title'),
                 style: textTheme.titleLarge?.copyWith(
                   height: 26.0 / 20.0,
-                  color: MainColors.white,
+                  color: colorScheme.onSurface,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -53,7 +52,7 @@ class ProfileReportReasonModal extends StatelessWidget
               Text(
                 translator.translate('components.user_report_modal.subtitle'),
                 style: textTheme.bodyMedium?.copyWith(
-                  color: MainColors.white.withValues(alpha: 0.7),
+                  color: colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 textAlign: TextAlign.center,
               ),

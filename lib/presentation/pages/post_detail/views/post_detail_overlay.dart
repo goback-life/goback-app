@@ -219,7 +219,7 @@ class PostDetailOverlay extends HookConsumerWidget with MainLayout {
                             ),
                             child: Icon(
                               Icons.close,
-                              color: MainColors.white,
+                              color: Theme.of(context).colorScheme.onSurface,
                               size: 16 * s,
                             ),
                           ),
@@ -384,6 +384,7 @@ class _GlassCard extends StatelessWidget {
         config: GlassConfig(
           variant: GlassVariant.regular,
           cornerRadius: cardRadius,
+          tint: MainColors.accent,
         ),
         child: Stack(
           children: [
@@ -439,7 +440,7 @@ class _GlassCard extends StatelessWidget {
                   child: SizedBox(
                     width: squircleSize,
                     height: squircleSize,
-                    child: ClipSquircle(child: _squircleImage()),
+                    child: ClipSquircle(child: _squircleImage(context)),
                   ),
                 ),
               ),
@@ -472,6 +473,7 @@ class _GlassCard extends StatelessWidget {
                       config: GlassConfig(
                         variant: GlassVariant.clear,
                         cornerRadius: indicatorW / 2,
+                        tint: MainColors.accent,
                       ),
                       child: const SizedBox.expand(),
                     ),
@@ -497,8 +499,9 @@ class _GlassCard extends StatelessWidget {
     );
   }
 
-  Widget _squircleImage() {
+  Widget _squircleImage(BuildContext context) {
     final url = post.imageUrl ?? '';
+    final placeholderColor = Theme.of(context).colorScheme.surfaceContainerHigh;
     if (url.isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: url,
@@ -508,11 +511,11 @@ class _GlassCard extends StatelessWidget {
         memCacheWidth: (squircleSize * 2).toInt(),
         fadeInDuration: const Duration(milliseconds: 200),
         fadeOutDuration: const Duration(milliseconds: 100),
-        placeholder: (_, __) => Container(color: MainColors.dark),
-        errorWidget: (_, __, ___) => Container(color: MainColors.dark),
+        placeholder: (_, __) => Container(color: placeholderColor),
+        errorWidget: (_, __, ___) => Container(color: placeholderColor),
       );
     }
-    return Container(color: MainColors.dark);
+    return Container(color: placeholderColor);
   }
 }
 

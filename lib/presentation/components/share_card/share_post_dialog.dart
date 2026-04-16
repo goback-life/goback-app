@@ -53,7 +53,7 @@ class SharePostDialog {
 
     final shouldShare = await showModalBottomSheet<bool>(
       context: context,
-      backgroundColor: MainColors.dark,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -66,17 +66,19 @@ class SharePostDialog {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: MainColors.white.withValues(alpha: 0.3),
+                color: Theme.of(
+                  ctx,
+                ).colorScheme.onSurface.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Share post',
               style: TextStyle(
                 fontFamily: MainFontFamilies.lilitaOne,
                 fontSize: 28,
-                color: MainColors.white,
+                color: Theme.of(ctx).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -88,7 +90,9 @@ class SharePostDialog {
                 fontFamily: MainFontFamilies.quicksand,
                 fontWeight: FontWeight.w500,
                 fontSize: 14,
-                color: MainColors.white.withValues(alpha: 0.6),
+                color: Theme.of(
+                  ctx,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 24),
@@ -128,7 +132,9 @@ class SharePostDialog {
                       fontFamily: MainFontFamilies.quicksand,
                       fontWeight: FontWeight.w500,
                       fontSize: 14,
-                      color: MainColors.white.withValues(alpha: 0.5),
+                      color: Theme.of(
+                        ctx,
+                      ).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ),

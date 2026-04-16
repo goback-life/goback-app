@@ -71,7 +71,7 @@ class PostDetailReactionPickerModal extends HookConsumerWidget
               width: reactionPickerHandleWidth,
               height: reactionPickerHandleHeight,
               decoration: BoxDecoration(
-                color: MainColors.white.withValues(alpha: 0.3),
+                color: colorScheme.onSurface.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(reactionPickerHandleRadius),
               ),
             ),

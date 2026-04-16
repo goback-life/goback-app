@@ -83,20 +83,23 @@ class TutorialFeedPhase extends HookWidget {
               config: GlassConfig(
                 variant: GlassVariant.clear,
                 cornerRadius: FeedLayout.dateOverlayCornerRadius * s,
+                tint: MainColors.accent,
               ),
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: FeedLayout.dateOverlayHPadding * s,
                   vertical: FeedLayout.dateOverlayVPadding * s,
                 ),
-                child: Text(
-                  'today',
-                  style: TextStyle(
-                    fontFamily: MainFontFamilies.quicksand,
-                    fontWeight: FontWeight.w500,
-                    fontSize: FeedLayout.dateFontSize * s,
-                    color: MainColors.white,
-                    decoration: TextDecoration.none,
+                child: Builder(
+                  builder: (context) => Text(
+                    'today',
+                    style: TextStyle(
+                      fontFamily: MainFontFamilies.quicksand,
+                      fontWeight: FontWeight.w500,
+                      fontSize: FeedLayout.dateFontSize * s,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      decoration: TextDecoration.none,
+                    ),
                   ),
                 ),
               ),

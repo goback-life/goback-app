@@ -39,6 +39,7 @@ class FeedNewPostsBanner extends StatelessWidget {
         config: GlassConfig(
           variant: GlassVariant.clear,
           cornerRadius: FeedLayout.bannerCornerRadius * s,
+          tint: MainColors.accent,
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(

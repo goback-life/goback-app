@@ -85,9 +85,9 @@ class PhoneNumberFormField extends HookConsumerWidget
           child: Theme(
             data: theme.copyWith(
               textTheme: theme.textTheme,
-              appBarTheme: const AppBarTheme(
-                backgroundColor: MainColors.dark,
-                foregroundColor: MainColors.white,
+              appBarTheme: AppBarTheme(
+                backgroundColor: colorScheme.surface,
+                foregroundColor: colorScheme.onSurface,
               ),
             ),
             child: PhoneFormField(

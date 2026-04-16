@@ -1,6 +1,7 @@
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/search_input_decoration.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:dedecube_presentation/dedecube_presentation.dart';
@@ -45,7 +46,8 @@ class MainSearchBar extends HookConsumerWidget with MainLayout {
     return AppGlassContainer(
       config: const GlassConfig(
         variant: GlassVariant.regular,
-        cornerRadius: 99,
+        cornerRadius: 10,
+        tint: MainColors.accent,
       ),
       child: TextField(
         textCapitalization: TextCapitalization.sentences,

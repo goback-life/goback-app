@@ -127,12 +127,14 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
               ),
             ),
             child: Center(
-              child: Text(
-                '+',
-                style: TextStyle(
-                  fontSize: 18 * scale,
-                  color: MainColors.white,
-                  fontWeight: FontWeight.w300,
+              child: Builder(
+                builder: (context) => Text(
+                  '+',
+                  style: TextStyle(
+                    fontSize: 18 * scale,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w300,
+                  ),
                 ),
               ),
             ),
@@ -184,13 +186,15 @@ class PostDetailOverlayReactions extends HookConsumerWidget {
                 children: [
                   Text(emoji, style: TextStyle(fontSize: 16 * scale)),
                   SizedBox(width: 4 * scale),
-                  Text(
-                    '$count',
-                    style: TextStyle(
-                      fontFamily: MainFontFamilies.quicksand,
-                      fontSize: 13 * scale,
-                      fontWeight: FontWeight.w500,
-                      color: MainColors.white,
+                  Builder(
+                    builder: (context) => Text(
+                      '$count',
+                      style: TextStyle(
+                        fontFamily: MainFontFamilies.quicksand,
+                        fontSize: 13 * scale,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                   ),
                 ],
@@ -367,7 +371,7 @@ class _ReactorListSheet extends StatelessWidget {
                 fontFamily: MainFontFamilies.quicksand,
                 fontSize: 18 * scale,
                 fontWeight: FontWeight.w500,
-                color: MainColors.white,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             SizedBox(height: 12 * scale),
@@ -383,7 +387,7 @@ class _ReactorListSheet extends StatelessWidget {
                       fontFamily: MainFontFamilies.quicksand,
                       fontSize: 15 * scale,
                       fontWeight: FontWeight.w400,
-                      color: MainColors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),

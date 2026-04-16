@@ -33,7 +33,7 @@ class LinkPreviewCard extends HookWidget {
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
+          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
         ),
         padding: const EdgeInsets.all(12),
         child: Column(

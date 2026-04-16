@@ -47,7 +47,7 @@ class PostDetailCommentsListModal extends HookConsumerWidget
                 width: commentsListHandleWidth,
                 height: commentsListHandleHeight,
                 decoration: BoxDecoration(
-                  color: MainColors.white.withValues(alpha: 0.3),
+                  color: colorScheme.onSurface.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(commentsListHandleRadius),
                 ),
               ),
@@ -68,7 +68,9 @@ class PostDetailCommentsListModal extends HookConsumerWidget
                           child: Text(
                             'No comments yet',
                             style: textTheme.bodyMedium?.copyWith(
-                              color: MainColors.white.withValues(alpha: 0.5),
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                           ),
                         );
@@ -139,7 +141,7 @@ class PostDetailCommentsListModal extends HookConsumerWidget
                   child: Text(
                     'You have reached the limit of ${kMaxCommentsPerUserPerPost} comments on this post',
                     style: textTheme.bodySmall?.copyWith(
-                      color: MainColors.white.withValues(alpha: 0.5),
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                     textAlign: TextAlign.center,
                   ),

@@ -57,7 +57,7 @@ class PostDetailOverlayTags extends StatelessWidget {
                   fontFamily: MainFontFamilies.quicksand,
                   fontWeight: FontWeight.w500,
                   fontSize: fontSize,
-                  color: MainColors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                   letterSpacing: letterSpacing,
                 ),
               ),

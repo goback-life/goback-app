@@ -1,6 +1,7 @@
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/pages/settings/components/notifications_switch_layout.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/utilities/main_layout.dart';
 import 'package:dedecube_core/dedecube_core.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +44,7 @@ class NotificationSwitch extends HookConsumerWidget
           config: GlassConfig(
             variant: GlassVariant.regular,
             cornerRadius: switchBorderRadius,
+            tint: MainColors.accent,
           ),
           child: SizedBox(
             width: switchWidth,

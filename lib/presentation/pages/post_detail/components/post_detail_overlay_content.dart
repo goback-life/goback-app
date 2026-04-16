@@ -45,7 +45,7 @@ Widget _initialCircle(double size, String? name, Color bg) {
           fontFamily: MainFontFamilies.quicksand,
           fontSize: size * 0.4,
           fontWeight: FontWeight.w600,
-          color: MainColors.white,
+          color: Colors.white,
         ),
       ),
     );
@@ -183,6 +183,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
           ).copyWith(bottom: bottomPad),
           children: [
             _buildVisibleBlock(
+              context,
               hasDesc,
               descExpanded: descExpanded,
               onAuthorTap: () => navigateToUser(post.authorId),
@@ -215,10 +216,10 @@ class PostDetailOverlayContent extends HookConsumerWidget {
                   onSubmit: handleSubmit,
                 )
               else
-                _buildLimitMessage(),
+                _buildLimitMessage(context),
             ],
             SizedBox(height: 16 * scale),
-            _buildThoughtsHeader(post.commentCount),
+            _buildThoughtsHeader(context, post.commentCount),
             if (comments.isNotEmpty) SizedBox(height: 16 * scale),
             ..._buildCommentItems(
               comments,
@@ -235,17 +236,19 @@ class PostDetailOverlayContent extends HookConsumerWidget {
   }
 
   Widget _buildVisibleBlock(
+    BuildContext context,
     bool hasDesc, {
     required ValueNotifier<bool> descExpanded,
     VoidCallback? onAuthorTap,
     void Function(String)? onMentionTap,
     String? authorAvatarUrl,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     final descStyle = TextStyle(
       fontFamily: MainFontFamilies.quicksand,
       fontWeight: FontWeight.w400,
       fontSize: 15.0 * scale,
-      color: MainColors.white,
+      color: colorScheme.onSurface,
       letterSpacing: -0.9 * scale,
     );
     return Column(
@@ -254,7 +257,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
       children: [
         GestureDetector(
           onTap: onAuthorTap,
-          child: _buildAuthorRow(resolvedAvatarUrl: authorAvatarUrl),
+          child: _buildAuthorRow(context, resolvedAvatarUrl: authorAvatarUrl),
         ),
         if (hasDesc) ...[
           SizedBox(height: 12 * scale),
@@ -280,7 +283,8 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     );
   }
 
-  Widget _buildLimitMessage() {
+  Widget _buildLimitMessage(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: 12 * scale,
@@ -296,13 +300,14 @@ class PostDetailOverlayContent extends HookConsumerWidget {
           fontFamily: MainFontFamilies.quicksand,
           fontWeight: FontWeight.w400,
           fontSize: 12.0 * scale,
-          color: MainColors.white.withValues(alpha: 0.6),
+          color: colorScheme.onSurface.withValues(alpha: 0.6),
         ),
       ),
     );
   }
 
-  Widget _buildAuthorRow({String? resolvedAvatarUrl}) {
+  Widget _buildAuthorRow(BuildContext context, {String? resolvedAvatarUrl}) {
+    final colorScheme = Theme.of(context).colorScheme;
     final avatarSize = 39.0 * scale;
     final gap = 10.0 * scale;
     final fontSize = 21.5 * scale;
@@ -330,7 +335,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
               fontFamily: MainFontFamilies.quicksand,
               fontWeight: FontWeight.w400,
               fontSize: fontSize,
-              color: MainColors.white,
+              color: colorScheme.onSurface,
               letterSpacing: ls,
             ),
           ),
@@ -339,7 +344,8 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     );
   }
 
-  Widget _buildThoughtsHeader(int commentCount) {
+  Widget _buildThoughtsHeader(BuildContext context, int commentCount) {
+    final colorScheme = Theme.of(context).colorScheme;
     final fs = 24.0 * scale;
     final ls = -1.44 * scale;
     final label = commentCount > 0
@@ -351,7 +357,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
         fontFamily: MainFontFamilies.quicksand,
         fontWeight: FontWeight.w500,
         fontSize: fs,
-        color: MainColors.white,
+        color: colorScheme.onSurface,
         letterSpacing: ls,
       ),
     );
@@ -413,6 +419,7 @@ class _CommentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final avatarSize = 39.0 * scale;
     final gap = 10.0 * scale;
     final nfs = 21.5 * scale;
@@ -455,7 +462,7 @@ class _CommentRow extends StatelessWidget {
                     fontFamily: MainFontFamilies.quicksand,
                     fontWeight: FontWeight.w500,
                     fontSize: nfs,
-                    color: MainColors.white,
+                    color: colorScheme.onSurface,
                     letterSpacing: nls,
                   ),
                 ),
@@ -468,7 +475,7 @@ class _CommentRow extends StatelessWidget {
                     fontFamily: MainFontFamilies.quicksand,
                     fontWeight: FontWeight.w400,
                     fontSize: tfs,
-                    color: MainColors.white,
+                    color: colorScheme.onSurface,
                     letterSpacing: tls,
                   ),
                   onMentionTap: onMentionTap,
@@ -488,7 +495,7 @@ class _CommentRow extends StatelessWidget {
               child: Icon(
                 Icons.close,
                 size: xSize,
-                color: MainColors.white.withValues(alpha: 0.5),
+                color: colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
           ),

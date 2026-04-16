@@ -1,5 +1,4 @@
 import 'package:cloudless/core/models/profile_model.dart';
-import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:flutter/material.dart';
 
@@ -36,14 +35,16 @@ class MentionOverlay extends StatelessWidget {
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => onUserSelected(user),
-                  child: Text(
-                    '@${user.username}',
-                    style: const TextStyle(
-                      fontFamily: MainFontFamilies.quicksand,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                      color: MainColors.white,
-                      decoration: TextDecoration.none,
+                  child: Builder(
+                    builder: (context) => Text(
+                      '@${user.username}',
+                      style: TextStyle(
+                        fontFamily: MainFontFamilies.quicksand,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        decoration: TextDecoration.none,
+                      ),
                     ),
                   ),
                 ),

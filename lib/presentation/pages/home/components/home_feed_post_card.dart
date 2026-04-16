@@ -227,6 +227,7 @@ class HomeFeedPostCard extends HookConsumerWidget
           config: GlassConfig(
             variant: GlassVariant.regular,
             cornerRadius: feedPostImageRadius,
+            tint: MainColors.accent,
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),

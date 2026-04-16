@@ -246,7 +246,7 @@ class PostDetailReactions extends HookConsumerWidget
       builder: (context) {
         return Container(
           decoration: BoxDecoration(
-            color: MainColors.dark,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           child: Column(
@@ -259,7 +259,9 @@ class PostDetailReactions extends HookConsumerWidget
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: MainColors.white.withValues(alpha: 0.3),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),

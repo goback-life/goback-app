@@ -40,7 +40,7 @@ class PostDetailReactionsListModal extends HookConsumerWidget
                 width: reactionsListHandleWidth,
                 height: reactionsListHandleHeight,
                 decoration: BoxDecoration(
-                  color: MainColors.white.withValues(alpha: 0.3),
+                  color: colorScheme.onSurface.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(
                     reactionsListHandleRadius,
                   ),
