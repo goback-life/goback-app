@@ -70,16 +70,36 @@ FeedPostsResult useFeedPosts(
   }, [userId]);
 
   // Merge posts and active friend lockouts into a unified feed
+  // DEBUG: trace lockout placeholder data flow
+  debugPrint(
+    '[FeedLockouts] cache has ${lockoutCacheState.activeLockouts.length} lockouts, '
+    'isFetching=${lockoutCacheState.isFetching}, '
+    'lastFetched=${lockoutCacheState.lastFetchedAt}',
+  );
+  for (final l in lockoutCacheState.activeLockouts) {
+    debugPrint(
+      '[FeedLockouts]   id=${l.id} userId=${l.userId} '
+      'user=${l.username} openEnded=${l.isOpenEnded} '
+      'participants=${l.participants}',
+    );
+  }
+
   final posts = useMemoized(() {
     final postItems = rawPosts.map(FeedItemPost.new).toList();
 
     // Filter lockouts: exclude own sessions and sessions user already joined
     final currentId = userId;
+    final beforeFilter = lockoutCacheState.activeLockouts.length;
     final lockoutItems = lockoutCacheState.activeLockouts
         .where((s) => s.userId != currentId)
         .where((s) => !s.participants.contains(currentId))
         .map(FeedItemLockoutPlaceholder.new)
         .toList();
+
+    debugPrint(
+      '[FeedLockouts] currentUserId=$currentId, '
+      'before filter=$beforeFilter, after filter=${lockoutItems.length}',
+    );
 
     final allItems = <FeedItem>[...postItems, ...lockoutItems];
     allItems.sort((a, b) => b.sortTimestamp.compareTo(a.sortTimestamp));
