@@ -166,120 +166,118 @@ class _InviteCard extends HookConsumerWidget {
     }
 
     return Material(
-        type: MaterialType.transparency,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: cardWidth,
-            maxHeight: maxCardHeight,
+      type: MaterialType.transparency,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: cardWidth,
+          maxHeight: maxCardHeight,
+        ),
+        child: AppGlassContainer(
+          config: const GlassConfig(
+            tint: MainColors.accent,
+            cornerRadius: _kCardRadius,
+            opacity: 0.15,
           ),
-          child: AppGlassContainer(
-            config: const GlassConfig(
-              tint: MainColors.accent,
-              cornerRadius: _kCardRadius,
-              opacity: 0.15,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: SingleChildScrollView(
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            kInviteCardContactSidePad,
-                            _kBottomPad,
-                            kInviteCardContactSidePad,
-                            0,
-                          ),
-                          child: InviteContactsList(
-                            contacts: filteredContacts,
-                            gobackPhones: gobackPhones,
-                            showList: true,
-                            onTap: onContactTap,
-                          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          kInviteCardContactSidePad,
+                          _kBottomPad,
+                          kInviteCardContactSidePad,
+                          0,
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: kInviteCardContactSidePad,
-                          ),
-                          child: InviteInputPill(
-                            controller: controller,
-                            onChanged: (t) => input.value = t,
-                            dotColor: dotColor,
-                            countryLabel: countryCode,
-                            canSubmit: false,
-                            onSend: () {},
-                          ),
+                        child: InviteContactsList(
+                          contacts: filteredContacts,
+                          gobackPhones: gobackPhones,
+                          showList: true,
+                          onTap: onContactTap,
                         ),
-                        const SizedBox(height: _kTitleGap),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: kInviteCardContactSidePad,
-                          ),
-                          child: GestureDetector(
-                            onTap: onShare,
-                            child: SizedBox(
-                              height: kInviteCardInputPillHeight,
-                              child: AppGlassContainer(
-                                config: const GlassConfig(
-                                  tint: MainColors.accent,
-                                  cornerRadius: kInviteCardInputPillRadius,
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'Share invite link',
-                                    style: TextStyle(
-                                      fontFamily: MainFontFamilies.quicksand,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 20,
-                                      color: MainColors.dark,
-                                      letterSpacing: -0.5,
-                                    ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: kInviteCardContactSidePad,
+                        ),
+                        child: InviteInputPill(
+                          controller: controller,
+                          onChanged: (t) => input.value = t,
+                          dotColor: dotColor,
+                          countryLabel: countryCode,
+                          canSubmit: false,
+                          onSend: () {},
+                        ),
+                      ),
+                      const SizedBox(height: _kTitleGap),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: kInviteCardContactSidePad,
+                        ),
+                        child: GestureDetector(
+                          onTap: onShare,
+                          child: SizedBox(
+                            height: kInviteCardInputPillHeight,
+                            child: AppGlassContainer(
+                              config: const GlassConfig(
+                                tint: MainColors.accent,
+                                cornerRadius: kInviteCardInputPillRadius,
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Share invite link',
+                                  style: TextStyle(
+                                    fontFamily: MainFontFamilies.quicksand,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 20,
+                                    color: MainColors.dark,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: _kTitleGap),
-                        const Text(
-                          'Let them in',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: MainFontFamilies.quicksand,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 27,
-                            color: MainColors.dark,
-                            letterSpacing: -0.5,
-                          ),
+                      ),
+                      const SizedBox(height: _kTitleGap),
+                      const Text(
+                        'Let them in',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: MainFontFamilies.quicksand,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 27,
+                          color: MainColors.dark,
+                          letterSpacing: -0.5,
                         ),
-                        const SizedBox(height: _kSubtitleGap),
-                        const Text(
-                          'Invite a friend to your circle',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: MainFontFamilies.quicksand,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 24,
-                            color: MainColors.dark,
-                            letterSpacing: -0.3,
-                          ),
+                      ),
+                      const SizedBox(height: _kSubtitleGap),
+                      const Text(
+                        'Invite a friend to your circle',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: MainFontFamilies.quicksand,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 24,
+                          color: MainColors.dark,
+                          letterSpacing: -0.3,
                         ),
-                        const SizedBox(height: _kBottomPad),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: _kBottomPad),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
-
 }
