@@ -1,8 +1,6 @@
 import 'dart:ui' as ui;
 
 import 'package:cloudless/presentation/assets/assets.dart';
-import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
-import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/pages/home/components/lockout_ring_painter.dart';
 import 'package:dedecube_core/dedecube_core.dart';
@@ -45,15 +43,16 @@ class LockoutDurationRing extends HookWidget {
       height: size,
       child: Stack(
         children: [
-          // Glass disc interior (behind the ring)
+          // Disc interior (behind the ring)
           Positioned.fill(
             child: Padding(
               padding: const EdgeInsets.all(kThumbRadius),
-              child: ClipOval(
-                child: AppGlassContainer(
-                  config: const GlassConfig(cornerRadius: 999),
-                  child: const SizedBox.expand(),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
+                child: const SizedBox.expand(),
               ),
             ),
           ),

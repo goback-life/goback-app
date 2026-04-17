@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloudless/core/features/auth/domain/providers/get_current_user_provider.dart';
 import 'package:cloudless/core/features/calendar/domain/providers/pending_selection_provider.dart';
 import 'package:cloudless/core/features/connection/domain/hooks/use_app_resume_refresh.dart';
+import 'package:cloudless/core/features/connection/domain/models/connection_member_model.dart';
 import 'package:cloudless/core/features/connection/domain/providers/get_circle_members_provider.dart';
 import 'package:cloudless/core/features/lockout/data/providers/manual_lockout_storable_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
@@ -27,6 +28,7 @@ import 'package:cloudless/presentation/pages/home/components/memorable_post_sele
 import 'package:cloudless/presentation/pages/feed/components/feed_circle_hub_button.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_lockout_button.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_new_posts_banner.dart';
+import 'package:cloudless/presentation/pages/feed/components/feed_onboarding_prompt.dart';
 import 'package:cloudless/presentation/pages/feed/components/feed_posts_list.dart';
 import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/join_lockout_dialog.dart';
@@ -411,6 +413,13 @@ class FeedView extends HookConsumerWidget {
     final lockoutCenterFromBottom = FeedLayout.lockoutBottomDistance * s;
 
     final showLoading = feedPosts.isLoading && feedPosts.posts.isEmpty;
+    final circleMembersAsync = ref.watch(getCircleMembersProvider);
+    final circleMembers = circleMembersAsync.maybeWhen(
+      data: (r) =>
+          r.fold((members) => members, (_) => <ConnectionMemberModel>[]),
+      orElse: () => <ConnectionMemberModel>[],
+    );
+    final circleMembersLoaded = circleMembersAsync.hasValue;
     final hasUnread = ref
         .watch(unreadNotificationCountProvider(userId: currentUserId))
         .maybeWhen(
@@ -518,6 +527,15 @@ class FeedView extends HookConsumerWidget {
                     : onScrollToBottom,
               ),
             ),
+          ),
+
+        // Onboarding prompt — fixed below date row until 4 friends added
+        if (circleMembersLoaded && circleMembers.length < 4)
+          Positioned(
+            top: safeTop + 8 * s + 36 * s + 12 * s,
+            left: 20 * s,
+            right: 20 * s,
+            child: FeedOnboardingPrompt(friends: circleMembers),
           ),
 
         // Lockout button — centered at 96px (scaled) from bottom

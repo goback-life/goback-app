@@ -290,6 +290,30 @@ class ManualLockoutView extends HookConsumerWidget {
                     },
             ),
 
+          // Layer 5: Info button (top-right, during active lockout only)
+          if (!isLockoutComplete.value)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 12,
+              right: 16,
+              child: GestureDetector(
+                onTap: () =>
+                    _showLockoutInfo(context, isOpenEnded: isOpenEnded.value),
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.12),
+                  ),
+                  child: Icon(
+                    Icons.info_outline_rounded,
+                    size: 16,
+                    color: Colors.black.withValues(alpha: 0.4),
+                  ),
+                ),
+              ),
+            ),
+
           // Friends overlay
           if (showFriendsOverlay.value)
             Positioned.fill(
@@ -380,6 +404,86 @@ class ManualLockoutView extends HookConsumerWidget {
       },
     );
   }
+}
+
+void _showLockoutInfo(BuildContext context, {required bool isOpenEnded}) {
+  showGeneralDialog<void>(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: 'Dismiss',
+    barrierColor: Colors.black.withValues(alpha: 0.4),
+    transitionDuration: const Duration(milliseconds: 200),
+    transitionBuilder: (_, anim, __, child) => FadeTransition(
+      opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
+      child: child,
+    ),
+    pageBuilder: (ctx, _, __) {
+      final triangleHint = isOpenEnded
+          ? 'Tap the triangle at the lockout point where you started to end your session.'
+          : 'Press the triangle to take a photo.';
+      const holdHint =
+          'Hold anywhere to see who\u2019s offline from your circle.';
+
+      return GestureDetector(
+        onTap: () => Navigator.of(ctx).pop(),
+        behavior: HitTestBehavior.opaque,
+        child: Center(
+          child: GestureDetector(
+            onTap: () {}, // absorb taps on the card itself
+            child: Container(
+              width: 280,
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.touch_app_rounded,
+                    size: 28,
+                    color: MainColors.accent,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    triangleHint,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: MainFontFamilies.quicksand,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      height: 1.5,
+                      color: MainColors.dark.withValues(alpha: 0.85),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Container(
+                      width: 32,
+                      height: 1,
+                      color: MainColors.dark.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  Text(
+                    holdHint,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: MainFontFamilies.quicksand,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                      height: 1.5,
+                      color: MainColors.dark.withValues(alpha: 0.55),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 // ── Tap-to-end (invisible overlay on existing painted triangle) ──────────────

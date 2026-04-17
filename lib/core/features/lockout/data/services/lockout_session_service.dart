@@ -12,6 +12,22 @@ class LockoutSessionService {
 
   final SupabaseClient supabase;
 
+  /// Ensures a venue row exists in the DB (insert-or-ignore).
+  /// Must be called before creating a venue lockout session to satisfy the FK.
+  Future<void> upsertVenue({
+    required String venueId,
+    required String venueName,
+  }) async {
+    try {
+      await supabase.rpc(
+        'upsert_venue',
+        params: {'p_venue_id': venueId, 'p_venue_name': venueName},
+      );
+    } catch (e) {
+      logger.warning('Failed to upsert venue: $e');
+    }
+  }
+
   /// Creates a new lockout session.
   ///
   /// Returns the created session with its generated ID.

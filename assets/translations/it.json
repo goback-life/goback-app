@@ -273,6 +273,11 @@
                 "title": "Ciao @{username}",
                 "description": "Invita i tuoi amici stretti e torna alla vita"
             },
+            "onboarding_prompt": {
+                "header": "Per iniziare:",
+                "message": "goback è meglio con gli amici.\nInvita {count} amici con cui condividere il tuo tempo offline.",
+                "message_one": "goback è meglio con gli amici.\nInvita 1 amico con cui condividere il tuo tempo offline."
+            },
             "go_back_button": "Torna alla vita",
             "lockout_join_button": "Unisciti",
             "lockout_join_error_expired": "Questo lockout è scaduto",

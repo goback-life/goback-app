@@ -273,6 +273,11 @@
                 "title": "Hi @{username}",
                 "description": "Invite your close friends and goback. to life"
             },
+            "onboarding_prompt": {
+                "header": "Getting Started:",
+                "message": "goback is better with friends.\nInvite {count} friends to share your offline time with.",
+                "message_one": "goback is better with friends.\nInvite 1 friend to share your offline time with."
+            },
             "go_back_button": "Go Back",
             "lockout_join_button": "Join",
             "lockout_join_error_expired": "This lockout has expired",

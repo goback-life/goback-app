@@ -199,6 +199,12 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     final batteryAtStart = await _captureBattery();
 
     try {
+      // Ensure venue exists in DB before creating the session (FK constraint)
+      await sessionService.upsertVenue(
+        venueId: venue.venueId,
+        venueName: venue.venueName,
+      );
+
       final sessionResult = await sessionService.createSession(
         duration: _kOpenEndedSentinel,
         locationName: venue.venueName,
