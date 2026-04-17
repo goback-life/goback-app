@@ -45,12 +45,6 @@ class LockoutPlaceholderCard extends HookWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final displayName = session.username ?? 'Unknown';
 
-    // DEBUG: check avatar URL and username
-    debugPrint(
-      '[PlaceholderCard] username=${session.username} '
-      'avatarUrl=${session.avatarUrl} userId=${session.userId}',
-    );
-
     // Live timer — rebuilds every second
     final now = useState(DateTime.now());
     useEffect(() {
