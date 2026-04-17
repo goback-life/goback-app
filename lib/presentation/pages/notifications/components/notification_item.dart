@@ -151,6 +151,8 @@ class NotificationItem extends HookConsumerWidget
           return '$firstUsername and $otherCount others joined your lockout';
         }
         return '$firstUsername joined your lockout';
+      case NotificationType.mention:
+        return '$firstUsername mentioned you';
     }
   }
 

@@ -237,6 +237,7 @@ class NotificationsView extends HookConsumerWidget {
       case NotificationType.reaction:
       case NotificationType.tag:
       case NotificationType.comment:
+      case NotificationType.mention:
         if (notification.referenceId != null) {
           await showModalBottomSheet<void>(
             context: context,
