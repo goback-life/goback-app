@@ -67,9 +67,11 @@ class PostDetailOverlay extends HookConsumerWidget with MainLayout {
     final cardW = 371.0 * s;
     final cardTop = 93.0 * s;
     // Shrink card when the keyboard is open so its bottom stays visible.
+    // Reserve buffer above keyboard for tag/mention suggestions (~60px).
+    final keyboardBuffer = keyboardH > 0 ? 60.0 * s : 0.0;
     final cardH = (screenH * (600.0 / 874.0)).clamp(
       0.0,
-      screenH - cardTop - keyboardH,
+      screenH - cardTop - keyboardH - keyboardBuffer,
     );
     final cardMarginH = 15.0 * s;
     final cardRadius = 47.0 * s;
