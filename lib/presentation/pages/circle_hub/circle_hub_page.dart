@@ -58,7 +58,7 @@ class _TabToggle extends StatelessWidget {
       config: const GlassConfig(
         variant: GlassVariant.clear,
         tint: MainColors.accent,
-        cornerRadius: 20,
+        cornerRadius: 10,
       ),
       child: Padding(
         padding: const EdgeInsets.all(3),
@@ -104,7 +104,7 @@ class _TabPill extends StatelessWidget {
           color: isSelected
               ? MainColors.accent.withValues(alpha: 0.25)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(17),
+          borderRadius: BorderRadius.circular(7),
         ),
         child: Text(
           label,
