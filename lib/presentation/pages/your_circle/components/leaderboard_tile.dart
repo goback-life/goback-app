@@ -60,7 +60,7 @@ class LeaderboardTile extends StatelessWidget
             if (_isCurrentUser && !_isKing)
               Positioned(
                 left:
-                    MediaQuery.of(context).size.width * 0.10 -
+                    MediaQuery.of(context).size.width * 0.04 -
                     accentBarLeftOffset,
                 top: (friendTileHeight - accentBarHeight) / 2,
                 child: Container(
@@ -75,7 +75,7 @@ class LeaderboardTile extends StatelessWidget
             if (_isKing)
               Positioned(
                 left:
-                    MediaQuery.of(context).size.width * 0.10 -
+                    MediaQuery.of(context).size.width * 0.04 -
                     accentBarLeftOffset,
                 top: (kingTileHeight - kingAccentBarHeight) / 2,
                 child: Container(
@@ -91,7 +91,7 @@ class LeaderboardTile extends StatelessWidget
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(width: MediaQuery.of(context).size.width * 0.10),
+                SizedBox(width: MediaQuery.of(context).size.width * 0.04),
                 // Rank number (with crown overlay for king)
                 SizedBox(
                   width: rankWidth,
@@ -165,7 +165,7 @@ class LeaderboardTile extends StatelessWidget
                 // Right side: duration or checkbox
                 Padding(
                   padding: EdgeInsets.only(
-                    right: MediaQuery.of(context).size.width * 0.10,
+                    right: MediaQuery.of(context).size.width * 0.04,
                   ),
                   child: isRemoveMode
                       ? _Checkbox(

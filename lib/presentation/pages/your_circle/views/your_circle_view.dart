@@ -49,7 +49,7 @@ class YourCircleView extends HookConsumerWidget
     final mq = MediaQuery.of(context);
     final bottomPad = mq.padding.bottom;
     final topPad = mq.padding.top;
-    final sidePad = mq.size.width * 0.10;
+    final sidePad = mq.size.width * 0.04;
 
     final removeMode = useState(false);
     final selectedIds = useState(<String>{});
@@ -433,7 +433,7 @@ class _ExternalUserTile extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    final sidePad = MediaQuery.of(context).size.width * 0.10;
+    final sidePad = MediaQuery.of(context).size.width * 0.04;
     final disabledColor = Theme.of(
       context,
     ).colorScheme.onSurface.withValues(alpha: 0.3);
