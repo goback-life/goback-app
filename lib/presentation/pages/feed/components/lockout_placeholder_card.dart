@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
-import 'package:cloudless/core/features/storage/data/providers/signed_url_provider.dart';
-import 'package:cloudless/core/features/supabase/utilities/supabase_buckets.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/goback_logo.dart';
@@ -12,7 +10,6 @@ import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
-import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 /// A feed card displaying an active friend lockout as a placeholder.
@@ -20,7 +17,7 @@ import 'package:flutter/material.dart';
 /// Shows the goback logo, lockout info (time remaining/elapsed,
 /// activity, location), and a "Join Lockout" button.
 /// The timer updates every second for live countdown/countup.
-class LockoutPlaceholderCard extends HookConsumerWidget {
+class LockoutPlaceholderCard extends HookWidget {
   const LockoutPlaceholderCard({
     required this.session,
     required this.onJoinTap,
@@ -31,7 +28,7 @@ class LockoutPlaceholderCard extends HookConsumerWidget {
   final VoidCallback onJoinTap;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final s = screenWidth / 402.0;
 
@@ -48,15 +45,8 @@ class LockoutPlaceholderCard extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final displayName = session.username ?? 'Unknown';
 
-    // Fetch signed avatar URL
-    final signedAvatarUrl =
-        (session.avatarUrl != null && session.avatarUrl!.isNotEmpty)
-        ? ref
-              .watch(
-                signedUrlProvider(SupabaseBuckets.avatars, session.avatarUrl!),
-              )
-              .valueOrNull
-        : null;
+    // DEBUG: check avatar URL
+    debugPrint('[PlaceholderCard] avatarUrl=${session.avatarUrl}');
 
     // Live timer — rebuilds every second
     final now = useState(DateTime.now());
@@ -169,10 +159,10 @@ class LockoutPlaceholderCard extends HookConsumerWidget {
                       height: avatarSize,
                       child: ClipOval(
                         child:
-                            (signedAvatarUrl != null &&
-                                signedAvatarUrl.isNotEmpty)
+                            (session.avatarUrl != null &&
+                                session.avatarUrl!.isNotEmpty)
                             ? CachedNetworkImage(
-                                imageUrl: signedAvatarUrl,
+                                imageUrl: session.avatarUrl!,
                                 fit: BoxFit.cover,
                                 width: avatarSize,
                                 height: avatarSize,
