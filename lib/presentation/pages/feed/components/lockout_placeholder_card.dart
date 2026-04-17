@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
+import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
+import 'package:cloudless/presentation/components/glass/glass_config.dart';
+import 'package:cloudless/presentation/components/goback_logo.dart';
 import 'package:cloudless/presentation/components/squircle_clipper.dart';
 import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
@@ -39,6 +42,7 @@ class LockoutPlaceholderCard extends HookWidget {
     final nameMaxW = FeedLayout.nameMaxWidth(screenWidth);
     final leftInset = FeedLayout.leftPostInset * s;
 
+    final colorScheme = Theme.of(context).colorScheme;
     final displayName = session.username ?? 'Unknown';
 
     // Live timer — rebuilds every second
@@ -52,6 +56,7 @@ class LockoutPlaceholderCard extends HookWidget {
 
     final timeText = _buildTimeText(now.value);
     final infoLines = _buildInfoLines();
+    final participantCount = session.participants.length;
 
     return Padding(
       padding: EdgeInsets.only(left: leftInset),
@@ -63,70 +68,42 @@ class LockoutPlaceholderCard extends HookWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Squircle with goback logo + lockout info
+              // Squircle with glass background + goback triangle logo
               GestureDetector(
                 onTap: onJoinTap,
                 child: SizedBox(
                   width: squircleSize,
                   height: squircleSize,
                   child: ClipSquircle(
-                    child: Container(
-                      color: MainColors.dark,
+                    child: AppGlassContainer(
+                      config: GlassConfig(
+                        cornerRadius: 0,
+                        tint: MainColors.accent.withValues(alpha: 0.15),
+                      ),
                       child: Stack(
                         children: [
-                          // Goback logo centered
+                          // Goback triangle logo centered
                           Center(
-                            child: Image.asset(
-                              'assets/images/pngs/app_icon_foreground.png',
-                              width: squircleSize * 0.4,
-                              height: squircleSize * 0.4,
-                              fit: BoxFit.contain,
+                            child: GobackLogo(
+                              fontSize: squircleSize * 0.18,
+                              textColor: Colors.white,
+                              triangleColor: MainColors.accent,
                             ),
                           ),
-                          // Info overlay at bottom
+                          // Time overlay at bottom
                           Positioned(
                             left: 12 * s,
                             right: 12 * s,
                             bottom: 12 * s,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Time display
-                                Text(
-                                  timeText,
-                                  style: TextStyle(
-                                    fontFamily: MainFontFamilies.quicksand,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 18 * s,
-                                    color: Colors.white,
-                                    letterSpacing: -0.5 * s,
-                                  ),
-                                ),
-                                if (infoLines.isNotEmpty) ...[
-                                  SizedBox(height: 4 * s),
-                                  ...infoLines.map(
-                                    (line) => Padding(
-                                      padding: EdgeInsets.only(top: 2 * s),
-                                      child: Text(
-                                        line,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontFamily:
-                                              MainFontFamilies.quicksand,
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 13 * s,
-                                          color: Colors.white.withValues(
-                                            alpha: 0.8,
-                                          ),
-                                          letterSpacing: -0.3 * s,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
+                            child: Text(
+                              timeText,
+                              style: TextStyle(
+                                fontFamily: MainFontFamilies.quicksand,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18 * s,
+                                color: colorScheme.onSurface,
+                                letterSpacing: -0.5 * s,
+                              ),
                             ),
                           ),
                         ],
@@ -163,20 +140,14 @@ class LockoutPlaceholderCard extends HookWidget {
                                 memCacheWidth: (avatarSize * 2).toInt(),
                                 memCacheHeight: (avatarSize * 2).toInt(),
                                 placeholder: (_, __) => Container(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.surfaceContainerHigh,
+                                  color: colorScheme.surfaceContainerHigh,
                                 ),
                                 errorWidget: (_, __, ___) => Container(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.surfaceContainerHigh,
+                                  color: colorScheme.surfaceContainerHigh,
                                 ),
                               )
                             : Container(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHigh,
+                                color: colorScheme.surfaceContainerHigh,
                               ),
                       ),
                     ),
@@ -193,7 +164,7 @@ class LockoutPlaceholderCard extends HookWidget {
                             fontFamily: MainFontFamilies.quicksand,
                             fontWeight: FontWeight.w400,
                             fontSize: fontSize,
-                            color: Theme.of(context).colorScheme.onSurface,
+                            color: colorScheme.onSurface,
                             letterSpacing: letterSpacing,
                           ),
                         ),
@@ -209,7 +180,7 @@ class LockoutPlaceholderCard extends HookWidget {
                           vertical: 6 * s,
                         ),
                         decoration: BoxDecoration(
-                          color: MainColors.dark,
+                          color: MainColors.accent,
                           borderRadius: BorderRadius.circular(16 * s),
                         ),
                         child: Text(
@@ -227,6 +198,59 @@ class LockoutPlaceholderCard extends HookWidget {
                   ],
                 ),
               ),
+
+              // Lockout details section
+              if (infoLines.isNotEmpty || participantCount > 0) ...[
+                SizedBox(height: 8 * s),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: avatarInset),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ...infoLines.map(
+                        (line) => Padding(
+                          padding: EdgeInsets.only(bottom: 2 * s),
+                          child: Text(
+                            line,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: MainFontFamilies.quicksand,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 13 * s,
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.7,
+                              ),
+                              letterSpacing: -0.3 * s,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (participantCount > 0)
+                        Padding(
+                          padding: EdgeInsets.only(top: 2 * s),
+                          child: Text(
+                            participantCount == 1
+                                ? '1 other person joined'
+                                : '$participantCount others joined',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: MainFontFamilies.quicksand,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 13 * s,
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
+                              letterSpacing: -0.3 * s,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
