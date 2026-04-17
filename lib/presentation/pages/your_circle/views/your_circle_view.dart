@@ -460,35 +460,39 @@ class _ExternalUserTile extends StatelessWidget
         onTap = null;
     }
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: sidePad),
-      child: SizedBox(
-        height: friendTileHeight,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Avatar
-            _buildAvatar(context),
-            SizedBox(width: friendAvatarToText),
-            // Username
-            Expanded(
-              child: Text(
-                profile.username,
-                style: TextStyle(
-                  fontFamily: MainFontFamilies.quicksand,
-                  fontWeight: FontWeight.w500,
-                  fontSize: friendTextSize,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  letterSpacing: friendLetterSpacing,
-                ),
-                overflow: TextOverflow.ellipsis,
+    return SizedBox(
+      height: friendTileHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(width: sidePad),
+          // Blank rank area (aligned with LeaderboardTile rank column)
+          SizedBox(width: rankWidth),
+          SizedBox(width: rankRightMargin),
+          // Avatar
+          _buildAvatar(context),
+          SizedBox(width: friendAvatarToText),
+          // Username
+          Expanded(
+            child: Text(
+              profile.username,
+              style: TextStyle(
+                fontFamily: MainFontFamilies.quicksand,
+                fontWeight: FontWeight.w500,
+                fontSize: friendTextSize,
+                color: Theme.of(context).colorScheme.onSurface,
+                letterSpacing: friendLetterSpacing,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(width: 12),
-            // Action button
-            SmallActionButton(label: label, color: color, onTap: onTap),
-          ],
-        ),
+          ),
+          const SizedBox(width: 8),
+          // Action button
+          Padding(
+            padding: EdgeInsets.only(right: sidePad),
+            child: SmallActionButton(label: label, color: color, onTap: onTap),
+          ),
+        ],
       ),
     );
   }
