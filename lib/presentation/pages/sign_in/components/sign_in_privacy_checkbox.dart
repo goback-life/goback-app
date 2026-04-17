@@ -44,13 +44,18 @@ class SignInPrivacyCheckbox extends HookWidget with MainLayout, SignInLayout {
               height: checkBoxSize,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(checkBoxBorderRadius),
+                border: value
+                    ? null
+                    : Border.all(
+                        color: colorScheme.onSurface.withValues(alpha: 0.25),
+                      ),
                 color: value
                     ? colorScheme.primaryContainer
-                    : colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
+                    : Colors.transparent,
               ),
               child: value
                   ? Assets.svg.check.render(
-                      colorFilter: colorScheme.primary.asSrcIn,
+                      colorFilter: colorScheme.onPrimary.asSrcIn,
                       width: checkSize,
                       height: checkSize,
                     )
