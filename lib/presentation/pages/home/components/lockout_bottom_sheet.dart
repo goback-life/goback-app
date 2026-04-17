@@ -180,7 +180,7 @@ class LockoutBottomSheet extends HookWidget {
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: isValid
-                                  ? MainColors.white
+                                  ? MainColors.dark
                                   : MainColors.dark.withValues(alpha: 0.3),
                             ),
                           ),

@@ -218,40 +218,40 @@ class _RoundedGlassOverlay extends CustomPainter {
     );
     final bounds = Offset.zero & size;
 
-    // 0. Tint fill
+    // 0. Tint fill — light wash of the tint color
     if (tint != null) {
-      canvas.drawRRect(rrect, Paint()..color = tint!.withValues(alpha: 0.28));
+      canvas.drawRRect(rrect, Paint()..color = tint!.withValues(alpha: 0.15));
     }
 
     // 1. Subtle surface tint for presence on light backgrounds
     canvas.drawRRect(
       rrect,
-      Paint()..color = const Color(0xFF5A8FB2).withValues(alpha: 0.04),
+      Paint()..color = const Color(0xFF5A8FB2).withValues(alpha: 0.03),
     );
 
     // -- Clipped interior --
     canvas.save();
     canvas.clipRRect(rrect);
 
-    // 2. Body gradient: subtle darkening NW -> SE
+    // 2. Body gradient: very subtle depth
     canvas.drawPaint(
       Paint()
         ..shader = ui.Gradient.linear(bounds.topLeft, bounds.bottomRight, [
-          Colors.black.withValues(alpha: 0.02),
-          Colors.black.withValues(alpha: 0.05),
+          Colors.black.withValues(alpha: 0.01),
+          Colors.black.withValues(alpha: 0.025),
         ]),
     );
 
-    // 3. Inner shadow
+    // 3. Inner shadow — barely there
     canvas.drawRRect(
       rrect,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 4
+        ..strokeWidth = 3
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2)
         ..shader = ui.Gradient.linear(bounds.topLeft, bounds.bottomRight, [
           Colors.transparent,
-          Colors.black.withValues(alpha: 0.06),
+          Colors.black.withValues(alpha: 0.03),
         ]),
     );
 
@@ -267,9 +267,9 @@ class _RoundedGlassOverlay extends CustomPainter {
           bounds.topLeft,
           bounds.bottomRight,
           [
-            Colors.white.withValues(alpha: 0.6),
-            Colors.black.withValues(alpha: 0.08),
+            Colors.white.withValues(alpha: 0.5),
             Colors.black.withValues(alpha: 0.04),
+            Colors.black.withValues(alpha: 0.02),
           ],
           [0.0, 0.45, 0.75],
         ),

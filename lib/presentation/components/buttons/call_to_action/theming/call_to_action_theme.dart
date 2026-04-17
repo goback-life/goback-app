@@ -152,7 +152,7 @@ class PrimaryCallToActionTheme extends CallToActionTheme {
     return switch (mode) {
       CallToActionMode.filled => (
         background: colors.primaryContainer,
-        foreground: colors.surface,
+        foreground: colors.onSurface,
         outline: colors.primaryContainer.withValues(alpha: 0),
       ),
       CallToActionMode.empty => (
