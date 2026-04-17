@@ -61,6 +61,13 @@ FeedPostsResult useFeedPosts(
 
   // Watch active friend lockouts for placeholder cards
   final lockoutCacheState = ref.watch(friendsLockedOutCacheProvider);
+  final lockoutCacheNotifier = ref.read(friendsLockedOutCacheProvider.notifier);
+
+  // Ensure the cache fetches data from the network
+  useEffect(() {
+    Future.microtask(lockoutCacheNotifier.ensureFresh);
+    return null;
+  }, [userId]);
 
   // Merge posts and active friend lockouts into a unified feed
   final posts = useMemoized(() {
