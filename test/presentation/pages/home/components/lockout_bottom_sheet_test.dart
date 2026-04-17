@@ -33,7 +33,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('GO BACK'), findsWidgets); // title
-    expect(find.text('Go Back'), findsWidgets); // CTA
+    expect(find.text('goback'), findsWidgets); // CTA
     expect(find.text('Scan Tag'), findsOneWidget);
   });
 
