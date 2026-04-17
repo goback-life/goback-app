@@ -77,9 +77,9 @@ class LockoutDurationRing extends HookWidget {
               painter: LockoutRingPainter(
                 sweepAngle: sweepAngle,
                 skyImage: skyImage.value,
-                trackColor: Colors.white.withValues(alpha: 0.05),
-                glowColor: const Color(0xFF5BA3D9).withValues(alpha: 0.1),
-                tickColor: Colors.white.withValues(alpha: 0.18),
+                trackColor: MainColors.dark.withValues(alpha: 0.06),
+                glowColor: MainColors.accent.withValues(alpha: 0.15),
+                tickColor: MainColors.dark.withValues(alpha: 0.15),
                 thumbColor: const Color(0xFF5BA3D9),
               ),
             ),

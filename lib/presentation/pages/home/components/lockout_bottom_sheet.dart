@@ -80,148 +80,162 @@ class LockoutBottomSheet extends HookWidget {
       return key[0].toUpperCase() + key.substring(1);
     }
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Drag handle (visual only — sheet drag is disabled)
-                Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Title
-                Text(
-                  'GO BACK',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.2,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.45),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                // Duration ring
-                LockoutDurationRing(
-                  duration: duration.value,
-                  onDurationChanged: (d) => duration.value = d,
-                  minMinutes: _kMinLockoutMinutes,
-                ),
-                if (!isValid) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    'Minimum $_kMinLockoutMinutes minutes',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.redAccent.withValues(alpha: 0.8),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ] else
-                  const SizedBox(height: 28),
-                // Activity chips
-                LockoutActivityChips(
-                  selectedPreset: selectedPreset.value,
-                  customText: customText.value,
-                  onPresetSelected: (key) {
-                    selectedPreset.value = key;
-                    customText.value = null;
-                  },
-                  onCustomTextChanged: (text) {
-                    customText.value = text;
-                    selectedPreset.value = null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                // Go Back CTA — slightly more opaque than other buttons
-                GestureDetector(
-                  onTap: isValid
-                      ? () => Navigator.of(context).pop((
-                          duration: duration.value,
-                          actionText: resolveActionText(),
-                          nfcScan: false,
-                        ))
-                      : null,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: AppGlassContainer(
-                      config: GlassConfig(
-                        variant: GlassVariant.clear,
-                        tint: MainColors.accent,
-                        cornerRadius: 10,
-                        opacity: isValid ? 0.6 : 0.2,
+    final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return GestureDetector(
+      onVerticalDragEnd: (details) {
+        // Swipe down to dismiss
+        if (details.primaryVelocity != null && details.primaryVelocity! > 300) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainer,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: AnimatedPadding(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + keyboardInset),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Drag handle
+                    Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      child: SizedBox(
-                        height: 50,
-                        width: double.infinity,
-                        child: Center(
-                          child: Text(
-                            'Go Back',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: isValid
-                                  ? MainColors.dark
-                                  : MainColors.dark.withValues(alpha: 0.3),
+                    ),
+                    const SizedBox(height: 20),
+                    // Title
+                    Text(
+                      'GO BACK',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.2,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.45),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // Duration ring
+                    LockoutDurationRing(
+                      duration: duration.value,
+                      onDurationChanged: (d) => duration.value = d,
+                      minMinutes: _kMinLockoutMinutes,
+                    ),
+                    if (!isValid) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        'Minimum $_kMinLockoutMinutes minutes',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.redAccent.withValues(alpha: 0.8),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ] else
+                      const SizedBox(height: 28),
+                    // Activity chips
+                    LockoutActivityChips(
+                      selectedPreset: selectedPreset.value,
+                      customText: customText.value,
+                      onPresetSelected: (key) {
+                        selectedPreset.value = key;
+                        customText.value = null;
+                      },
+                      onCustomTextChanged: (text) {
+                        customText.value = text;
+                        selectedPreset.value = null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    // Go Back CTA — slightly more opaque than other buttons
+                    GestureDetector(
+                      onTap: isValid
+                          ? () => Navigator.of(context).pop((
+                              duration: duration.value,
+                              actionText: resolveActionText(),
+                              nfcScan: false,
+                            ))
+                          : null,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: AppGlassContainer(
+                          config: GlassConfig(
+                            variant: GlassVariant.clear,
+                            tint: MainColors.accent,
+                            cornerRadius: 10,
+                            opacity: isValid ? 0.6 : 0.2,
+                          ),
+                          child: SizedBox(
+                            height: 50,
+                            width: double.infinity,
+                            child: Center(
+                              child: Text(
+                                'Go Back',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: isValid
+                                      ? MainColors.dark
+                                      : MainColors.dark.withValues(alpha: 0.3),
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                // NFC link
-                GestureDetector(
-                  onTap: () => Navigator.of(
-                    context,
-                  ).pop((duration: null, actionText: null, nfcScan: true)),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'At a venue? ',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.45),
-                          ),
+                    const SizedBox(height: 14),
+                    // NFC link
+                    GestureDetector(
+                      onTap: () => Navigator.of(
+                        context,
+                      ).pop((duration: null, actionText: null, nfcScan: true)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'At a venue? ',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.45),
+                              ),
+                            ),
+                            Text(
+                              'Scan Tag',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: MainColors.accent,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          'Scan Tag',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: MainColors.accent,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
