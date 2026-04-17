@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
+import 'package:cloudless/core/features/storage/data/providers/signed_url_provider.dart';
+import 'package:cloudless/core/features/supabase/utilities/supabase_buckets.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/goback_logo.dart';
@@ -10,6 +12,7 @@ import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
+import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 /// A feed card displaying an active friend lockout as a placeholder.
@@ -17,7 +20,7 @@ import 'package:flutter/material.dart';
 /// Shows the goback logo, lockout info (time remaining/elapsed,
 /// activity, location), and a "Join Lockout" button.
 /// The timer updates every second for live countdown/countup.
-class LockoutPlaceholderCard extends HookWidget {
+class LockoutPlaceholderCard extends HookConsumerWidget {
   const LockoutPlaceholderCard({
     required this.session,
     required this.onJoinTap,
@@ -28,7 +31,7 @@ class LockoutPlaceholderCard extends HookWidget {
   final VoidCallback onJoinTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final screenWidth = MediaQuery.of(context).size.width;
     final s = screenWidth / 402.0;
 
@@ -44,6 +47,11 @@ class LockoutPlaceholderCard extends HookWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final displayName = session.username ?? 'Unknown';
+
+    // Fetch signed avatar URL using userId (same as PostEnrichmentService)
+    final avatarUrl = ref
+        .watch(signedUrlProvider(SupabaseBuckets.avatars, session.userId))
+        .valueOrNull;
 
     // Live timer — rebuilds every second
     final now = useState(DateTime.now());
@@ -155,11 +163,9 @@ class LockoutPlaceholderCard extends HookWidget {
                       width: avatarSize,
                       height: avatarSize,
                       child: ClipOval(
-                        child:
-                            (session.avatarUrl != null &&
-                                session.avatarUrl!.isNotEmpty)
+                        child: (avatarUrl != null && avatarUrl.isNotEmpty)
                             ? CachedNetworkImage(
-                                imageUrl: session.avatarUrl!,
+                                imageUrl: avatarUrl,
                                 fit: BoxFit.cover,
                                 width: avatarSize,
                                 height: avatarSize,
