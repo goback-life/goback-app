@@ -76,14 +76,18 @@ class NotificationsView extends HookConsumerWidget {
                       return const NotificationEmptyState();
                     }
 
+                    final safeTop = MediaQuery.of(context).padding.top;
+
                     return RefreshIndicator(
                       onRefresh: () async {
                         await notificationsHook.refresh();
                       },
                       child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 8.0,
+                        padding: EdgeInsets.only(
+                          left: 16.0,
+                          right: 16.0,
+                          top: safeTop + 56,
+                          bottom: 8.0,
                         ),
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
