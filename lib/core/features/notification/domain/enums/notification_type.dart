@@ -7,7 +7,8 @@ enum NotificationType {
   lockoutJoined('lockout_joined'),
   friendJoined('friend_joined'),
   connectionRequest('connection_request'),
-  memberJoined('member_joined');
+  memberJoined('member_joined'),
+  mention('mention');
 
   const NotificationType(this.value);
 
