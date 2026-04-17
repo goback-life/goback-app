@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
+import 'package:cloudless/core/features/storage/data/providers/signed_url_provider.dart';
+import 'package:cloudless/core/features/supabase/utilities/supabase_buckets.dart';
 import 'package:cloudless/presentation/components/glass/app_glass_container.dart';
 import 'package:cloudless/presentation/components/glass/glass_config.dart';
 import 'package:cloudless/presentation/components/goback_logo.dart';
@@ -10,6 +12,7 @@ import 'package:cloudless/presentation/pages/feed/feed_layout.dart';
 import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:cloudless/presentation/themes/constants/main_font_families.dart';
 import 'package:dedecube_core/dedecube_core.dart';
+import 'package:dedecube_startup/dedecube_startup.dart';
 import 'package:flutter/material.dart';
 
 /// A feed card displaying an active friend lockout as a placeholder.
@@ -17,7 +20,7 @@ import 'package:flutter/material.dart';
 /// Shows the goback logo, lockout info (time remaining/elapsed,
 /// activity, location), and a "Join Lockout" button.
 /// The timer updates every second for live countdown/countup.
-class LockoutPlaceholderCard extends HookWidget {
+class LockoutPlaceholderCard extends HookConsumerWidget {
   const LockoutPlaceholderCard({
     required this.session,
     required this.onJoinTap,
@@ -28,7 +31,7 @@ class LockoutPlaceholderCard extends HookWidget {
   final VoidCallback onJoinTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final screenWidth = MediaQuery.of(context).size.width;
     final s = screenWidth / 402.0;
 
@@ -44,6 +47,16 @@ class LockoutPlaceholderCard extends HookWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final displayName = session.username ?? 'Unknown';
+
+    // Fetch signed avatar URL
+    final signedAvatarUrl =
+        (session.avatarUrl != null && session.avatarUrl!.isNotEmpty)
+        ? ref
+              .watch(
+                signedUrlProvider(SupabaseBuckets.avatars, session.avatarUrl!),
+              )
+              .valueOrNull
+        : null;
 
     // Live timer — rebuilds every second
     final now = useState(DateTime.now());
@@ -90,20 +103,46 @@ class LockoutPlaceholderCard extends HookWidget {
                               triangleColor: MainColors.accent,
                             ),
                           ),
-                          // Time overlay at bottom
+                          // Time + activity overlay at bottom
                           Positioned(
                             left: 12 * s,
                             right: 12 * s,
                             bottom: 12 * s,
-                            child: Text(
-                              timeText,
-                              style: TextStyle(
-                                fontFamily: MainFontFamilies.quicksand,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 18 * s,
-                                color: colorScheme.onSurface,
-                                letterSpacing: -0.5 * s,
-                              ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [
+                                Text(
+                                  timeText,
+                                  style: TextStyle(
+                                    fontFamily: MainFontFamilies.quicksand,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 18 * s,
+                                    color: colorScheme.onSurface,
+                                    letterSpacing: -0.5 * s,
+                                  ),
+                                ),
+                                if (infoLines.isNotEmpty) ...[
+                                  SizedBox(width: 8 * s),
+                                  Expanded(
+                                    child: Text(
+                                      infoLines.join(' · '),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontFamily: MainFontFamilies.quicksand,
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 13 * s,
+                                        color: colorScheme.onSurface.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        letterSpacing: -0.3 * s,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                         ],
@@ -130,10 +169,10 @@ class LockoutPlaceholderCard extends HookWidget {
                       height: avatarSize,
                       child: ClipOval(
                         child:
-                            (session.avatarUrl != null &&
-                                session.avatarUrl!.isNotEmpty)
+                            (signedAvatarUrl != null &&
+                                signedAvatarUrl.isNotEmpty)
                             ? CachedNetworkImage(
-                                imageUrl: session.avatarUrl!,
+                                imageUrl: signedAvatarUrl,
                                 fit: BoxFit.cover,
                                 width: avatarSize,
                                 height: avatarSize,
@@ -199,55 +238,24 @@ class LockoutPlaceholderCard extends HookWidget {
                 ),
               ),
 
-              // Lockout details section
-              if (infoLines.isNotEmpty || participantCount > 0) ...[
-                SizedBox(height: 8 * s),
+              // Participant count
+              if (participantCount > 0) ...[
+                SizedBox(height: 4 * s),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: avatarInset),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ...infoLines.map(
-                        (line) => Padding(
-                          padding: EdgeInsets.only(bottom: 2 * s),
-                          child: Text(
-                            line,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: MainFontFamilies.quicksand,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 13 * s,
-                              color: colorScheme.onSurface.withValues(
-                                alpha: 0.7,
-                              ),
-                              letterSpacing: -0.3 * s,
-                            ),
-                          ),
-                        ),
-                      ),
-                      if (participantCount > 0)
-                        Padding(
-                          padding: EdgeInsets.only(top: 2 * s),
-                          child: Text(
-                            participantCount == 1
-                                ? '1 other person joined'
-                                : '$participantCount others joined',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: MainFontFamilies.quicksand,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 13 * s,
-                              color: colorScheme.onSurface.withValues(
-                                alpha: 0.5,
-                              ),
-                              letterSpacing: -0.3 * s,
-                            ),
-                          ),
-                        ),
-                    ],
+                  child: Text(
+                    participantCount == 1
+                        ? '1 other person joined'
+                        : '$participantCount others joined',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: MainFontFamilies.quicksand,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 13 * s,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      letterSpacing: -0.3 * s,
+                    ),
                   ),
                 ),
               ],
