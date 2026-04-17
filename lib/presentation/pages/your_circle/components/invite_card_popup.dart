@@ -165,11 +165,7 @@ class _InviteCard extends HookConsumerWidget {
       Navigator.of(context).pop();
     }
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Material(
+    return Material(
         type: MaterialType.transparency,
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -285,4 +281,5 @@ class _InviteCard extends HookConsumerWidget {
       ),
     );
   }
+
 }

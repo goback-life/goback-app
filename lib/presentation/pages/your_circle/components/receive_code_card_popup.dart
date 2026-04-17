@@ -39,12 +39,7 @@ Future<void> showReceiveCodeCardPopup(BuildContext context) {
         Expanded(
           child: Align(
             alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: const _ReceiveCodeCard(),
-            ),
+            child: const _ReceiveCodeCard(),
           ),
         ),
         const Expanded(child: SizedBox.shrink()),
