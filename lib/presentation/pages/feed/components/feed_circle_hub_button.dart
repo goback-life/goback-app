@@ -36,11 +36,14 @@ class FeedCircleHubButton extends StatelessWidget {
             width: size,
             height: size,
             child: AppGlassContainer(
+              key: ValueKey('circle_hub_$hasUnread'),
               config: GlassConfig(
                 variant: GlassVariant.clear,
                 cornerRadius: size / 2,
-                tint: hasUnread ? MainColors.red500 : MainColors.accent,
-                opacity: hasUnread ? 0.7 : 0.5,
+                tint: hasUnread
+                    ? MainColors.red500.withValues(alpha: 0.35)
+                    : MainColors.accent,
+                opacity: hasUnread ? 0.8 : 0.5,
               ),
               child: const SizedBox.expand(),
             ),
