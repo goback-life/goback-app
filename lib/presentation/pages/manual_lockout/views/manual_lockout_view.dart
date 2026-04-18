@@ -111,6 +111,7 @@ class ManualLockoutView extends HookConsumerWidget {
       final batteryStart = await storable.getBatteryAtStart();
       final wasCharging = await storable.getWasChargingDuringLockout();
       final lockoutStart = await storable.getLockoutStart();
+      final lockoutEnd = await storable.getLockoutEnd();
 
       // Read step count from the tracking service
       final stepService = ref.read(stepCountServiceProvider);
@@ -118,7 +119,12 @@ class ManualLockoutView extends HookConsumerWidget {
       stepService.stopTracking();
 
       if (lockoutStart != null) {
-        final duration = DateTime.now().difference(lockoutStart);
+        // For timed lockouts, use the chosen duration (end − start) so that
+        // reopening the app hours after expiry still shows the correct time.
+        // For open-ended venue lockouts, use actual elapsed time (now − start).
+        final duration = isOpenEnded.value
+            ? DateTime.now().difference(lockoutStart)
+            : (lockoutEnd ?? DateTime.now()).difference(lockoutStart);
         lockoutDurationMinutes.value = duration.inMinutes;
 
         // For open-ended: show elapsed time at end
