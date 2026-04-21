@@ -24,7 +24,11 @@ class LockoutLiveActivityService {
     }
   }
 
-  Future<void> startActivity({required DateTime lockoutEndTimestamp}) async {
+  Future<void> startActivity({
+    required DateTime lockoutEndTimestamp,
+    DateTime? lockoutStartTimestamp,
+    bool isOpenEnded = false,
+  }) async {
     if (!Platform.isIOS) return;
     try {
       await endActivity();
@@ -33,6 +37,10 @@ class LockoutLiveActivityService {
       if (!enabled) return;
       await _plugin.createActivity(_activityId, {
         'endTimestamp': lockoutEndTimestamp.millisecondsSinceEpoch ~/ 1000,
+        'startTimestamp':
+            (lockoutStartTimestamp ?? DateTime.now()).millisecondsSinceEpoch ~/
+            1000,
+        'isOpenEnded': isOpenEnded ? 1 : 0,
       });
     } catch (e) {
       logger.warning('Failed to start Live Activity', exception: e);

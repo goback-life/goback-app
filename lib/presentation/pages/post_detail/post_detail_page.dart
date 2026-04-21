@@ -53,7 +53,7 @@ class PostDetailPage extends HookConsumerWidget
       PageRouteBuilder<void>(
         opaque: false,
         barrierColor: Colors.transparent,
-        barrierDismissible: true,
+        barrierDismissible: false,
         transitionDuration: const Duration(milliseconds: 350),
         reverseTransitionDuration: const Duration(milliseconds: 250),
         pageBuilder: (_, animation, __) {

@@ -97,6 +97,30 @@ class ManualLockoutView extends HookConsumerWidget {
       return null;
     }, const []);
 
+    // Venue companions (friends at same venue)
+    final venueCompanions = useState<List<Map<String, dynamic>>>([]);
+
+    // Poll for venue companions every 30s during open-ended lockouts
+    useEffect(() {
+      if (!isOpenEnded.value || sessionId.value.isEmpty) return null;
+
+      Future<void> fetchCompanions() async {
+        final sessionService = ref.read(lockoutSessionServiceProvider);
+        final companions = await sessionService.getVenueCompanions(
+          sessionId.value,
+        );
+        venueCompanions.value = companions;
+      }
+
+      fetchCompanions();
+      final timer = Timer.periodic(
+        const Duration(seconds: 30),
+        (_) => fetchCompanions(),
+      );
+
+      return timer.cancel;
+    }, [isOpenEnded.value, sessionId.value]);
+
     // Friends overlay state
     final showFriendsOverlay = useState(false);
 
@@ -296,7 +320,49 @@ class ManualLockoutView extends HookConsumerWidget {
                     },
             ),
 
-          // Layer 5: Info button (top-right, during active lockout only)
+          // Layer 5: Venue companions (friends at same venue)
+          if (isOpenEnded.value &&
+              venueCompanions.value.isNotEmpty &&
+              !isLockoutComplete.value)
+            Positioned(
+              bottom: 60 + (MediaQuery.of(context).size.width * 0.35) + 20,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: venueCompanions.value.map((c) {
+                  final avatarUrl = c['avatar_url'] as String?;
+                  final username = c['username'] as String? ?? '';
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundImage: avatarUrl != null
+                              ? NetworkImage(avatarUrl)
+                              : null,
+                          child: avatarUrl == null
+                              ? Text(username.isNotEmpty ? username[0] : '?')
+                              : null,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          username,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+
+          // Layer 6: Info button (top-right, during active lockout only)
           if (!isLockoutComplete.value)
             Positioned(
               top: MediaQuery.of(context).padding.top + 12,

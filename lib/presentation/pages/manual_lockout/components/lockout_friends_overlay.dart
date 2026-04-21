@@ -173,7 +173,7 @@ class _FriendOverlayItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeRemaining = _formatTimeRemaining(session.endsAt);
+    final timeRemaining = _formatTimeDisplay(session);
     final hasActivity =
         session.actionText != null && session.actionText!.isNotEmpty;
 
@@ -285,9 +285,15 @@ class _FriendOverlayItem extends StatelessWidget {
     );
   }
 
-  String _formatTimeRemaining(DateTime endsAt) {
+  String _formatTimeDisplay(LockoutSessionModel session) {
+    if (session.isOpenEnded) {
+      final elapsed = DateTime.now().difference(session.startedAt);
+      final hours = elapsed.inHours;
+      final minutes = elapsed.inMinutes.remainder(60);
+      return '$hours:${minutes.toString().padLeft(2, '0')}';
+    }
     final now = DateTime.now();
-    final remaining = endsAt.difference(now);
+    final remaining = session.endsAt.difference(now);
     if (remaining.isNegative) {
       return '0:00';
     }

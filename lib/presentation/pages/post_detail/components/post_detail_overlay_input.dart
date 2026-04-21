@@ -46,12 +46,14 @@ class PostDetailOverlayInput extends StatelessWidget {
     required this.allUsers,
     required this.onMentionsChanged,
     required this.onSubmit,
+    this.focusNode,
     this.userFilter,
     super.key,
   });
 
   final double scale;
   final TextEditingController textController;
+  final FocusNode? focusNode;
   final List<ProfileModel> allUsers;
   final ValueChanged<List<String>> onMentionsChanged;
   final VoidCallback onSubmit;
@@ -91,6 +93,7 @@ class PostDetailOverlayInput extends StatelessWidget {
                   ),
                   child: MentionTextField(
                     controller: textController,
+                    focusNode: focusNode,
                     allUsers: allUsers,
                     userFilter: userFilter,
                     onMentionsChanged: onMentionsChanged,

@@ -26,15 +26,15 @@ class JoinLockoutDialog extends StatelessWidget with MainLayout {
     final textTheme = theme.textTheme;
 
     final isVenueLockout = session.isOpenEnded;
-    final timeRemaining = _formatTimeRemaining(session.endsAt);
+    final timeDisplay = _formatTimeDisplay(session);
 
     final descriptionText = isVenueLockout
-        ? 'They are at ${session.locationName ?? 'a venue'}. '
-              'You will need to scan the GoBack tag at the same venue to join.'
+        ? 'They are going back at ${session.locationName ?? 'a venue'}. '
+              'Scan the GoBack tag there to start your own lockout.'
         : translator.translate(
             'pages.manual_lockout.friends_locked_out.join_dialog.description',
             context: context,
-            arguments: {'time': timeRemaining},
+            arguments: {'time': timeDisplay},
           );
 
     return Dialog(
@@ -108,9 +108,16 @@ class JoinLockoutDialog extends StatelessWidget with MainLayout {
     );
   }
 
-  String _formatTimeRemaining(DateTime endsAt) {
+  String _formatTimeDisplay(LockoutSessionModel session) {
+    if (session.isOpenEnded) {
+      final elapsed = DateTime.now().difference(session.startedAt);
+      final hours = elapsed.inHours;
+      final minutes = elapsed.inMinutes.remainder(60);
+      if (hours > 0) return '${hours}h ${minutes}m';
+      return '${minutes}m';
+    }
     final now = DateTime.now();
-    final remaining = endsAt.difference(now);
+    final remaining = session.endsAt.difference(now);
 
     if (remaining.isNegative) return '0m';
 

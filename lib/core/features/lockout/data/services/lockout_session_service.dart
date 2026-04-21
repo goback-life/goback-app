@@ -398,6 +398,36 @@ class LockoutSessionService {
     }
   }
 
+  /// Returns friends at the same venue with overlapping lockout sessions.
+  Future<List<Map<String, dynamic>>> getVenueCompanions(
+    String sessionId,
+  ) async {
+    try {
+      final response = await supabase.rpc(
+        'get_venue_companions',
+        params: {'p_session_id': sessionId},
+      );
+      return (response as List)
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+    } catch (e) {
+      logger.warning('Failed to get venue companions: $e');
+      return [];
+    }
+  }
+
+  /// Sends departure notification to friends at the same venue.
+  Future<void> notifyVenueDeparture(String sessionId) async {
+    try {
+      await supabase.rpc(
+        'notify_venue_departure',
+        params: {'p_session_id': sessionId},
+      );
+    } catch (e) {
+      logger.warning('Failed to notify venue departure: $e');
+    }
+  }
+
   /// Gets monthly lockout summary for a given year/month.
   FutureResult<LockoutMonthlySummaryDto?> getMonthlySummary({
     required String userId,

@@ -86,6 +86,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
     final commentsResult = usePostComments(ref, post.id);
     final comments = _extractComments(commentsResult);
     final textController = useTextEditingController();
+    final inputFocusNode = useFocusNode();
     final mentionState = useMentionAutocomplete(ref);
     final allUsers = mentionState.allUsers;
     final myFriendIds = useMemoized(() => allUsers.map((u) => u.id).toSet(), [
@@ -210,6 +211,7 @@ class PostDetailOverlayContent extends HookConsumerWidget {
                 PostDetailOverlayInput(
                   scale: scale,
                   textController: textController,
+                  focusNode: inputFocusNode,
                   allUsers: allUsers,
                   userFilter: commentMentionFilter,
                   onMentionsChanged: (ids) => mentionedIds.value = ids,

@@ -210,6 +210,25 @@ async function buildMessage(
       }
     }
 
+    case 'venue_departure': {
+      // Informational: someone left the venue (their lockout continues)
+      const { data: tokens } = await supabase.rpc('get_user_device_tokens', { p_user_id: payload.user_id })
+      if (!tokens?.length) return null
+      const departedUsername = payload.departed_username || 'Someone'
+      const venueName = payload.venue_name
+      const body = venueName
+        ? `${departedUsername} left ${venueName}`
+        : `${departedUsername} ended their lockout`
+      return {
+        title: 'goback update',
+        body,
+        data: { type: 'venue_departure', lockout_id: payload.lockout_id },
+        tokens,
+        androidPriority: 'normal' as const,
+        iosInterruptionLevel: 'passive' as const,
+      }
+    }
+
     case 'connection_request': {
       const { data: tokens } = await supabase.rpc('get_user_device_tokens', { p_user_id: payload.receiver_id })
       if (!tokens?.length) return null

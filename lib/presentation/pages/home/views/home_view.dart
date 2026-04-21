@@ -30,6 +30,7 @@ import 'package:cloudless/presentation/pages/home/components/home_new_posts_bann
 import 'package:cloudless/presentation/pages/home/components/home_scroll_indicator.dart';
 import 'package:cloudless/presentation/pages/home/home_layout.dart';
 import 'package:cloudless/presentation/pages/home/hooks/use_home_scroll_state.dart';
+import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/join_lockout_dialog.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
 import 'package:cloudless/presentation/pages/post_detail/post_detail_page.dart';
@@ -290,13 +291,56 @@ class HomeView extends HookConsumerWidget with MainLayout, HomeLayout {
     LockoutSessionModel session,
   ) async {
     final confirmed = await JoinLockoutDialog.show(context, session);
-    if (confirmed == true) {
-      await ref
-          .read(manualLockoutNotifierProvider.notifier)
-          .joinLockout(session.id);
-      if (context.mounted) {
-        router.go(const ManualLockoutRoutable());
-      }
+    if (confirmed != true || !context.mounted) return;
+
+    // Venue (open-ended) lockouts require NFC scan
+    if (session.isOpenEnded) {
+      final nfcService = ref.read(nfcServiceProvider);
+      await nfcService.startReadSession(
+        onTagRead: (venue) async {
+          if (!context.mounted) return;
+          if (session.venueTagId != null &&
+              venue.venueId != session.venueTagId) {
+            MainSnackbar.showError(
+              context,
+              'You need to be at the same venue to join this lockout',
+            );
+            return;
+          }
+          try {
+            await ref
+                .read(manualLockoutNotifierProvider.notifier)
+                .startVenueLockout(venue);
+            if (context.mounted) router.go(const ManualLockoutRoutable());
+          } catch (e) {
+            if (context.mounted) {
+              MainSnackbar.showError(context, 'Failed to start lockout');
+            }
+          }
+        },
+        onInvalidTag: () {
+          if (context.mounted) {
+            MainSnackbar.showError(context, 'This is not a valid GoBack tag');
+          }
+        },
+        onError: () {
+          if (context.mounted) {
+            MainSnackbar.showError(
+              context,
+              'NFC scan failed. Please try again.',
+            );
+          }
+        },
+      );
+      return;
+    }
+
+    // Timed lockouts: direct join
+    await ref
+        .read(manualLockoutNotifierProvider.notifier)
+        .joinLockout(session.id);
+    if (context.mounted) {
+      router.go(const ManualLockoutRoutable());
     }
   }
 

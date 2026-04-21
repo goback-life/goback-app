@@ -151,6 +151,27 @@ PostCreationResult usePostCreation(WidgetRef ref) {
               );
             }
 
+            // Auto-tag venue companions (friends at same venue during lockout)
+            if (pendingLockoutId != null) {
+              final sessionService = ref.read(lockoutSessionServiceProvider);
+              final companions = await sessionService.getVenueCompanions(
+                pendingLockoutId,
+              );
+              for (final companion in companions) {
+                final companionId = companion['user_id'] as String?;
+                if (companionId != null &&
+                    companionId != user.id &&
+                    !finalTaggedUserIds.contains(companionId)) {
+                  finalTaggedUserIds.add(companionId);
+                }
+              }
+              if (companions.isNotEmpty) {
+                logger.info(
+                  'Auto-tagged ${companions.length} venue companions',
+                );
+              }
+            }
+
             // Shorten URLs in description for text posts (convert to markdown with domain alias)
             final description =
                 postCreationData.contentType == ContentType.text &&

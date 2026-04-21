@@ -1,4 +1,5 @@
 import 'package:cloudless/presentation/components/buttons/call_to_action/call_to_action.dart';
+import 'package:cloudless/presentation/themes/constants/main_colors.dart';
 import 'package:dedecube_form/dedecube_form.dart';
 import 'package:flutter/material.dart';
 
@@ -35,7 +36,7 @@ class FormSubmitButton extends StatelessWidget {
             labelText,
             style: textTheme.titleLarge?.copyWith(
               color: canSubmit
-                  ? colorScheme.onPrimary
+                  ? MainColors.accent
                   : colorScheme.onSurfaceVariant,
             ),
           ),

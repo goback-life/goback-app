@@ -186,19 +186,7 @@ class _ShaderGlass extends StatelessWidget {
             child: backdrop,
           );
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: hasCustomPath ? null : BorderRadius.circular(radius),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x18191919),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: clipped,
-    );
+    return clipped;
   }
 }
 

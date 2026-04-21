@@ -298,17 +298,23 @@ class FriendsLockedOutList extends HookConsumerWidget {
     final shouldJoin = await JoinLockoutDialog.show(context, session);
     if (shouldJoin != true || !context.mounted) return;
 
-    // Venue lockouts require NFC scan to verify same venue
-    if (session.isOpenEnded && session.venueTagId != null) {
+    debugPrint(
+      '[JOIN] isOpenEnded=${session.isOpenEnded} venueTagId=${session.venueTagId} sessionId=${session.id}',
+    );
+
+    // Venue (open-ended) lockouts ALWAYS require NFC scan to verify same venue
+    if (session.isOpenEnded) {
+      debugPrint('[JOIN] → NFC path');
       await _handleVenueJoinWithNfc(context, ref, session);
       return;
     }
 
     // Timed lockouts: direct join (no NFC required)
+    debugPrint('[JOIN] → direct join (timed)');
     await _performJoin(context, ref, session);
   }
 
-  /// Initiates NFC scan and joins venue lockout if tag matches.
+  /// Initiates NFC scan and starts an independent venue lockout if tag matches.
   Future<void> _handleVenueJoinWithNfc(
     BuildContext context,
     WidgetRef ref,
@@ -320,7 +326,8 @@ class FriendsLockedOutList extends HookConsumerWidget {
       onTagRead: (venue) async {
         if (!context.mounted) return;
 
-        if (venue.venueId != session.venueTagId) {
+        // Verify scanned venue matches the friend's venue
+        if (session.venueTagId != null && venue.venueId != session.venueTagId) {
           MainSnackbar.showError(
             context,
             'You need to be at the same venue to join this lockout',
@@ -328,8 +335,30 @@ class FriendsLockedOutList extends HookConsumerWidget {
           return;
         }
 
-        // Tag matches — proceed with join
-        await _performJoin(context, ref, session);
+        // Tag matches — start independent venue lockout (not join existing)
+        try {
+          await DndPromptDialog.showIfNeeded(context);
+        } catch (_) {}
+        if (!context.mounted) return;
+
+        try {
+          final notifier = ref.read(manualLockoutNotifierProvider.notifier);
+          await notifier.startVenueLockout(venue);
+        } catch (e) {
+          logger.error('Error starting venue lockout', exception: e);
+          if (context.mounted) {
+            MainSnackbar.showError(
+              context,
+              e.toString().contains('already in an active lockout')
+                  ? translator.translate(
+                      'pages.home.lockout_join_error_already_locked',
+                    )
+                  : translator.translate(
+                      'pages.manual_lockout.friends_locked_out.error',
+                    ),
+            );
+          }
+        }
       },
       onInvalidTag: () {
         if (context.mounted) {

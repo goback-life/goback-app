@@ -38,25 +38,26 @@ class PostDetailParticipants extends StatelessWidget {
   Widget build(BuildContext context) {
     if (participantIds.isEmpty) return const SizedBox.shrink();
 
+    final colorScheme = Theme.of(context).colorScheme;
     final defaultStyle =
         textStyle ??
-        const TextStyle(
+        TextStyle(
           fontWeight: FontWeight.w700,
           fontSize: 14,
-          color: Colors.white,
+          color: colorScheme.onSurface,
         );
     final defaultLabel =
         labelStyle ??
         defaultStyle.copyWith(
           fontWeight: FontWeight.w400,
-          color: Colors.white.withValues(alpha: 0.6),
+          color: colorScheme.onSurface.withValues(alpha: 0.6),
         );
     final defaultCollapsed =
         collapsedStyle ??
         defaultStyle.copyWith(
           fontWeight: FontWeight.w400,
           fontStyle: FontStyle.italic,
-          color: Colors.white.withValues(alpha: 0.5),
+          color: colorScheme.onSurface.withValues(alpha: 0.5),
         );
 
     final d1 = <int>[];

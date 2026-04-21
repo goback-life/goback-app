@@ -34,10 +34,14 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
     // Sync Live Activity with lockout state on app launch / rebuild
     final liveActivityService = ref.read(lockoutLiveActivityServiceProvider);
     if (currentState.isLockedOut) {
+      final isOpenEnded = await storable.getIsOpenEnded();
       final lockoutEnd = await storable.getLockoutEnd();
+      final lockoutStart = await storable.getLockoutStart();
       if (lockoutEnd != null) {
         await liveActivityService.startActivity(
           lockoutEndTimestamp: lockoutEnd,
+          lockoutStartTimestamp: lockoutStart,
+          isOpenEnded: isOpenEnded,
         );
       }
     } else {
@@ -236,9 +240,14 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       );
       _startLockoutTracking();
 
-      // Skip Live Activity for open-ended lockouts — the sentinel end time
-      // (30 days) would display a nonsensical countdown on the lock screen.
-      await ref.read(lockoutLiveActivityServiceProvider).endActivity();
+      // Start Live Activity in count-up mode for open-ended lockouts
+      await ref
+          .read(lockoutLiveActivityServiceProvider)
+          .startActivity(
+            lockoutEndTimestamp: sentinelEnd,
+            lockoutStartTimestamp: now,
+            isOpenEnded: true,
+          );
 
       // Schedule a 1-hour encouragement notification using venue name
       await ref
@@ -374,8 +383,14 @@ class ManualLockoutNotifier extends _$ManualLockoutNotifier {
       _startLockoutTracking();
 
       if (isOpenEnded) {
-        // Skip Live Activity for open-ended lockouts (sentinel end time)
-        await ref.read(lockoutLiveActivityServiceProvider).endActivity();
+        // Start Live Activity in count-up mode for open-ended lockouts
+        await ref
+            .read(lockoutLiveActivityServiceProvider)
+            .startActivity(
+              lockoutEndTimestamp: lockoutEndTime!,
+              lockoutStartTimestamp: DateTime.now(),
+              isOpenEnded: true,
+            );
 
         // Schedule a 1-hour encouragement notification using venue name
         await ref

@@ -75,10 +75,22 @@ private struct LockScreenBanner: View {
     let appGroupId: String
     let context: ActivityViewContext<LiveActivitiesAppAttributes>
 
+    private var defaults: UserDefaults {
+        UserDefaults(suiteName: appGroupId)!
+    }
+
     private var endDate: Date {
-        let defaults = UserDefaults(suiteName: appGroupId)!
         let ts = defaults.integer(forKey: context.attributes.prefixedKey("endTimestamp"))
         return Date(timeIntervalSince1970: TimeInterval(ts))
+    }
+
+    private var startDate: Date {
+        let ts = defaults.integer(forKey: context.attributes.prefixedKey("startTimestamp"))
+        return Date(timeIntervalSince1970: TimeInterval(ts))
+    }
+
+    private var isOpenEnded: Bool {
+        defaults.integer(forKey: context.attributes.prefixedKey("isOpenEnded")) != 0
     }
 
     var body: some View {
@@ -89,7 +101,11 @@ private struct LockScreenBanner: View {
                 .scaledToFit()
                 .frame(height: 40)
             Spacer()
-            if endDate > Date.now {
+            if isOpenEnded {
+                Text(timerInterval: startDate...Date.distantFuture, countsDown: false)
+                    .font(.system(size: 22, weight: .medium, design: .monospaced))
+                    .multilineTextAlignment(.trailing)
+            } else if endDate > Date.now {
                 Text(timerInterval: Date.now...endDate, countsDown: true)
                     .font(.system(size: 22, weight: .medium, design: .monospaced))
                     .multilineTextAlignment(.trailing)
@@ -112,10 +128,22 @@ private struct ExpandedContent: View {
     let appGroupId: String
     let context: ActivityViewContext<LiveActivitiesAppAttributes>
 
+    private var defaults: UserDefaults {
+        UserDefaults(suiteName: appGroupId)!
+    }
+
     private var endDate: Date {
-        let defaults = UserDefaults(suiteName: appGroupId)!
         let ts = defaults.integer(forKey: context.attributes.prefixedKey("endTimestamp"))
         return Date(timeIntervalSince1970: TimeInterval(ts))
+    }
+
+    private var startDate: Date {
+        let ts = defaults.integer(forKey: context.attributes.prefixedKey("startTimestamp"))
+        return Date(timeIntervalSince1970: TimeInterval(ts))
+    }
+
+    private var isOpenEnded: Bool {
+        defaults.integer(forKey: context.attributes.prefixedKey("isOpenEnded")) != 0
     }
 
     var body: some View {
@@ -127,7 +155,11 @@ private struct ExpandedContent: View {
                 .frame(height: 28)
                 .foregroundColor(.white)
             Spacer()
-            if endDate > Date.now {
+            if isOpenEnded {
+                Text(timerInterval: startDate...Date.distantFuture, countsDown: false)
+                    .font(.system(size: 24, weight: .medium, design: .monospaced))
+                    .multilineTextAlignment(.trailing)
+            } else if endDate > Date.now {
                 Text(timerInterval: Date.now...endDate, countsDown: true)
                     .font(.system(size: 24, weight: .medium, design: .monospaced))
                     .multilineTextAlignment(.trailing)
@@ -139,21 +171,37 @@ private struct ExpandedContent: View {
     }
 }
 
-// MARK: - Compact / Minimal Countdown
+// MARK: - Compact / Minimal Timer
 
 private struct CountdownText: View {
     let appGroupId: String
     let context: ActivityViewContext<LiveActivitiesAppAttributes>
     let size: CGFloat
 
+    private var defaults: UserDefaults {
+        UserDefaults(suiteName: appGroupId)!
+    }
+
     private var endDate: Date {
-        let defaults = UserDefaults(suiteName: appGroupId)!
         let ts = defaults.integer(forKey: context.attributes.prefixedKey("endTimestamp"))
         return Date(timeIntervalSince1970: TimeInterval(ts))
     }
 
+    private var startDate: Date {
+        let ts = defaults.integer(forKey: context.attributes.prefixedKey("startTimestamp"))
+        return Date(timeIntervalSince1970: TimeInterval(ts))
+    }
+
+    private var isOpenEnded: Bool {
+        defaults.integer(forKey: context.attributes.prefixedKey("isOpenEnded")) != 0
+    }
+
     var body: some View {
-        if endDate > Date.now {
+        if isOpenEnded {
+            Text(timerInterval: startDate...Date.distantFuture, countsDown: false)
+                .font(.system(size: size, weight: .medium, design: .monospaced))
+                .multilineTextAlignment(.trailing)
+        } else if endDate > Date.now {
             Text(timerInterval: Date.now...endDate, countsDown: true)
                 .font(.system(size: size, weight: .medium, design: .monospaced))
                 .multilineTextAlignment(.trailing)

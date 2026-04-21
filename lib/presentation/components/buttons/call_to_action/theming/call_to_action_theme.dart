@@ -162,7 +162,7 @@ class PrimaryCallToActionTheme extends CallToActionTheme {
       ),
       CallToActionMode.outlined => (
         background: colors.surface,
-        foreground: colors.surfaceContainerLow,
+        foreground: colors.onSurface,
         outline: colors.surfaceContainerLow,
       ),
       CallToActionMode.filledOutlined => (

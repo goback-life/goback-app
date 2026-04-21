@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudless/core/features/lockout/domain/models/lockout_session_model.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/friends_locked_out_cache_provider.dart';
 import 'package:cloudless/core/features/lockout/domain/providers/manual_lockout_notifier_provider.dart';
+import 'package:cloudless/core/features/nfc/data/providers/nfc_service_provider.dart';
 import 'package:cloudless/presentation/components/alerts/main_snackbar.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/components/lockout_lifecycle_observer.dart';
 import 'package:cloudless/presentation/pages/manual_lockout/manual_lockout_routable.dart';
@@ -112,13 +113,15 @@ class _FriendItem extends HookConsumerWidget with MainLayout {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final timeRemaining = _formatTimeRemaining(session.endsAt);
+    final timeDisplay = _formatTimeDisplay(session);
     final hasActivity =
         session.actionText != null && session.actionText!.isNotEmpty;
     final minutesRemaining = session.endsAt
         .difference(DateTime.now())
         .inMinutes;
-    final isJoinable = minutesRemaining > _minJoinableMinutes;
+    // Venue (open-ended) lockouts are always joinable; timed need 30+ min left
+    final isJoinable =
+        session.isOpenEnded || minutesRemaining > _minJoinableMinutes;
     final isJoining = useState(false);
 
     return Padding(
@@ -160,7 +163,7 @@ class _FriendItem extends HookConsumerWidget with MainLayout {
           ),
           const SizedBox(width: 8),
           Text(
-            timeRemaining,
+            timeDisplay,
             style: const TextStyle(
               fontFamily: MainFontFamilies.quicksand,
               fontWeight: FontWeight.w500,
@@ -214,6 +217,60 @@ class _FriendItem extends HookConsumerWidget with MainLayout {
     WidgetRef ref,
     ValueNotifier<bool> isJoining,
   ) async {
+    // Venue (open-ended) lockouts require NFC scan to prove same venue
+    if (session.isOpenEnded) {
+      final nfcService = ref.read(nfcServiceProvider);
+      await nfcService.startReadSession(
+        onTagRead: (venue) async {
+          if (!context.mounted) return;
+
+          // Verify scanned venue matches the friend's venue
+          if (session.venueTagId != null &&
+              venue.venueId != session.venueTagId) {
+            MainSnackbar.showError(
+              context,
+              'You need to be at the same venue to join this lockout',
+            );
+            return;
+          }
+
+          // Start independent venue lockout at scanned venue
+          isJoining.value = true;
+          try {
+            await ref
+                .read(manualLockoutNotifierProvider.notifier)
+                .startVenueLockout(venue);
+            if (context.mounted) {
+              router.go(const ManualLockoutRoutable());
+            }
+          } catch (e) {
+            if (!context.mounted) return;
+            final message = e.toString().contains('already')
+                ? 'Already in an active lockout'
+                : 'Failed to join lockout';
+            MainSnackbar.showError(context, message);
+          } finally {
+            if (context.mounted) isJoining.value = false;
+          }
+        },
+        onInvalidTag: () {
+          if (context.mounted) {
+            MainSnackbar.showError(context, 'This is not a valid GoBack tag');
+          }
+        },
+        onError: () {
+          if (context.mounted) {
+            MainSnackbar.showError(
+              context,
+              'NFC scan failed. Please try again.',
+            );
+          }
+        },
+      );
+      return;
+    }
+
+    // Timed lockouts: direct join (no NFC required)
     isJoining.value = true;
     try {
       await ref
@@ -271,8 +328,16 @@ class _FriendItem extends HookConsumerWidget with MainLayout {
     );
   }
 
-  String _formatTimeRemaining(DateTime endsAt) {
-    final remaining = endsAt.difference(DateTime.now());
+  String _formatTimeDisplay(LockoutSessionModel session) {
+    if (session.isOpenEnded) {
+      // Count up: elapsed time since lockout started
+      final elapsed = DateTime.now().difference(session.startedAt);
+      final hours = elapsed.inHours;
+      final minutes = elapsed.inMinutes.remainder(60);
+      return '$hours:${minutes.toString().padLeft(2, '0')}';
+    }
+    // Count down: time remaining until lockout ends
+    final remaining = session.endsAt.difference(DateTime.now());
     if (remaining.isNegative) return '0:00';
     final hours = remaining.inHours;
     final minutes = remaining.inMinutes.remainder(60);
