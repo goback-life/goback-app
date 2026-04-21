@@ -6,5 +6,4 @@
 import 'package:flutter/widgets.dart';
 import 'package:cloudless/presentation/assets/icons.gen.dart' as icons;
 
-class IconAssets {
-}
+class IconAssets {}
