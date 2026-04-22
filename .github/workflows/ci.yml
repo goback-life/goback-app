@@ -122,6 +122,20 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Create placeholder .env files
+        run: |
+          echo "# CI placeholder" > .env
+          echo "# CI placeholder" > .env.stage
+          echo "# CI placeholder" > .env.production
+
+      - name: Run code generation
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          for pkg in packages/dedecube_environment packages/dedecube_logger packages/dedecube_router packages/dedecube_startup packages/dedecube_storage packages/dedecube_themify packages/dedecube_translator; do
+            echo "Building $pkg..."
+            (cd $pkg && dart pub get && dart run build_runner build --delete-conflicting-outputs)
+          done
+
       - name: Build stage APK
         run: flutter build apk --flavor stage --release
 
@@ -163,7 +177,8 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
-          supabase db push --project-ref ${{ secrets.SUPABASE_STAGE_PROJECT_REF }}
+          supabase link --project-ref ${{ secrets.SUPABASE_STAGE_PROJECT_REF }}
+          supabase db push --include-all
 
   # ── Phase B: Build production (main only) ─────────────────────────────────
   build-prod:
@@ -188,6 +203,20 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Create placeholder .env files
+        run: |
+          echo "# CI placeholder" > .env
+          echo "# CI placeholder" > .env.stage
+          echo "# CI placeholder" > .env.production
+
+      - name: Run code generation
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          for pkg in packages/dedecube_environment packages/dedecube_logger packages/dedecube_router packages/dedecube_startup packages/dedecube_storage packages/dedecube_themify packages/dedecube_translator; do
+            echo "Building $pkg..."
+            (cd $pkg && dart pub get && dart run build_runner build --delete-conflicting-outputs)
+          done
 
       - name: Build production APK
         run: flutter build apk --flavor production --release
@@ -229,7 +258,8 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
-          supabase db push --project-ref ${{ secrets.SUPABASE_PROD_PROJECT_REF }}
+          supabase link --project-ref ${{ secrets.SUPABASE_PROD_PROJECT_REF }}
+          supabase db push --include-all
 
   # ── Phase C: Deploy (manual trigger only) ─────────────────────────────────
   deploy-ios-beta:
